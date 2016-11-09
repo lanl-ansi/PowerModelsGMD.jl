@@ -10,4 +10,4 @@ script:
 
 after_success:
   - echo $TRAVIS_JULIA_VERSION
-  - julia -e 'using Coverage; cd(Pkg.dir("PowerModelsLANL")); Codecov.submit(process_folder("."), token="e69e281d-cd23-4aef-aeb5-40ed8bad2b49");'
+  - julia -e 'using Coverage; cd(Pkg.dir("PowerModelsLANL")); Codecov.submit(process_folder("."), codecov_url="https://cov.lanlytics.com", token="e69e281d-cd23-4aef-aeb5-40ed8bad2b49");'
