@@ -1,4 +1,5 @@
 using PowerModelsLANL
+using PowerModels
 using Logging
 # suppress warnings during testing
 Logging.configure(level=ERROR)
