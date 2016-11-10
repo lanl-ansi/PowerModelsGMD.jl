@@ -1,3 +1,5 @@
+### Basic Max Loading Tests
+
 @testset "test ac ml" begin
     @testset "3-bus case" begin
         result = run_ml("$(Pkg.dir("PowerModels"))/test/data/case3.json", ACPPowerModel, ipopt_solver)
@@ -85,6 +87,7 @@ end
 
 
 
+### UC Max Loading Tests
 
 @testset "test ac ml uc" begin
     @testset "3-bus case" begin
