@@ -18,7 +18,6 @@ function post_ml{T}(pm::GenericPowerModel{T})
     #variable_loading_factor(pm)
     variable_active_load(pm)
     variable_reactive_load(pm)
-    
 
     #objective_max_loadability(pm)
     objective_max_active_and_reactive_loadability(pm)
@@ -68,15 +67,19 @@ function post_mluc{T}(pm::GenericPowerModel{T})
     PMs.variable_complex_voltage(pm)
 
     variable_generation_indicator(pm)
-    PMs.variable_active_generation(pm)
-    PMs.variable_reactive_generation(pm)
+    variable_active_generation_on_off(pm)
+    variable_reactive_generation_on_off(pm)
 
     PMs.variable_active_line_flow(pm)
     PMs.variable_reactive_line_flow(pm)
 
-    variable_loading_factor(pm)
+    #variable_loading_factor(pm)
+    variable_active_load(pm)
+    variable_reactive_load(pm)
 
-    objective_max_loadability(pm)
+
+    #objective_max_loadability(pm)
+    objective_max_active_and_reactive_loadability(pm)
 
 
     PMs.constraint_theta_ref(pm)
