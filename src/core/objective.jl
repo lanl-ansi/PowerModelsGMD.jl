@@ -8,8 +8,8 @@ function objective_max_active_and_reactive_loadability{T}(pm::GenericPowerModel{
     pd = getvariable(pm.model, :pd)
     qd = getvariable(pm.model, :qd)
 
-    c_qd = [bp => 1 for bp in pm.set.bus_indexes] 
-    c_pd = [bp => 1 for bp in pm.set.bus_indexes] 
+    c_qd = Dict(bp => 1 for bp in pm.set.bus_indexes)
+    c_pd = Dict(bp => 1 for bp in pm.set.bus_indexes) 
     
     for (i,bus) in pm.set.buses
         if (bus["qd"] < 0)  
@@ -28,7 +28,7 @@ end
 
 # maximize how much active load is served
 function objective_max_active_load(m, pd, buses, bus_indexes)
-  c_pd = [bp => 1 for bp in bus_indexes] 
+  c_pd = Dict(bp => 1 for bp in bus_indexes)
   
   for (i,bus) in buses
     if (buses[i]["pd"] < 0)  
@@ -42,8 +42,8 @@ end
 # maximize how much reactive load is served
 # Surprise... objectives are not compositional, @objective replaces the last objective added...
 function objective_max_active_and_reactive_load(m, pd, qd, buses, bus_indexes)
-  c_qd = [bp => 1 for bp in bus_indexes] 
-  c_pd = [bp => 1 for bp in bus_indexes] 
+  c_qd = Dict(bp => 1 for bp in bus_indexes)
+  c_pd = Dict(bp => 1 for bp in bus_indexes)
     
   for (i,bus) in buses
     if (buses[i]["qd"] < 0)  

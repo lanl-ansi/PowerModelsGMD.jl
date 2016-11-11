@@ -5,7 +5,7 @@ end
 # need to overload this objective becouse reactive power vars do not exiest in DC models
 function objective_max_active_and_reactive_loadability{T <: PMs.AbstractDCPForm}(pm::GenericPowerModel{T})
     pd = getvariable(pm.model, :pd)
-    c_pd = [bp => 1 for bp in pm.set.bus_indexes] 
+    c_pd = Dict(bp => 1 for bp in pm.set.bus_indexes)
     
     for (i,bus) in pm.set.buses
         if (bus["pd"] < 0)  
