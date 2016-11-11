@@ -72,13 +72,13 @@ end
 
 
 # these tests were not tested in the old code
-#@testset "test sdp ml uc" begin
-#    @testset "3-bus case" begin
-#        result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case3.json", SDPWRMPowerModel, pajarito_sdp_solver)
+@testset "test sdp ml uc" begin
+    @testset "3-bus case" begin
+        result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case3.json", SDPWRMPowerModel, pajarito_sdp_solver)
 
-#        @test result["status"] == :Optimal
-#        @test isapprox(result["objective"], 4.4; atol = 1e-1)
-#    end
+        @test result["status"] == :Suboptimal
+        @test isapprox(result["objective"], 4.28; atol = 1e-1)
+    end
     # TODO replace this with smaller case, way too slow for unit testing
     #@testset "24-bus rts case" begin
     #    result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case24.json", SDPWRMPowerModel, scs_solver)
@@ -86,4 +86,4 @@ end
     #    @test result["status"] == :Optimal
     #    @test isapprox(result["objective"], 75153; atol = 1e0)
     #end
-#end
+end

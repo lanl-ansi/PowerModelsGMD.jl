@@ -4,7 +4,7 @@ module PowerModelsLANL
     using PowerModels
     using JuMP
 
-    PMs = PowerModels
+    const PMs = PowerModels
 
     include("core/base.jl")
     include("core/variable.jl")
