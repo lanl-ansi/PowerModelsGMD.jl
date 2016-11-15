@@ -60,7 +60,7 @@ end
 
 # Maximum loadability with flexible generator participation fixed
 function run_mluc(file, model_constructor, solver; kwargs...)
-    return PMs.run_generic_model(file, model_constructor, solver, post_mluc; kwargs...) 
+    return PMs.run_generic_model(file, model_constructor, solver, post_mluc; solution_builder = get_ml_solution, kwargs...) 
 end
 
 function post_mluc{T}(pm::GenericPowerModel{T})
