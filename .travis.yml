@@ -14,6 +14,7 @@ before_install:
   - sudo apt-get install -y libgmp-dev
   - julia -e 'Pkg.add("Coverage")'
   # Current tests requires the latest version of Pajarito
+  - julia -e 'Pkg.add("Pajarito")'
   - julia -e 'Pkg.checkout("Pajarito")'
 
 script:
