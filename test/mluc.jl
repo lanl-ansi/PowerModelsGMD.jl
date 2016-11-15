@@ -5,10 +5,10 @@ if (Pkg.installed("AmplNLWriter") != nothing && Pkg.installed("CoinOptServices")
 
     @testset "test ac ml uc" begin
         @testset "3-bus case" begin
-            result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case3.json", ACPPowerModel, BonminNLSolver(["bonmin.bb_log_level=0", "bonmin.nlp_log_level=0"]))
+            result = run_mluc("../test/data/case3_ml.m", ACPPowerModel, BonminNLSolver(["bonmin.bb_log_level=0", "bonmin.nlp_log_level=0"]))
 
             @test result["status"] == :LocalOptimal
-            @test isapprox(result["objective"], 4.44; atol = 1e-2)
+            @test isapprox(result["objective"], 1.93675; atol = 1e-2)
         end
         @testset "24-bus rts case" begin
             result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case24.json", ACPPowerModel, BonminNLSolver(["bonmin.bb_log_level=0", "bonmin.nlp_log_level=0"]))
@@ -22,10 +22,10 @@ end
 
 @testset "test dc ml uc" begin
     @testset "3-bus case" begin
-        result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case3.json", DCPPowerModel, GLPKSolverMIP())
+        result = run_mluc("../test/data/case3_ml.m", DCPPowerModel, GLPKSolverMIP())
 
         @test result["status"] == :Optimal
-        @test isapprox(result["objective"], 3.15; atol = 1e-2)
+        @test isapprox(result["objective"], 1.25822; atol = 1e-2)
     end
     @testset "24-bus rts case" begin
         result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case24.json", DCPPowerModel, GLPKSolverMIP())
@@ -39,10 +39,10 @@ end
 # these tests were commented out in the old code
 @testset "test soc ml uc" begin
     @testset "3-bus case" begin
-        result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case3.json", SOCWRPowerModel, pajarito_solver)
+        result = run_mluc("../test/data/case3_ml.m", SOCWRPowerModel, pajarito_solver)
 
         @test result["status"] == :Suboptimal
-        @test isapprox(result["objective"], 4.44; atol = 1e-2)
+        @test isapprox(result["objective"], 2.08558; atol = 1e-2)
     end
     @testset "24-bus rts case" begin
         result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case24.json", SOCWRPowerModel, pajarito_solver)
@@ -55,10 +55,10 @@ end
 
 @testset "test qc ml uc" begin
     @testset "3-bus case" begin
-        result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case3.json", QCWRPowerModel, pajarito_solver)
+        result = run_mluc("../test/data/case3_ml.m", QCWRPowerModel, pajarito_solver)
 
         @test result["status"] == :Suboptimal
-        @test isapprox(result["objective"], 4.44; atol = 1e-2)
+        @test isapprox(result["objective"], 2.00895; atol = 1e-2)
     end
 
     # this test has MIP numerical stablity issues
@@ -74,10 +74,10 @@ end
 # these tests were not tested in the old code
 @testset "test sdp ml uc" begin
     @testset "3-bus case" begin
-        result = run_mluc("$(Pkg.dir("PowerModels"))/test/data/case3.json", SDPWRMPowerModel, pajarito_sdp_solver)
+        result = run_mluc("../test/data/case3_ml.m", SDPWRMPowerModel, pajarito_sdp_solver)
 
-        @test result["status"] == :Suboptimal
-        @test isapprox(result["objective"], 4.28; atol = 1e-1)
+        @test result["status"] == :Optimal
+        @test isapprox(result["objective"],  1.93621; atol = 1e-1)
     end
     # TODO replace this with smaller case, way too slow for unit testing
     #@testset "24-bus rts case" begin
