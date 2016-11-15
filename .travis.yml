@@ -13,6 +13,8 @@ before_install:
   # GLPK dependencies
   - sudo apt-get install -y libgmp-dev
   - julia -e 'Pkg.add("Coverage")'
+  # Current tests requires the latest version of Pajarito
+  - julia -e 'Pkg.checkout("Pajarito")'
 
 script:
   - julia -e 'Pkg.clone(pwd())'
