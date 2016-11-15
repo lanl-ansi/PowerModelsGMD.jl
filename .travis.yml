@@ -1,8 +1,7 @@
 language: julia
 julia:
-  - 0.4
+# only v0.5 is supported for latest version of JuMP and Pajarito
   - 0.5
-
 
 before_install:
   # IPOPT dependencies
