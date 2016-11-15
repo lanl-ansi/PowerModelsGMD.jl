@@ -4,15 +4,14 @@ julia:
   - 0.5
 
 # IPOPT dependencies
-addons:
-  apt_packages:
-    - gfortran
-    - liblapack-dev
-    - libgmp-dev
-    - libglpk-dev
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y gfortran
+  - sudo apt-get install -y liblapack-dev
+  - sudo apt-get install -y libglpk-dev
+  - julia -e 'Pkg.add("Coverage")'
 
 script:
-  - julia -e 'Pkg.add("Coverage")'
   - julia -e 'Pkg.clone(pwd())'
   - julia -e 'Pkg.test("PowerModelsLANL", coverage=true)'
 
