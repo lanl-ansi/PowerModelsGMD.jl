@@ -3,6 +3,14 @@ julia:
   - 0.4
   - 0.5
 
+# IPOPT dependencies
+addons:
+  apt_packages:
+    - gfortran
+    - liblapack-dev
+    - libgmp-dev
+    - libglpk-dev
+
 script:
   - julia -e 'Pkg.add("Coverage")'
   - julia -e 'Pkg.clone(pwd())'
