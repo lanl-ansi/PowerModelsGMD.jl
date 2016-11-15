@@ -33,10 +33,4 @@ end
 function constraint_reactive_kcl_shunt_fl{T <: PMs.AbstractDCPForm}(pm::GenericPowerModel{T}, bus)
     # Do nothing, this model does not have reactive variables
     return Set()
-    i = bus["index"]
-
-    qd = getvariable(pm.model, :qd)
-
-    #c = @constraint(pm.model, qd[i] == 0)
-    return Set([c])
 end
