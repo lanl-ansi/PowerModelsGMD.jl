@@ -1,4 +1,7 @@
-function mpc = case3_ml
+% This model is infeasible due to the active power LB on the first generator
+% UC is needed to ensure feasiblity
+
+function mpc = case3_mluc
 mpc.version = '2';
 mpc.baseMVA = 100.0;
 
@@ -13,7 +16,7 @@ mpc.bus = [
 %% generator data
 %	bus	Pg	Qg	Qmax	Qmin	Vg	mBase	status	Pmax	Pmin	Pc1	Pc2	Qc1min	Qc1max	Qc2min	Qc2max	ramp_agc	ramp_10	ramp_30	ramp_q	apf
 mpc.gen = [
-	1	 0.000	 0.000	 1000.0	 -1000.0	 1.00000	 100.0	 1	 100.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0;
+	1	 0.000	 0.000	 1000.0	 -1000.0	 1.00000	 100.0	 1	 100.0	 95.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0;
 	3	 0.000	 0.000	 1000.0	 -1000.0	 1.00000	 100.0	 1	 50.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0	 0.0;
 ];
 

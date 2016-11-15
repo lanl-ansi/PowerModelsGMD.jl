@@ -3,12 +3,15 @@ julia:
   - 0.4
   - 0.5
 
-# IPOPT dependencies
+
 before_install:
+  # IPOPT dependencies
   - sudo apt-get -qq update
   - sudo apt-get install -y gfortran
   - sudo apt-get install -y liblapack-dev
   - sudo apt-get install -y libglpk-dev
+  # GLPK dependencies
+  - sudo apt-get install -y libgmp-dev
   - julia -e 'Pkg.add("Coverage")'
 
 script:
