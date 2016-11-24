@@ -19,4 +19,5 @@ module PowerModelsLANL
     include("form/wrm.jl")
 
     include("prob/ml.jl")
+    include("prob/gmd.jl")
 end
