@@ -7,6 +7,17 @@ function run_gmd(file, model_constructor, solver; kwargs...)
 end
 
 function post_gmd{T}(pm::GenericPowerModel{T})
+    println("Power Model GMD data")
+    println("----------------------------------")
+    m = pm.data["gmd_e_field_mag"]
+    a = pm.data["gmd_e_field_dir"]
+    println("GMD magnitude: $m V/km, GMD angle: $a degrees from East")
+
+    E = m*[cos(2*pi*a) sin(2*pi*a)]
+    println("GMD vector")
+    println(E)
+
+
     PMs.variable_complex_voltage(pm)
 
     variable_dc_voltage(pm)
@@ -30,10 +41,10 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         constraint_dc_kcl_shunt(pm, bus)
     end
 
-    for (i,branch) in pm.set.branches
+    for (k,branch) in pm.set.branches
         PMs.constraint_active_ohms_yt(pm, branch)
         PMs.constraint_reactive_ohms_yt(pm, branch)
-        constraint_dc_ohms(pm, branch)
+        constraint_dc_ohms(pm, branch, E)
 
         PMs.constraint_phase_angle_difference(pm, branch)
 
@@ -86,13 +97,14 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     dc_expr = pm.model.ext[:dc_expr]
 
 
-    a = 1.0 # bus["a"]
+    a = bus["gmd_gs"]
+    println("Adding dc shunt $a to bus $i")
 
     c = @constraint(pm.model, sum{dc_expr[a], a in bus_branches} == a*v_dc[i])
     return Set([c])
 end
 
-function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
+function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch, E)
     i = branch["index"]
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -103,8 +115,24 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
     v_dc_to = getvariable(pm.model, :v_dc)[t_bus]
     dc = getvariable(pm.model, :dc)[f_idx]
 
-    a = 1.0 # branch["a"]
-    j = 0.5 # branch["j"]
+    bus1 = pm.data["bus"][f_bus]
+    bus2 = pm.data["bus"][t_bus]
+
+    # get the direction vector
+    x1 = bus1["x"]
+    y1 = bus1["y"]
+    x2 = bus2["x"]
+    y2 = bus2["y"]
+
+    p1 = [x1 y1]
+    p2 = [x2 y2]
+    d = p2 - p1 # direction vector
+
+    j = dot(E,d)
+
+    a = branch["br_r"]
+    # j = branch["gmd_dc_i"]
+    println("Adding dc current $j to branch $i: ($f_bus,$t_bus) with R = $a")    
 
     c = @constraint(pm.model, dc == a * (v_dc_fr - v_dc_to) + j )
     return Set([c])
