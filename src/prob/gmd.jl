@@ -14,8 +14,11 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     println("GMD magnitude: $m V/km, GMD angle: $a degrees from East")
 
     E = m*[cos(2*pi*a) sin(2*pi*a)]
-    println("GMD vector")
+    print("GMD vector: ")
     println(E)
+
+    println("arcs:")
+    println(pm.set.arcs_from)
 
 
     PMs.variable_complex_voltage(pm)
@@ -53,22 +56,39 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     end
 end
 
+function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
+    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_vdc", :v_dc)
+end
+
+# function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
+#     # check the line flows were requested
+#     if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
+#         mva_base = pm.data["baseMVA"]
+
+#         add_setpoint(sol, pm, "branch", "index", "p_from", :p; scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+#         add_setpoint(sol, pm, "branch", "index", "q_from", :q; scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+#         add_setpoint(sol, pm, "branch", "index",   "p_to", :p; scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> var[(idx, item["t_bus"], item["f_bus"])])
+#         add_setpoint(sol, pm, "branch", "index",   "q_to", :q; scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> var[(idx, item["t_bus"], item["f_bus"])])
+#     end
+# end
+
+function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
+    # check the line flows were requested
+    if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
+        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; scale = (x,item) -> x, extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+    end
+end
 
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
     sol = Dict{AbstractString,Any}()
     PMs.add_bus_voltage_setpoint(sol, pm)
+    add_bus_dc_voltage_setpoint(sol, pm)
     PMs.add_bus_demand_setpoint(sol, pm)
     PMs.add_generator_power_setpoint(sol, pm)
     PMs.add_branch_flow_setpoint(sol, pm)
+    add_branch_dc_flow_setpoint(sol, pm)
     return sol
 end
-
-
-#function add_bus_demand_setpoint{T}(sol, pm::GenericPowerModel{T})
-#    mva_base = pm.data["baseMVA"]
-#    add_setpoint(sol, pm, "bus", "bus_i", "pd", :pd; default_value = (item) -> item["pd"]*mva_base, scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> ())
-#    add_setpoint(sol, pm, "bus", "bus_i", "qd", :qd; default_value = (item) -> item["qd"]*mva_base, scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> ())
-#end
 
 
 function variable_dc_voltage{T}(pm::GenericPowerModel{T}; bounded = true)
@@ -91,6 +111,10 @@ end
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     i = bus["index"]
     bus_branches = pm.set.bus_branches[i]
+    
+    print("Bus branches:")
+    println(bus_branches)
+
     bus_gens = pm.set.bus_gens[i]
 
     v_dc = getvariable(pm.model, :v_dc)
