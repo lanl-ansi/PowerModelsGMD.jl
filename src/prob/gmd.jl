@@ -40,10 +40,11 @@ function post_gmd{T}(pm::GenericPowerModel{T})
 
     for (i,bus) in pm.set.buses
         PMs.constraint_active_kcl_shunt(pm, bus)
-        PMs.constraint_reactive_kcl_shunt(pm, bus)
+        #PMs.constraint_reactive_kcl_shunt(pm, bus)
 
-        constraint_qloss(pm, bus)
         constraint_dc_kcl_shunt(pm, bus)
+        constraint_qloss(pm, bus)
+        constraint_qloss_kcl_shunt(pm, bus)
     end
 
     for (k,branch) in pm.set.branches
@@ -58,33 +59,6 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     end
 end
 
-# need to scale by base MVA
-function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
-    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_qloss", :qloss)
-end
-
-function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
-    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_vdc", :v_dc)
-end
-
-# function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
-#     # check the line flows were requested
-#     if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-#         mva_base = pm.data["baseMVA"]
-
-#         add_setpoint(sol, pm, "branch", "index", "p_from", :p; scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
-#         add_setpoint(sol, pm, "branch", "index", "q_from", :q; scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
-#         add_setpoint(sol, pm, "branch", "index",   "p_to", :p; scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> var[(idx, item["t_bus"], item["f_bus"])])
-#         add_setpoint(sol, pm, "branch", "index",   "q_to", :q; scale = (x,item) -> x*mva_base, extract_var = (var,idx,item) -> var[(idx, item["t_bus"], item["f_bus"])])
-#     end
-# end
-
-function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
-    # check the line flows were requested
-    if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; scale = (x,item) -> x, extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
-    end
-end
 
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
     sol = Dict{AbstractString,Any}()
@@ -99,6 +73,7 @@ function get_gmd_solution{T}(pm::GenericPowerModel{T})
 end
 
 
+################### Variables ###################
 function variable_dc_voltage{T}(pm::GenericPowerModel{T}; bounded = true)
     @variable(pm.model, v_dc[i in pm.set.bus_indexes], start = PMs.getstart(pm.set.buses, i, "v_dc_start", 1.0))
     return v_dc
@@ -121,18 +96,8 @@ function variable_qloss{T}(pm::GenericPowerModel{T})
   return qloss
 end
 
-function constraint_qloss{T}(pm::GenericPowerModel{T}, bus)
-    i = bus["index"]
-    v_dc = getvariable(pm.model, :v_dc)
 
-    qloss = getvariable(pm.model, :qloss)
-    a = bus["gmd_gs"]
-    K = bus["gmd_k"]
-
-    c = @constraint(pm.model, qloss[i] == K*a*v_dc[i]^2)
-    return Set([c])
-end
-
+################### Constraints ###################
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     i = bus["index"]
     bus_branches = pm.set.bus_branches[i]
@@ -179,3 +144,44 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch, E)
     return Set([c])
 end
 
+function constraint_qloss{T}(pm::GenericPowerModel{T}, bus)
+    i = bus["index"]
+    v_dc = getvariable(pm.model, :v_dc)
+    qloss = getvariable(pm.model, :qloss)
+    a = bus["gmd_gs"]
+    K = bus["gmd_k"]
+
+    c = @constraint(pm.model, qloss[i] == K*a*v_dc[i]^2)
+    return Set([c])
+end
+
+function constraint_qloss_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
+    i = bus["index"]
+    bus_branches = pm.set.bus_branches[i]
+    bus_gens = pm.set.bus_gens[i]
+
+    v = getvariable(pm.model, :v)
+    q = getvariable(pm.model, :q)
+    qg = getvariable(pm.model, :qg)
+    qloss = getvariable(pm.model, :qloss)
+
+    c = @constraint(pm.model, sum{q[a], a in bus_branches} == sum{qg[g], g in bus_gens} - bus["qd"] - qloss[i] + bus["bs"]*v[i]^2)
+    return Set([c])
+end
+
+################### Outputs ###################
+function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
+    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_vdc", :v_dc)
+end
+
+function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
+    # check the line flows were requested
+    if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
+        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; scale = (x,item) -> x, extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+    end
+end
+
+# need to scale by base MVA
+function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
+    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_qloss", :qloss)
+end
