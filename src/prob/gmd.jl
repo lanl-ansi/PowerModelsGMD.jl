@@ -11,15 +11,15 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     println("----------------------------------")
     m = pm.data["gmd_e_field_mag"]
     a = pm.data["gmd_e_field_dir"]
-    println("GMD magnitude: $m V/km, GMD angle: $a degrees from East")
+    ad = a*180.0/pi
+    println("GMD magnitude: $m V/km, GMD angle: $ad degrees from East")
 
-    E = m*[cos(2*pi*a) sin(2*pi*a)]
+    E = m*[cos(a) sin(a)]
     print("GMD vector: ")
     println(E)
 
     println("arcs:")
     println(pm.set.arcs_from)
-
 
     PMs.variable_complex_voltage(pm)
 
@@ -40,11 +40,11 @@ function post_gmd{T}(pm::GenericPowerModel{T})
 
     for (i,bus) in pm.set.buses
         PMs.constraint_active_kcl_shunt(pm, bus)
-        #PMs.constraint_reactive_kcl_shunt(pm, bus)
+        PMs.constraint_reactive_kcl_shunt(pm, bus)
 
         constraint_dc_kcl_shunt(pm, bus)
         constraint_qloss(pm, bus)
-        constraint_qloss_kcl_shunt(pm, bus)
+        #constraint_qloss_kcl_shunt(pm, bus)
     end
 
     for (k,branch) in pm.set.branches
@@ -70,6 +70,34 @@ function get_gmd_solution{T}(pm::GenericPowerModel{T})
     PMs.add_branch_flow_setpoint(sol, pm)
     add_branch_dc_flow_setpoint(sol, pm)
     return sol
+end
+
+# data to be concerned with:
+# 1. shunt impedances aij
+# 2. equivalent currents Jij?
+# 3. transformer loss factor Ki? NO, UNITLESSS
+# 4. electric field magnitude?
+gmd_not_pu = Set(["gmd_gs","gmd_e_field_mag"])
+gmd_not_rad = Set(["gmd_e_field_dir"])
+
+function make_gmd_per_unit!(data::Dict{AbstractString,Any})
+    if !haskey(data, "GMDperUnit") || data["GMDperUnit"] == false
+        make_gmd_per_unit!(data["baseMVA"], data)
+        data["GMDperUnit"] = true
+    end
+end
+
+function make_gmd_per_unit!(mva_base::Number, data::Dict{AbstractString,Any})
+    vb = 1e3*data["bus"][1]["base_kv"] # not sure h
+    data["gmd_e_field_mag"] /= vb
+    data["gmd_e_field_dir"] *= pi/180.0
+
+    for bus in data["bus"]
+        zb = bus["base_kv"]^2/mva_base
+        @printf "bus [%d] zb: %f a(si): %f" bus["index"] zb bus["gmd_gs"]
+        bus["gmd_gs"] *= zb
+        @printf " -> a(pu): %f\n" bus["gmd_gs"]
+    end
 end
 
 
@@ -134,11 +162,14 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch, E)
 
     # get the direction vector
     d = [bus2["x"] bus2["y"]] - [bus1["x"] bus1["y"]]
-    j = dot(E,d)
+    v = dot(E,d)
+    
+    a = 1.0/branch["br_r"]
+    j = a*v
+    println("branch $i: ($f_bus,$t_bus) v = $v, j = $j, a = $a")
+    # j = v
 
-    a = branch["br_r"]
     # j = branch["gmd_dc_i"]
-    println("Adding dc current $j to branch $i: ($f_bus,$t_bus) with R = $a")    
 
     c = @constraint(pm.model, dc == a * (v_dc_fr - v_dc_to) + j )
     return Set([c])
@@ -174,14 +205,23 @@ function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
     PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_vdc", :v_dc)
 end
 
+function current_pu_to_si(x,item,pm)
+    mva_base = pm.data["baseMVA"]
+    kv_base = item["base_kv"]
+    i_base = 1e3*mva_base/kv_base 
+
+    return x*i_base
+end
+
 function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
     # check the line flows were requested
     if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; scale = (x,item) -> x, extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; scale = (x,item) -> current_pu_to_si(x,item,pm), extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
     end
 end
 
 # need to scale by base MVA
 function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
-    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_qloss", :qloss)
+    mva_base = pm.data["baseMVA"]
+    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_qloss", :qloss; scale = (x,item) -> x*mva_base)
 end
