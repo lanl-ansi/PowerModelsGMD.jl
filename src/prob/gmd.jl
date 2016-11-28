@@ -119,15 +119,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch, E)
     bus2 = pm.data["bus"][t_bus]
 
     # get the direction vector
-    x1 = bus1["x"]
-    y1 = bus1["y"]
-    x2 = bus2["x"]
-    y2 = bus2["y"]
-
-    p1 = [x1 y1]
-    p2 = [x2 y2]
-    d = p2 - p1 # direction vector
-
+    d = [bus2["x"] bus2["y"]] - [bus1["x"] bus1["y"]]
     j = dot(E,d)
 
     a = branch["br_r"]
