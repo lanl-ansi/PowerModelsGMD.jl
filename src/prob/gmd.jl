@@ -88,8 +88,8 @@ function make_gmd_per_unit!(data::Dict{AbstractString,Any})
 end
 
 function make_gmd_per_unit!(mva_base::Number, data::Dict{AbstractString,Any})
-    vb = 1e3*data["bus"][1]["base_kv"] # not sure h
-    data["gmd_e_field_mag"] /= vb
+    # vb = 1e3*data["bus"][1]["base_kv"] # not sure h
+    # data["gmd_e_field_mag"] /= vb
     data["gmd_e_field_dir"] *= pi/180.0
 
     for bus in data["bus"]
@@ -163,15 +163,27 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch, E)
     # get the direction vector
     d = [bus2["x"] bus2["y"]] - [bus1["x"] bus1["y"]]
     v = dot(E,d)
-    
-    a = 1.0/branch["br_r"]
-    j = a*v
-    println("branch $i: ($f_bus,$t_bus) v = $v, j = $j, a = $a")
+
+    sb = pm.data["baseMVA"]
+    vb = pm.data["bus"][f_bus]["base_kv"]
+    ib = 1e3*sb/vb
+    zb = vb^2/sb
+
+    vpu = v/(1e3*vb)
+    apu = 1.0/branch["br_r"]
+    rsi = branch["br_r"]*zb
+
+    jsi = v/rsi
+    jpu = jsi/ib
+    # jpu = apu*vpu
+    # println("branch $i: ($f_bus,$t_bus) v = $v, j (si) = $jpu, j (pu) = $jsi, a (pu) = $apu")
+    # @printf "  zb: %f\n" zb
+    @printf "branch %d: (%d,%d): v = %0.3f, jsi = %0.3f, jpu = %0.3f, rsi = %0.3f apu = %0.3f\n" i f_bus t_bus v jsi jpu rsi apu
     # j = v
 
     # j = branch["gmd_dc_i"]
 
-    c = @constraint(pm.model, dc == a * (v_dc_fr - v_dc_to) + j )
+    c = @constraint(pm.model, dc == apu * (v_dc_fr - v_dc_to) + jpu )
     return Set([c])
 end
 
@@ -207,16 +219,19 @@ end
 
 function current_pu_to_si(x,item,pm)
     mva_base = pm.data["baseMVA"]
-    kv_base = item["base_kv"]
-    i_base = 1e3*mva_base/kv_base 
+    kv_base = pm.data["bus"][1]["base_kv"]
+    # i_base = 1e3*mva_base/kv_base 
 
-    return x*i_base
+    return x*1e3*mva_base/kv_base
 end
 
 function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
     # check the line flows were requested
+    mva_base = pm.data["baseMVA"]
+
     if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
         PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; scale = (x,item) -> current_pu_to_si(x,item,pm), extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+        # PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; scale = (x,item) -> x*1e3*mva_base/item["base_kv"], extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
     end
 end
 
