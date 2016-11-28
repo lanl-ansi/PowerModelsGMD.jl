@@ -24,6 +24,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     PMs.variable_complex_voltage(pm)
 
     variable_dc_voltage(pm)
+    variable_qloss(pm)
 
     PMs.variable_active_generation(pm)
     PMs.variable_reactive_generation(pm)
@@ -41,6 +42,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         PMs.constraint_active_kcl_shunt(pm, bus)
         PMs.constraint_reactive_kcl_shunt(pm, bus)
 
+        constraint_qloss(pm, bus)
         constraint_dc_kcl_shunt(pm, bus)
     end
 
@@ -54,6 +56,11 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         PMs.constraint_thermal_limit_from(pm, branch)
         PMs.constraint_thermal_limit_to(pm, branch)
     end
+end
+
+# need to scale by base MVA
+function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
+    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_qloss", :qloss)
 end
 
 function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
@@ -83,6 +90,7 @@ function get_gmd_solution{T}(pm::GenericPowerModel{T})
     sol = Dict{AbstractString,Any}()
     PMs.add_bus_voltage_setpoint(sol, pm)
     add_bus_dc_voltage_setpoint(sol, pm)
+    add_bus_qloss_setpoint(sol, pm)
     PMs.add_bus_demand_setpoint(sol, pm)
     PMs.add_generator_power_setpoint(sol, pm)
     PMs.add_branch_flow_setpoint(sol, pm)
@@ -106,6 +114,23 @@ function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
     pm.model.ext[:dc_expr] = dc_expr
 
     return dc
+end
+
+function variable_qloss{T}(pm::GenericPowerModel{T})
+  @variable(pm.model, qloss[i in pm.set.bus_indexes], start = PMs.getstart(pm.set.buses, i, "qloss_start"))
+  return qloss
+end
+
+function constraint_qloss{T}(pm::GenericPowerModel{T}, bus)
+    i = bus["index"]
+    v_dc = getvariable(pm.model, :v_dc)
+
+    qloss = getvariable(pm.model, :qloss)
+    a = bus["gmd_gs"]
+    K = bus["gmd_k"]
+
+    c = @constraint(pm.model, qloss[i] == K*a*v_dc[i]^2)
+    return Set([c])
 end
 
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
