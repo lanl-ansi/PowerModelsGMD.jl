@@ -9,24 +9,10 @@ end
 function post_gmd{T}(pm::GenericPowerModel{T})
     println("Power Model GMD data")
     println("----------------------------------")
-    m = pm.data["gmd_e_field_mag"]
-    ac = pm.data["gmd_e_field_dir"]
-    ag = 90.0 - ac # convert from compass degrees to geometry degrees
-    a = ag*pi/180.0
-    @printf "GMD magnitude: %f V/km, GMD angle: %f degrees CW from N, %f degrees CCW from E\n" m ac ag
-    println("GMD magnitude: $m V/km, GMD angle: $ac degrees CW from N, $ag degrees CCW from E")
-
-    E = m*[cos(a) sin(a)]
-    print("GMD vector: ")
-    println(E)
-
-    println("arcs:")
-    println(pm.set.arcs_from)
-
     PMs.variable_complex_voltage(pm)
 
     variable_dc_voltage(pm)
-    variable_dc_current_mag(pm)
+    # variable_dc_current_mag(pm)
     #variable_qloss(pm)
 
     PMs.variable_active_generation(pm)
@@ -39,8 +25,8 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     PMs.constraint_theta_ref(pm)
     PMs.constraint_complex_voltage(pm)
 
-    # PMs.objective_min_fuel_cost(pm)
-    objective_gmd_min_fuel(pm)
+    PMs.objective_min_fuel_cost(pm)
+    #objective_gmd_min_fuel(pm)
 
     for (i,bus) in pm.set.buses
         constraint_dc_current_mag(pm, bus)
@@ -124,14 +110,34 @@ end
 #end
 
 function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
+    # print("arcs: ")
+    # println(pm.set.arcs)
+    # print("branches: ")
+    # println(pm.set.branches)
+    # print("arcs_from: ")
+    # println(pm.set.arcs_from)
     #@variable(pm.model, -pm.set.branches[l]["rate_a"] <= dc[(l,i,j) in pm.set.arcs] <= pm.set.branches[l]["rate_a"], start = PMs.getstart(pm.set.branches, l, "dc_start"))
-    @variable(pm.model, dc[l in pm["data"]["line_indexes"]], start = PMs.getstart(pm["data"]["branch"], l, "dc_start"))
+    @variable(pm.model, dc[(l,i,j) in pm.data["line_arcs"]], start = PMs.getstart(pm.data["lines"], l, "dc_start"))
+
+    dc_expr = Dict([((l,i,j), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["line_arcs_from"]])
+    dc_expr = merge(dc_expr, Dict([((l,j,i), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["line_arcs_from"]]))
+
+    pm.model.ext[:dc_expr] = dc_expr
+
     return dc
 end
 
 function variable_dc_winding_flow{T}(pm::GenericPowerModel{T}; bounded = true)
     #@variable(pm.model, -pm.set.branches[l]["rate_a"] <= dc[(l,i,j) in pm.set.arcs] <= pm.set.branches[l]["rate_a"], start = PMs.getstart(pm.set.branches, l, "dc_start"))
-    @variable(pm.model, wdc[l in pm["data"]["line_indexes"]], start = PMs.getstart(pm["data"]["branch"], l, "dc_start"))
+    # @variable(pm.model, wdc[l in pm["data"]["line_indexes"]], start = PMs.getstart(pm["data"]["branch"], l, "dc_start"))
+    
+    @variable(pm.model, wdc[(l,i,j) in pm.data["winding_arcs"]], start = PMs.getstart(pm.data["windings"], l, "dc_start"))
+
+    wdc_expr = Dict([((l,i,j), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["winding_arcs_from"]])
+    wdc_expr = merge(dc_expr, Dict([((l,j,i), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["winding_arcs_from"]]))
+
+    pm.model.ext[:wdc_expr] = wdc_expr
+
     return wdc
 end
 
@@ -143,44 +149,40 @@ end
 
 
 ################### Objective ###################
-function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
-    # @variable(pm.model, pm.set.gens[i]["pmin"]^2 <= pg_sqr[i in pm.set.gen_indexes] <= pm.set.gens[i]["pmax"]^2)
+# function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
+#     # @variable(pm.model, pm.set.gens[i]["pmin"]^2 <= pg_sqr[i in pm.set.gen_indexes] <= pm.set.gens[i]["pmax"]^2)
 
-    pg = getvariable(pm.model, :pg)
-    i_dc_mag = getvariable(pm.model, :i_dc_mag)
+#     pg = getvariable(pm.model, :pg)
+#     i_dc_mag = getvariable(pm.model, :i_dc_mag)
 
-    # for (i, gen) in pm.set.gens
-    #     @constraint(pm.model, norm([2*pg[i], pg_sqr[i]-1]) <= pg_sqr[i]+1)
-    # end
+#     # for (i, gen) in pm.set.gens
+#     #     @constraint(pm.model, norm([2*pg[i], pg_sqr[i]-1]) <= pg_sqr[i]+1)
+#     # end
 
-    cost = (i) -> pm.set.gens[i]["cost"]
-    return @objective(pm.model, Min, sum{ cost(i)[2]*pg[i], i in pm.set.gen_indexes} + sum{ 0.01*i_dc_mag[i], i in pm.set.bus_indexes})
-end
+#     cost = (i) -> pm.set.gens[i]["cost"]
+#     return @objective(pm.model, Min, sum{ cost(i)[2]*pg[i], i in pm.set.gen_indexes} + sum{ 0.01*i_dc_mag[i], i in pm.set.bus_indexes})
+# end
 
 ################### Constraints ###################
-function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, bus)
-    i = bus["index"]
-    v_dc = getvariable(pm.model, :v_dc)
-    i_dc_mag = getvariable(pm.model, :i_dc_mag)
-    a = bus["gmd_gs"]
-    K = bus["gmd_k"]
-    # println("bus[$i]: a = $a, K = $K")
+# function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, bus)
+#     i = bus["index"]
+#     v_dc = getvariable(pm.model, :v_dc)
+#     i_dc_mag = getvariable(pm.model, :i_dc_mag)
+#     a = bus["gmd_gs"]
+#     K = bus["gmd_k"]
+#     # println("bus[$i]: a = $a, K = $K")
 
-    c = @constraint(pm.model, i_dc_mag[i] >= a*v_dc[i])
-    c = @constraint(pm.model, i_dc_mag[i] >= -a*v_dc[i])
-    return Set([c])
-end
+#     c = @constraint(pm.model, i_dc_mag[i] >= a*v_dc[i])
+#     c = @constraint(pm.model, i_dc_mag[i] >= -a*v_dc[i])
+#     return Set([c])
+# end
 
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     i = bus["index"]
-    bus_lines = pm.data["bus_lines"][i]
-    bus_windings = pm.data["bus_windings"][i]
+    bus_branches = pm.set.bus_branches[i]
     
-    print("Bus lines:")
-    println(bus_lines)
-
-    print("Bus windings:")
-    println(bus_windings)
+    print("Bus branches:")
+    println(bus_branches)
 
     bus_gens = pm.set.bus_gens[i]
 
@@ -188,11 +190,13 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     dc_expr = pm.model.ext[:dc_expr]
 
 
+    a = bus["gmd_gs"]
     println("Adding dc shunt $a to bus $i")
 
-    c = @constraint(pm.model, sum{dc[k], k in bus_lines} + sum{wdc[k], k in bus_windings} == 0.0)
+    c = @constraint(pm.model, sum{dc_expr[a], a in bus_branches} == a*v_dc[i])
     return Set([c])
 end
+
 
 function constraint_ground_kcl_shunt{T}(pm::GenericPowerModel{T}, sub)
     i = bus["index"]
