@@ -29,23 +29,31 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     #objective_gmd_min_fuel(pm)
 
     for (i,bus) in pm.set.buses
-        constraint_dc_current_mag(pm, bus)
         PMs.constraint_active_kcl_shunt(pm, bus)
-        constraint_qloss(pm, bus)
-        constraint_dc_kcl_shunt(pm, bus)
         PMs.constraint_reactive_kcl_shunt(pm, bus) # turn off linking between dc & ac powerflow
+        #constraint_qloss(pm, bus)
         # constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
     end
 
     for (k,branch) in pm.set.branches
         PMs.constraint_active_ohms_yt(pm, branch)
         PMs.constraint_reactive_ohms_yt(pm, branch)
-        constraint_dc_ohms(pm, branch, E)
+        #constraint_dc_ohms(pm, branch, E)
 
         PMs.constraint_phase_angle_difference(pm, branch)
 
         PMs.constraint_thermal_limit_from(pm, branch)
         PMs.constraint_thermal_limit_to(pm, branch)
+    end
+
+    ### DC network constraints ###
+    for (i,bus) in pm.data["gmd_buses"]
+        #constraint_dc_current_mag(pm, bus)
+        constraint_dc_kcl_shunt(pm, bus)
+    end
+
+    for (k,branch) in pm.data["gmd_branches"]
+        constraint_dc_ohms(pm, branch, E)
     end
 end
 
@@ -94,14 +102,10 @@ end
 
 ################### Variables ###################
 function variable_dc_voltage{T}(pm::GenericPowerModel{T}; bounded = true)
-    @variable(pm.model, v_dc[i in pm.set.bus_indexes], start = PMs.getstart(pm.set.buses, i, "v_dc_start"))
+    gmd_branch_indexes = 1:length(pm.data["gmd_branch"])
+    #@variable(pm.model, v_dc[i in pm.data["gmd_bus_indexes"]], start = PMs.getstart(pm.set.buses, i, "v_dc_start"))
+    @variable(pm.model, v_dc[i in gmd_branch_indexes], start = PMs.getstart(pm.set.buses, i, "v_dc_start"))
     return v_dc
-end
-
-function variable_dc_ground_voltage{T}(pm::GenericPowerModel{T}; bounded = true)
-    sub_indexes = 1:length(pm.data["sub"])
-    @variable(pm.model, v_gnd_dc[i in sub_indexes], start = PMs.getstart(pm.data["sub"], i, "v_dc_start"))
-    return v_gnd_dc
 end
 
 #function variable_dc_current_mag{T}(pm::GenericPowerModel{T}; bounded = true)
@@ -117,28 +121,14 @@ function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
     # print("arcs_from: ")
     # println(pm.set.arcs_from)
     #@variable(pm.model, -pm.set.branches[l]["rate_a"] <= dc[(l,i,j) in pm.set.arcs] <= pm.set.branches[l]["rate_a"], start = PMs.getstart(pm.set.branches, l, "dc_start"))
-    @variable(pm.model, dc[(l,i,j) in pm.data["line_arcs"]], start = PMs.getstart(pm.data["lines"], l, "dc_start"))
+    @variable(pm.model, dc[(l,i,j) in pm.data["gmd_arcs"]], start = PMs.getstart(pm.data["lines"], l, "dc_start"))
 
-    dc_expr = Dict([((l,i,j), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["line_arcs_from"]])
-    dc_expr = merge(dc_expr, Dict([((l,j,i), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["line_arcs_from"]]))
+    dc_expr = Dict([((l,i,j), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]])
+    dc_expr = merge(dc_expr, Dict([((l,j,i), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]]))
 
     pm.model.ext[:dc_expr] = dc_expr
 
     return dc
-end
-
-function variable_dc_winding_flow{T}(pm::GenericPowerModel{T}; bounded = true)
-    #@variable(pm.model, -pm.set.branches[l]["rate_a"] <= dc[(l,i,j) in pm.set.arcs] <= pm.set.branches[l]["rate_a"], start = PMs.getstart(pm.set.branches, l, "dc_start"))
-    # @variable(pm.model, wdc[l in pm["data"]["line_indexes"]], start = PMs.getstart(pm["data"]["branch"], l, "dc_start"))
-    
-    @variable(pm.model, wdc[(l,i,j) in pm.data["winding_arcs"]], start = PMs.getstart(pm.data["windings"], l, "dc_start"))
-
-    wdc_expr = Dict([((l,i,j), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["winding_arcs_from"]])
-    wdc_expr = merge(dc_expr, Dict([((l,j,i), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["winding_arcs_from"]]))
-
-    pm.model.ext[:wdc_expr] = wdc_expr
-
-    return wdc
 end
 
 
@@ -177,47 +167,20 @@ end
 #     return Set([c])
 # end
 
-function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
-    i = bus["index"]
-    bus_branches = pm.set.bus_branches[i]
+function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
+    i = dcbus["index"]
+    bus_branches = pm.data["gmd_bus_branches"][i]
     
     print("Bus branches:")
     println(bus_branches)
 
-    bus_gens = pm.set.bus_gens[i]
-
     v_dc = getvariable(pm.model, :v_dc)
     dc_expr = pm.model.ext[:dc_expr]
 
-
-    a = bus["gmd_gs"]
+    a = dcbus["gs"]
     println("Adding dc shunt $a to bus $i")
 
     c = @constraint(pm.model, sum{dc_expr[a], a in bus_branches} == a*v_dc[i])
-    return Set([c])
-end
-
-
-function constraint_ground_kcl_shunt{T}(pm::GenericPowerModel{T}, sub)
-    i = bus["index"]
-    bus_lines = pm.data["bus_lines"][i]
-    bus_windings = pm.data["bus_windings"][i]
-    
-    print("Bus lines:")
-    println(bus_lines)
-
-    print("Bus windings:")
-    println(bus_windings)
-
-    bus_gens = pm.set.bus_gens[i]
-
-    v_dc = getvariable(pm.model, :v_dc)
-    dc_expr = pm.model.ext[:dc_expr]
-
-
-    println("Adding dc shunt $a to bus $i")
-
-    c = @constraint(pm.model, sum{dc[k], k in bus_lines} + sum{wdc[k], k in bus_windings} == 0.0)
     return Set([c])
 end
 
