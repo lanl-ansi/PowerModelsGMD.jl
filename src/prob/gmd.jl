@@ -7,9 +7,9 @@ function run_gmd(file, model_constructor, solver; kwargs...)
 end
 
 function post_gmd{T}(pm::GenericPowerModel{T})
-    println("Power Model GMD data")
-    println("----------------------------------")
-    PMs.variable_complex_voltage(pm)
+    #println("Power Model GMD data")
+    #println("----------------------------------")
+    #PMs.variable_complex_voltage(pm)
 
     variable_dc_voltage(pm)
     # variable_dc_current_mag(pm)
@@ -53,7 +53,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     end
 
     for (k,branch) in pm.data["gmd_branches"]
-        constraint_dc_ohms(pm, branch, E)
+        constraint_dc_ohms(pm, branch)
     end
 end
 
@@ -121,7 +121,7 @@ function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
     # print("arcs_from: ")
     # println(pm.set.arcs_from)
     #@variable(pm.model, -pm.set.branches[l]["rate_a"] <= dc[(l,i,j) in pm.set.arcs] <= pm.set.branches[l]["rate_a"], start = PMs.getstart(pm.set.branches, l, "dc_start"))
-    @variable(pm.model, dc[(l,i,j) in pm.data["gmd_arcs"]], start = PMs.getstart(pm.data["lines"], l, "dc_start"))
+    @variable(pm.model, dc[(l,i,j) in pm.data["gmd_arcs"]], start = PMs.getstart(pm.data["gmd_branch"], l, "dc_start"))
 
     dc_expr = Dict([((l,i,j), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]])
     dc_expr = merge(dc_expr, Dict([((l,j,i), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]]))
@@ -185,56 +185,26 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
 end
 
 
-function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch, E)
+function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
     i = branch["index"]
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
 
-    v_dc_fr = getvariable(pm.model, :v_dc)[f_bus]
-    v_dc_to = getvariable(pm.model, :v_dc)[t_bus]
+    vf = getvariable(pm.model, :v_dc)[f_bus] # from dc voltage
+    vt = getvariable(pm.model, :v_dc)[t_bus] # to dc voltage
     dc = getvariable(pm.model, :dc)[i]
 
     bus1 = pm.data["bus"][f_bus]
     bus2 = pm.data["bus"][t_bus]
 
-    # get the direction vector
-    a = 6378.137 # equatorial radius in km
-    b = 6356.752 # polar radius in km
-    e2 = 0.00669437999014 # eccentricity squared
+    dkm = branch["len_km"]
 
-    dlat = bus2["lat"] - bus1["lat"]
-    dlon = bus2["lon"] - bus1["lon"]
-    phi = (bus1["lat"] + bus2["lat"])/2.0
+    vs = branch["br_v"]       # line dc series voltage
+    as = 1.0/branch["br_r"]   # line dc series resistance
 
-    # radius of curvature of the meridian plane
-    #M = a*(1 - e2)/(1 - e2*sin(phi)^2)^1.5
+    @printf "branch %d: (%d,%d): d (mi) = %f, vsi = %0.3f, asi = %0.3f jsi = %0.3f\n" i f_bus t_bus dkm vsi as js 
 
-    #dns = M*dlat*pi/180.0
-    dns = (111.133 - 0.56*cos(2*phi))*dlat
-    dew = (111.5065 - 0.1872*cos(2*phi))*cos(phi)*dlon
-    d = [dew, dns]
-
-    #d = [bus2["x"] bus2["y"]] - [bus1["x"] bus1["y"]]
-    dmi = sqrt(d[1]*d[1] + d[2]*d[2])/1.60934
-    vsi = dot(E,d)
-
-    sb = pm.data["baseMVA"]
-    vb = pm.data["bus"][f_bus]["base_kv"]
-    ib = 1e3*sb/(sqrt(3)*vb)
-    zb = vb^2/sb
-
-    vpu = vsi/(1e3*vb)
-    apu = 3.0/branch["br_r"]
-    asi = apu/zb
-
-    jsi = asi*vsi
-    # jpu = jsi/ib
-    jpu = apu*vpu
-    # @printf "  zb: %f\n" zb
-    #@printf "branch %f: (%f,%f): d (mi) = %f, dnorth (km) = %f, deast (km) = %f, vsi = %0.3f, asi = %0.3f jsi = %0.3f\n" i f_bus t_bus dmi d[2] d[1] vsi asi jsi 
-    @printf "branch %d: (%d,%d): d (mi) = %f, vsi = %0.3f, asi = %0.3f jsi = %0.3f\n" i f_bus t_bus dmi vsi asi jsi 
-
-    c = @constraint(pm.model, dc == apu * (v_dc_fr - v_dc_to) + jpu )
+    c = @constraint(pm.model, dc == as*(vf + vs - vt))
     return Set([c])
 end
 
