@@ -102,9 +102,9 @@ end
 
 ################### Variables ###################
 function variable_dc_voltage{T}(pm::GenericPowerModel{T}; bounded = true)
-    gmd_branch_indexes = 1:length(pm.data["gmd_branch"])
-    #@variable(pm.model, v_dc[i in pm.data["gmd_bus_indexes"]], start = PMs.getstart(pm.set.buses, i, "v_dc_start"))
-    @variable(pm.model, v_dc[i in gmd_branch_indexes], start = PMs.getstart(pm.set.buses, i, "v_dc_start"))
+    #gmd_branch_indexes = 1:length(pm.data["gmd_branch"])
+    #@variable(pm.model, v_dc[i in gmd_branch_indexes], start = PMs.getstart(pm.data["gmd_branch"], i, "v_dc_start"))
+    @variable(pm.model, v_dc[i in pm.data["gmd_branch_indexes"]], start = PMs.getstart(pm.data["gmd_branch"], i, "v_dc_start"))
     return v_dc
 end
 
@@ -169,7 +169,12 @@ end
 
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
     i = dcbus["index"]
-    bus_branches = pm.data["gmd_bus_branches"][i]
+    bus_branch_ids = pm.data["gmd_bus_branches"][i]
+    bus_branches = []
+
+    for k in bus_branch_ids
+        push!(bus_branches,pm.data["gmd_branch"][k])
+    end
     
     print("Bus branches:")
     println(bus_branches)
@@ -177,10 +182,10 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
     v_dc = getvariable(pm.model, :v_dc)
     dc_expr = pm.model.ext[:dc_expr]
 
-    a = dcbus["gs"]
+    gs = dcbus["gs"]
     println("Adding dc shunt $a to bus $i")
 
-    c = @constraint(pm.model, sum{dc_expr[a], a in bus_branches} == a*v_dc[i])
+    c = @constraint(pm.model, sum{dc_expr[a], a in bus_branches} == gs*v_dc[i])
     return Set([c])
 end
 
@@ -200,11 +205,16 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
     dkm = branch["len_km"]
 
     vs = branch["br_v"]       # line dc series voltage
-    as = 1.0/branch["br_r"]   # line dc series resistance
+
+    if branch["br_r"] === nothing
+        gs = 0.0
+    else
+      gs = 1.0/branch["br_r"]   # line dc series resistance
+    end
 
     @printf "branch %d: (%d,%d): d (mi) = %f, vsi = %0.3f, asi = %0.3f jsi = %0.3f\n" i f_bus t_bus dkm vsi as js 
 
-    c = @constraint(pm.model, dc == as*(vf + vs - vt))
+    c = @constraint(pm.model, dc == gs*(vf + vs - vt))
     return Set([c])
 end
 
