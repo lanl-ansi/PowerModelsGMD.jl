@@ -9,7 +9,7 @@ end
 function post_gmd{T}(pm::GenericPowerModel{T})
     #println("Power Model GMD data")
     #println("----------------------------------")
-    #PMs.variable_complex_voltage(pm)
+    PMs.variable_complex_voltage(pm)
 
     variable_dc_voltage(pm)
     # variable_dc_current_mag(pm)
@@ -47,12 +47,14 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     end
 
     ### DC network constraints ###
-    for (i,bus) in pm.data["gmd_buses"]
+    for bus in pm.data["gmd_bus"]
         #constraint_dc_current_mag(pm, bus)
+        # println("bus:")
+        # println(bus)
         constraint_dc_kcl_shunt(pm, bus)
     end
 
-    for (k,branch) in pm.data["gmd_branches"]
+    for branch in pm.data["gmd_branch"]
         constraint_dc_ohms(pm, branch)
     end
 end
@@ -104,7 +106,7 @@ end
 function variable_dc_voltage{T}(pm::GenericPowerModel{T}; bounded = true)
     #gmd_branch_indexes = 1:length(pm.data["gmd_branch"])
     #@variable(pm.model, v_dc[i in gmd_branch_indexes], start = PMs.getstart(pm.data["gmd_branch"], i, "v_dc_start"))
-    @variable(pm.model, v_dc[i in pm.data["gmd_branch_indexes"]], start = PMs.getstart(pm.data["gmd_branch"], i, "v_dc_start"))
+    @variable(pm.model, v_dc[i in pm.data["gmd_bus_indexes"]], start = PMs.getstart(pm.data["gmd_bus"], i, "v_dc_start"))
     return v_dc
 end
 
@@ -170,23 +172,34 @@ end
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
     i = dcbus["index"]
     bus_branch_ids = pm.data["gmd_bus_branches"][i]
-    bus_branches = []
+    # bus_branches = []
 
-    for k in bus_branch_ids
-        push!(bus_branches,pm.data["gmd_branch"][k])
-    end
+    # for k in bus_branch_ids
+    #     push!(bus_branches,pm.data["gmd_branch"][k])
+    # end
     
-    print("Bus branches:")
-    println(bus_branches)
+    # print("Bus branches:")
+    # println(bus_branches)
 
     v_dc = getvariable(pm.model, :v_dc)
+    # println()
+    # println("v_dc: $v_dc")
+
     dc_expr = pm.model.ext[:dc_expr]
 
     gs = dcbus["gs"]
-    println("Adding dc shunt $a to bus $i")
+    # println()
+    # println("bus: $i branches: $bus_branch_ids")
 
-    c = @constraint(pm.model, sum{dc_expr[a], a in bus_branches} == gs*v_dc[i])
-    return Set([c])
+    if length(bus_branch_ids) > 0
+        c = @constraint(pm.model, sum{dc_expr[a], a in bus_branch_ids} == gs*v_dc[i])
+        # println("done")
+        return Set([c])
+    end
+
+    # println("solo bus, skipping")
+    # println("done")
+
 end
 
 
@@ -197,22 +210,22 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
 
     vf = getvariable(pm.model, :v_dc)[f_bus] # from dc voltage
     vt = getvariable(pm.model, :v_dc)[t_bus] # to dc voltage
-    dc = getvariable(pm.model, :dc)[i]
+    dc = getvariable(pm.model, :dc)[(i,f_bus,t_bus)]
 
-    bus1 = pm.data["bus"][f_bus]
-    bus2 = pm.data["bus"][t_bus]
+    bus1 = pm.data["gmd_bus"][f_bus]
+    bus2 = pm.data["gmd_bus"][t_bus]
 
     dkm = branch["len_km"]
 
     vs = branch["br_v"]       # line dc series voltage
 
     if branch["br_r"] === nothing
-        gs = 0.0
-    else
-      gs = 1.0/branch["br_r"]   # line dc series resistance
+        println("null branch, skipping")
+        return
     end
 
-    @printf "branch %d: (%d,%d): d (mi) = %f, vsi = %0.3f, asi = %0.3f jsi = %0.3f\n" i f_bus t_bus dkm vsi as js 
+    gs = 1.0/branch["br_r"]   # line dc series resistance
+    @printf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs
 
     c = @constraint(pm.model, dc == gs*(vf + vs - vt))
     return Set([c])
