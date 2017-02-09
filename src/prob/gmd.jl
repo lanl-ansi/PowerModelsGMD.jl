@@ -11,7 +11,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     #println("----------------------------------")
     PMs.variable_complex_voltage(pm) # CHECK OPF
 
-    # variable_dc_voltage(pm)
+    variable_dc_voltage(pm)
     # variable_dc_current_mag(pm)
     #variable_qloss(pm)
 
@@ -20,7 +20,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
 
     PMs.variable_active_line_flow(pm) # CHECK OPF
     PMs.variable_reactive_line_flow(pm) # CHECK OPF
-    # variable_dc_line_flow(pm)
+    variable_dc_line_flow(pm)
 
     PMs.constraint_theta_ref(pm) # CHECK OPF
     PMs.constraint_complex_voltage(pm) # CHECK OPF
@@ -64,19 +64,19 @@ end
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
     sol = Dict{AbstractString,Any}()
     PMs.add_bus_voltage_setpoint(sol, pm)
-    println("added bus voltage results")
+    #println("added bus voltage results")
     add_bus_dc_voltage_setpoint(sol, pm)
-    println("added gmd bus voltage results")
-    # add_bus_dc_current_mag_setpoint(sol, pm)
-    # add_bus_qloss_setpoint(sol, pm)
+    #println("added gmd bus voltage results")
+    add_bus_dc_current_mag_setpoint(sol, pm)
+    add_bus_qloss_setpoint(sol, pm)
     PMs.add_bus_demand_setpoint(sol, pm)
-    println("added bus demand results")
+    #println("added bus demand results")
     PMs.add_generator_power_setpoint(sol, pm)
-    println("added generator results")
+    #println("added generator results")
     PMs.add_branch_flow_setpoint(sol, pm)
-    println("added branch flow results")
+    #println("added branch flow results")
     add_branch_dc_flow_setpoint(sol, pm)
-    println("added gmd current results")
+    #println("added gmd current results")
     return sol
 end
 
