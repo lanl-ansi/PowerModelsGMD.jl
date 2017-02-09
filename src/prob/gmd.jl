@@ -9,67 +9,74 @@ end
 function post_gmd{T}(pm::GenericPowerModel{T})
     #println("Power Model GMD data")
     #println("----------------------------------")
-    PMs.variable_complex_voltage(pm)
+    PMs.variable_complex_voltage(pm) # CHECK OPF
 
-    variable_dc_voltage(pm)
+    # variable_dc_voltage(pm)
     # variable_dc_current_mag(pm)
     #variable_qloss(pm)
 
-    PMs.variable_active_generation(pm)
-    PMs.variable_reactive_generation(pm)
+    PMs.variable_active_generation(pm) # CHECK OPF
+    PMs.variable_reactive_generation(pm) # CHECK OPF
 
-    PMs.variable_active_line_flow(pm)
-    PMs.variable_reactive_line_flow(pm)
-    variable_dc_line_flow(pm)
+    PMs.variable_active_line_flow(pm) # CHECK OPF
+    PMs.variable_reactive_line_flow(pm) # CHECK OPF
+    # variable_dc_line_flow(pm)
 
-    PMs.constraint_theta_ref(pm)
-    PMs.constraint_complex_voltage(pm)
+    PMs.constraint_theta_ref(pm) # CHECK OPF
+    PMs.constraint_complex_voltage(pm) # CHECK OPF
 
-    PMs.objective_min_fuel_cost(pm)
+    PMs.objective_min_fuel_cost(pm) # CHECK OPF
     #objective_gmd_min_fuel(pm)
 
     for (i,bus) in pm.set.buses
-        PMs.constraint_active_kcl_shunt(pm, bus)
-        PMs.constraint_reactive_kcl_shunt(pm, bus) # turn off linking between dc & ac powerflow
+        # turn off linking between dc & ac powerflow
+        PMs.constraint_active_kcl_shunt(pm, bus) # CHECK OPF
+        PMs.constraint_reactive_kcl_shunt(pm, bus) # CHECK OPF
         #constraint_qloss(pm, bus)
         # constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
     end
 
     for (k,branch) in pm.set.branches
-        PMs.constraint_active_ohms_yt(pm, branch)
-        PMs.constraint_reactive_ohms_yt(pm, branch)
+        PMs.constraint_active_ohms_yt(pm, branch) # CHECK OPF
+        PMs.constraint_reactive_ohms_yt(pm, branch) # CHECK OPF
         #constraint_dc_ohms(pm, branch, E)
 
-        PMs.constraint_phase_angle_difference(pm, branch)
+        PMs.constraint_phase_angle_difference(pm, branch) # CHECK OPF
 
         PMs.constraint_thermal_limit_from(pm, branch)
         PMs.constraint_thermal_limit_to(pm, branch)
     end
 
     ### DC network constraints ###
-    for bus in pm.data["gmd_bus"]
-        #constraint_dc_current_mag(pm, bus)
-        # println("bus:")
-        # println(bus)
-        constraint_dc_kcl_shunt(pm, bus)
-    end
+    # for bus in pm.data["gmd_bus"]
+    #     #constraint_dc_current_mag(pm, bus)
+    #     # println("bus:")
+    #     # println(bus)
+    #     constraint_dc_kcl_shunt(pm, bus)
+    # end
 
-    for branch in pm.data["gmd_branch"]
-        constraint_dc_ohms(pm, branch)
-    end
+    # for branch in pm.data["gmd_branch"]
+    #     constraint_dc_ohms(pm, branch)
+    # end
 end
 
 
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
     sol = Dict{AbstractString,Any}()
     PMs.add_bus_voltage_setpoint(sol, pm)
+    println("added bus voltage results")
     add_bus_dc_voltage_setpoint(sol, pm)
-    add_bus_dc_current_mag_setpoint(sol, pm)
-    add_bus_qloss_setpoint(sol, pm)
+    println("added gmd bus voltage results")
+    # add_bus_dc_current_mag_setpoint(sol, pm)
+    # add_bus_qloss_setpoint(sol, pm)
     PMs.add_bus_demand_setpoint(sol, pm)
+    println("added bus demand results")
     PMs.add_generator_power_setpoint(sol, pm)
+    println("added generator results")
     PMs.add_branch_flow_setpoint(sol, pm)
+    println("added branch flow results")
     add_branch_dc_flow_setpoint(sol, pm)
+    println("added gmd current results")
     return sol
 end
 
@@ -260,12 +267,12 @@ end
 ################### Outputs ###################
 function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
     # dc voltage is measured line-neutral not line-line, so divide by sqrt(3)
-    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_vdc", :v_dc; scale = (x,item) -> 1e3*x*item["base_kv"]/sqrt(3))
+    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_vdc", :v_dc)
 end
 
 function add_bus_dc_current_mag_setpoint{T}(sol, pm::GenericPowerModel{T})
     # PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
-    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag; scale = (x,item) -> current_pu_to_si(x,item,pm))
+    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
 end
 
 function current_pu_to_si(x,item,pm)
@@ -279,7 +286,7 @@ function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
     mva_base = pm.data["baseMVA"]
 
     if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; scale = (x,item) -> current_pu_to_si(x,item,pm), extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
         # PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
     end
 end
