@@ -46,6 +46,10 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         PMs.constraint_thermal_limit_to(pm, branch)
     end
 
+    println()
+    println("Buses")
+    println("--------------------")
+
     ### DC network constraints ###
     for bus in pm.data["gmd_bus"]
         #constraint_dc_current_mag(pm, bus)
@@ -54,9 +58,15 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         constraint_dc_kcl_shunt(pm, bus)
     end
 
+    println()
+    println("Branches")
+    println("--------------------")
+
     for branch in pm.data["gmd_branch"]
         constraint_dc_ohms(pm, branch)
     end
+
+    println()
 end
 
 
@@ -125,8 +135,8 @@ function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
     #@variable(pm.model, -pm.set.branches[l]["rate_a"] <= dc[(l,i,j) in pm.set.arcs] <= pm.set.branches[l]["rate_a"], start = PMs.getstart(pm.set.branches, l, "dc_start"))
     @variable(pm.model, dc[(l,i,j) in pm.data["gmd_arcs"]], start = PMs.getstart(pm.data["gmd_branch"], l, "dc_start"))
 
-    dc_expr = Dict([((l,i,j), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]])
-    dc_expr = merge(dc_expr, Dict([((l,j,i), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]]))
+    dc_expr = Dict([((l,i,j), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]])
+    dc_expr = merge(dc_expr, Dict([((l,j,i), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]]))
 
     pm.model.ext[:dc_expr] = dc_expr
 
@@ -187,9 +197,22 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
 
     dc_expr = pm.model.ext[:dc_expr]
 
-    gs = dcbus["gs"]
+    gs = dcbus["g_gnd"]
     # println()
     # println("bus: $i branches: $bus_branch_ids")
+
+    @printf "bus %d: gs = %0.3f, %d branches:\n" i gs length(bus_branch_ids)
+    for arc in bus_branch_ids
+        k = arc[1]
+        branch = pm.data["gmd_branch"][k]
+
+        f_bus = branch["f_bus"]
+        t_bus = branch["t_bus"]        
+        dkm = branch["len_km"]
+        vs = branch["br_v"]       # line dc series voltage
+        rdc = branch["br_r"]
+        @printf "    branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, rdc = %0.3f\n" k f_bus t_bus dkm vs rdc
+    end
 
     if length(bus_branch_ids) > 0
         c = @constraint(pm.model, sum{dc_expr[a], a in bus_branch_ids} == gs*v_dc[i])
@@ -220,11 +243,11 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
     vs = branch["br_v"]       # line dc series voltage
 
     if branch["br_r"] === nothing
-        println("null branch, skipping")
-        return
+        gs = 0.0
+    else
+        gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    gs = 1.0/branch["br_r"]   # line dc series resistance
     @printf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs
 
     c = @constraint(pm.model, dc == gs*(vf + vs - vt))
