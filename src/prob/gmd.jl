@@ -39,7 +39,6 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     for (k,branch) in pm.set.branches
         PMs.constraint_active_ohms_yt(pm, branch) # CHECK OPF
         PMs.constraint_reactive_ohms_yt(pm, branch) # CHECK OPF
-        #constraint_dc_ohms(pm, branch, E)
 
         PMs.constraint_phase_angle_difference(pm, branch) # CHECK OPF
 
@@ -48,35 +47,29 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     end
 
     ### DC network constraints ###
-    # for bus in pm.data["gmd_bus"]
-    #     #constraint_dc_current_mag(pm, bus)
-    #     # println("bus:")
-    #     # println(bus)
-    #     constraint_dc_kcl_shunt(pm, bus)
-    # end
+    for bus in pm.data["gmd_bus"]
+        #constraint_dc_current_mag(pm, bus)
+        # println("bus:")
+        # println(bus)
+        constraint_dc_kcl_shunt(pm, bus)
+    end
 
-    # for branch in pm.data["gmd_branch"]
-    #     constraint_dc_ohms(pm, branch)
-    # end
+    for branch in pm.data["gmd_branch"]
+        constraint_dc_ohms(pm, branch)
+    end
 end
 
 
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
     sol = Dict{AbstractString,Any}()
     PMs.add_bus_voltage_setpoint(sol, pm)
-    #println("added bus voltage results")
-    add_bus_dc_voltage_setpoint(sol, pm)
-    #println("added gmd bus voltage results")
-    add_bus_dc_current_mag_setpoint(sol, pm)
-    add_bus_qloss_setpoint(sol, pm)
+    # add_bus_dc_current_mag_setpoint(sol, pm)
+    # add_bus_qloss_setpoint(sol, pm)
     PMs.add_bus_demand_setpoint(sol, pm)
-    #println("added bus demand results")
     PMs.add_generator_power_setpoint(sol, pm)
-    #println("added generator results")
     PMs.add_branch_flow_setpoint(sol, pm)
-    #println("added branch flow results")
+    add_bus_dc_voltage_setpoint(sol, pm)
     add_branch_dc_flow_setpoint(sol, pm)
-    #println("added gmd current results")
     return sol
 end
 
@@ -267,12 +260,13 @@ end
 ################### Outputs ###################
 function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
     # dc voltage is measured line-neutral not line-line, so divide by sqrt(3)
-    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_vdc", :v_dc)
+    # fields are: solution, power model, dict name, index name, param name, variable symbol
+    PMs.add_setpoint(sol, pm, "gmd_bus", "index", "gmd_vdc", :v_dc)
 end
 
 function add_bus_dc_current_mag_setpoint{T}(sol, pm::GenericPowerModel{T})
     # PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
-    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
+    PMs.add_setpoint(sol, pm, "gmd_bus", "index", "gmd_idc_mag", :i_dc_mag)
 end
 
 function current_pu_to_si(x,item,pm)
@@ -283,10 +277,10 @@ end
 
 function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
     # check the line flows were requested
-    mva_base = pm.data["baseMVA"]
+    # mva_base = pm.data["baseMVA"]
 
     if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+        PMs.add_setpoint(sol, pm, "gmd_branch", "index", "gmd_idc", :dc; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
         # PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
     end
 end
