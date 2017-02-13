@@ -1,6 +1,111 @@
 # Formulations of GMD Problems
 export run_gmd
 
+function setup_gmd(data)
+    data["gmd_bus_indexes"] = []
+    data["gmd_bus_branches"] = []
+
+    gmd_bus_branches = Dict()
+
+    for i in 1:length(data["gmd_bus"])
+      b = data["gmd_bus"][i]
+      push!(data["gmd_bus_indexes"],i)
+      gmd_bus_branches[i] = []
+      push!(data["gmd_bus_branches"],nothing)
+    end
+
+    # add line sets & xf sets to data
+    data["gmd_branch_indexes"] = []
+    data["gmd_arcs"] = []
+    data["gmd_arcs_from"] = []
+    data["gmd_arcs_to"] = []
+
+    for k in 1:length(data["gmd_branch"])
+    b = data["gmd_branch"][k]
+    nf = b["f_bus"]
+    nt = b["t_bus"]
+
+    push!(data["gmd_branch_indexes"],k)
+    push!(data["gmd_arcs"],(k,nf,nt,))
+    push!(data["gmd_arcs"],(k,nt,nf,))
+    push!(data["gmd_arcs_from"],(k,nf,nt,))
+    push!(data["gmd_arcs_to"],(k,nt,nf))
+    end
+
+    for (l,i,j) in data["gmd_arcs_from"]
+      push!(gmd_bus_branches[i], (l,i,j))
+      push!(gmd_bus_branches[j], (l,j,i))
+    end 
+
+
+    # convert list of attached branches to list from dict
+    for (k,b) in gmd_bus_branches
+      data["gmd_bus_branches"][k] = b
+    end
+
+    return data
+end
+
+function merge_result(data,result)
+    sol = result["solution"]
+    
+    # merge the result
+    for k in 1:length(sol["gen"])
+        data["gen"][k]["pg"] = sol["gen"][k]["pg"]
+        data["gen"][k]["qg"] = sol["gen"][k]["qg"]
+    end
+
+
+
+    # need to merge this into the regular branches
+    for k in 1:length(sol["gmd_branch"])
+        data["gmd_branch"][k]["gmd_idc"] = sol["gmd_branch"][k]["gmd_idc"]
+    end
+
+    # need to merge this into the regular branches
+    for k in 1:length(sol["gmd_bus"])
+        data["gmd_bus"][k]["gmd_vdc"] = sol["gmd_bus"][k]["gmd_vdc"]
+    end
+
+
+    for k in 1:length(sol["bus"])
+        data["bus"][k]["va"] = sol["bus"][k]["va"]
+        data["bus"][k]["vm"] = sol["bus"][k]["vm"]
+        i = data["bus"][k]["gmd_bus"]
+        data["bus"][k]["gmd_vdc"] = data["gmd_bus"][i]["gmd_vdc"] 
+    end
+
+    for k in 1:length(sol["branch"])
+        br = data["branch"][k]
+
+        br["p_from"] = sol["branch"][k]["p_from"]
+        br["p_to"] = sol["branch"][k]["p_to"]
+        br["q_from"] = sol["branch"][k]["q_from"]
+        br["q_to"] = sol["branch"][k]["q_to"]
+
+
+        if br["type"] == "line"
+            i = br["gmd_br"]
+            br["gmd_idc"] = data["gmd_branch"][i]["gmd_idc"]
+        else
+            br["gmd_idc"] = nothing
+        end
+    end
+
+    return data
+end
+
+function clear_indexes!(data)
+    delete!(data,"gmd_bus_indexes")
+    delete!(data,"gmd_bus_branches")
+    delete!(data,"gmd_arcs")
+    delete!(data,"gmd_arcs_from")
+    delete!(data,"gmd_arcs_to")
+    delete!(data,"gmd_branch_indexes")
+
+    return data
+end
+
 # Maximum loadability with generator participation fixed
 function run_gmd(file, model_constructor, solver; kwargs...)
     return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...) 
@@ -9,38 +114,38 @@ end
 function post_gmd{T}(pm::GenericPowerModel{T})
     #println("Power Model GMD data")
     #println("----------------------------------")
-    PMs.variable_complex_voltage(pm) # CHECK OPF
+    PMs.variable_complex_voltage(pm)
 
     variable_dc_voltage(pm)
     # variable_dc_current_mag(pm)
     #variable_qloss(pm)
 
-    PMs.variable_active_generation(pm) # CHECK OPF
-    PMs.variable_reactive_generation(pm) # CHECK OPF
+    PMs.variable_active_generation(pm) 
+    PMs.variable_reactive_generation(pm) 
 
-    PMs.variable_active_line_flow(pm) # CHECK OPF
-    PMs.variable_reactive_line_flow(pm) # CHECK OPF
+    PMs.variable_active_line_flow(pm) 
+    PMs.variable_reactive_line_flow(pm) 
     variable_dc_line_flow(pm)
 
-    PMs.constraint_theta_ref(pm) # CHECK OPF
-    PMs.constraint_complex_voltage(pm) # CHECK OPF
+    PMs.constraint_theta_ref(pm) 
+    PMs.constraint_complex_voltage(pm) 
 
-    PMs.objective_min_fuel_cost(pm) # CHECK OPF
+    PMs.objective_min_fuel_cost(pm) 
     #objective_gmd_min_fuel(pm)
 
     for (i,bus) in pm.set.buses
         # turn off linking between dc & ac powerflow
-        PMs.constraint_active_kcl_shunt(pm, bus) # CHECK OPF
-        PMs.constraint_reactive_kcl_shunt(pm, bus) # CHECK OPF
+        PMs.constraint_active_kcl_shunt(pm, bus) 
+        PMs.constraint_reactive_kcl_shunt(pm, bus) 
         #constraint_qloss(pm, bus)
         # constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
     end
 
     for (k,branch) in pm.set.branches
-        PMs.constraint_active_ohms_yt(pm, branch) # CHECK OPF
-        PMs.constraint_reactive_ohms_yt(pm, branch) # CHECK OPF
+        PMs.constraint_active_ohms_yt(pm, branch) 
+        PMs.constraint_reactive_ohms_yt(pm, branch) 
 
-        PMs.constraint_phase_angle_difference(pm, branch) # CHECK OPF
+        PMs.constraint_phase_angle_difference(pm, branch) 
 
         PMs.constraint_thermal_limit_from(pm, branch)
         PMs.constraint_thermal_limit_to(pm, branch)
