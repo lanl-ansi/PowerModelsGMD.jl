@@ -48,7 +48,7 @@ end
 
 function merge_result(data,result)
     sol = result["solution"]
-    
+
     # merge the result
     for k in 1:length(sol["gen"])
         data["gen"][k]["pg"] = sol["gen"][k]["pg"]
@@ -56,23 +56,34 @@ function merge_result(data,result)
     end
 
 
-
+    if data["do_gmd"]
     # need to merge this into the regular branches
-    for k in 1:length(sol["gmd_branch"])
-        data["gmd_branch"][k]["gmd_idc"] = sol["gmd_branch"][k]["gmd_idc"]
-    end
+        for k in 1:length(sol["gmd_branch"])
+            data["gmd_branch"][k]["gmd_idc"] = sol["gmd_branch"][k]["gmd_idc"]
+        end
 
-    # need to merge this into the regular branches
-    for k in 1:length(sol["gmd_bus"])
-        data["gmd_bus"][k]["gmd_vdc"] = sol["gmd_bus"][k]["gmd_vdc"]
+        # need to merge this into the regular branches
+        for k in 1:length(sol["gmd_bus"])
+            data["gmd_bus"][k]["gmd_vdc"] = sol["gmd_bus"][k]["gmd_vdc"]
+        end
     end
 
 
     for k in 1:length(sol["bus"])
         data["bus"][k]["va"] = sol["bus"][k]["va"]
         data["bus"][k]["vm"] = sol["bus"][k]["vm"]
-        i = data["bus"][k]["gmd_bus"]
-        data["bus"][k]["gmd_vdc"] = data["gmd_bus"][i]["gmd_vdc"] 
+
+        if data["do_gmd"]
+            i = data["bus"][k]["gmd_bus"]
+            data["bus"][k]["gmd_vdc"] = data["gmd_bus"][i]["gmd_vdc"] 
+        end
+    end
+
+    if data["do_gmd"]
+        for k in 1:length(data["sub"])
+            i = data["sub"][k]["gmd_bus"]
+            data["sub"][k]["gmd_vdc"] = sol["gmd_bus"][i]["gmd_vdc"]
+        end
     end
 
     for k in 1:length(sol["branch"])
@@ -84,11 +95,9 @@ function merge_result(data,result)
         br["q_to"] = sol["branch"][k]["q_to"]
 
 
-        if br["type"] == "line"
+        if data["do_gmd"] && br["type"] == "line"
             i = br["gmd_br"]
             br["gmd_idc"] = data["gmd_branch"][i]["gmd_idc"]
-        else
-            br["gmd_idc"] = nothing
         end
     end
 
@@ -116,7 +125,10 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     #println("----------------------------------")
     PMs.variable_complex_voltage(pm)
 
-    variable_dc_voltage(pm)
+    if pm.data["do_gmd"]
+        variable_dc_voltage(pm)
+    end
+
     # variable_dc_current_mag(pm)
     #variable_qloss(pm)
 
@@ -125,7 +137,10 @@ function post_gmd{T}(pm::GenericPowerModel{T})
 
     PMs.variable_active_line_flow(pm) 
     PMs.variable_reactive_line_flow(pm) 
-    variable_dc_line_flow(pm)
+
+    if pm.data["do_gmd"]
+        variable_dc_line_flow(pm)
+    end
 
     PMs.constraint_theta_ref(pm) 
     PMs.constraint_complex_voltage(pm) 
@@ -151,27 +166,29 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         PMs.constraint_thermal_limit_to(pm, branch)
     end
 
-    println()
-    println("Buses")
-    println("--------------------")
+    if pm.data["do_gmd"]
+        println()
+        println("Buses")
+        println("--------------------")
 
-    ### DC network constraints ###
-    for bus in pm.data["gmd_bus"]
-        #constraint_dc_current_mag(pm, bus)
-        # println("bus:")
-        # println(bus)
-        constraint_dc_kcl_shunt(pm, bus)
+        ### DC network constraints ###
+        for bus in pm.data["gmd_bus"]
+            #constraint_dc_current_mag(pm, bus)
+            # println("bus:")
+            # println(bus)
+            constraint_dc_kcl_shunt(pm, bus)
+        end
+
+        println()
+        println("Branches")
+        println("--------------------")
+
+        for branch in pm.data["gmd_branch"]
+            constraint_dc_ohms(pm, branch)
+        end
+
+        println()
     end
-
-    println()
-    println("Branches")
-    println("--------------------")
-
-    for branch in pm.data["gmd_branch"]
-        constraint_dc_ohms(pm, branch)
-    end
-
-    println()
 end
 
 
@@ -183,8 +200,12 @@ function get_gmd_solution{T}(pm::GenericPowerModel{T})
     PMs.add_bus_demand_setpoint(sol, pm)
     PMs.add_generator_power_setpoint(sol, pm)
     PMs.add_branch_flow_setpoint(sol, pm)
-    add_bus_dc_voltage_setpoint(sol, pm)
-    add_branch_dc_flow_setpoint(sol, pm)
+    
+    if pm.data["do_gmd"]
+        add_bus_dc_voltage_setpoint(sol, pm)
+        add_branch_dc_flow_setpoint(sol, pm)
+    end
+
     return sol
 end
 
