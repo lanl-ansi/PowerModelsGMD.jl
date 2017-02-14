@@ -70,8 +70,9 @@ function merge_result(data,result)
 
 
     for k in 1:length(sol["bus"])
-        data["bus"][k]["va"] = sol["bus"][k]["va"]
-        data["bus"][k]["vm"] = sol["bus"][k]["vm"]
+        i = data["bus"][k]["index"] 
+        data["bus"][k]["va"] = sol["bus"][i]["va"]
+        data["bus"][k]["vm"] = sol["bus"][i]["vm"]
 
         if data["do_gmd"]
             i = data["bus"][k]["gmd_bus"]
@@ -157,7 +158,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     end
 
     for (k,branch) in pm.set.branches
-        PMs.constraint_active_ohms_yt(pm, branch) 
+        # PMs.constraint_active_ohms_yt(pm, branch) 
         PMs.constraint_reactive_ohms_yt(pm, branch) 
 
         PMs.constraint_phase_angle_difference(pm, branch) 
