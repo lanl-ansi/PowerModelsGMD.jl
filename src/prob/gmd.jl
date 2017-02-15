@@ -158,7 +158,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     end
 
     for (k,branch) in pm.set.branches
-        # PMs.constraint_active_ohms_yt(pm, branch) 
+        PMs.constraint_active_ohms_yt(pm, branch) 
         PMs.constraint_reactive_ohms_yt(pm, branch) 
 
         PMs.constraint_phase_angle_difference(pm, branch) 
