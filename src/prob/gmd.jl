@@ -152,12 +152,14 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     for (i,bus) in pm.set.buses
         # turn off linking between dc & ac powerflow
         PMs.constraint_active_kcl_shunt(pm, bus) 
-        # PMs.constraint_reactive_kcl_shunt(pm, bus) 
-        constraint_qloss(pm, bus)
-        constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
+        PMs.constraint_reactive_kcl_shunt(pm, bus) 
+        # constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
     end
 
     for (k,branch) in pm.set.branches
+        constraint_dc_current_mag(pm, branch)
+        constraint_qloss(pm, branch)
+
         PMs.constraint_active_ohms_yt(pm, branch) 
         PMs.constraint_reactive_ohms_yt(pm, branch) 
 
@@ -174,7 +176,6 @@ function post_gmd{T}(pm::GenericPowerModel{T})
 
         ### DC network constraints ###
         for bus in pm.data["gmd_bus"]
-            constraint_dc_current_mag(pm, bus)
             # println("bus:")
             # println(bus)
             constraint_dc_kcl_shunt(pm, bus)
@@ -248,8 +249,8 @@ function variable_dc_voltage{T}(pm::GenericPowerModel{T}; bounded = true)
 end
 
 function variable_dc_current_mag{T}(pm::GenericPowerModel{T}; bounded = true)
-   @variable(pm.model, i_dc_mag[i in pm.data["gmd_bus_indexes"]], start = PMs.getstart(pm.set.buses, i, "i_dc_mag_start"))
-   return i_dc_mag
+    @variable(pm.model, i_dc_mag[i in pm.set.branch_indexes], start = PMs.getstart(pm.set.branches, i, "i_dc_mag_start"))
+    return i_dc_mag
 end
 
 function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
@@ -270,9 +271,13 @@ function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
     return dc
 end
 
-
+# define qloss for each branch, it flows into the "to" side of the branch
 function variable_qloss{T}(pm::GenericPowerModel{T})
-    @variable(pm.model, qloss[i in pm.data["gmd_bus_indexes"]], start = PMs.getstart(pm.data["gmd_bus"], i, "qloss_start"))
+    @variable(pm.model, qloss[i in pm.set.arcs], start = PMs.getstart(pm.set.arcs_from, i, "qloss_start"))
+
+    qloss_expr = Dict([((l,i,j), 0.0) for (l,i,j) in pm.set.arcs_from])
+    qloss_expr = merge(qloss_expr, Dict([((l,j,i), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_from]))
+
     return qloss
 end
 
@@ -293,15 +298,21 @@ end
 # end
 
 ################### Constraints ###################
-function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, dcbus)
-    i = dcbus["index"]
+# correct equation is ieff = |a*ihi + ilo|/a
+# just use ihi for now
+function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
+    k = branch["index"]
     v_dc = getvariable(pm.model, :v_dc)
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
+
+    bus = pm.set.buses[branch["t_bus"]]
+    i = bus["gmd_bus"]
+    dcbus = pm.data["gmd_bus"][i]
     a = dcbus["g_gnd"]
     # println("bus[$i]: a = $a, K = $K")
 
-    c = @constraint(pm.model, i_dc_mag[i] >= a*v_dc[i])
-    c = @constraint(pm.model, i_dc_mag[i] >= -a*v_dc[i])
+    c = @constraint(pm.model, i_dc_mag[k] >= a*v_dc[i])
+    c = @constraint(pm.model, i_dc_mag[k] >= -a*v_dc[i])
     return Set([c])
 end
 
@@ -380,25 +391,27 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
     return Set([c])
 end
 
-function constraint_qloss{T}(pm::GenericPowerModel{T}, bus)
-    i = bus["index"]
+function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
+    k = branch["index"]
+    i = branch["f_bus"]
+    j = branch["t_bus"]
+    l = (k,i,j)
+    bus = pm.set.buses[i]
+
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
     qloss = getvariable(pm.model, :qloss)
     # a = bus["gmd_gs"]
-    ibase = bus["gmd_baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
-    K = bus["gmd_k"]*bus["gmd_baseMVA"]/ibase
 
-    j = bus["gmd_neu_bus"]
+    ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+    K = bus["gmd_k"]*branch["baseMVA"]/ibase
+
     # println("bus[$i]: a = $a, K = $K")
 
-    if j === nothing
-        # no transformer high-side
-        c = @constraint(pm.model, qloss[i] == 0.0)
-    else        
-        @printf "i = %d, K = %f, j = %d\n" i K j
-        # K is per phase
-        c = @constraint(pm.model, qloss[i] == K*i_dc_mag[j]/(3.0*bus["gmd_baseMVA"]))
-    end
+      
+    # @printf "k = %d, K = %f, i = %d\n" k K i
+    println("l $l")
+    # K is per phase
+    c = @constraint(pm.model, qloss[l] == K*i_dc_mag[k]/(3.0*branch["baseMVA"]))
 
     return Set([c])
 end
