@@ -130,8 +130,8 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         variable_dc_voltage(pm)
     end
 
-    # variable_dc_current_mag(pm)
-    #variable_qloss(pm)
+    variable_dc_current_mag(pm)
+    variable_qloss(pm)
 
     PMs.variable_active_generation(pm) 
     PMs.variable_reactive_generation(pm) 
@@ -153,11 +153,13 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         # turn off linking between dc & ac powerflow
         PMs.constraint_active_kcl_shunt(pm, bus) 
         PMs.constraint_reactive_kcl_shunt(pm, bus) 
-        #constraint_qloss(pm, bus)
         # constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
     end
 
     for (k,branch) in pm.set.branches
+        constraint_dc_current_mag(pm, branch)
+        constraint_qloss(pm, branch)
+
         PMs.constraint_active_ohms_yt(pm, branch) 
         PMs.constraint_reactive_ohms_yt(pm, branch) 
 
@@ -174,7 +176,6 @@ function post_gmd{T}(pm::GenericPowerModel{T})
 
         ### DC network constraints ###
         for bus in pm.data["gmd_bus"]
-            #constraint_dc_current_mag(pm, bus)
             # println("bus:")
             # println(bus)
             constraint_dc_kcl_shunt(pm, bus)
@@ -196,8 +197,8 @@ end
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
     sol = Dict{AbstractString,Any}()
     PMs.add_bus_voltage_setpoint(sol, pm)
-    # add_bus_dc_current_mag_setpoint(sol, pm)
-    # add_bus_qloss_setpoint(sol, pm)
+    add_bus_dc_current_mag_setpoint(sol, pm)
+    add_bus_qloss_setpoint(sol, pm)
     PMs.add_bus_demand_setpoint(sol, pm)
     PMs.add_generator_power_setpoint(sol, pm)
     PMs.add_branch_flow_setpoint(sol, pm)
@@ -247,10 +248,10 @@ function variable_dc_voltage{T}(pm::GenericPowerModel{T}; bounded = true)
     return v_dc
 end
 
-#function variable_dc_current_mag{T}(pm::GenericPowerModel{T}; bounded = true)
-#    @variable(pm.model, i_dc_mag[i in pm.set.bus_indexes], start = PMs.getstart(pm.set.buses, i, "i_dc_mag_start"))
-#    return i_dc_mag
-#end
+function variable_dc_current_mag{T}(pm::GenericPowerModel{T}; bounded = true)
+    @variable(pm.model, i_dc_mag[i in pm.set.branch_indexes], start = PMs.getstart(pm.set.branches, i, "i_dc_mag_start"))
+    return i_dc_mag
+end
 
 function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
     # print("arcs: ")
@@ -270,11 +271,17 @@ function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
     return dc
 end
 
+# define qloss for each branch, it flows into the "to" side of the branch
+function variable_qloss{T}(pm::GenericPowerModel{T})
+    @variable(pm.model, qloss[i in pm.set.arcs], start = PMs.getstart(pm.set.arcs_to, i, "qloss_start"))
 
-#function variable_qloss{T}(pm::GenericPowerModel{T})
-#  @variable(pm.model, qloss[i in pm.set.bus_indexes], start = PMs.getstart(pm.set.buses, i, "qloss_start"))
-#  return qloss
-#end
+    qloss_expr = Dict([((l,i,j), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_to])
+    qloss_expr = merge(qloss_expr, Dict([((l,j,i), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_to]))
+
+    pm.model.ext[:qloss_expr] = qloss_expr
+
+    return qloss
+end
 
 
 ################### Objective ###################
@@ -293,18 +300,37 @@ end
 # end
 
 ################### Constraints ###################
-# function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, bus)
-#     i = bus["index"]
-#     v_dc = getvariable(pm.model, :v_dc)
-#     i_dc_mag = getvariable(pm.model, :i_dc_mag)
-#     a = bus["gmd_gs"]
-#     K = bus["gmd_k"]
-#     # println("bus[$i]: a = $a, K = $K")
+# correct equation is ieff = |a*ihi + ilo|/a
+# just use ihi for now
+function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
 
-#     c = @constraint(pm.model, i_dc_mag[i] >= a*v_dc[i])
-#     c = @constraint(pm.model, i_dc_mag[i] >= -a*v_dc[i])
-#     return Set([c])
-# end
+    # print(keys(branch))
+
+    # it's a transformer!
+    if  "gmd_br_hi" in keys(branch)
+        kd = branch["gmd_br_hi"]
+        dc_br = pm.data["gmd_branch"][kd]
+
+        k = branch["index"]
+        i = dc_br["f_bus"]
+        j = dc_br["t_bus"]
+
+        v_dc = getvariable(pm.model, :v_dc)
+        i_dc_mag = getvariable(pm.model, :i_dc_mag)
+        dc = getvariable(pm.model, :dc)[(kd,i,j)]        
+
+        println("branch[$k]: dc_branch[$kd]")
+
+        c = @constraint(pm.model, i_dc_mag[k] >= dc)
+        c = @constraint(pm.model, i_dc_mag[k] >= -dc)
+
+        return Set([c])
+    else
+        println("Key not found")
+    end
+
+    return Set([])
+end
 
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
     i = dcbus["index"]
@@ -381,15 +407,35 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
     return Set([c])
 end
 
-function constraint_qloss{T}(pm::GenericPowerModel{T}, bus)
-    i = bus["index"]
+function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
+    k = branch["index"]
+    i = branch["f_bus"]
+    j = branch["t_bus"]
+    l = (k,j,i)
+    bus = pm.set.buses[i]
+
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
     qloss = getvariable(pm.model, :qloss)
-    # a = bus["gmd_gs"]
-    K = bus["gmd_k"]
-    # println("bus[$i]: a = $a, K = $K")
+        
+    if "gmd_k" in keys(branch)
 
-    c = @constraint(pm.model, qloss[i] == K*i_dc_mag[i])
+        # a = bus["gmd_gs"]
+
+        ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+        K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
+
+        # println("bus[$i]: a = $a, K = $K")
+
+          
+        @printf "k = %d, Kold = %f, ib = %f, Knew = %f\n" k branch["gmd_k"] ibase K 
+        println("l $l")
+        # K is per phase
+        c = @constraint(pm.model, qloss[l] == K*i_dc_mag[k]/(3.0*branch["baseMVA"]))
+        # c = @constraint(pm.model, qloss[l] == i_dc_mag[k])
+    else
+        c = @constraint(pm.model, qloss[l] == 0.0)
+    end
+
     return Set([c])
 end
 
@@ -416,7 +462,7 @@ end
 
 function add_bus_dc_current_mag_setpoint{T}(sol, pm::GenericPowerModel{T})
     # PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
-    PMs.add_setpoint(sol, pm, "gmd_bus", "index", "gmd_idc_mag", :i_dc_mag)
+    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc_mag", :i_dc_mag)
 end
 
 function current_pu_to_si(x,item,pm)
@@ -438,5 +484,6 @@ end
 # need to scale by base MVA
 function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
     mva_base = pm.data["baseMVA"]
-    PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_qloss", :qloss; scale = (x,item) -> x*mva_base)
+    # mva_base = 1.0
+    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["t_bus"], item["f_bus"])], scale = (x,item) -> x*mva_base)
 end
