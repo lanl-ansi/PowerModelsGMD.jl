@@ -278,6 +278,8 @@ function variable_qloss{T}(pm::GenericPowerModel{T})
     qloss_expr = Dict([((l,i,j), 0.0) for (l,i,j) in pm.set.arcs_from])
     qloss_expr = merge(qloss_expr, Dict([((l,j,i), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_from]))
 
+    pm.model.ext[:qloss_expr] = qloss_expr
+
     return qloss
 end
 
@@ -301,20 +303,33 @@ end
 # correct equation is ieff = |a*ihi + ilo|/a
 # just use ihi for now
 function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
-    k = branch["index"]
-    v_dc = getvariable(pm.model, :v_dc)
-    i_dc_mag = getvariable(pm.model, :i_dc_mag)
 
-    i = branch["f_bus"]
-    bus = pm.set.buses[i]
-    id = bus["gmd_bus"]
-    dcbus = pm.data["gmd_bus"][i]
-    a = dcbus["g_gnd"]
-    println("branch[$k]: f_bus[$i], dcbus[$id], a = $a")
+    # print(keys(branch))
 
-    c = @constraint(pm.model, i_dc_mag[k] >= a*v_dc[id])
-    c = @constraint(pm.model, i_dc_mag[k] >= -a*v_dc[id])
-    return Set([c])
+    # it's a transformer!
+    if  "gmd_br_hi" in keys(branch)
+        kd = branch["gmd_br_hi"]
+        dc_br = pm.data["gmd_branch"][kd]
+
+        k = branch["index"]
+        i = dc_br["f_bus"]
+        j = dc_br["t_bus"]
+
+        v_dc = getvariable(pm.model, :v_dc)
+        i_dc_mag = getvariable(pm.model, :i_dc_mag)
+        dc = getvariable(pm.model, :dc)[(kd,i,j)]        
+
+        println("branch[$k]: dc_branch[$kd]")
+
+        c = @constraint(pm.model, i_dc_mag[k] >= dc)
+        c = @constraint(pm.model, i_dc_mag[k] >= -dc)
+
+        return Set([c])
+    else
+        println("Key not found")
+    end
+
+    return Set([])
 end
 
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
