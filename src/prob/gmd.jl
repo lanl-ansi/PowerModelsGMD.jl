@@ -273,10 +273,10 @@ end
 
 # define qloss for each branch, it flows into the "to" side of the branch
 function variable_qloss{T}(pm::GenericPowerModel{T})
-    @variable(pm.model, qloss[i in pm.set.arcs], start = PMs.getstart(pm.set.arcs_from, i, "qloss_start"))
+    @variable(pm.model, qloss[i in pm.set.arcs], start = PMs.getstart(pm.set.arcs_to, i, "qloss_start"))
 
-    qloss_expr = Dict([((l,i,j), 0.0) for (l,i,j) in pm.set.arcs_from])
-    qloss_expr = merge(qloss_expr, Dict([((l,j,i), qloss[(l,j,i)]) for (l,i,j) in pm.set.arcs_from]))
+    qloss_expr = Dict([((l,i,j), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_to])
+    qloss_expr = merge(qloss_expr, Dict([((l,j,i), 0.0) for (l,i,j) in pm.set.arcs_to]))
 
     pm.model.ext[:qloss_expr] = qloss_expr
 
@@ -477,5 +477,5 @@ end
 # need to scale by base MVA
 function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
     mva_base = pm.data["baseMVA"]
-    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; scale = (x,item) -> x*mva_base)
+    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])], scale = (x,item) -> x*mva_base)
 end
