@@ -385,18 +385,20 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, bus)
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
     qloss = getvariable(pm.model, :qloss)
     # a = bus["gmd_gs"]
-    ibase = sqrt(3.0)*1000.0*bus["gmd_baseMVA"]/bus["base_kv"]
+    ibase = bus["gmd_baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+    K = bus["gmd_k"]*bus["gmd_baseMVA"]/ibase
 
-    K = bus["gmd_k"]/ibase
     j = bus["gmd_neu_bus"]
     # println("bus[$i]: a = $a, K = $K")
 
     if j === nothing
         # no transformer high-side
-        return Set([])
-    end        
-
-    c = @constraint(pm.model, qloss[i] == K*i_dc_mag[j])
+        c = @constraint(pm.model, qloss[i] == 0.0)
+    else        
+        @printf "i = %d, K = %f, j = %d\n" i K j
+        # K is per phase
+        c = @constraint(pm.model, qloss[i] == K*i_dc_mag[j]/(3.0*bus["gmd_baseMVA"]))
+    end
 
     return Set([c])
 end
