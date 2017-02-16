@@ -276,7 +276,7 @@ function variable_qloss{T}(pm::GenericPowerModel{T})
     @variable(pm.model, qloss[i in pm.set.arcs], start = PMs.getstart(pm.set.arcs_to, i, "qloss_start"))
 
     qloss_expr = Dict([((l,i,j), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_to])
-    qloss_expr = merge(qloss_expr, Dict([((l,j,i), 0.0) for (l,i,j) in pm.set.arcs_to]))
+    qloss_expr = merge(qloss_expr, Dict([((l,j,i), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_to]))
 
     pm.model.ext[:qloss_expr] = qloss_expr
 
@@ -416,18 +416,25 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
 
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
     qloss = getvariable(pm.model, :qloss)
-    # a = bus["gmd_gs"]
+        
+    if "gmd_k" in keys(branch)
 
-    ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
-    K = bus["gmd_k"]*pm.data["baseMVA"]/ibase
+        # a = bus["gmd_gs"]
 
-    # println("bus[$i]: a = $a, K = $K")
+        ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+        K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
 
-      
-    # @printf "k = %d, K = %f, i = %d\n" k K i
-    println("l $l")
-    # K is per phase
-    c = @constraint(pm.model, qloss[l] == K*i_dc_mag[k]/(3.0*branch["baseMVA"]))
+        # println("bus[$i]: a = $a, K = $K")
+
+          
+        @printf "k = %d, Kold = %f, ib = %f, Knew = %f\n" k branch["gmd_k"] ibase K 
+        println("l $l")
+        # K is per phase
+        c = @constraint(pm.model, qloss[l] == K*i_dc_mag[k]/(3.0*branch["baseMVA"]))
+        # c = @constraint(pm.model, qloss[l] == i_dc_mag[k])
+    else
+        c = @constraint(pm.model, qloss[l] == 0.0)
+    end
 
     return Set([c])
 end
@@ -477,5 +484,6 @@ end
 # need to scale by base MVA
 function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
     mva_base = pm.data["baseMVA"]
-    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])], scale = (x,item) -> x*mva_base)
+    # mva_base = 1.0
+    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["t_bus"], item["f_bus"])], scale = (x,item) -> x*mva_base)
 end
