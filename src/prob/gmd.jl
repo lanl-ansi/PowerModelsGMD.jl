@@ -92,8 +92,10 @@ function merge_result(data,result)
 
         br["p_from"] = sol["branch"][k]["p_from"]
         br["p_to"] = sol["branch"][k]["p_to"]
-        br["q_from"] = sol["branch"][k]["q_from"]
+        br["q_from"] = sol["branch"][k]["q_from"] + sol["branch"][k]["gmd_qloss"]
         br["q_to"] = sol["branch"][k]["q_to"]
+        br["ieff"] = sol["branch"][k]["gmd_idc_mag"]
+        br["qloss_from"] = sol["branch"][k]["gmd_qloss"]
 
 
         if data["do_gmd"] && br["type"] == "line"
@@ -152,8 +154,8 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     for (i,bus) in pm.set.buses
         # turn off linking between dc & ac powerflow
         PMs.constraint_active_kcl_shunt(pm, bus) 
-        PMs.constraint_reactive_kcl_shunt(pm, bus) 
-        # constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
+        # PMs.constraint_reactive_kcl_shunt(pm, bus) 
+        constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
     end
 
     for (k,branch) in pm.set.branches
@@ -273,12 +275,7 @@ end
 
 # define qloss for each branch, it flows into the "to" side of the branch
 function variable_qloss{T}(pm::GenericPowerModel{T})
-    @variable(pm.model, qloss[i in pm.set.arcs], start = PMs.getstart(pm.set.arcs_to, i, "qloss_start"))
-
-    qloss_expr = Dict([((l,i,j), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_to])
-    qloss_expr = merge(qloss_expr, Dict([((l,j,i), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_to]))
-
-    pm.model.ext[:qloss_expr] = qloss_expr
+    @variable(pm.model, qloss[(l,i,j) in pm.set.arcs], start = PMs.getstart(pm.set.branches, l, "qloss_start"))
 
     return qloss
 end
@@ -411,7 +408,6 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
     k = branch["index"]
     i = branch["f_bus"]
     j = branch["t_bus"]
-    l = (k,j,i)
     bus = pm.set.buses[i]
 
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
@@ -428,12 +424,13 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
 
           
         @printf "k = %d, Kold = %f, ib = %f, Knew = %f\n" k branch["gmd_k"] ibase K 
-        println("l $l")
         # K is per phase
-        c = @constraint(pm.model, qloss[l] == K*i_dc_mag[k]/(3.0*branch["baseMVA"]))
+        c = @constraint(pm.model, qloss[(k,i,j)] == K*i_dc_mag[k]/(3.0*branch["baseMVA"]))
+        c = @constraint(pm.model, qloss[(k,j,i)] == 0.0)
         # c = @constraint(pm.model, qloss[l] == i_dc_mag[k])
     else
-        c = @constraint(pm.model, qloss[l] == 0.0)
+        c = @constraint(pm.model, qloss[(k,i,j)] == 0.0)
+        c = @constraint(pm.model, qloss[(k,j,i)] == 0.0)
     end
 
     return Set([c])
@@ -449,7 +446,7 @@ function constraint_qloss_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     qg = getvariable(pm.model, :qg)
     qloss = getvariable(pm.model, :qloss)
 
-    c = @constraint(pm.model, sum{q[a], a in bus_branches} == sum{qg[g], g in bus_gens} - bus["qd"] - qloss[i] + bus["bs"]*v[i]^2)
+    c = @constraint(pm.model, sum{q[a] + qloss[a], a in bus_branches} == sum{qg[g], g in bus_gens} - bus["qd"] + bus["bs"]*v[i]^2)
     return Set([c])
 end
 
@@ -485,5 +482,5 @@ end
 function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
     mva_base = pm.data["baseMVA"]
     # mva_base = 1.0
-    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["t_bus"], item["f_bus"])], scale = (x,item) -> x*mva_base)
+    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])], scale = (x,item) -> x*mva_base)
 end
