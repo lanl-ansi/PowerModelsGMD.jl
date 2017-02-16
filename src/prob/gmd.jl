@@ -94,6 +94,8 @@ function merge_result(data,result)
         br["p_to"] = sol["branch"][k]["p_to"]
         br["q_from"] = sol["branch"][k]["q_from"]
         br["q_to"] = sol["branch"][k]["q_to"]
+        br["ieff"] = sol["branch"][k]["gmd_idc_mag"]
+        br["qloss_to"] = sol["branch"][k]["gmd_qloss"]
 
 
         if data["do_gmd"] && br["type"] == "line"
@@ -152,8 +154,8 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     for (i,bus) in pm.set.buses
         # turn off linking between dc & ac powerflow
         PMs.constraint_active_kcl_shunt(pm, bus) 
-        PMs.constraint_reactive_kcl_shunt(pm, bus) 
-        # constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
+        # PMs.constraint_reactive_kcl_shunt(pm, bus) 
+        constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
     end
 
     for (k,branch) in pm.set.branches
@@ -273,10 +275,10 @@ end
 
 # define qloss for each branch, it flows into the "to" side of the branch
 function variable_qloss{T}(pm::GenericPowerModel{T})
-    @variable(pm.model, qloss[i in pm.set.arcs], start = PMs.getstart(pm.set.arcs_to, i, "qloss_start"))
+    @variable(pm.model, qloss[i in pm.set.arcs], start = PMs.getstart(pm.set.arcs_from, i, "qloss_start"))
 
-    qloss_expr = Dict([((l,i,j), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_to])
-    qloss_expr = merge(qloss_expr, Dict([((l,j,i), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_to]))
+    qloss_expr = Dict([((l,i,j), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_from])
+    qloss_expr = merge(qloss_expr, Dict([((l,j,i), 0.0) for (l,i,j) in pm.set.arcs_from]))
 
     pm.model.ext[:qloss_expr] = qloss_expr
 
@@ -449,7 +451,7 @@ function constraint_qloss_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     qg = getvariable(pm.model, :qg)
     qloss = getvariable(pm.model, :qloss)
 
-    c = @constraint(pm.model, sum{q[a], a in bus_branches} == sum{qg[g], g in bus_gens} - bus["qd"] - qloss[i] + bus["bs"]*v[i]^2)
+    c = @constraint(pm.model, sum{q[a] + qloss[a], a in bus_branches} == sum{qg[g], g in bus_gens} - bus["qd"] + bus["bs"]*v[i]^2)
     return Set([c])
 end
 
