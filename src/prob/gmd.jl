@@ -276,7 +276,7 @@ function variable_qloss{T}(pm::GenericPowerModel{T})
     @variable(pm.model, qloss[i in pm.set.arcs], start = PMs.getstart(pm.set.arcs_from, i, "qloss_start"))
 
     qloss_expr = Dict([((l,i,j), 0.0) for (l,i,j) in pm.set.arcs_from])
-    qloss_expr = merge(qloss_expr, Dict([((l,j,i), qloss[(l,i,j)]) for (l,i,j) in pm.set.arcs_from]))
+    qloss_expr = merge(qloss_expr, Dict([((l,j,i), qloss[(l,j,i)]) for (l,i,j) in pm.set.arcs_from]))
 
     pm.model.ext[:qloss_expr] = qloss_expr
 
@@ -411,7 +411,7 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
     k = branch["index"]
     i = branch["f_bus"]
     j = branch["t_bus"]
-    l = (k,i,j)
+    l = (k,j,i)
     bus = pm.set.buses[i]
 
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
