@@ -56,7 +56,7 @@ function merge_result(data,result)
     end
 
 
-    if data["do_gmd"]
+    if "do_gmd" in keys(data) && data["do_gmd"]
     # need to merge this into the regular branches
         for k in 1:length(sol["gmd_branch"])
             data["gmd_branch"][k]["gmd_idc"] = sol["gmd_branch"][k]["gmd_idc"]
@@ -74,13 +74,13 @@ function merge_result(data,result)
         data["bus"][k]["va"] = sol["bus"][i]["va"]
         data["bus"][k]["vm"] = sol["bus"][i]["vm"]
 
-        if data["do_gmd"]
+        if "do_gmd" in keys(data) && data["do_gmd"]
             i = data["bus"][k]["gmd_bus"]
             data["bus"][k]["gmd_vdc"] = data["gmd_bus"][i]["gmd_vdc"] 
         end
     end
 
-    if data["do_gmd"]
+    if "do_gmd" in keys(data) && data["do_gmd"]
         for k in 1:length(data["sub"])
             i = data["sub"][k]["gmd_bus"]
             data["sub"][k]["gmd_vdc"] = sol["gmd_bus"][i]["gmd_vdc"]
@@ -98,7 +98,7 @@ function merge_result(data,result)
         br["qloss_from"] = sol["branch"][k]["gmd_qloss"]
 
 
-        if data["do_gmd"] && br["type"] == "line"
+        if "do_gmd" in keys(data) && data["do_gmd"] && br["type"] == "line"
             i = br["gmd_br"]
             br["gmd_idc"] = data["gmd_branch"][i]["gmd_idc"]
         end
@@ -128,7 +128,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     #println("----------------------------------")
     PMs.variable_complex_voltage(pm)
 
-    if pm.data["do_gmd"]
+    if "do_gmd" in keys(pm.data) && pm.data["do_gmd"]
         variable_dc_voltage(pm)
     end
 
@@ -141,7 +141,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     PMs.variable_active_line_flow(pm) 
     PMs.variable_reactive_line_flow(pm) 
 
-    if pm.data["do_gmd"]
+    if "do_gmd" in keys(pm.data) && pm.data["do_gmd"]
         variable_dc_line_flow(pm)
     end
 
@@ -171,7 +171,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         PMs.constraint_thermal_limit_to(pm, branch)
     end
 
-    if pm.data["do_gmd"]
+    if "do_gmd" in keys(pm.data) && pm.data["do_gmd"]
         println()
         println("Buses")
         println("--------------------")
@@ -304,8 +304,14 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
     # print(keys(branch))
 
     # it's a transformer!
-    if  "gmd_br_hi" in keys(branch)
-        kd = branch["gmd_br_hi"]
+    if  "gmd_br_hi" in keys(branch) || "gmd_br_series" in keys(branch)
+
+        if "gmd_br_hi" in keys(branch)
+            kd = branch["gmd_br_hi"]
+        elseif "gmd_br_series" in keys(branch)
+            kd = branch["gmd_br_series"]
+        end
+
         dc_br = pm.data["gmd_branch"][kd]
 
         k = branch["index"]
@@ -323,7 +329,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
 
         return Set([c])
     else
-        println("Key not found")
+        # println("Key not found")
     end
 
     return Set([])
