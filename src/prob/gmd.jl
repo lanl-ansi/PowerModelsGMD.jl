@@ -198,7 +198,7 @@ end
 
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
     sol = Dict{AbstractString,Any}()
-    PMs.add_bus_voltage_setpoint(sol, pm)
+    PMs.add_bus_voltage_setpoint(sol, pm);
     add_bus_dc_current_mag_setpoint(sol, pm)
     add_bus_qloss_setpoint(sol, pm)
     PMs.add_bus_demand_setpoint(sol, pm)
@@ -300,37 +300,68 @@ end
 # correct equation is ieff = |a*ihi + ilo|/a
 # just use ihi for now
 function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
-
     # print(keys(branch))
 
-    # it's a transformer!
-    if  "gmd_br_hi" in keys(branch) || "gmd_br_series" in keys(branch)
 
-        if "gmd_br_hi" in keys(branch)
-            kd = branch["gmd_br_hi"]
-        elseif "gmd_br_series" in keys(branch)
-            kd = branch["gmd_br_series"]
-        end
+    # GWye-GWye autodransformer
+    if "gmd_br_series" in keys(branch) && "gmd_br_common" in keys(branch)
+        ks = branch["gmd_br_series"]
+        kc = branch["gmd_br_common"]
 
+        br_ser = pm.data["gmd_branch"][ks]
+        br_com = pm.data["gmd_branch"][kc]
+
+        k = branch["index"]
+        i = branch["f_bus"]
+        j = branch["t_bus"]
+
+        is = br_ser["f_bus"]
+        js = br_ser["t_bus"]
+
+        ic = br_com["f_bus"]
+        jc = br_com["t_bus"]
+
+        ieff = getvariable(pm.model, :i_dc_mag)
+        is = getvariable(pm.model, :dc)[(ks,is,js)]        
+        ic = getvariable(pm.model, :dc)[(kc,ic,jc)]        
+
+        ihi = -is
+        ilo = ic + is
+
+        vhi = pm.set.buses[j]["base_kv"]
+        vlo = pm.set.buses[i]["base_kv"]
+        a = vhi/vlo
+
+        println("branch[$k]: hi_branch[$ks], lo_branch[$kc]")
+
+        c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
+        c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
+
+        return Set([c])
+    end
+
+    # GWye-Delta transformer
+    if "gmd_br_hi" in keys(branch) 
+        kd = branch["gmd_br_hi"]
         dc_br = pm.data["gmd_branch"][kd]
 
         k = branch["index"]
         i = dc_br["f_bus"]
         j = dc_br["t_bus"]
 
-        v_dc = getvariable(pm.model, :v_dc)
-        i_dc_mag = getvariable(pm.model, :i_dc_mag)
-        dc = getvariable(pm.model, :dc)[(kd,i,j)]        
+        ieff = getvariable(pm.model, :i_dc_mag)
+        ihi = getvariable(pm.model, :dc)[(kd,i,j)]        
 
         println("branch[$k]: dc_branch[$kd]")
 
-        c = @constraint(pm.model, i_dc_mag[k] >= dc)
-        c = @constraint(pm.model, i_dc_mag[k] >= -dc)
+        c = @constraint(pm.model, ieff[k] >= ihi)
+        c = @constraint(pm.model, ieff[k] >= -ihi)
 
         return Set([c])
-    else
-        # println("Key not found")
     end
+
+    # need to add support for other trarnsformer types
+    # println("Key not found")
 
     return Set([])
 end
@@ -414,7 +445,17 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
     k = branch["index"]
     i = branch["f_bus"]
     j = branch["t_bus"]
-    bus = pm.set.buses[i]
+
+    if "gmd_br_series" in keys(branch) && "gmd_br_common" in keys(branch)
+        # for autotransforer use to bus as base voltage
+        bus = pm.set.buses[j]
+    else
+        # for gwye-delta transformer use from bus as base voltage
+        # this will change for the delta-gwye transformer type
+        # might consider adding a "high" bus field to make this 
+        # clear
+        bus = pm.set.buses[i]
+    end
 
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
     qloss = getvariable(pm.model, :qloss)
@@ -488,5 +529,5 @@ end
 function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
     mva_base = pm.data["baseMVA"]
     # mva_base = 1.0
-    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])], scale = (x,item) -> x*mva_base)
+        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])], scale = (x,item) -> x*mva_base)
 end
