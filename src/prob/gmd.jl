@@ -302,9 +302,88 @@ end
 function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
     # print(keys(branch))
 
+    if "config" in keys(branch)
+        cfg = branch["config"]
+    else
+        cfg = "N/A"
+    end
+
+    @printf "Branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
+
+    if branch["type"] != "xf"
+        return Set([])
+    end
+
+
+    if branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        return Set([])
+    end
+
+
+    # Ungrounded types:
+    # lines, series capacitors, delta-delta xfs, delta-wye xfs, wye-delta xfs, wye-wye xfs
+    # Delta-Gywe transformer
+    # GWye-Delta transformer
+    if branch["config"] in ["delta-gwye","gwye-delta"] 
+        k = branch["index"]
+
+        kh = branch["gmd_br_hi"]
+        br_hi = pm.data["gmd_branch"][kh]
+
+        ih = br_hi["f_bus"]
+        jh = br_hi["t_bus"]
+
+        ieff = getvariable(pm.model, :i_dc_mag)
+        ihi = getvariable(pm.model, :dc)[(kh,ih,jh)]        
+
+        println("branch[$k]: hi_branch[$kh]")
+
+        c = @constraint(pm.model, ieff[k] >= ihi)
+        c = @constraint(pm.model, ieff[k] >= -ihi)
+
+        return Set([c])
+    end
+
+    # need to add support for other trarnsformer types
+    # println("Key not found")
+
+    # Gwye-Gwye transformer
+    if branch["config"] == "gwye-gwye" 
+        kh = branch["gmd_br_hi"]
+        kl = branch["gmd_br_lo"]
+
+        br_hi = pm.data["gmd_branch"][kh]
+        br_lo = pm.data["gmd_branch"][kl]
+
+        k = branch["index"]
+        i = branch["f_bus"]
+        j = branch["t_bus"]
+
+        ih = br_hi["f_bus"]
+        jh = br_hi["t_bus"]
+
+        il = br_lo["f_bus"]
+        jl = br_lo["t_bus"]
+
+        ieff = getvariable(pm.model, :i_dc_mag)
+        ihi = getvariable(pm.model, :dc)[(kh,ih,jh)]        
+        ilo = getvariable(pm.model, :dc)[(kl,il,jl)]        
+
+        vhi = pm.set.buses[j]["base_kv"]
+        vlo = pm.set.buses[i]["base_kv"]
+        a = vhi/vlo
+
+        println("branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+
+        c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
+        c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
+
+        return Set([c])
+    end
 
     # GWye-GWye autodransformer
-    if "gmd_br_series" in keys(branch) && "gmd_br_common" in keys(branch)
+    #if "gmd_br_series" in keys(branch) && "gmd_br_common" in keys(branch)
+    if branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto" 
         ks = branch["gmd_br_series"]
         kc = branch["gmd_br_common"]
 
@@ -332,7 +411,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         vlo = pm.set.buses[i]["base_kv"]
         a = vhi/vlo
 
-        println("branch[$k]: hi_branch[$ks], lo_branch[$kc]")
+        println("branch[$k]: ser_branch[$ks], com_branch[$kc]")
 
         c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
         c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
@@ -340,30 +419,10 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         return Set([c])
     end
 
-    # GWye-Delta transformer
-    if "gmd_br_hi" in keys(branch) 
-        kd = branch["gmd_br_hi"]
-        dc_br = pm.data["gmd_branch"][kd]
 
-        k = branch["index"]
-        i = dc_br["f_bus"]
-        j = dc_br["t_bus"]
+    @printf "Unrecognized branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
 
-        ieff = getvariable(pm.model, :i_dc_mag)
-        ihi = getvariable(pm.model, :dc)[(kd,i,j)]        
 
-        println("branch[$k]: dc_branch[$kd]")
-
-        c = @constraint(pm.model, ieff[k] >= ihi)
-        c = @constraint(pm.model, ieff[k] >= -ihi)
-
-        return Set([c])
-    end
-
-    # need to add support for other trarnsformer types
-    # println("Key not found")
-
-    return Set([])
 end
 
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
