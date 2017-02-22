@@ -160,7 +160,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
 
     for (k,branch) in pm.set.branches
         constraint_dc_current_mag(pm, branch)
-        constraint_qloss(pm, branch)
+        # constraint_qloss(pm, branch)
 
         PMs.constraint_active_ohms_yt(pm, branch) 
         PMs.constraint_reactive_ohms_yt(pm, branch) 
@@ -286,7 +286,7 @@ function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
     # @variable(pm.model, pm.set.gens[i]["pmin"]^2 <= pg_sqr[i in pm.set.gen_indexes] <= pm.set.gens[i]["pmax"]^2)
 
     # pg = getvariable(pm.model, :pg)
-    # i_dc_mag = getvariable(pm.model, :i_dc_mag)
+    i_dc_mag = getvariable(pm.model, :i_dc_mag)
 
     # # for (i, gen) in pm.set.gens
     # #     @constraint(pm.model, norm([2*pg[i], pg_sqr[i]-1]) <= pg_sqr[i]+1)
@@ -297,7 +297,8 @@ function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
 
     pg = getvariable(pm.model, :pg)
     cost = (i) -> pm.set.gens[i]["cost"]
-    return @objective(pm.model, Min, sum{ cost(i)[1]*pg[i]^2 + cost(i)[2]*pg[i] + cost(i)[3], i in pm.set.gen_indexes} )
+    return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in pm.set.branch_indexes})
+    # return @objective(pm.model, Min, sum{ cost(i)[1]*pg[i]^2 + cost(i)[2]*pg[i] + cost(i)[3], i in pm.set.gen_indexes} + sum{ i_dc_mag[i]^2, i in pm.set.bus_indexes})
 
 end
 
@@ -316,7 +317,10 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
     @printf "Branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
 
     if branch["type"] != "xf"
-        return Set([])
+        k = branch["index"]
+        ieff = getvariable(pm.model, :i_dc_mag)
+        c = @constraint(pm.model, ieff[k] >= 0.0)
+        return Set([c])
     end
 
 
@@ -324,8 +328,8 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         println("  Ungrounded config, ieff constrained to zero")
         k = branch["index"]
         ieff = getvariable(pm.model, :i_dc_mag)
-        c = @constraint(pm.model, ieff[k] == 0.0)
-        return Set([])
+        c = @constraint(pm.model, ieff[k] >= 0.0)
+        return Set([c])
     end
 
 
@@ -378,8 +382,8 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         ihi = getvariable(pm.model, :dc)[(kh,ih,jh)]        
         ilo = getvariable(pm.model, :dc)[(kl,il,jl)]        
 
-        vhi = pm.set.buses[j]["base_kv"]
-        vlo = pm.set.buses[i]["base_kv"]
+        vhi = pm.set.buses[i]["base_kv"]
+        vlo = pm.set.buses[j]["base_kv"]
         a = vhi/vlo
 
         println("branch[$k]: hi_branch[$kh], lo_branch[$kl]")
@@ -424,14 +428,16 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
 
         c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
         c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
-
+        c = @constraint(pm.model, ieff[k] >= 0.0)
         return Set([c])
     end
 
 
     @printf "Unrecognized branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
-
-
+    k = branch["index"]
+    ieff = getvariable(pm.model, :i_dc_mag)
+    c = @constraint(pm.model, ieff[k] >= 0.0)
+    return Set([c])
 end
 
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
@@ -511,19 +517,18 @@ end
 
 function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
     k = branch["index"]
-    i = branch["f_bus"]
-    j = branch["t_bus"]
 
-    if "gmd_br_series" in keys(branch) && "gmd_br_common" in keys(branch)
-        # for autotransforer use to bus as base voltage
-        bus = pm.set.buses[j]
+    if "hi_bus" in keys(branch)
+        # transformer object
+        i = branch["hi_bus"]
+        j = branch["lo_bus"]
     else
-        # for gwye-delta transformer use from bus as base voltage
-        # this will change for the delta-gwye transformer type
-        # might consider adding a "high" bus field to make this 
-        # clear
-        bus = pm.set.buses[i]
+        # line object
+        i = branch["f_bus"]
+        j = branch["t_bus"]
     end
+
+    bus = pm.set.buses[i]
 
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
     qloss = getvariable(pm.model, :qloss)
