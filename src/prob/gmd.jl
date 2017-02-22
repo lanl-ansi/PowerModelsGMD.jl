@@ -160,7 +160,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
 
     for (k,branch) in pm.set.branches
         constraint_dc_current_mag(pm, branch)
-        # constraint_qloss(pm, branch)
+        constraint_qloss(pm, branch)
 
         PMs.constraint_active_ohms_yt(pm, branch) 
         PMs.constraint_reactive_ohms_yt(pm, branch) 
@@ -297,8 +297,9 @@ function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
 
     pg = getvariable(pm.model, :pg)
     cost = (i) -> pm.set.gens[i]["cost"]
-    return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in pm.set.branch_indexes})
-    # return @objective(pm.model, Min, sum{ cost(i)[1]*pg[i]^2 + cost(i)[2]*pg[i] + cost(i)[3], i in pm.set.gen_indexes} + sum{ i_dc_mag[i]^2, i in pm.set.bus_indexes})
+    # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in pm.set.branch_indexes})
+    return @objective(pm.model, Min, sum{ cost(i)[1]*pg[i]^2 + cost(i)[2]*pg[i] + cost(i)[3], i in pm.set.gen_indexes} + sum{ i_dc_mag[i]^2, i in pm.set.branch_indexes})
+    # return @objective(pm.model, Min, sum{ cost(i)[1]*pg[i]^2 + cost(i)[2]*pg[i] + cost(i)[3], i in pm.set.gen_indexes})
 
 end
 
@@ -543,7 +544,7 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
         # println("bus[$i]: a = $a, K = $K")
 
           
-        @printf "k = %d, Kold = %f, ib = %f, Knew = %f\n" k branch["gmd_k"] ibase K 
+        @printf "k = %d, Kold = %f, vb = %f, ib = %f, Knew = %f\n" k branch["gmd_k"] bus["base_kv"] ibase K 
         # K is per phase
         c = @constraint(pm.model, qloss[(k,i,j)] == K*i_dc_mag[k]/(3.0*branch["baseMVA"]))
         c = @constraint(pm.model, qloss[(k,j,i)] == 0.0)
@@ -602,5 +603,5 @@ end
 function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
     mva_base = pm.data["baseMVA"]
     # mva_base = 1.0
-        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])], scale = (x,item) -> x*mva_base)
+        PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["hi_bus"], item["lo_bus"])], scale = (x,item) -> x*mva_base)
 end
