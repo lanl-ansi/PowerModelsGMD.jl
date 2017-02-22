@@ -92,8 +92,15 @@ function merge_result(data,result)
 
         br["p_from"] = sol["branch"][k]["p_from"]
         br["p_to"] = sol["branch"][k]["p_to"]
-        br["q_from"] = sol["branch"][k]["q_from"] + sol["branch"][k]["gmd_qloss"]
+        br["q_from"] = sol["branch"][k]["q_from"] 
         br["q_to"] = sol["branch"][k]["q_to"]
+
+        if br["hi_bus"] == br["f_bus"]
+            br["q_from"] += sol["branch"][k]["gmd_qloss"]
+        else    
+            br["q_to"] += sol["branch"][k]["gmd_qloss"]
+        end
+
         br["ieff"] = sol["branch"][k]["gmd_idc_mag"]
         br["qloss_from"] = sol["branch"][k]["gmd_qloss"]
 
@@ -154,8 +161,8 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     for (i,bus) in pm.set.buses
         # turn off linking between dc & ac powerflow
         PMs.constraint_active_kcl_shunt(pm, bus) 
-        PMs.constraint_reactive_kcl_shunt(pm, bus) 
-        # constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
+        # PMs.constraint_reactive_kcl_shunt(pm, bus) 
+        constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
     end
 
     for (k,branch) in pm.set.branches
@@ -519,15 +526,8 @@ end
 function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
     k = branch["index"]
 
-    if "hi_bus" in keys(branch)
-        # transformer object
-        i = branch["hi_bus"]
-        j = branch["lo_bus"]
-    else
-        # line object
-        i = branch["f_bus"]
-        j = branch["t_bus"]
-    end
+    i = branch["hi_bus"]
+    j = branch["lo_bus"]
 
     bus = pm.set.buses[i]
 
