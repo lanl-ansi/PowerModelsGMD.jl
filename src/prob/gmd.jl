@@ -148,14 +148,14 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     PMs.constraint_theta_ref(pm) 
     PMs.constraint_complex_voltage(pm) 
 
-    PMs.objective_min_fuel_cost(pm) 
-    #objective_gmd_min_fuel(pm)
+    # PMs.objective_min_fuel_cost(pm) 
+    objective_gmd_min_fuel(pm)
 
     for (i,bus) in pm.set.buses
         # turn off linking between dc & ac powerflow
         PMs.constraint_active_kcl_shunt(pm, bus) 
-        # PMs.constraint_reactive_kcl_shunt(pm, bus) 
-        constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
+        PMs.constraint_reactive_kcl_shunt(pm, bus) 
+        # constraint_qloss_kcl_shunt(pm, bus)        # turn on linking between dc & ac powerflow
     end
 
     for (k,branch) in pm.set.branches
@@ -282,19 +282,24 @@ end
 
 
 ################### Objective ###################
-# function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
-#     # @variable(pm.model, pm.set.gens[i]["pmin"]^2 <= pg_sqr[i in pm.set.gen_indexes] <= pm.set.gens[i]["pmax"]^2)
+function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
+    # @variable(pm.model, pm.set.gens[i]["pmin"]^2 <= pg_sqr[i in pm.set.gen_indexes] <= pm.set.gens[i]["pmax"]^2)
 
-#     pg = getvariable(pm.model, :pg)
-#     i_dc_mag = getvariable(pm.model, :i_dc_mag)
+    # pg = getvariable(pm.model, :pg)
+    # i_dc_mag = getvariable(pm.model, :i_dc_mag)
 
-#     # for (i, gen) in pm.set.gens
-#     #     @constraint(pm.model, norm([2*pg[i], pg_sqr[i]-1]) <= pg_sqr[i]+1)
-#     # end
+    # # for (i, gen) in pm.set.gens
+    # #     @constraint(pm.model, norm([2*pg[i], pg_sqr[i]-1]) <= pg_sqr[i]+1)
+    # # end
 
-#     cost = (i) -> pm.set.gens[i]["cost"]
-#     return @objective(pm.model, Min, sum{ cost(i)[2]*pg[i], i in pm.set.gen_indexes} + sum{ 0.01*i_dc_mag[i], i in pm.set.bus_indexes})
-# end
+    # cost = (i) -> pm.set.gens[i]["cost"]
+    # return @objective(pm.model, Min, sum{ cost(i)[2]*pg[i], i in pm.set.gen_indexes} + sum{ 0.01*i_dc_mag[i], i in pm.set.bus_indexes})
+
+    pg = getvariable(pm.model, :pg)
+    cost = (i) -> pm.set.gens[i]["cost"]
+    return @objective(pm.model, Min, sum{ cost(i)[1]*pg[i]^2 + cost(i)[2]*pg[i] + cost(i)[3], i in pm.set.gen_indexes} )
+
+end
 
 ################### Constraints ###################
 # correct equation is ieff = |a*ihi + ilo|/a
@@ -316,6 +321,10 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
 
 
     if branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        println("  Ungrounded config, ieff constrained to zero")
+        k = branch["index"]
+        ieff = getvariable(pm.model, :i_dc_mag)
+        c = @constraint(pm.model, ieff[k] == 0.0)
         return Set([])
     end
 
