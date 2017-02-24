@@ -1,9 +1,3 @@
 julia 0.5.0
 
 Ipopt
-SCS
-GLPKMathProgInterface
-Pajarito
-
-BaseTestNext
-Logging
