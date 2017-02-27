@@ -14,7 +14,7 @@ else
 end
 
 # default setup for solvers
-#ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-ipopt_solver = IpoptSolver(tol=1e-6)
+ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
+#ipopt_solver = IpoptSolver(tol=1e-6)
 
 include("gmd.jl")

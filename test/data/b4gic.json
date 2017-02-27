@@ -31,9 +31,11 @@
       "rdc_lo": null, 
       "shift": 0.0, 
       "sub": 1, 
-      "t_bus": 3, 
+      "t_bus": 3,
       "tap": 0.0, 
-      "type": "xf"
+      "type": "xf",
+      "tap": 1.0,
+      "ratio": 0.0
     }, 
     "2":{
       "angmax": 30.0, 
@@ -63,7 +65,9 @@
       "sub": null, 
       "t_bus": 2, 
       "tap": 0.0, 
-      "type": "line"
+      "type": "line",
+      "tap": 1.0,
+      "ratio": 0.0
     }, 
     "3":{
       "angmax": 30.0, 
@@ -96,7 +100,9 @@
       "sub": 2, 
       "t_bus": 4, 
       "tap": 0.0, 
-      "type": "xf"
+      "type": "xf",
+      "tap": 1.0,
+      "ratio": 0.0
     }
   }, 
   "bus": {

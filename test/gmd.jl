@@ -1,5 +1,5 @@
 @testset "test ac data" begin
-    @testset "4-bus case opf" begin
+    @testset "4-bus case ac opf" begin
         result = run_ac_opf("../test/data/b4gic.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
@@ -42,13 +42,15 @@ end
         result = PowerModels.build_solution(pm, status, solve_time; solution_builder = PowerModelsGMD.get_gmd_solution)
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
+
         if !(result["status"] === :LocalInfeasible)
-                data = PowerModelsGMD.merge_result(data,result)
+                #data = PowerModelsGMD.merge_result(data,result)
+                PowerModels.update_data(data, result["solution"])
         end
-        @test isapprox(data["bus"][1]["gmd_vdc"], -32, atol=0.1)
-        @test isapprox(data["bus"][1]["vm"], 0.933660, atol=1e-3)
-        @test isapprox(data["branch"][3]["p_from"], -1007.680670, atol=1e-3)
-        @test isapprox(data["branch"][3]["q_from"], -434.504704, atol=1e-3)
+        @test isapprox(data["gmd_bus"]["1"]["gmd_vdc"], -32, atol=0.1)
+        @test isapprox(data["bus"]["1"]["vm"], 0.933660, atol=1e-3)
+        @test isapprox(data["branch"]["3"]["p_from"], -1007.680670, atol=1e-3)
+        @test isapprox(data["branch"]["3"]["q_from"], -434.504704, atol=1e-3)
     end
 
     @testset "6-bus case" begin
