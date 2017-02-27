@@ -1,8 +1,37 @@
+@testset "test ac data" begin
+    @testset "4-bus case opf" begin
+        result = run_ac_opf("../test/data/b4gic.json", ipopt_solver)
 
+        @test result["status"] == :LocalOptimal
+        #@test isapprox(result["objective"], 1.398e5; atol = 1e2)
+    end
+
+    @testset "4-bus case opf" begin
+        data = PowerModels.parse_file("../test/data/b4gic.json")
+        
+        result = run_ac_opf(data, ipopt_solver)
+
+        @test result["status"] == :LocalOptimal
+        #@test isapprox(result["objective"], 1.398e5; atol = 1e2)
+    end
+
+    @testset "4-bus case opf by-hand" begin
+        data = PowerModels.parse_file("../test/data/b4gic.json")
+        data["do_gmd"] = true
+        data = PowerModelsGMD.setup_gmd(data)
+        pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
+        pm.setting["output"] = Dict("line_flows" => true)
+        PowerModels.post_opf(pm)
+        status, solve_time = solve(pm)
+        result = PowerModels.build_solution(pm, status, solve_time)
+        @test result["status"] == :LocalOptimal
+        #@test isapprox(result["objective"], 1.398e5; atol = 1e2)
+    end
+end
 
 @testset "test ac gmd" begin
+
     @testset "4-bus case" begin
-        # data = PowerModels.parse_file("/home/abarnes/.julia/v0.5/PowerModelsGMD/test/data/b4gic.json")
         data = PowerModels.parse_file("../test/data/b4gic.json")
         data["do_gmd"] = true
         data = PowerModelsGMD.setup_gmd(data)
@@ -23,7 +52,6 @@
     end
 
     @testset "6-bus case" begin
-        # data = PowerModels.parse_file("/home/abarnes/.julia/v0.5/PowerModelsGMD/test/data/b4gic.json")
         data = PowerModels.parse_file("../test/data/b6gic_nerc.json")
         data["do_gmd"] = true
         data = PowerModelsGMD.setup_gmd(data)
@@ -54,7 +82,6 @@
     end
 
     @testset "19-bus case" begin
-        # data = PowerModels.parse_file("/home/abarnes/.julia/v0.5/PowerModelsGMD/test/data/b4gic.json")
         data = PowerModels.parse_file("../test/data/epri21.json")
         data["do_gmd"] = true
         data = PowerModelsGMD.setup_gmd(data)
@@ -75,9 +102,7 @@
         #@test isapprox(data["bus"][6]["vm"], 1.05, atol=1e-3)
     end
 
-
     @testset "150-bus case" begin
-        # data = PowerModels.parse_file("/home/abarnes/.julia/v0.5/PowerModelsGMD/test/data/b4gic.json")
         data = PowerModels.parse_file("../test/data/uiuc150.json")
         data["do_gmd"] = true
         data = PowerModelsGMD.setup_gmd(data)
