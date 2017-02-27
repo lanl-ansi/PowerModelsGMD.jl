@@ -37,7 +37,7 @@
         if !(result["status"] === :LocalInfeasible)
                 data = PowerModelsGMD.merge_result(data,result)
         end
-        @test isapprox(data["bus"][2]["gmd_vdc"], -23.022192, atol=0.1)
+        @test isapprox(data["bus"][2]["gmd_vdc"], -23.022192, atol=1e-1)
         @test isapprox(data["bus"][2]["vm"], 0.92784494, atol=1e-3)
         # check that kcl with qloss is being done correctly
         # br23
@@ -65,6 +65,14 @@
         result = PowerModels.build_solution(pm, status, solve_time; solution_builder = PowerModelsGMD.get_gmd_solution)
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 5.08585e5; atol = 1e2)
+        if !(result["status"] === :LocalInfeasible)
+                data = PowerModelsGMD.merge_result(data,result)
+        end
+        @test isapprox(data["bus"][6]["gmd_vdc"], 44.31, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
+        @printf "gmd_vdc[17] = %f\n" data["bus"][17]["gmd_vdc"]
+        # this is actually bus #17, but bus numbers are not contiguous
+        @test isapprox(data["bus"][15]["gmd_vdc"],-41.01, atol=1e-1) # PowerModels: gmd_vdc = -40.95101258160489
+        #@test isapprox(data["bus"][6]["vm"], 1.05, atol=1e-3)
     end
 
 
