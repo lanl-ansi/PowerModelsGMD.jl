@@ -50,33 +50,33 @@ function merge_result(data,result)
     sol = result["solution"]
 
     # merge the result
-    for k in 1:length(sol["gen"])
-        data["gen"][k]["pg"] = sol["gen"][k]["pg"]
-        data["gen"][k]["qg"] = sol["gen"][k]["qg"]
+    for (k,gen) in sol["gen"]
+        data["gen"][k]["pg"] = gen["pg"]
+        data["gen"][k]["qg"] = gen["qg"]
     end
 
 
     if "do_gmd" in keys(data) && data["do_gmd"]
-    # need to merge this into the regular branches
-        for k in 1:length(sol["gmd_branch"])
-            data["gmd_branch"][k]["gmd_idc"] = sol["gmd_branch"][k]["gmd_idc"]
+        # need to merge this into the regular branches
+        for (k,gmd_branch) in sol["gmd_branch"]
+            data["gmd_branch"][k]["gmd_idc"] = gmd_branch["gmd_idc"]
         end
 
         # need to merge this into the regular branches
-        for k in 1:length(sol["gmd_bus"])
-            data["gmd_bus"][k]["gmd_vdc"] = sol["gmd_bus"][k]["gmd_vdc"]
+        for (k,gmd_bus) in sol["gmd_bus"]
+            data["gmd_bus"][k]["gmd_vdc"] = gmd_bus["gmd_vdc"]
         end
     end
 
 
-    for k in 1:length(sol["bus"])
+    for k in 1:length(data["bus"])
         i = data["bus"][k]["index"] 
         data["bus"][k]["va"] = sol["bus"][i]["va"]
         data["bus"][k]["vm"] = sol["bus"][i]["vm"]
 
         if "do_gmd" in keys(data) && data["do_gmd"]
-            i = data["bus"][k]["gmd_bus"]
-            data["bus"][k]["gmd_vdc"] = data["gmd_bus"][i]["gmd_vdc"] 
+            j = data["bus"][k]["gmd_bus"]
+            data["bus"][k]["gmd_vdc"] = data["gmd_bus"][j]["gmd_vdc"] 
         end
     end
 
@@ -87,22 +87,23 @@ function merge_result(data,result)
         end
     end
 
-    for k in 1:length(sol["branch"])
+    for k in 1:length(data["branch"])
         br = data["branch"][k]
+        index = br["index"]
 
-        br["p_from"] = sol["branch"][k]["p_from"]
-        br["p_to"] = sol["branch"][k]["p_to"]
-        br["q_from"] = sol["branch"][k]["q_from"] 
-        br["q_to"] = sol["branch"][k]["q_to"]
+        br["p_from"] = sol["branch"][index]["p_from"]
+        br["p_to"] = sol["branch"][index]["p_to"]
+        br["q_from"] = sol["branch"][index]["q_from"] 
+        br["q_to"] = sol["branch"][index]["q_to"]
 
         if br["hi_bus"] == br["f_bus"]
-            br["q_from"] += sol["branch"][k]["gmd_qloss"]
+            br["q_from"] += sol["branch"][index]["gmd_qloss"]
         else    
-            br["q_to"] += sol["branch"][k]["gmd_qloss"]
+            br["q_to"] += sol["branch"][index]["gmd_qloss"]
         end
 
-        br["ieff"] = sol["branch"][k]["gmd_idc_mag"]
-        br["qloss_from"] = sol["branch"][k]["gmd_qloss"]
+        br["ieff"] = sol["branch"][index]["gmd_idc_mag"]
+        br["qloss_from"] = sol["branch"][index]["gmd_qloss"]
 
 
         if "do_gmd" in keys(data) && data["do_gmd"] && br["type"] == "line"
