@@ -1,25 +1,27 @@
 language: julia
 julia:
-# only v0.5 is supported for latest version of JuMP and Pajarito
   - 0.5
 
+cache:
+ directories:
+   - /home/travis/.julia
+sudo: false
+addons:
+  apt_packages:
+    - gfortran
+    - liblapack-dev
+    - libgmp-dev
+    - libglpk-dev
+
 before_install:
-  # IPOPT dependencies
-  - sudo apt-get -qq update
-  - sudo apt-get install -y gfortran
-  - sudo apt-get install -y liblapack-dev
-  - sudo apt-get install -y libglpk-dev
-  # GLPK dependencies
-  - sudo apt-get install -y libgmp-dev
   - julia -e 'Pkg.add("Coverage")'
-  # Current tests requires the latest version of Pajarito
-  - julia -e 'Pkg.add("Pajarito")'
-  - julia -e 'Pkg.checkout("Pajarito")'
+  - julia -e 'Pkg.update()' #make sure we get the latest version of METADATA
 
 script:
   - julia -e 'Pkg.clone(pwd())'
-  - julia -e 'Pkg.test("PowerModelsLANL", coverage=true)'
+  - julia -e 'Pkg.test("PowerModelsGMD", coverage=true)'
 
 after_success:
   - echo $TRAVIS_JULIA_VERSION
-  - julia -e 'using Coverage; cd(Pkg.dir("PowerModelsLANL")); Codecov.submit(process_folder("."), codecov_url="https://cov.lanlytics.com", token="e69e281d-cd23-4aef-aeb5-40ed8bad2b49");'
+  # this needs to be updated
+  #- export REPO_TOKEN=9c0bd91b-c273-45a8-a221-a4d4e63ac464; julia -e 'using Coverage; cd(Pkg.dir("PowerModels")); Codecov.submit(process_folder("."));'

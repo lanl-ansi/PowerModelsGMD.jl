@@ -18,6 +18,5 @@ module PowerModelsGMD
     include("form/wr.jl")
     include("form/wrm.jl")
 
-    include("prob/ml.jl")
     include("prob/gmd.jl")
 end
