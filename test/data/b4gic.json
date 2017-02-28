@@ -32,10 +32,8 @@
       "shift": 0.0, 
       "sub": 1, 
       "t_bus": 3,
-      "tap": 0.0, 
-      "type": "xf",
       "tap": 1.0,
-      "ratio": 0.0
+      "type": "xf"
     }, 
     "2":{
       "angmax": 30.0, 
@@ -64,10 +62,8 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 2, 
-      "tap": 0.0, 
-      "type": "line",
-      "tap": 1.0,
-      "ratio": 0.0
+      "tap": 1.0, 
+      "type": "line"
     }, 
     "3":{
       "angmax": 30.0, 
@@ -99,10 +95,8 @@
       "shift": 0.0, 
       "sub": 2, 
       "t_bus": 4, 
-      "tap": 0.0, 
-      "type": "xf",
-      "tap": 1.0,
-      "ratio": 0.0
+      "tap": 1.0, 
+      "type": "xf"
     }
   }, 
   "bus": {
