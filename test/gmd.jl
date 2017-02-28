@@ -44,13 +44,17 @@ end
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
 
         if !(result["status"] === :LocalInfeasible)
-                #data = PowerModelsGMD.merge_result(data,result)
-                PowerModels.update_data(data, result["solution"])
+                data = PowerModelsGMD.merge_result(data,result)
+                #PowerModels.update_data(data, result["solution"])
         end
-        @test isapprox(data["gmd_bus"]["1"]["gmd_vdc"], -32, atol=0.1)
+
+        # changes due to the fact that becouse update_data does not do some of the stuff that merge_result does
+        @test isapprox(data["bus"]["1"]["gmd_vdc"], -32, atol=0.1)
+        #@test isapprox(data["gmd_bus"]["3"]["gmd_vdc"], -32, atol=0.1)
         @test isapprox(data["bus"]["1"]["vm"], 0.933660, atol=1e-3)
         @test isapprox(data["branch"]["3"]["p_from"], -1007.680670, atol=1e-3)
         @test isapprox(data["branch"]["3"]["q_from"], -434.504704, atol=1e-3)
+        #@test isapprox(data["branch"]["3"]["q_from"] + data["branch"]["3"]["gmd_qloss"], -434.504704, atol=1e-3)
     end
 
     @testset "6-bus case" begin

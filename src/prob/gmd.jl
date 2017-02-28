@@ -69,27 +69,26 @@ function merge_result(data,result)
     end
 
 
-    for k in 1:length(data["bus"])
-        i = data["bus"][k]["index"] 
-        data["bus"][k]["va"] = sol["bus"][i]["va"]
-        data["bus"][k]["vm"] = sol["bus"][i]["vm"]
+    for (k,bus) in sol["bus"]
+        data["bus"][k]["va"] = bus["va"]
+        data["bus"][k]["vm"] = bus["vm"]
 
         if "do_gmd" in keys(data) && data["do_gmd"]
-            j = data["bus"][k]["gmd_bus"]
-            data["bus"][k]["gmd_vdc"] = data["gmd_bus"][j]["gmd_vdc"] 
+            j = "$(data["bus"][k]["gmd_bus"])"
+            data["bus"][k]["gmd_vdc"] = data["gmd_bus"][j]["gmd_vdc"]
         end
     end
 
     if "do_gmd" in keys(data) && data["do_gmd"]
-        for k in 1:length(data["sub"])
-            i = data["sub"][k]["gmd_bus"]
-            data["sub"][k]["gmd_vdc"] = sol["gmd_bus"][i]["gmd_vdc"]
+        for (k,sub) in data["sub"]
+            i = "$(sub["gmd_bus"])"
+            sub["gmd_vdc"] = sol["gmd_bus"][i]["gmd_vdc"]
         end
     end
 
-    for k in 1:length(data["branch"])
+    for (k,br) in data["branch"]
         br = data["branch"][k]
-        index = br["index"]
+        index = k
 
         br["p_from"] = sol["branch"][index]["p_from"]
         br["p_to"] = sol["branch"][index]["p_to"]
@@ -105,9 +104,8 @@ function merge_result(data,result)
         br["ieff"] = sol["branch"][index]["gmd_idc_mag"]
         br["qloss_from"] = sol["branch"][index]["gmd_qloss"]
 
-
         if "do_gmd" in keys(data) && data["do_gmd"] && br["type"] == "line"
-            i = br["gmd_br"]
+            i = "$(br["gmd_br"])"
             br["gmd_idc"] = data["gmd_branch"][i]["gmd_idc"]
         end
     end
