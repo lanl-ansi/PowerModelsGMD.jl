@@ -71,20 +71,20 @@ end
         if !(result["status"] === :LocalInfeasible)
                 data = PowerModelsGMD.merge_result(data,result)
         end
-        @test isapprox(data["bus"][2]["gmd_vdc"], -23.022192, atol=1e-1)
-        @test isapprox(data["bus"][2]["vm"], 0.92784494, atol=1e-3)
+        @test isapprox(data["bus"]["2"]["gmd_vdc"], -23.022192, atol=1e-1)
+        @test isapprox(data["bus"]["2"]["vm"], 0.92784494, atol=1e-3)
         # check that kcl with qloss is being done correctly
         # br23
-        @test isapprox(data["branch"][2]["q_from"], -36.478387, atol=1e-3)
-        @test isapprox(data["branch"][2]["q_to"], 49.0899781, atol=1e-3)
+        @test isapprox(data["branch"]["2"]["q_from"], -36.478387, atol=1e-3)
+        @test isapprox(data["branch"]["2"]["q_to"], 49.0899781, atol=1e-3)
         # T2 gwye-gwye auto
-        @test isapprox(data["branch"][4]["q_from"], -36.402340, atol=1e-3)
-        @test isapprox(data["branch"][4]["q_to"], 36.4783871, atol=1e-3)
+        @test isapprox(data["branch"]["4"]["q_from"], -36.402340, atol=1e-3)
+        @test isapprox(data["branch"]["4"]["q_to"], 36.4783871, atol=1e-3)
         # br45
-        @test isapprox(data["branch"][5]["p_from"], -100.40386, atol=1e-3)
-        @test isapprox(data["branch"][5]["p_to"], 100.648681, atol=1e-3)
-        @test isapprox(data["branch"][5]["q_from"], -49.089978, atol=1e-3)
-        @test isapprox(data["branch"][5]["q_to"], 48.6800005, atol=1e-3)
+        @test isapprox(data["branch"]["5"]["p_from"], -100.40386, atol=1e-3)
+        @test isapprox(data["branch"]["5"]["p_to"], 100.648681, atol=1e-3)
+        @test isapprox(data["branch"]["5"]["q_from"], -49.089978, atol=1e-3)
+        @test isapprox(data["branch"]["5"]["q_to"], 48.6800005, atol=1e-3)
     end
 
     @testset "19-bus case" begin
@@ -101,11 +101,11 @@ end
         if !(result["status"] === :LocalInfeasible)
                 data = PowerModelsGMD.merge_result(data,result)
         end
-        @test isapprox(data["bus"][6]["gmd_vdc"], 44.31, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
+        @test isapprox(data["bus"]["6"]["gmd_vdc"], 44.31, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
         #@printf "gmd_vdc[17] = %f\n" data["bus"][17]["gmd_vdc"]
         # this is actually bus #17, but bus numbers are not contiguous
-        @test isapprox(data["bus"][15]["gmd_vdc"],  -41.01, atol=1e-1) # PowerModels: gmd_vdc = -40.95101258160489
-        #@test isapprox(data["bus"][6]["vm"], 1.05, atol=1e-3)
+        @test isapprox(data["bus"]["15"]["gmd_vdc"],  -41.01, atol=1e-1) # PowerModels: gmd_vdc = -40.95101258160489
+        #@test isapprox(data["bus"]["6"]["vm"], 1.05, atol=1e-3)
     end
 
     @testset "150-bus case" begin
@@ -122,8 +122,8 @@ end
         if !(result["status"] === :LocalInfeasible)
                 data = PowerModelsGMD.merge_result(data,result)
         end
-        @test isapprox(data["bus"][92]["gmd_vdc"], 7.00, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
-        @test isapprox(data["bus"][99]["gmd_vdc"], -32.74, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
+        @test isapprox(data["bus"]["92"]["gmd_vdc"], 7.00, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
+        @test isapprox(data["bus"]["99"]["gmd_vdc"], -32.74, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
     end
 end
 
