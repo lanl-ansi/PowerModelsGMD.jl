@@ -1,8 +1,8 @@
 {
-  "area": [], 
+  "area": {}, 
   "baseMVA": 100.0, 
-  "branch": [
-    {
+  "branch": {
+    "1": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -29,10 +29,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 3, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "2": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -59,10 +59,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 5, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "3": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -89,10 +89,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 5, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "4": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -119,10 +119,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 6, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "5": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -149,10 +149,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 6, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "6": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -179,10 +179,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 11, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "7": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -209,10 +209,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 12, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "8": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -239,10 +239,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 4, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "9": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -269,10 +269,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 6, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "10": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -299,10 +299,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 6, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "11": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -329,10 +329,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 20, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "12": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -359,10 +359,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 17, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "13": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -389,10 +389,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 20, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "14": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -419,10 +419,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 2, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "15": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -449,10 +449,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 11, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "line"
     }, 
-    {
+    "16": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -477,10 +477,10 @@
       "shift": 0.0, 
       "sub": null, 
       "t_bus": 21, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "series_cap"
     }, 
-    {
+    "17": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -510,10 +510,10 @@
       "shift": 0.0, 
       "sub": 1, 
       "t_bus": 2, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "18": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -543,10 +543,10 @@
       "shift": 0.0, 
       "sub": 4, 
       "t_bus": 3, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "19": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -576,10 +576,10 @@
       "shift": 0.0, 
       "sub": 4, 
       "t_bus": 3, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "20": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -613,10 +613,10 @@
       "shift": 0.0, 
       "sub": 4, 
       "t_bus": 4, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "21": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -650,10 +650,10 @@
       "shift": 0.0, 
       "sub": 4, 
       "t_bus": 4, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "22": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -683,10 +683,10 @@
       "shift": 0.0, 
       "sub": 5, 
       "t_bus": 20, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "23": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -716,10 +716,10 @@
       "shift": 0.0, 
       "sub": 5, 
       "t_bus": 20, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "24": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -749,10 +749,10 @@
       "shift": 0.0, 
       "sub": 6, 
       "t_bus": 7, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "25": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -782,10 +782,10 @@
       "shift": 0.0, 
       "sub": 6, 
       "t_bus": 8, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "26": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -815,10 +815,10 @@
       "shift": 0.0, 
       "sub": 8, 
       "t_bus": 13, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "27": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -848,10 +848,10 @@
       "shift": 0.0, 
       "sub": 8, 
       "t_bus": 14, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "28": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -885,10 +885,10 @@
       "shift": 0.0, 
       "sub": 3, 
       "t_bus": 15, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "29": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -922,10 +922,10 @@
       "shift": 0.0, 
       "sub": 3, 
       "t_bus": 15, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "30": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -955,10 +955,10 @@
       "shift": 0.0, 
       "sub": 2, 
       "t_bus": 18, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }, 
-    {
+    "31": {
       "angmax": 30.0, 
       "angmin": -30.0, 
       "baseMVA": 100.0, 
@@ -988,12 +988,12 @@
       "shift": 0.0, 
       "sub": 2, 
       "t_bus": 19, 
-      "tap": 0.0, 
+      "tap": 1.0, 
       "type": "xf"
     }
-  ], 
-  "bus": [
-    {
+  }, 
+  "bus": {
+    "1": {
       "area": 1, 
       "base_kv": 22.0, 
       "bs": 0.0, 
@@ -1021,7 +1021,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "2": {
       "area": 1, 
       "base_kv": 345.0, 
       "bs": 0.0, 
@@ -1049,7 +1049,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "3": {
       "area": 1, 
       "base_kv": 345.0, 
       "bs": 0.0, 
@@ -1077,7 +1077,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "4": {
       "area": 1, 
       "base_kv": 500.0, 
       "bs": 546.62, 
@@ -1105,7 +1105,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "5": {
       "area": 1, 
       "base_kv": 500.0, 
       "bs": 0.0, 
@@ -1133,7 +1133,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "6": {
       "area": 1, 
       "base_kv": 500.0, 
       "bs": 0.0, 
@@ -1161,7 +1161,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "7": {
       "area": 1, 
       "base_kv": 18.0, 
       "bs": 0.0, 
@@ -1189,7 +1189,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "8": {
       "area": 1, 
       "base_kv": 22.0, 
       "bs": 0.0, 
@@ -1217,7 +1217,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "11": {
       "area": 1, 
       "base_kv": 500.0, 
       "bs": 0.0, 
@@ -1245,7 +1245,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "12": {
       "area": 1, 
       "base_kv": 500.0, 
       "bs": 0.0, 
@@ -1273,7 +1273,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "13": {
       "area": 1, 
       "base_kv": 22.0, 
       "bs": 0.0, 
@@ -1301,7 +1301,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "14": {
       "area": 1, 
       "base_kv": 22.0, 
       "bs": 0.0, 
@@ -1329,7 +1329,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "15": {
       "area": 1, 
       "base_kv": 500.0, 
       "bs": 0.0, 
@@ -1357,7 +1357,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "16": {
       "area": 1, 
       "base_kv": 345.0, 
       "bs": 212.53, 
@@ -1385,7 +1385,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "17": {
       "area": 1, 
       "base_kv": 345.0, 
       "bs": 0.0, 
@@ -1413,7 +1413,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "18": {
       "area": 1, 
       "base_kv": 22.0, 
       "bs": 0.0, 
@@ -1441,7 +1441,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "19": {
       "area": 1, 
       "base_kv": 22.0, 
       "bs": 0.0, 
@@ -1469,7 +1469,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "20": {
       "area": 1, 
       "base_kv": 345.0, 
       "bs": 0.0, 
@@ -1497,7 +1497,7 @@
       "vmin": 0.7, 
       "zone": 1
     }, 
-    {
+    "21": {
       "area": 1, 
       "base_kv": 500.0, 
       "bs": 0.0, 
@@ -1525,10 +1525,10 @@
       "vmin": 0.7, 
       "zone": 1
     }
-  ], 
-  "dcline": [], 
-  "gen": [
-    {
+  }, 
+  "dcline": {}, 
+  "gen": {
+    "1": {
       "apf": 0.0, 
       "cost": [
         0.11, 
@@ -1539,7 +1539,9 @@
       "gen_status": 1, 
       "index": 1, 
       "mbase": 100.0, 
+      "model": 2, 
       "name": "gen1", 
+      "ncost": 3, 
       "pc1": 0.0, 
       "pc2": 0.0, 
       "pg": 777.32, 
@@ -1555,10 +1557,12 @@
       "ramp_30": 0.0, 
       "ramp_agc": 0.0, 
       "ramp_q": -1000.0, 
+      "shutdown": 0.0, 
+      "startup": 0.0, 
       "type": "gen", 
       "vg": 1.1
     }, 
-    {
+    "2": {
       "apf": 0.0, 
       "cost": [
         0.11, 
@@ -1569,7 +1573,9 @@
       "gen_status": 1, 
       "index": 2, 
       "mbase": 100.0, 
+      "model": 2, 
       "name": "gen2", 
+      "ncost": 3, 
       "pc1": 0.0, 
       "pc2": 0.0, 
       "pg": 900.0, 
@@ -1585,10 +1591,12 @@
       "ramp_30": 0.0, 
       "ramp_agc": 0.0, 
       "ramp_q": -1000.0, 
+      "shutdown": 0.0, 
+      "startup": 0.0, 
       "type": "gen", 
       "vg": 1.1
     }, 
-    {
+    "3": {
       "apf": 0.0, 
       "cost": [
         0.11, 
@@ -1599,7 +1607,9 @@
       "gen_status": 1, 
       "index": 3, 
       "mbase": 100.0, 
+      "model": 2, 
       "name": "gen3", 
+      "ncost": 3, 
       "pc1": 0.0, 
       "pc2": 0.0, 
       "pg": 900.0, 
@@ -1615,10 +1625,12 @@
       "ramp_30": 0.0, 
       "ramp_agc": 0.0, 
       "ramp_q": -1000.0, 
+      "shutdown": 0.0, 
+      "startup": 0.0, 
       "type": "gen", 
       "vg": 1.1
     }, 
-    {
+    "4": {
       "apf": 0.0, 
       "cost": [
         0.11, 
@@ -1629,7 +1641,9 @@
       "gen_status": 1, 
       "index": 4, 
       "mbase": 100.0, 
+      "model": 2, 
       "name": "gen4", 
+      "ncost": 3, 
       "pc1": 0.0, 
       "pc2": 0.0, 
       "pg": 500.0, 
@@ -1645,10 +1659,12 @@
       "ramp_30": 0.0, 
       "ramp_agc": 0.0, 
       "ramp_q": -1000.0, 
+      "shutdown": 0.0, 
+      "startup": 0.0, 
       "type": "gen", 
       "vg": 1.1
     }, 
-    {
+    "5": {
       "apf": 0.0, 
       "cost": [
         0.11, 
@@ -1659,7 +1675,9 @@
       "gen_status": 1, 
       "index": 5, 
       "mbase": 100.0, 
+      "model": 2, 
       "name": "gen5", 
+      "ncost": 3, 
       "pc1": 0.0, 
       "pc2": 0.0, 
       "pg": 500.0, 
@@ -1675,10 +1693,12 @@
       "ramp_30": 0.0, 
       "ramp_agc": 0.0, 
       "ramp_q": -1000.0, 
+      "shutdown": 0.0, 
+      "startup": 0.0, 
       "type": "gen", 
       "vg": 1.1
     }, 
-    {
+    "6": {
       "apf": 0.0, 
       "cost": [
         0.11, 
@@ -1689,7 +1709,9 @@
       "gen_status": 1, 
       "index": 6, 
       "mbase": 100.0, 
+      "model": 2, 
       "name": "gen6", 
+      "ncost": 3, 
       "pc1": 0.0, 
       "pc2": 0.0, 
       "pg": 600.0, 
@@ -1705,10 +1727,12 @@
       "ramp_30": 0.0, 
       "ramp_agc": 0.0, 
       "ramp_q": -1000.0, 
+      "shutdown": 0.0, 
+      "startup": 0.0, 
       "type": "gen", 
       "vg": 1.1
     }, 
-    {
+    "7": {
       "apf": 0.0, 
       "cost": [
         0.11, 
@@ -1719,7 +1743,9 @@
       "gen_status": 1, 
       "index": 7, 
       "mbase": 100.0, 
+      "model": 2, 
       "name": "gen7", 
+      "ncost": 3, 
       "pc1": 0.0, 
       "pc2": 0.0, 
       "pg": 600.0, 
@@ -1735,105 +1761,14 @@
       "ramp_30": 0.0, 
       "ramp_agc": 0.0, 
       "ramp_q": -1000.0, 
+      "shutdown": 0.0, 
+      "startup": 0.0, 
       "type": "gen", 
       "vg": 1.1
     }
-  ], 
-  "gencost": [
-    {
-      "cost": [
-        0.11, 
-        5.0, 
-        0.0
-      ], 
-      "index": 1, 
-      "model": 2, 
-      "name": "gen1_cost", 
-      "ncost": 3, 
-      "shutdown": 0.0, 
-      "startup": 0.0
-    }, 
-    {
-      "cost": [
-        0.11, 
-        5.0, 
-        0.0
-      ], 
-      "index": 2, 
-      "model": 2, 
-      "name": "gen2_cost", 
-      "ncost": 3, 
-      "shutdown": 0.0, 
-      "startup": 0.0
-    }, 
-    {
-      "cost": [
-        0.11, 
-        5.0, 
-        0.0
-      ], 
-      "index": 3, 
-      "model": 2, 
-      "name": "gen3_cost", 
-      "ncost": 3, 
-      "shutdown": 0.0, 
-      "startup": 0.0
-    }, 
-    {
-      "cost": [
-        0.11, 
-        5.0, 
-        0.0
-      ], 
-      "index": 4, 
-      "model": 2, 
-      "name": "gen4_cost", 
-      "ncost": 3, 
-      "shutdown": 0.0, 
-      "startup": 0.0
-    }, 
-    {
-      "cost": [
-        0.11, 
-        5.0, 
-        0.0
-      ], 
-      "index": 5, 
-      "model": 2, 
-      "name": "gen5_cost", 
-      "ncost": 3, 
-      "shutdown": 0.0, 
-      "startup": 0.0
-    }, 
-    {
-      "cost": [
-        0.11, 
-        5.0, 
-        0.0
-      ], 
-      "index": 6, 
-      "model": 2, 
-      "name": "gen6_cost", 
-      "ncost": 3, 
-      "shutdown": 0.0, 
-      "startup": 0.0
-    }, 
-    {
-      "cost": [
-        0.11, 
-        5.0, 
-        0.0
-      ], 
-      "index": 7, 
-      "model": 2, 
-      "name": "gen7_cost", 
-      "ncost": 3, 
-      "shutdown": 0.0, 
-      "startup": 0.0
-    }
-  ], 
-  "gmd_branch": [
-    {
+  }, 
+  "gmd_branch": {
+    "1": {
       "br_r": 1.1704125, 
       "br_status": 1, 
       "br_v": 120.60003474069319, 
@@ -1847,7 +1782,7 @@
       "t_bus": 11, 
       "type": "line"
     }, 
-    {
+    "2": {
       "br_r": 0.7833333333333333, 
       "br_status": 1, 
       "br_v": 131.6938150979946, 
@@ -1861,7 +1796,7 @@
       "t_bus": 13, 
       "type": "line"
     }, 
-    {
+    "3": {
       "br_r": 0.7833333333333333, 
       "br_status": 1, 
       "br_v": 131.6938150979946, 
@@ -1875,7 +1810,7 @@
       "t_bus": 13, 
       "type": "line"
     }, 
-    {
+    "4": {
       "br_r": 1.5583333333333333, 
       "br_status": 1, 
       "br_v": 321.2612206582465, 
@@ -1889,7 +1824,7 @@
       "t_bus": 14, 
       "type": "line"
     }, 
-    {
+    "5": {
       "br_r": 0.9916666666666667, 
       "br_status": 1, 
       "br_v": 190.9859010213294, 
@@ -1903,7 +1838,7 @@
       "t_bus": 14, 
       "type": "line"
     }, 
-    {
+    "6": {
       "br_r": 0.48333333333333334, 
       "br_status": 1, 
       "br_v": -20.137238063195745, 
@@ -1917,7 +1852,7 @@
       "t_bus": 17, 
       "type": "line"
     }, 
-    {
+    "7": {
       "br_r": 0.775, 
       "br_status": 1, 
       "br_v": 160.17017349968367, 
@@ -1931,7 +1866,7 @@
       "t_bus": 18, 
       "type": "line"
     }, 
-    {
+    "8": {
       "br_r": 0.6583333333333333, 
       "br_status": 1, 
       "br_v": -129.27518497259706, 
@@ -1945,7 +1880,7 @@
       "t_bus": 12, 
       "type": "line"
     }, 
-    {
+    "9": {
       "br_r": 0.9750000000000001, 
       "br_status": 1, 
       "br_v": 191.1051972595808, 
@@ -1959,7 +1894,7 @@
       "t_bus": 14, 
       "type": "line"
     }, 
-    {
+    "10": {
       "br_r": 0.9750000000000001, 
       "br_status": 1, 
       "br_v": 191.1051972595808, 
@@ -1973,7 +1908,7 @@
       "t_bus": 14, 
       "type": "line"
     }, 
-    {
+    "11": {
       "br_r": 1.34895, 
       "br_status": 1, 
       "br_v": 1.4850062354159403, 
@@ -1987,7 +1922,7 @@
       "t_bus": 26, 
       "type": "line"
     }, 
-    {
+    "12": {
       "br_r": 1.5552599999999999, 
       "br_status": 1, 
       "br_v": -155.55611343458276, 
@@ -2001,7 +1936,7 @@
       "t_bus": 23, 
       "type": "line"
     }, 
-    {
+    "13": {
       "br_r": 2.3130525, 
       "br_status": 1, 
       "br_v": 158.17375406876596, 
@@ -2015,7 +1950,7 @@
       "t_bus": 26, 
       "type": "line"
     }, 
-    {
+    "14": {
       "br_r": 1.17438, 
       "br_status": 1, 
       "br_v": -93.15718079092285, 
@@ -2029,7 +1964,7 @@
       "t_bus": 10, 
       "type": "line"
     }, 
-    {
+    "15": {
       "br_r": 1.1666666666666667, 
       "br_status": 1, 
       "br_v": 169.82073202204822, 
@@ -2043,7 +1978,7 @@
       "t_bus": 17, 
       "type": "line"
     }, 
-    {
+    "16": {
       "br_r": 0.06666666666666667, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2057,7 +1992,7 @@
       "t_bus": 4, 
       "type": "gwye winding high-side"
     }, 
-    {
+    "17": {
       "br_r": 0.03333333333333333, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2071,7 +2006,7 @@
       "t_bus": 4, 
       "type": "gwye winding low-side"
     }, 
-    {
+    "18": {
       "br_r": 0.06666666666666667, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2085,7 +2020,7 @@
       "t_bus": 4, 
       "type": "gwye winding high-side"
     }, 
-    {
+    "19": {
       "br_r": 0.03333333333333333, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2099,7 +2034,7 @@
       "t_bus": 4, 
       "type": "gwye winding low-side"
     }, 
-    {
+    "20": {
       "br_r": 0.02, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2113,7 +2048,7 @@
       "t_bus": 12, 
       "type": "gwye auto series winding (high)"
     }, 
-    {
+    "21": {
       "br_r": 0.013333333333333334, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2127,7 +2062,7 @@
       "t_bus": 4, 
       "type": "gwye auto common winding (low)"
     }, 
-    {
+    "22": {
       "br_r": 0.02, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2141,7 +2076,7 @@
       "t_bus": 12, 
       "type": "gwye auto series winding (high)"
     }, 
-    {
+    "23": {
       "br_r": 0.013333333333333334, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2155,7 +2090,7 @@
       "t_bus": 4, 
       "type": "gwye auto common winding (low)"
     }, 
-    {
+    "24": {
       "br_r": 0.013333333333333334, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2169,7 +2104,7 @@
       "t_bus": 5, 
       "type": "gwye winding high-side"
     }, 
-    {
+    "25": {
       "br_r": 0.02, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2183,7 +2118,7 @@
       "t_bus": 5, 
       "type": "gwye winding low-side"
     }, 
-    {
+    "26": {
       "br_r": 0.013333333333333334, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2197,7 +2132,7 @@
       "t_bus": 5, 
       "type": "gwye winding high-side"
     }, 
-    {
+    "27": {
       "br_r": 0.02, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2211,7 +2146,7 @@
       "t_bus": 5, 
       "type": "gwye winding low-side"
     }, 
-    {
+    "28": {
       "br_r": 0.049999999999999996, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2225,7 +2160,7 @@
       "t_bus": 6, 
       "type": "gwye winding high-side"
     }, 
-    {
+    "29": {
       "br_r": 0.049999999999999996, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2239,7 +2174,7 @@
       "t_bus": 6, 
       "type": "gwye winding high-side"
     }, 
-    {
+    "30": {
       "br_r": 0.03333333333333333, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2253,7 +2188,7 @@
       "t_bus": 8, 
       "type": "gwye winding high-side"
     }, 
-    {
+    "31": {
       "br_r": 0.03333333333333333, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2267,7 +2202,7 @@
       "t_bus": 8, 
       "type": "gwye winding high-side"
     }, 
-    {
+    "32": {
       "br_r": 0.02, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2281,7 +2216,7 @@
       "t_bus": 21, 
       "type": "gwye auto series winding (high)"
     }, 
-    {
+    "33": {
       "br_r": 0.013333333333333334, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2295,7 +2230,7 @@
       "t_bus": 3, 
       "type": "gwye auto common winding (low)"
     }, 
-    {
+    "34": {
       "br_r": 0.02, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2309,7 +2244,7 @@
       "t_bus": 21, 
       "type": "gwye auto series winding (high)"
     }, 
-    {
+    "35": {
       "br_r": 0.013333333333333334, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2323,7 +2258,7 @@
       "t_bus": 3, 
       "type": "gwye auto common winding (low)"
     }, 
-    {
+    "36": {
       "br_r": 0.03333333333333333, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2337,7 +2272,7 @@
       "t_bus": 2, 
       "type": "gwye winding high-side"
     }, 
-    {
+    "37": {
       "br_r": 0.03333333333333333, 
       "br_status": 1, 
       "br_v": 0.0, 
@@ -2351,9 +2286,9 @@
       "t_bus": 2, 
       "type": "gwye winding high-side"
     }
-  ], 
-  "gmd_bus": [
-    {
+  }, 
+  "gmd_bus": {
+    "1": {
       "bus_i": 1, 
       "g_gnd": 5.0, 
       "index": 1, 
@@ -2362,7 +2297,7 @@
       "parent_name": "sub1", 
       "parent_type": "sub"
     }, 
-    {
+    "2": {
       "bus_i": 2, 
       "g_gnd": 5.0, 
       "index": 2, 
@@ -2371,7 +2306,7 @@
       "parent_name": "sub2", 
       "parent_type": "sub"
     }, 
-    {
+    "3": {
       "bus_i": 3, 
       "g_gnd": 5.0, 
       "index": 3, 
@@ -2380,7 +2315,7 @@
       "parent_name": "sub3", 
       "parent_type": "sub"
     }, 
-    {
+    "4": {
       "bus_i": 4, 
       "g_gnd": 1.0, 
       "index": 4, 
@@ -2389,7 +2324,7 @@
       "parent_name": "sub4", 
       "parent_type": "sub"
     }, 
-    {
+    "5": {
       "bus_i": 5, 
       "g_gnd": 10.0, 
       "index": 5, 
@@ -2398,7 +2333,7 @@
       "parent_name": "sub5", 
       "parent_type": "sub"
     }, 
-    {
+    "6": {
       "bus_i": 6, 
       "g_gnd": 10.0, 
       "index": 6, 
@@ -2407,7 +2342,7 @@
       "parent_name": "sub6", 
       "parent_type": "sub"
     }, 
-    {
+    "7": {
       "bus_i": 7, 
       "g_gnd": 4.621712806766188, 
       "index": 7, 
@@ -2416,7 +2351,7 @@
       "parent_name": "sub7", 
       "parent_type": "sub"
     }, 
-    {
+    "8": {
       "bus_i": 8, 
       "g_gnd": 10.0, 
       "index": 8, 
@@ -2425,7 +2360,7 @@
       "parent_name": "sub8", 
       "parent_type": "sub"
     }, 
-    {
+    "9": {
       "bus_i": 9, 
       "g_gnd": 0.0, 
       "index": 9, 
@@ -2434,7 +2369,7 @@
       "parent_name": "bus1", 
       "parent_type": "bus"
     }, 
-    {
+    "10": {
       "bus_i": 10, 
       "g_gnd": 0.0, 
       "index": 10, 
@@ -2443,7 +2378,7 @@
       "parent_name": "bus2", 
       "parent_type": "bus"
     }, 
-    {
+    "11": {
       "bus_i": 11, 
       "g_gnd": 0.0, 
       "index": 11, 
@@ -2452,7 +2387,7 @@
       "parent_name": "bus3", 
       "parent_type": "bus"
     }, 
-    {
+    "12": {
       "bus_i": 12, 
       "g_gnd": 0.0, 
       "index": 12, 
@@ -2461,7 +2396,7 @@
       "parent_name": "bus4", 
       "parent_type": "bus"
     }, 
-    {
+    "13": {
       "bus_i": 13, 
       "g_gnd": 0.0, 
       "index": 13, 
@@ -2470,7 +2405,7 @@
       "parent_name": "bus5", 
       "parent_type": "bus"
     }, 
-    {
+    "14": {
       "bus_i": 14, 
       "g_gnd": 0.0, 
       "index": 14, 
@@ -2479,7 +2414,7 @@
       "parent_name": "bus6", 
       "parent_type": "bus"
     }, 
-    {
+    "15": {
       "bus_i": 15, 
       "g_gnd": 0.0, 
       "index": 15, 
@@ -2488,7 +2423,7 @@
       "parent_name": "bus7", 
       "parent_type": "bus"
     }, 
-    {
+    "16": {
       "bus_i": 16, 
       "g_gnd": 0.0, 
       "index": 16, 
@@ -2497,7 +2432,7 @@
       "parent_name": "bus8", 
       "parent_type": "bus"
     }, 
-    {
+    "17": {
       "bus_i": 17, 
       "g_gnd": 0.0, 
       "index": 17, 
@@ -2506,7 +2441,7 @@
       "parent_name": "bus11", 
       "parent_type": "bus"
     }, 
-    {
+    "18": {
       "bus_i": 18, 
       "g_gnd": 0.0, 
       "index": 18, 
@@ -2515,7 +2450,7 @@
       "parent_name": "bus12", 
       "parent_type": "bus"
     }, 
-    {
+    "19": {
       "bus_i": 19, 
       "g_gnd": 0.0, 
       "index": 19, 
@@ -2524,7 +2459,7 @@
       "parent_name": "bus13", 
       "parent_type": "bus"
     }, 
-    {
+    "20": {
       "bus_i": 20, 
       "g_gnd": 0.0, 
       "index": 20, 
@@ -2533,7 +2468,7 @@
       "parent_name": "bus14", 
       "parent_type": "bus"
     }, 
-    {
+    "21": {
       "bus_i": 21, 
       "g_gnd": 0.0, 
       "index": 21, 
@@ -2542,7 +2477,7 @@
       "parent_name": "bus15", 
       "parent_type": "bus"
     }, 
-    {
+    "22": {
       "bus_i": 22, 
       "g_gnd": 0.0, 
       "index": 22, 
@@ -2551,7 +2486,7 @@
       "parent_name": "bus16", 
       "parent_type": "bus"
     }, 
-    {
+    "23": {
       "bus_i": 23, 
       "g_gnd": 0.0, 
       "index": 23, 
@@ -2560,7 +2495,7 @@
       "parent_name": "bus17", 
       "parent_type": "bus"
     }, 
-    {
+    "24": {
       "bus_i": 24, 
       "g_gnd": 0.0, 
       "index": 24, 
@@ -2569,7 +2504,7 @@
       "parent_name": "bus18", 
       "parent_type": "bus"
     }, 
-    {
+    "25": {
       "bus_i": 25, 
       "g_gnd": 0.0, 
       "index": 25, 
@@ -2578,7 +2513,7 @@
       "parent_name": "bus19", 
       "parent_type": "bus"
     }, 
-    {
+    "26": {
       "bus_i": 26, 
       "g_gnd": 0.0, 
       "index": 26, 
@@ -2587,7 +2522,7 @@
       "parent_name": "bus20", 
       "parent_type": "bus"
     }, 
-    {
+    "27": {
       "bus_i": 27, 
       "g_gnd": 0.0, 
       "index": 27, 
@@ -2596,12 +2531,12 @@
       "parent_name": "bus21", 
       "parent_type": "bus"
     }
-  ], 
+  }, 
   "gmd_e_field_dir": 90.0, 
   "gmd_e_field_mag": 1.0, 
   "name": "epri21", 
-  "sub": [
-    {
+  "sub": {
+    "1": {
       "bus_i": 1, 
       "dc_bus_Factory": null, 
       "gmd_bus": 1, 
@@ -2613,7 +2548,7 @@
       "sid": 1, 
       "type": "sub"
     }, 
-    {
+    "2": {
       "bus_i": 2, 
       "dc_bus_Factory": null, 
       "gmd_bus": 2, 
@@ -2625,7 +2560,7 @@
       "sid": 2, 
       "type": "sub"
     }, 
-    {
+    "3": {
       "bus_i": 3, 
       "dc_bus_Factory": null, 
       "gmd_bus": 3, 
@@ -2637,7 +2572,7 @@
       "sid": 3, 
       "type": "sub"
     }, 
-    {
+    "4": {
       "bus_i": 4, 
       "dc_bus_Factory": null, 
       "gmd_bus": 4, 
@@ -2649,7 +2584,7 @@
       "sid": 4, 
       "type": "sub"
     }, 
-    {
+    "5": {
       "bus_i": 5, 
       "dc_bus_Factory": null, 
       "gmd_bus": 5, 
@@ -2661,7 +2596,7 @@
       "sid": 5, 
       "type": "sub"
     }, 
-    {
+    "6": {
       "bus_i": 6, 
       "dc_bus_Factory": null, 
       "gmd_bus": 6, 
@@ -2673,7 +2608,7 @@
       "sid": 6, 
       "type": "sub"
     }, 
-    {
+    "7": {
       "bus_i": 7, 
       "dc_bus_Factory": null, 
       "gmd_bus": 7, 
@@ -2685,7 +2620,7 @@
       "sid": 7, 
       "type": "sub"
     }, 
-    {
+    "8": {
       "bus_i": 8, 
       "dc_bus_Factory": null, 
       "gmd_bus": 8, 
@@ -2697,6 +2632,6 @@
       "sid": 8, 
       "type": "sub"
     }
-  ], 
-  "version": "nestay-0.1"
+  }, 
+  "version": "v0.6.0"
 }
