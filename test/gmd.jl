@@ -57,8 +57,8 @@ end
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
 
         if !(result["status"] === :LocalInfeasible)
-                data = PowerModelsGMD.merge_result(data,result)
-                #PowerModels.update_data(data, result["solution"])
+                PowerModels.update_data(data, result["solution"])
+                PowerModelsGMD.add_gmd_data(data)
         end
 
         # changes due to the fact that becouse update_data does not do some of the stuff that merge_result does
@@ -82,7 +82,8 @@ end
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 11832.5; atol = 1e2)
         if !(result["status"] === :LocalInfeasible)
-                data = PowerModelsGMD.merge_result(data,result)
+                PowerModels.update_data(data, result["solution"])
+                PowerModelsGMD.add_gmd_data(data)
         end
         @test isapprox(data["bus"]["2"]["gmd_vdc"], -23.022192, atol=1e-1)
         @test isapprox(data["bus"]["2"]["vm"], 0.92784494, atol=1e-3)
@@ -112,7 +113,8 @@ end
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 5.08585e5; atol = 1e2)
         if !(result["status"] === :LocalInfeasible)
-                data = PowerModelsGMD.merge_result(data,result)
+                PowerModels.update_data(data, result["solution"])
+                PowerModelsGMD.add_gmd_data(data)
         end
         @test isapprox(data["bus"]["6"]["gmd_vdc"], 44.31, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
         #@printf "gmd_vdc[17] = %f\n" data["bus"][17]["gmd_vdc"]
@@ -133,7 +135,8 @@ end
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 9.52847e5; atol = 1e2)
         if !(result["status"] === :LocalInfeasible)
-                data = PowerModelsGMD.merge_result(data,result)
+                PowerModels.update_data(data, result["solution"])
+                PowerModelsGMD.add_gmd_data(data)
         end
         @test isapprox(data["bus"]["92"]["gmd_vdc"], 7.00, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
         @test isapprox(data["bus"]["99"]["gmd_vdc"], -32.74, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914

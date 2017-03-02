@@ -1,79 +1,10 @@
 # Formulations of GMD Problems
 export run_gmd
 
-function merge_result(data,result)
-    sol = result["solution"]
-
-    # merge the result
-    for (k,gen) in sol["gen"]
-        data["gen"][k]["pg"] = gen["pg"]
-        data["gen"][k]["qg"] = gen["qg"]
-    end
-
-
-    if "do_gmd" in keys(data) && data["do_gmd"]
-        # need to merge this into the regular branches
-        for (k,gmd_branch) in sol["gmd_branch"]
-            data["gmd_branch"][k]["gmd_idc"] = gmd_branch["gmd_idc"]
-        end
-
-        # need to merge this into the regular branches
-        for (k,gmd_bus) in sol["gmd_bus"]
-            data["gmd_bus"][k]["gmd_vdc"] = gmd_bus["gmd_vdc"]
-        end
-    end
-
-
-    for (k,bus) in sol["bus"]
-        data["bus"][k]["va"] = bus["va"]
-        data["bus"][k]["vm"] = bus["vm"]
-
-        if "do_gmd" in keys(data) && data["do_gmd"]
-            j = "$(data["bus"][k]["gmd_bus"])"
-            data["bus"][k]["gmd_vdc"] = data["gmd_bus"][j]["gmd_vdc"]
-        end
-    end
-
-    if "do_gmd" in keys(data) && data["do_gmd"]
-        for (k,sub) in data["sub"]
-            i = "$(sub["gmd_bus"])"
-            sub["gmd_vdc"] = sol["gmd_bus"][i]["gmd_vdc"]
-        end
-    end
-
-    for (k,br) in data["branch"]
-        br = data["branch"][k]
-        index = k
-
-        br["p_from"] = sol["branch"][index]["p_from"]
-        br["p_to"] = sol["branch"][index]["p_to"]
-        br["q_from"] = sol["branch"][index]["q_from"] 
-        br["q_to"] = sol["branch"][index]["q_to"]
-
-        if br["hi_bus"] == br["f_bus"]
-            br["q_from"] += sol["branch"][index]["gmd_qloss"]
-        else    
-            br["q_to"] += sol["branch"][index]["gmd_qloss"]
-        end
-
-        br["ieff"] = sol["branch"][index]["gmd_idc_mag"]
-        br["qloss_from"] = sol["branch"][index]["gmd_qloss"]
-
-        if "do_gmd" in keys(data) && data["do_gmd"] && br["type"] == "line"
-            i = "$(br["gmd_br"])"
-            br["gmd_idc"] = data["gmd_branch"][i]["gmd_idc"]
-        end
-    end
-
-    return data
-end
-
-
 # Maximum loadability with generator participation fixed
 function run_gmd(file, model_constructor, solver; kwargs...)
     return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...) 
 end
-
 
 function post_gmd{T}(pm::GenericPowerModel{T})
     #println("Power Model GMD data")
