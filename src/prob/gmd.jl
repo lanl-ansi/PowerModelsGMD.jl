@@ -113,21 +113,12 @@ function merge_result(data,result)
     return data
 end
 
-function clear_indexes!(data)
-    delete!(data,"gmd_bus_indexes")
-    delete!(data,"gmd_bus_branches")
-    delete!(data,"gmd_arcs")
-    delete!(data,"gmd_arcs_from")
-    delete!(data,"gmd_arcs_to")
-    delete!(data,"gmd_branch_indexes")
-
-    return data
-end
 
 # Maximum loadability with generator participation fixed
 function run_gmd(file, model_constructor, solver; kwargs...)
     return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...) 
 end
+
 
 function post_gmd{T}(pm::GenericPowerModel{T})
     #println("Power Model GMD data")
@@ -155,12 +146,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     objective_gmd_min_fuel(pm)
 
     for (i,bus) in pm.ref[:bus]
-        # turn off linking between dc & ac powerflow
-        #PMs.constraint_kcl_shunt(pm, bus) 
-        # TODO turn off reactive KCL
-        # PMs.constraint_reactive_kcl_shunt(pm, bus) 
-        constraint_active_kcl_shunt(pm, bus) 
-        constraint_qloss_kcl_shunt(pm, bus) # turn on linking between dc & ac powerflow
+        constraint_gmd_kcl_shunt(pm, bus) 
     end
 
     for (i,branch) in pm.ref[:branch]
@@ -217,6 +203,7 @@ function get_gmd_solution{T}(pm::GenericPowerModel{T})
 
     return sol
 end
+
 
 # data to be concerned with:
 # 1. shunt impedances aij
@@ -293,25 +280,25 @@ end
 
 ################### Constraints ###################
 
-function constraint_active_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
+function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     i = bus["index"]
     bus_arcs = pm.ref[:bus_arcs][i]
     bus_gens = pm.ref[:bus_gens][i]
     pd = bus["pd"]
-    #qd = bus["qd"]
+    qd = bus["qd"]
     gs = bus["gs"]
-    #bs = bus["bs"]
+    bs = bus["bs"]
 
     v = getvariable(pm.model, :v)[i]
     p = getvariable(pm.model, :p)
-    #q = getvariable(pm.model, :q)
+    q = getvariable(pm.model, :q)
     pg = getvariable(pm.model, :pg)
-    #qg = getvariable(pm.model, :qg)
+    qg = getvariable(pm.model, :qg)
+    qloss = getvariable(pm.model, :qloss)
 
     c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd - gs*v^2)
-    #c2 = @constraint(pm.model, sum(q[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd + bs*v^2)
-    #return Set([c1, c2])
-    return Set([c1])
+    c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd + bs*v^2)
+    return Set([c1, c2])
 end
 
 
@@ -562,19 +549,7 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
     return Set([c])
 end
 
-function constraint_qloss_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
-    i = bus["index"]
-    bus_arcs = pm.ref[:bus_arcs][i]
-    bus_gens = pm.ref[:bus_gens][i]
 
-    v = getvariable(pm.model, :v)
-    q = getvariable(pm.model, :q)
-    qg = getvariable(pm.model, :qg)
-    qloss = getvariable(pm.model, :qloss)
-
-    c = @constraint(pm.model, sum{q[a] + qloss[a], a in bus_arcs} == sum{qg[g], g in bus_gens} - bus["qd"] + bus["bs"]*v[i]^2)
-    return Set([c])
-end
 
 ################### Outputs ###################
 function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
