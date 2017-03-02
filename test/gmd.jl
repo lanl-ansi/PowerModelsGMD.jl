@@ -3,7 +3,6 @@
         result = run_ac_opf("../test/data/b4gic.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        #println(result["objective"])
         @test isapprox(result["objective"], 116914; atol = 1e2)
     end
 
@@ -11,7 +10,6 @@
         result = run_ac_opf("../test/data/b6gic_nerc.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        #println(result["objective"])
         @test isapprox(result["objective"], 980; atol = 1e0)
     end
 
@@ -19,7 +17,6 @@
         result = run_ac_opf("../test/data/epri21.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        #println(result["objective"])
         @test isapprox(result["objective"], 401802; atol = 1e2)
     end
 
@@ -27,13 +24,11 @@
         result = run_ac_opf("../test/data/uiuc150.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        #println(result["objective"])
         @test isapprox(result["objective"], 893768; atol = 1e2)
     end
 
     @testset "4-bus case opf by-hand" begin
         data = PowerModels.parse_file("../test/data/b4gic.json")
-        data["do_gmd"] = true
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
         PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)
@@ -49,7 +44,6 @@ end
 
     @testset "4-bus case" begin
         data = PowerModels.parse_file("../test/data/b4gic.json")
-        data["do_gmd"] = true
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
         PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)
@@ -75,7 +69,6 @@ end
 
     @testset "6-bus case" begin
         data = PowerModels.parse_file("../test/data/b6gic_nerc.json")
-        data["do_gmd"] = true
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
         PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)
@@ -106,7 +99,6 @@ end
 
     @testset "19-bus case" begin
         data = PowerModels.parse_file("../test/data/epri21.json")
-        data["do_gmd"] = true
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
         PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)
@@ -128,7 +120,6 @@ end
 
     @testset "150-bus case" begin
         data = PowerModels.parse_file("../test/data/uiuc150.json")
-        data["do_gmd"] = true
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
         PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)

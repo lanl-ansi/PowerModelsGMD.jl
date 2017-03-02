@@ -11,9 +11,7 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     #println("----------------------------------")
     PMs.variable_voltage(pm)
 
-    if "do_gmd" in keys(pm.data) && pm.data["do_gmd"]
-        variable_dc_voltage(pm)
-    end
+    variable_dc_voltage(pm)
 
     variable_dc_current_mag(pm)
     variable_qloss(pm)
@@ -21,14 +19,11 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     PMs.variable_generation(pm) 
     PMs.variable_line_flow(pm) 
 
-    if "do_gmd" in keys(pm.data) && pm.data["do_gmd"]
-        variable_dc_line_flow(pm)
-    end
+    variable_dc_line_flow(pm)
 
     PMs.constraint_theta_ref(pm) 
     PMs.constraint_voltage(pm) 
 
-    # PMs.objective_min_fuel_cost(pm) 
     objective_gmd_min_fuel(pm)
 
     for (i,bus) in pm.ref[:bus]
@@ -48,44 +43,40 @@ function post_gmd{T}(pm::GenericPowerModel{T})
         PMs.constraint_thermal_limit_to(pm, branch)
     end
 
-    if "do_gmd" in keys(pm.data) && pm.data["do_gmd"]
-        println()
-        println("Buses")
-        println("--------------------")
+    println()
+    println("Buses")
+    println("--------------------")
 
-        ### DC network constraints ###
-        for (i,bus) in pm.ref[:gmd_bus]
-            # println("bus:")
-            # println(bus)
-            constraint_dc_kcl_shunt(pm, bus)
-        end
-
-        println()
-        println("Branches")
-        println("--------------------")
-
-        for (i,branch) in pm.ref[:gmd_branch]
-            constraint_dc_ohms(pm, branch)
-        end
-
-        println()
+    ### DC network constraints ###
+    for (i,bus) in pm.ref[:gmd_bus]
+        # println("bus:")
+        # println(bus)
+        constraint_dc_kcl_shunt(pm, bus)
     end
+
+    println()
+    println("Branches")
+    println("--------------------")
+
+    for (i,branch) in pm.ref[:gmd_branch]
+        constraint_dc_ohms(pm, branch)
+    end
+
+    println()
 end
 
 
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
     sol = Dict{AbstractString,Any}()
+
     PMs.add_bus_voltage_setpoint(sol, pm);
     add_bus_dc_current_mag_setpoint(sol, pm)
     add_bus_qloss_setpoint(sol, pm)
     PMs.add_bus_demand_setpoint(sol, pm)
     PMs.add_generator_power_setpoint(sol, pm)
     PMs.add_branch_flow_setpoint(sol, pm)
-    
-    if pm.data["do_gmd"]
-        add_bus_dc_voltage_setpoint(sol, pm)
-        add_branch_dc_flow_setpoint(sol, pm)
-    end
+    add_bus_dc_voltage_setpoint(sol, pm)
+    add_branch_dc_flow_setpoint(sol, pm)
 
     return sol
 end
