@@ -1,9 +1,26 @@
 # Formulations of GMD Problems
-export run_gmd
+export run_gmd, run_ac_gmd
 
-# Maximum loadability with generator participation fixed
-function run_gmd(file, model_constructor, solver; kwargs...)
-    return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...) 
+function run_ac_gmd(file, solver; kwargs...)
+    return run_gmd(file, PMs.ACPPowerModel, solver; kwargs...)
+end
+
+function run_gmd(file::AbstractString, model_constructor, solver; kwargs...)
+    data = PowerModels.parse_file(file)
+    return run_gmd(data, model_constructor, solver; kwargs...)
+end
+
+function run_gmd(data::Dict{AbstractString,Any}, model_constructor, solver; kwargs...)
+    pm = model_constructor(data; kwargs...)
+
+    PowerModelsGMD.add_gmd_ref(pm)
+    post_gmd(pm)
+
+    solution = solve_generic_model(pm, solver; solution_builder = get_gmd_solution)
+
+    return solution
+    # TODO with improvements to PowerModels, see if this function can be replaced by,
+    # return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...) 
 end
 
 function post_gmd{T}(pm::GenericPowerModel{T})
