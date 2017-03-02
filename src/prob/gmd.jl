@@ -144,7 +144,7 @@ end
 
 # define qloss for each branch, it flows into the "to" side of the branch
 function variable_qloss{T}(pm::GenericPowerModel{T})
-    # FYI, if you want to define qloss only on the "to" side you should define on the set keys(pm.ref[:branch]) or :arcs_to
+    # TODO: if you want to define qloss only on the "to" side you should define on the set keys(pm.ref[:branch]) or :arcs_to
     @variable(pm.model, qloss[(l,i,j) in pm.ref[:arcs]], start = PMs.getstart(pm.ref[:branch], l, "qloss_start"))
 
     return qloss
@@ -157,12 +157,10 @@ function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
     pg = getvariable(pm.model, :pg)
 
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
-    
+    # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
     return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch])))
-    
-    #return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
-
 end
+
 
 ################### Constraints ###################
 
@@ -364,7 +362,6 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
 
     # println("solo bus, skipping")
     # println("done")
-
 end
 
 

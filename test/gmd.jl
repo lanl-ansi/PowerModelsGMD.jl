@@ -3,30 +3,33 @@
         result = run_ac_opf("../test/data/b4gic.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        #@test isapprox(result["objective"], 1.398e5; atol = 1e2)
+        #println(result["objective"])
+        @test isapprox(result["objective"], 116914; atol = 1e2)
     end
 
     @testset "6-bus case ac opf" begin
         result = run_ac_opf("../test/data/b6gic_nerc.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        #@test isapprox(result["objective"], 1.398e5; atol = 1e2)
+        #println(result["objective"])
+        @test isapprox(result["objective"], 980; atol = 1e0)
     end
 
     @testset "19-bus case ac opf" begin
         result = run_ac_opf("../test/data/epri21.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        #@test isapprox(result["objective"], 1.398e5; atol = 1e2)
+        #println(result["objective"])
+        @test isapprox(result["objective"], 401802; atol = 1e2)
     end
 
     @testset "150-bus case ac opf" begin
         result = run_ac_opf("../test/data/uiuc150.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        #@test isapprox(result["objective"], 1.398e5; atol = 1e2)
+        #println(result["objective"])
+        @test isapprox(result["objective"], 893768; atol = 1e2)
     end
-
 
     @testset "4-bus case opf by-hand" begin
         data = PowerModels.parse_file("../test/data/b4gic.json")
