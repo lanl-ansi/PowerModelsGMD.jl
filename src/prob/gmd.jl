@@ -1,51 +1,6 @@
 # Formulations of GMD Problems
 export run_gmd
 
-function setup_gmd(data)
-    data["gmd_bus_indexes"] = []
-    data["gmd_bus_branches"] = []
-
-    gmd_bus_branches = Dict()
-
-    for (idx,b) in data["gmd_bus"]
-        i = parse(Int, idx)
-        push!(data["gmd_bus_indexes"], i)
-        gmd_bus_branches[i] = []
-        push!(data["gmd_bus_branches"], nothing)
-    end
-
-    # add line sets & xf sets to data
-    data["gmd_branch_indexes"] = []
-    data["gmd_arcs"] = []
-    data["gmd_arcs_from"] = []
-    data["gmd_arcs_to"] = []
-
-    for (idx,b) in data["gmd_branch"]
-        k = parse(Int, idx)
-        nf = b["f_bus"]
-        nt = b["t_bus"]
-
-        push!(data["gmd_branch_indexes"],k)
-        push!(data["gmd_arcs"],(k,nf,nt,))
-        push!(data["gmd_arcs"],(k,nt,nf,))
-        push!(data["gmd_arcs_from"],(k,nf,nt,))
-        push!(data["gmd_arcs_to"],(k,nt,nf))
-    end
-
-    for (l,i,j) in data["gmd_arcs_from"]
-      push!(gmd_bus_branches[i], (l,i,j))
-      push!(gmd_bus_branches[j], (l,j,i))
-    end 
-
-
-    # convert list of attached branches to list from dict
-    for (k,b) in gmd_bus_branches
-      data["gmd_bus_branches"][k] = b
-    end
-
-    return data
-end
-
 function merge_result(data,result)
     sol = result["solution"]
 
@@ -246,10 +201,10 @@ function variable_dc_current_mag{T}(pm::GenericPowerModel{T}; bounded = true)
 end
 
 function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
-    @variable(pm.model, dc[(l,i,j) in pm.data["gmd_arcs"]], start = PMs.getstart(pm.ref[:gmd_branch], l, "dc_start"))
+    @variable(pm.model, dc[(l,i,j) in pm.ref[:gmd_arcs]], start = PMs.getstart(pm.ref[:gmd_branch], l, "dc_start"))
 
-    dc_expr = Dict([((l,i,j), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]])
-    dc_expr = merge(dc_expr, Dict([((l,j,i), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.data["gmd_arcs_from"]]))
+    dc_expr = Dict([((l,i,j), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.ref[:gmd_arcs_from]])
+    dc_expr = merge(dc_expr, Dict([((l,j,i), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.ref[:gmd_arcs_from]]))
 
     pm.model.ext[:dc_expr] = dc_expr
 
@@ -442,13 +397,8 @@ end
 
 function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
     i = dcbus["index"]
-    bus_branch_ids = pm.data["gmd_bus_branches"][i]
-    # bus_branches = []
+    gmd_bus_arcs = pm.ref[:gmd_bus_arcs][i]
 
-    # for k in bus_branch_ids
-    #     push!(bus_branches,pm.data["gmd_branch"][k])
-    # end
-    
     # print("Bus branches:")
     # println(bus_branches)
 
@@ -460,10 +410,10 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
 
     gs = dcbus["g_gnd"]
     # println()
-    # println("bus: $i branches: $bus_branch_ids")
+    # println("bus: $i branches: $gmd_bus_arcs")
 
-    @printf "bus %d: gs = %0.3f, %d branches:\n" i gs length(bus_branch_ids)
-    for arc in bus_branch_ids
+    @printf "bus %d: gs = %0.3f, %d branches:\n" i gs length(gmd_bus_arcs)
+    for arc in gmd_bus_arcs
         k = arc[1]
         branch = pm.ref[:gmd_branch][k]
 
@@ -475,8 +425,8 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
         @printf "    branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, rdc = %0.3f\n" k f_bus t_bus dkm vs rdc
     end
 
-    if length(bus_branch_ids) > 0
-        c = @constraint(pm.model, sum{dc_expr[a], a in bus_branch_ids} == gs*v_dc[i])
+    if length(gmd_bus_arcs) > 0
+        c = @constraint(pm.model, sum(dc_expr[a] for a in gmd_bus_arcs) == gs*v_dc[i])
         # println("done")
         return Set([c])
     end

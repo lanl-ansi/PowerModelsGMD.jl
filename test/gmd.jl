@@ -31,8 +31,8 @@
     @testset "4-bus case opf by-hand" begin
         data = PowerModels.parse_file("../test/data/b4gic.json")
         data["do_gmd"] = true
-        data = PowerModelsGMD.setup_gmd(data)
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
+        PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)
         PowerModels.post_opf(pm)
         status, solve_time = solve(pm)
@@ -47,8 +47,8 @@ end
     @testset "4-bus case" begin
         data = PowerModels.parse_file("../test/data/b4gic.json")
         data["do_gmd"] = true
-        data = PowerModelsGMD.setup_gmd(data)
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
+        PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)
         PowerModelsGMD.post_gmd(pm)
         status, solve_time = solve(pm)
@@ -73,8 +73,8 @@ end
     @testset "6-bus case" begin
         data = PowerModels.parse_file("../test/data/b6gic_nerc.json")
         data["do_gmd"] = true
-        data = PowerModelsGMD.setup_gmd(data)
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
+        PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)
         PowerModelsGMD.post_gmd(pm)
         status, solve_time = solve(pm)
@@ -103,8 +103,8 @@ end
     @testset "19-bus case" begin
         data = PowerModels.parse_file("../test/data/epri21.json")
         data["do_gmd"] = true
-        data = PowerModelsGMD.setup_gmd(data)
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
+        PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)
         PowerModelsGMD.post_gmd(pm)
         status, solve_time = solve(pm)
@@ -124,8 +124,8 @@ end
     @testset "150-bus case" begin
         data = PowerModels.parse_file("../test/data/uiuc150.json")
         data["do_gmd"] = true
-        data = PowerModelsGMD.setup_gmd(data)
         pm = PowerModels.ACPPowerModel(data, solver=ipopt_solver)
+        PowerModelsGMD.add_gmd_ref(pm)
         pm.setting["output"] = Dict("line_flows" => true)
         PowerModelsGMD.post_gmd(pm)
         status, solve_time = solve(pm)
