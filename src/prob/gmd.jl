@@ -14,7 +14,7 @@ function run_gmd(data::Dict{AbstractString,Any}, model_constructor, solver; kwar
     pm = model_constructor(data; kwargs...)
 
     PowerModelsGMD.add_gmd_ref(pm)
-    post_gmd(pm)
+    post_gmd(pm; do_opf=false)
 
     solution = solve_generic_model(pm, solver; solution_builder = get_gmd_solution)
 
@@ -23,7 +23,7 @@ function run_gmd(data::Dict{AbstractString,Any}, model_constructor, solver; kwar
     # return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...) 
 end
 
-function post_gmd{T}(pm::GenericPowerModel{T})
+function post_gmd{T}(pm::GenericPowerModel{T}; do_opf=true)
     #println("Power Model GMD data")
     #println("----------------------------------")
     PMs.variable_voltage(pm)
@@ -41,7 +41,11 @@ function post_gmd{T}(pm::GenericPowerModel{T})
     PMs.constraint_theta_ref(pm) 
     PMs.constraint_voltage(pm) 
 
-    objective_gmd_min_fuel(pm)
+    if do_opf
+        objective_gmd_min_fuel(pm)
+    else
+        objective_gmd_min_error(pm)
+    end
 
     for (i,bus) in pm.ref[:bus]
         constraint_gmd_kcl_shunt(pm, bus) 
