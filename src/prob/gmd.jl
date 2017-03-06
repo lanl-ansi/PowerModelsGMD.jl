@@ -160,6 +160,7 @@ end
 
 
 ################### Objective ###################
+# OPF objective
 function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
     pg = getvariable(pm.model, :pg)
@@ -167,6 +168,17 @@ function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
     return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch])))
+end
+
+# SSE objective: keep generators as close as possible to original setpoint
+function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
+    i_dc_mag = getvariable(pm.model, :i_dc_mag)
+    pg = getvariable(pm.model, :pg)
+    qg = getvariable(pm.model, :qg)
+
+    # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
+    # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
+    return @objective(pm.model, Min, sum((pg[i] - pm.set.gen[i]["pg"])^2  for (i,gen) in pm.ref[:gen]) + sum((qg[i] - pm.set.gen[i]["qg"])^2  for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch])))
 end
 
 
