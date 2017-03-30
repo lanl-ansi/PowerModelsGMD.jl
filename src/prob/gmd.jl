@@ -42,10 +42,9 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     PMs.constraint_theta_ref(pm) 
     PMs.constraint_voltage(pm) 
 
-    if "objective" in keys(Dict(kwargs))
-        if kwargs["objective"] == "min_error"
+    if "objective" in keys(Dict(kwargs)) && kwargs["objective"] == "min_error"
+            println("APPLYING MIN ERROR OBJECTIVE")
             objective_gmd_min_error(pm)
-        end
     else
         objective_gmd_min_fuel(pm)
     end
@@ -61,10 +60,14 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
         PMs.constraint_ohms_yt_from(pm, branch) 
         PMs.constraint_ohms_yt_to(pm, branch) 
 
-        PMs.constraint_phase_angle_difference(pm, branch) 
 
-        PMs.constraint_thermal_limit_from(pm, branch)
-        PMs.constraint_thermal_limit_to(pm, branch)
+        if !("objective" in keys(Dict(kwargs))) || kwargs["objective"] != "min_error"
+            println("DISABLING THERMAL LIMIT CONSTRAINT")
+            PMs.constraint_thermal_limit_from(pm, branch)
+            PMs.constraint_thermal_limit_to(pm, branch)
+            PMs.constraint_phase_angle_difference(pm, branch) 
+        end
+
     end
 
     println()
