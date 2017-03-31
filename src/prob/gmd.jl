@@ -42,10 +42,37 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     PMs.constraint_theta_ref(pm) 
     PMs.constraint_voltage(pm) 
 
-    if "objective" in keys(Dict(kwargs)) && kwargs["objective"] == "min_error"
-            println("APPLYING MIN ERROR OBJECTIVE")
-            objective_gmd_min_error(pm)
+    if :setting in keys(Dict(kwargs))
+        setting = Dict(Dict(kwargs)[:setting])
     else
+        setting = Dict()
+    end
+
+    println("kwargs: ", kwargs)
+    println("setting: ",setting)
+
+    if "objective" in keys(setting)
+        objective = setting["objective"]
+    else
+        objective = "min_fuel"
+    end
+
+    println("objective: ",objective)
+
+    # println("kwargs: ",Dict(kwargs)[:setting])
+    # println("kwargs keys: ",keys(Dict(kwargs)[:setting]))
+
+    # if "objective" in setting
+    #     println("OBJECTIVE IS SPECIFIED")
+    # else
+    #     println("OBJECTIVE NOT SPECIFIED")
+    # end
+
+    if objective == "min_error"
+        println("APPLYING MIN ERROR OBJECTIVE")
+        objective_gmd_min_error(pm)
+    else
+        println("APPLYING MIN FUEL OBJECTIVE")
         objective_gmd_min_fuel(pm)
     end
 
@@ -61,11 +88,13 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
         PMs.constraint_ohms_yt_to(pm, branch) 
 
 
-        if !("objective" in keys(Dict(kwargs))) || kwargs["objective"] != "min_error"
-            println("DISABLING THERMAL LIMIT CONSTRAINT")
+        if objective != "min_error"
+            println("APPLYING THERMAL LIMIT CONSTRAINT")
             PMs.constraint_thermal_limit_from(pm, branch)
             PMs.constraint_thermal_limit_to(pm, branch)
             PMs.constraint_phase_angle_difference(pm, branch) 
+        else
+            println("DISABLING THERMAL LIMIT CONSTRAINT")
         end
 
     end
