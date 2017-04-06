@@ -40,7 +40,6 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     variable_dc_line_flow(pm)
 
     PMs.constraint_theta_ref(pm) 
-    PMs.constraint_voltage(pm) 
 
     if :setting in keys(Dict(kwargs))
         setting = Dict(Dict(kwargs)[:setting])
@@ -92,6 +91,7 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
             println("APPLYING THERMAL LIMIT CONSTRAINT")
             PMs.constraint_thermal_limit_from(pm, branch)
             PMs.constraint_thermal_limit_to(pm, branch)
+            PMs.constraint_voltage(pm) 
             PMs.constraint_phase_angle_difference(pm, branch) 
         else
             println("DISABLING THERMAL LIMIT CONSTRAINT")
