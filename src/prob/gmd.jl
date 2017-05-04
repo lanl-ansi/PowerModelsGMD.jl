@@ -70,6 +70,7 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     if objective == "min_error"
         println("APPLYING MIN ERROR OBJECTIVE")
         objective_gmd_min_error(pm)
+        # objective_gmd_min_fuel(pm)
     else
         println("APPLYING MIN FUEL OBJECTIVE")
         objective_gmd_min_fuel(pm)
@@ -87,21 +88,25 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
         PMs.constraint_ohms_yt_to(pm, branch) 
 
 
-        if objective != "min_error"
-            println("APPLYING THERMAL LIMIT CONSTRAINT")
+        if objective == "min_error"
+            # println("APPLYING THERMAL LIMIT CONSTRAINT")
+            # PMs.constraint_thermal_limit_from(pm, branch)
+            # PMs.constraint_thermal_limit_to(pm, branch)
+            # PMs.constraint_voltage(pm) 
+            # PMs.constraint_phase_angle_difference(pm, branch) 
+        else
             PMs.constraint_thermal_limit_from(pm, branch)
             PMs.constraint_thermal_limit_to(pm, branch)
             PMs.constraint_voltage(pm) 
             PMs.constraint_phase_angle_difference(pm, branch) 
-        else
-            println("DISABLING THERMAL LIMIT CONSTRAINT")
+            # println("DISABLING THERMAL LIMIT CONSTRAINT")
         end
 
     end
 
-    println()
-    println("Buses")
-    println("--------------------")
+    #println()
+    #println("Buses")
+    #println("--------------------")
 
     ### DC network constraints ###
     for (i,bus) in pm.ref[:gmd_bus]
@@ -110,15 +115,15 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
         constraint_dc_kcl_shunt(pm, bus)
     end
 
-    println()
-    println("Branches")
-    println("--------------------")
+    #println()
+    #println("Branches")
+    #println("--------------------")
 
     for (i,branch) in pm.ref[:gmd_branch]
         constraint_dc_ohms(pm, branch)
     end
 
-    println()
+    #println()
 end
 
 
@@ -160,7 +165,7 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{AbstractString,Any})
 
     for bus in data["bus"]
         zb = bus["base_kv"]^2/mva_base
-        @printf "bus [%d] zb: %f a(pu): %f\n" bus["index"] zb bus["gmd_gs"]
+        #@printf "bus [%d] zb: %f a(pu): %f\n" bus["index"] zb bus["gmd_gs"]
         bus["gmd_gs"] *= zb
         # @printf " -> a(pu): %f\n" bus["gmd_gs"]
     end
@@ -215,13 +220,13 @@ function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
     pg = getvariable(pm.model, :pg)
     qg = getvariable(pm.model, :qg)
 
-    # for (i,gen) in pm.ref[:gen]
-    #     @printf "pg[%d] = %f" i gen["cost"][1]
-    # end
+    for (i,gen) in pm.ref[:gen]
+        @printf "sg[%d] = %f + j%f" i gen["pg"] gen["qg"]
+    end
 
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
-    return @objective(pm.model, Min, sum((pg[i] - gen["pg"])^2  for (i,gen) in pm.ref[:gen]) + sum((qg[i] - gen["qg"])^2  for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch])))
+    return @objective(pm.model, Min, sum((pg[i] - gen["pg"])^2  for (i,gen) in pm.ref[:gen]) + sum((qg[i] - gen["qg"])^2  for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch]))
 end
 
 
@@ -260,7 +265,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         cfg = "N/A"
     end
 
-    @printf "Branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
+    #@printf "Branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
 
     if branch["type"] != "xf"
         k = branch["index"]
@@ -295,7 +300,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         ieff = getvariable(pm.model, :i_dc_mag)
         ihi = getvariable(pm.model, :dc)[(kh,ih,jh)]        
 
-        println("branch[$k]: hi_branch[$kh]")
+        # println("branch[$k]: hi_branch[$kh]")
 
         c = @constraint(pm.model, ieff[k] >= ihi)
         c = @constraint(pm.model, ieff[k] >= -ihi)
@@ -370,7 +375,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         vlo = pm.ref[:bus][i]["base_kv"]
         a = vhi/vlo
 
-        println("branch[$k]: ser_branch[$ks], com_branch[$kc]")
+        # println("branch[$k]: ser_branch[$ks], com_branch[$kc]")
 
         c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
         c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
@@ -379,7 +384,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
     end
 
 
-    @printf "Unrecognized branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
+    #@printf "Unrecognized branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
     k = branch["index"]
     ieff = getvariable(pm.model, :i_dc_mag)
     c = @constraint(pm.model, ieff[k] >= 0.0)
@@ -404,7 +409,7 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
     # println()
     # println("bus: $i branches: $gmd_bus_arcs")
 
-    @printf "bus %d: gs = %0.3f, %d branches:\n" i gs length(gmd_bus_arcs)
+    #@printf "bus %d: gs = %0.3f, %d branches:\n" i gs length(gmd_bus_arcs)
     for arc in gmd_bus_arcs
         k = arc[1]
         branch = pm.ref[:gmd_branch][k]
@@ -412,9 +417,9 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
         f_bus = branch["f_bus"]
         t_bus = branch["t_bus"]        
         dkm = branch["len_km"]
-        vs = branch["br_v"]       # line dc series voltage
+        vs = float(branch["br_v"][1])       # line dc series voltage
         rdc = branch["br_r"]
-        @printf "    branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, rdc = %0.3f\n" k f_bus t_bus dkm vs rdc
+        #@printf "    branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, rdc = %0.3f\n" k f_bus t_bus dkm vs rdc
     end
 
     if length(gmd_bus_arcs) > 0
@@ -450,7 +455,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
         gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    @printf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs
+    #@printf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs
 
     c = @constraint(pm.model, dc == gs*(vf + vs - vt))
     return Set([c])
@@ -477,7 +482,7 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
         # println("bus[$i]: a = $a, K = $K")
 
           
-        @printf "k = %d, Kold = %f, vb = %f, ib = %f, Knew = %f\n" k branch["gmd_k"] bus["base_kv"] ibase K 
+        #@printf "k = %d, Kold = %f, vb = %f, ib = %f, Knew = %f\n" k branch["gmd_k"] bus["base_kv"] ibase K 
         # K is per phase
         c = @constraint(pm.model, qloss[(k,i,j)] == K*i_dc_mag[k]/(3.0*branch["baseMVA"]))
         c = @constraint(pm.model, qloss[(k,j,i)] == 0.0)
