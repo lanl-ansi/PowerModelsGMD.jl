@@ -202,6 +202,23 @@ function variable_qloss{T}(pm::GenericPowerModel{T})
     return qloss
 end
 
+# this is legacy code, might be removed after regression tests are confirmed
+function variable_active_load{T}(pm::GenericPowerModel{T})
+    @variable(pm.model, min(0, pm.set.buses[i]["pd"]) <= pd[i in pm.set.bus_indexes] <= max(0, pm.set.buses[i]["pd"]), start = PMs.getstart(pm.set.buses, i, "pd_start"))
+    return pd
+end
+
+function variable_reactive_load{T}(pm::GenericPowerModel{T})
+    @variable(pm.model, min(0, pm.set.buses[i]["qd"]) <= qd[i in pm.set.bus_indexes] <= max(0, pm.set.buses[i]["qd"]), start = PMs.getstart(pm.set.buses, i, "qd_start"))
+    return qd
+end
+
+#function variable_loading_factor{T}(pm::GenericPowerModel{T})
+#    @variable(pm.model, 0 <= loading[i in pm.set.bus_indexes] <= 1, start = PMs.getstart(pm.set.buses, i, "loading_start", 1.0))
+#    return loading
+#end
+
+
 
 ################### Objective ###################
 # OPF objective
@@ -227,6 +244,32 @@ function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
     return @objective(pm.model, Min, sum((pg[i] - gen["pg"])^2  for (i,gen) in pm.ref[:gen]) + sum((qg[i] - gen["qg"])^2  for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch])))
+end
+
+
+# from max loadability problem
+function objective_max_loadability{T}(pm::GenericPowerModel{T})
+    loading = getvariable(pm.model, :loading)
+    return @objective(pm.model, Max, sum{ pm.set.buses[i]["pd"]*loading[i], i in pm.set.bus_indexes } )
+end
+
+function objective_max_active_and_reactive_loadability{T}(pm::GenericPowerModel{T})
+    pd = getvariable(pm.model, :pd)
+    qd = getvariable(pm.model, :qd)
+
+    c_qd = Dict(bp => 1 for bp in pm.set.bus_indexes)
+    c_pd = Dict(bp => 1 for bp in pm.set.bus_indexes) 
+    
+    for (i,bus) in pm.set.buses
+        if (bus["qd"] < 0)  
+            c_qd[i] = -1
+        end
+        if (bus["pd"] < 0)  
+            c_pd[i] = -1
+        end
+    end
+
+    return @objective(pm.model, Max, sum{ c_pd[i]*pd[i] + c_qd[i]*qd[i], i in pm.set.bus_indexes })
 end
 
 
@@ -492,6 +535,36 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
         c = @constraint(pm.model, qloss[(k,j,i)] == 0.0)
     end
 
+    return Set([c])
+end
+
+
+# from ml problem
+function constraint_active_kcl_shunt_flf{T <: PMs.AbstractACPForm}(pm::GenericPowerModel{T}, bus)
+    i = bus["index"]
+    bus_branches = pm.set.bus_branches[i]
+    bus_gens = pm.set.bus_gens[i]
+
+    v = getvariable(pm.model, :v)
+    p = getvariable(pm.model, :p)
+    pg = getvariable(pm.model, :pg)
+    loading = getvariable(pm.model, :loading)
+
+    c = @constraint(pm.model, sum{p[a], a in bus_branches} == sum{pg[g], g in bus_gens} - bus["pd"]*loading[i] - bus["gs"]*v[i]^2)
+    return Set([c])
+end
+
+function constraint_reactive_kcl_shunt_flf{T <: PMs.AbstractACPForm}(pm::GenericPowerModel{T}, bus)
+    i = bus["index"]
+    bus_branches = pm.set.bus_branches[i]
+    bus_gens = pm.set.bus_gens[i]
+
+    v = getvariable(pm.model, :v)
+    q = getvariable(pm.model, :q)
+    qg = getvariable(pm.model, :qg)
+    loading = getvariable(pm.model, :loading)
+
+    c = @constraint(pm.model, sum{q[a], a in bus_branches} == sum{qg[g], g in bus_gens} - bus["qd"]*loading[i] + bus["bs"]*v[i]^2)
     return Set([c])
 end
 
