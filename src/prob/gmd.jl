@@ -47,8 +47,8 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
         setting = Dict()
     end
 
-    println("kwargs: ", kwargs)
-    println("setting: ",setting)
+    #println("kwargs: ", kwargs)
+    #println("setting: ",setting)
 
     if "objective" in keys(setting)
         objective = setting["objective"]
@@ -221,12 +221,12 @@ function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
     qg = getvariable(pm.model, :qg)
 
     for (i,gen) in pm.ref[:gen]
-        @printf "sg[%d] = %f + j%f" i gen["pg"] gen["qg"]
+        @printf "sg[%d] = %f + j%f\n" i gen["pg"] gen["qg"]
     end
 
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
-    return @objective(pm.model, Min, sum((pg[i] - gen["pg"])^2  for (i,gen) in pm.ref[:gen]) + sum((qg[i] - gen["qg"])^2  for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch]))
+    return @objective(pm.model, Min, sum((pg[i] - gen["pg"])^2  for (i,gen) in pm.ref[:gen]) + sum((qg[i] - gen["qg"])^2  for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch])))
 end
 
 
