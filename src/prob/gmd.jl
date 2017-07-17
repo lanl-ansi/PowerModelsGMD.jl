@@ -202,21 +202,16 @@ function variable_qloss{T}(pm::GenericPowerModel{T})
     return qloss
 end
 
-# this is legacy code, might be removed after regression tests are confirmed
-function variable_active_load{T}(pm::GenericPowerModel{T})
-    @variable(pm.model, min(0, pm.set.buses[i]["pd"]) <= pd[i in pm.set.bus_indexes] <= max(0, pm.set.buses[i]["pd"]), start = PMs.getstart(pm.set.buses, i, "pd_start"))
-    return pd
+function variable_demand_factor{T}(pm::GenericPowerModel{T})
+    @variable(pm.model, 0 <= z_demand[i in keys(pm.ref[:bus])] <= 1, start = PMs.getstart(pm.ref[:bus], i, "z_demand_start", 1.0))
+    return z_demand
 end
 
-function variable_reactive_load{T}(pm::GenericPowerModel{T})
-    @variable(pm.model, min(0, pm.set.buses[i]["qd"]) <= qd[i in pm.set.bus_indexes] <= max(0, pm.set.buses[i]["qd"]), start = PMs.getstart(pm.set.buses, i, "qd_start"))
-    return qd
+function variable_shunt_factor{T}(pm::GenericPowerModel{T})
+    @variable(pm.model, 0 <= z_shunt[i in keys(pm.ref[:bus])] <= 1, start = PMs.getstart(pm.ref[:bus], i, "z_shunt_nstart", 1.0))
+    return z_shunt
 end
 
-#function variable_loading_factor{T}(pm::GenericPowerModel{T})
-#    @variable(pm.model, 0 <= loading[i in pm.set.bus_indexes] <= 1, start = PMs.getstart(pm.set.buses, i, "loading_start", 1.0))
-#    return loading
-#end
 
 
 
@@ -249,27 +244,17 @@ end
 
 # from max loadability problem
 function objective_max_loadability{T}(pm::GenericPowerModel{T})
-    loading = getvariable(pm.model, :loading)
-    return @objective(pm.model, Max, sum{ pm.set.buses[i]["pd"]*loading[i], i in pm.set.bus_indexes } )
-end
+    z_demand = getindex(pm.model, :z_demand)
+    z_shunt = getindex(pm.model, :z_shunt)
+    z_gen = getindex(pm.model, :z_gen)
+    z_voltage = getindex(pm.model, :z_voltage)
 
-function objective_max_active_and_reactive_loadability{T}(pm::GenericPowerModel{T})
-    pd = getvariable(pm.model, :pd)
-    qd = getvariable(pm.model, :qd)
+    M = 10*maximum([abs(bus["pd"]) for (i,bus) in pm.ref[:bus]])
+    return @objective(pm.model, Max, sum( M*z_gen[i] for (i,gen) in pm.ref[:gen]) + sum(M*10*z_voltage[i] + M*z_shunt[i] + abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
 
-    c_qd = Dict(bp => 1 for bp in pm.set.bus_indexes)
-    c_pd = Dict(bp => 1 for bp in pm.set.bus_indexes) 
-    
-    for (i,bus) in pm.set.buses
-        if (bus["qd"] < 0)  
-            c_qd[i] = -1
-        end
-        if (bus["pd"] < 0)  
-            c_pd[i] = -1
-        end
-    end
+    #return @objective(pm.model, Max, sum( M*z_gen[i] for (i,gen) in pm.ref[:gen]) + sum( M*z_shunt[i] + abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
 
-    return @objective(pm.model, Max, sum{ c_pd[i]*pd[i] + c_qd[i]*qd[i], i in pm.set.bus_indexes })
+    #return @objective(pm.model, Max, sum(abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
 end
 
 
@@ -539,34 +524,20 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
 end
 
 
-# from ml problem
-function constraint_active_kcl_shunt_flf{T <: PMs.AbstractACPForm}(pm::GenericPowerModel{T}, bus)
-    i = bus["index"]
-    bus_branches = pm.set.bus_branches[i]
-    bus_gens = pm.set.bus_gens[i]
+function constraint_kcl_shunt_shed{T <: PMs.AbstractACPForm}(pm::GenericPowerModel{T}, i, bus_arcs, bus_gens, pd, qd, gs, bs)
+    v = getindex(pm.model, :v)[i]
+    p = getindex(pm.model, :p)
+    q = getindex(pm.model, :q)
+    pg = getindex(pm.model, :pg)
+    qg = getindex(pm.model, :qg)
+    z_demand = getindex(pm.model, :z_demand)[i]
+    z_shunt = getindex(pm.model, :z_shunt)[i]
 
-    v = getvariable(pm.model, :v)
-    p = getvariable(pm.model, :p)
-    pg = getvariable(pm.model, :pg)
-    loading = getvariable(pm.model, :loading)
-
-    c = @constraint(pm.model, sum{p[a], a in bus_branches} == sum{pg[g], g in bus_gens} - bus["pd"]*loading[i] - bus["gs"]*v[i]^2)
-    return Set([c])
+    c1 = @NLconstraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand - gs*v^2*z_shunt)
+    c2 = @NLconstraint(pm.model, sum(q[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd*z_demand + bs*v^2*z_shunt)
+    return Set([c1, c2])
 end
 
-function constraint_reactive_kcl_shunt_flf{T <: PMs.AbstractACPForm}(pm::GenericPowerModel{T}, bus)
-    i = bus["index"]
-    bus_branches = pm.set.bus_branches[i]
-    bus_gens = pm.set.bus_gens[i]
-
-    v = getvariable(pm.model, :v)
-    q = getvariable(pm.model, :q)
-    qg = getvariable(pm.model, :qg)
-    loading = getvariable(pm.model, :loading)
-
-    c = @constraint(pm.model, sum{q[a], a in bus_branches} == sum{qg[g], g in bus_gens} - bus["qd"]*loading[i] + bus["bs"]*v[i]^2)
-    return Set([c])
-end
 
 
 
