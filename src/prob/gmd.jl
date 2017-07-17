@@ -41,6 +41,9 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
 
     PMs.constraint_theta_ref(pm) 
 
+    variable_demand_factor(pm)
+    variable_shunt_factor(pm)
+
     if :setting in keys(Dict(kwargs))
         setting = Dict(Dict(kwargs)[:setting])
     else
@@ -243,19 +246,19 @@ end
 
 
 # from max loadability problem
-function objective_max_loadability{T}(pm::GenericPowerModel{T})
-    z_demand = getindex(pm.model, :z_demand)
-    z_shunt = getindex(pm.model, :z_shunt)
-    z_gen = getindex(pm.model, :z_gen)
-    z_voltage = getindex(pm.model, :z_voltage)
-
-    M = 10*maximum([abs(bus["pd"]) for (i,bus) in pm.ref[:bus]])
-    return @objective(pm.model, Max, sum( M*z_gen[i] for (i,gen) in pm.ref[:gen]) + sum(M*10*z_voltage[i] + M*z_shunt[i] + abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
-
-    #return @objective(pm.model, Max, sum( M*z_gen[i] for (i,gen) in pm.ref[:gen]) + sum( M*z_shunt[i] + abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
-
-    #return @objective(pm.model, Max, sum(abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
-end
+#function objective_max_loadability{T}(pm::GenericPowerModel{T})
+#    z_demand = getindex(pm.model, :z_demand)
+#    z_shunt = getindex(pm.model, :z_shunt)
+#    z_gen = getindex(pm.model, :z_gen)
+#    z_voltage = getindex(pm.model, :z_voltage)
+#
+#    M = 10*maximum([abs(bus["pd"]) for (i,bus) in pm.ref[:bus]])
+#    return @objective(pm.model, Max, sum( M*z_gen[i] for (i,gen) in pm.ref[:gen]) + sum(M*10*z_voltage[i] + M*z_shunt[i] + abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
+#
+#    #return @objective(pm.model, Max, sum( M*z_gen[i] for (i,gen) in pm.ref[:gen]) + sum( M*z_shunt[i] + abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
+#
+#    #return @objective(pm.model, Max, sum(abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
+#end
 
 
 ################### Constraints ###################
@@ -275,9 +278,11 @@ function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     pg = getvariable(pm.model, :pg)
     qg = getvariable(pm.model, :qg)
     qloss = getvariable(pm.model, :qloss)
+    z_demand = getvariable(pm.model, :z_demand)[i]
+    z_shunt = getvariable(pm.model, :z_shunt)[i]
 
-    c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd - gs*v^2)
-    c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd + bs*v^2)
+    c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand - gs*v^2*z_shunt)
+    c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd*z_demand + bs*v^2*z_shunt)
     return Set([c1, c2])
 end
 
