@@ -41,9 +41,6 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
 
     PMs.constraint_theta_ref(pm) 
 
-    variable_demand_factor(pm)
-    variable_shunt_factor(pm)
-
     if :setting in keys(Dict(kwargs))
         setting = Dict(Dict(kwargs)[:setting])
     else
@@ -58,6 +55,11 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     else
         objective = "min_fuel"
     end
+
+    if objective == "min_error"
+        variable_demand_factor(pm)
+    end
+
 
     println("objective: ",objective)
 
@@ -80,7 +82,11 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     end
 
     for (i,bus) in pm.ref[:bus]
-        constraint_gmd_kcl_shunt(pm, bus) 
+        if objective == "min_error"
+            constraint_gmd_kcl_shunt(pm, bus, load_shed=true) 
+        else
+            constraint_gmd_kcl_shunt(pm, bus, load_shed=false)
+        end
     end
 
     for (i,branch) in pm.ref[:branch]
@@ -226,7 +232,9 @@ function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
 
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
-    return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch])))
+    return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] 
+                                       + gen["cost"][3] for (i,gen) in pm.ref[:gen]) 
+                                       + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch])))
 end
 
 # SSE objective: keep generators as close as possible to original setpoint
@@ -234,14 +242,25 @@ function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
     i_dc_mag = getvariable(pm.model, :i_dc_mag)
     pg = getvariable(pm.model, :pg)
     qg = getvariable(pm.model, :qg)
+    z_demand = getvariable(pm.model, :z_demand)
+
+    pmax = 0.0
 
     for (i,gen) in pm.ref[:gen]
         @printf "sg[%d] = %f + j%f\n" i gen["pg"] gen["qg"]
+
+        if gen["pmax"] > pmax
+            pmax = gen["pmax"]
+        end
     end
 
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
-    return @objective(pm.model, Min, sum((pg[i] - gen["pg"])^2  for (i,gen) in pm.ref[:gen]) + sum((qg[i] - gen["qg"])^2  for (i,gen) in pm.ref[:gen]) + sum(i_dc_mag[i]^2 for i in keys(pm.ref[:branch])))
+    return @objective(pm.model, Min, sum((pg[i] - gen["pg"])^2  for (i,gen) in pm.ref[:gen]) 
+                                   + sum((qg[i] - gen["qg"])^2  for (i,gen) in pm.ref[:gen]) 
+                                   + sum(i_dc_mag[i]^2 for (i,branch) in pm.ref[:branch])
+                                   + sum(pmax^2*z_demand[i] for (i,bus) in pm.ref[:bus]))
+
 end
 
 
@@ -263,7 +282,7 @@ end
 
 ################### Constraints ###################
 
-function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
+function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, bus; load_shed=false)
     i = bus["index"]
     bus_arcs = pm.ref[:bus_arcs][i]
     bus_gens = pm.ref[:bus_gens][i]
@@ -278,11 +297,16 @@ function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, bus)
     pg = getvariable(pm.model, :pg)
     qg = getvariable(pm.model, :qg)
     qloss = getvariable(pm.model, :qloss)
-    z_demand = getvariable(pm.model, :z_demand)[i]
-    z_shunt = getvariable(pm.model, :z_shunt)[i]
 
-    c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand - gs*v^2*z_shunt)
-    c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd*z_demand + bs*v^2*z_shunt)
+    if false && load_shed == true
+        z_demand = getvariable(pm.model, :z_demand)[i]
+        c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand)
+        c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd*z_demand)
+    else
+        c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens))
+        c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens))
+    end
+
     return Set([c1, c2])
 end
 
