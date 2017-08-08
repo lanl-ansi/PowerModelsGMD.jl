@@ -11,9 +11,12 @@ function run_gmd(file::AbstractString, model_constructor, solver; kwargs...)
 end
 
 function run_gmd(data::Dict{AbstractString,Any}, model_constructor, solver; kwargs...)
+    #println("Data gmd branches:", keys(data["gmd_branch"]))
     pm = model_constructor(data; kwargs...)
+    #println("Ref gmd branches:", keys(pm.ref[:gmd_branch]))
 
     PowerModelsGMD.add_gmd_ref(pm)
+    #println("GMD ref gmd branches:", keys(pm.ref[:gmd_branch]))
 
     post_gmd(pm; kwargs...)
 
@@ -89,7 +92,10 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
         end
     end
 
+    println("GMD ref branches:", keys(pm.ref[:gmd_branch]))
+
     for (i,branch) in pm.ref[:branch]
+        @printf "Adding constraints for branch %d\n" i
         constraint_dc_current_mag(pm, branch)
         constraint_qloss(pm, branch)
 
@@ -99,13 +105,13 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
 
         if objective == "min_error"
             # println("APPLYING THERMAL LIMIT CONSTRAINT")
-            # PMs.constraint_thermal_limit_from(pm, branch)
-            # PMs.constraint_thermal_limit_to(pm, branch)
-            # PMs.constraint_voltage(pm) 
-            # PMs.constraint_phase_angle_difference(pm, branch) 
-        else
             PMs.constraint_thermal_limit_from(pm, branch)
             PMs.constraint_thermal_limit_to(pm, branch)
+            PMs.constraint_voltage(pm) 
+            PMs.constraint_phase_angle_difference(pm, branch) 
+        else
+            # PMs.constraint_thermal_limit_from(pm, branch)
+            # PMs.constraint_thermal_limit_to(pm, branch)
             PMs.constraint_voltage(pm) 
             PMs.constraint_phase_angle_difference(pm, branch) 
             # println("DISABLING THERMAL LIMIT CONSTRAINT")
@@ -143,6 +149,7 @@ function get_gmd_solution{T}(pm::GenericPowerModel{T})
     add_bus_dc_current_mag_setpoint(sol, pm)
     add_bus_qloss_setpoint(sol, pm)
     PMs.add_bus_demand_setpoint(sol, pm)
+    add_bus_load_shed_setpoint(sol, pm)
     PMs.add_generator_power_setpoint(sol, pm)
     PMs.add_branch_flow_setpoint(sol, pm)
     add_bus_dc_voltage_setpoint(sol, pm)
@@ -259,25 +266,9 @@ function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
     return @objective(pm.model, Min, sum((pg[i] - gen["pg"])^2  for (i,gen) in pm.ref[:gen]) 
                                    + sum((qg[i] - gen["qg"])^2  for (i,gen) in pm.ref[:gen]) 
                                    + sum(i_dc_mag[i]^2 for (i,branch) in pm.ref[:branch])
-                                   + sum(pmax^2*z_demand[i] for (i,bus) in pm.ref[:bus]))
+                                   - sum(100.0*pmax^2*z_demand[i] for (i,bus) in pm.ref[:bus]))
 
 end
-
-
-# from max loadability problem
-#function objective_max_loadability{T}(pm::GenericPowerModel{T})
-#    z_demand = getindex(pm.model, :z_demand)
-#    z_shunt = getindex(pm.model, :z_shunt)
-#    z_gen = getindex(pm.model, :z_gen)
-#    z_voltage = getindex(pm.model, :z_voltage)
-#
-#    M = 10*maximum([abs(bus["pd"]) for (i,bus) in pm.ref[:bus]])
-#    return @objective(pm.model, Max, sum( M*z_gen[i] for (i,gen) in pm.ref[:gen]) + sum(M*10*z_voltage[i] + M*z_shunt[i] + abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
-#
-#    #return @objective(pm.model, Max, sum( M*z_gen[i] for (i,gen) in pm.ref[:gen]) + sum( M*z_shunt[i] + abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
-#
-#    #return @objective(pm.model, Max, sum(abs(bus["pd"])*z_demand[i] for (i,bus) in pm.ref[:bus]))
-#end
 
 
 ################### Constraints ###################
@@ -298,13 +289,16 @@ function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, bus; load_shed=fa
     qg = getvariable(pm.model, :qg)
     qloss = getvariable(pm.model, :qloss)
 
-    if false && load_shed == true
+    if load_shed == true
+        println("Allowing load shed")
         z_demand = getvariable(pm.model, :z_demand)[i]
+        #c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand)
+        #c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd*z_demand)
         c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand)
         c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd*z_demand)
     else
-        c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens))
-        c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens))
+        c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd)
+        c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd)
     end
 
     return Set([c1, c2])
@@ -407,6 +401,9 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
     if branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto" 
         ks = branch["gmd_br_series"]
         kc = branch["gmd_br_common"]
+
+        @printf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc
+        #println("GMD branches:", keys(pm.ref[:gmd_branch]))
 
         br_ser = pm.ref[:gmd_branch][ks]
         br_com = pm.ref[:gmd_branch][kc]
@@ -512,7 +509,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
         gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    #@printf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs
+    @printf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs
 
     c = @constraint(pm.model, dc == gs*(vf + vs - vt))
     return Set([c])
@@ -553,23 +550,6 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
 end
 
 
-function constraint_kcl_shunt_shed{T <: PMs.AbstractACPForm}(pm::GenericPowerModel{T}, i, bus_arcs, bus_gens, pd, qd, gs, bs)
-    v = getindex(pm.model, :v)[i]
-    p = getindex(pm.model, :p)
-    q = getindex(pm.model, :q)
-    pg = getindex(pm.model, :pg)
-    qg = getindex(pm.model, :qg)
-    z_demand = getindex(pm.model, :z_demand)[i]
-    z_shunt = getindex(pm.model, :z_shunt)[i]
-
-    c1 = @NLconstraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand - gs*v^2*z_shunt)
-    c2 = @NLconstraint(pm.model, sum(q[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd*z_demand + bs*v^2*z_shunt)
-    return Set([c1, c2])
-end
-
-
-
-
 ################### Outputs ###################
 function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
     # dc voltage is measured line-neutral not line-line, so divide by sqrt(3)
@@ -581,6 +561,11 @@ function add_bus_dc_current_mag_setpoint{T}(sol, pm::GenericPowerModel{T})
     # PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
     PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc_mag", :i_dc_mag)
 end
+
+function add_bus_load_shed_setpoint{T}(sol, pm::GenericPowerModel{T})
+    PMs.add_setpoint(sol, pm, "bus", "index", "demand_served_ratio", :z_demand)
+end
+
 
 function current_pu_to_si(x,item,pm)
     mva_base = pm.data["baseMVA"]
