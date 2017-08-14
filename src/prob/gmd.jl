@@ -10,7 +10,7 @@ function run_gmd(file::AbstractString, model_constructor, solver; kwargs...)
     return run_gmd(data, model_constructor, solver; kwargs...)
 end
 
-function run_gmd(data::Dict{AbstractString,Any}, model_constructor, solver; kwargs...)
+function run_gmd(data::Dict{String,Any}, model_constructor, solver; kwargs...)
     #println("Data gmd branches:", keys(data["gmd_branch"]))
     pm = model_constructor(data; kwargs...)
     #println("Ref gmd branches:", keys(pm.ref[:gmd_branch]))
@@ -143,7 +143,7 @@ end
 
 
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
-    sol = Dict{AbstractString,Any}()
+    sol = Dict{String,Any}()
 
     PMs.add_bus_voltage_setpoint(sol, pm);
     add_bus_dc_current_mag_setpoint(sol, pm)

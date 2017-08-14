@@ -12,9 +12,9 @@ function add_gmd_data(data)
 
     for (k,br) in data["branch"]
         if br["hi_bus"] == br["f_bus"]
-            br["q_from"] += br["gmd_qloss"]
+            br["qf"] += br["gmd_qloss"]
         else
-            br["q_to"] += br["gmd_qloss"]
+            br["qt"] += br["gmd_qloss"]
         end
 
         br["ieff"] = br["gmd_idc_mag"]
