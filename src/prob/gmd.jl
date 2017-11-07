@@ -120,7 +120,8 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
             # PMs.constraint_thermal_limit_from(pm, branch)
             # PMs.constraint_thermal_limit_to(pm, branch)
             PMs.constraint_voltage(pm) 
-            PMs.constraint_phase_angle_difference(pm, branch) 
+            PMs.constraint_voltage_angle_difference(pm, branch) 
+
             # println("DISABLING THERMAL LIMIT CONSTRAINT")
         end
 
@@ -197,42 +198,42 @@ end
 
 ################### Variables ###################
 function variable_dc_voltage{T}(pm::GenericPowerModel{T}; bounded = true)
-    @variable(pm.model, v_dc[i in keys(pm.ref[:gmd_bus])], start = PMs.getstart(pm.ref[:gmd_bus], i, "v_dc_start"))
-    return v_dc
+    pm.var[:v_dc] = @variable(pm.model, v_dc[i in keys(pm.ref[:gmd_bus])], start = PMs.getstart(pm.ref[:gmd_bus], i, "v_dc_start"))
+    # return v_dc
 end
 
 function variable_dc_current_mag{T}(pm::GenericPowerModel{T}; bounded = true)
-    @variable(pm.model, i_dc_mag[i in keys(pm.ref[:branch])], start = PMs.getstart(pm.ref[:branch], i, "i_dc_mag_start"))
-    return i_dc_mag
+    pm.var[:i_dc_mag] = @variable(pm.model, i_dc_mag[i in keys(pm.ref[:branch])], start = PMs.getstart(pm.ref[:branch], i, "i_dc_mag_start"))
+    # return i_dc_mag
 end
 
 function variable_dc_line_flow{T}(pm::GenericPowerModel{T}; bounded = true)
-    @variable(pm.model, dc[(l,i,j) in pm.ref[:gmd_arcs]], start = PMs.getstart(pm.ref[:gmd_branch], l, "dc_start"))
+    pm.var[:dc] = @variable(pm.model, dc[(l,i,j) in pm.ref[:gmd_arcs]], start = PMs.getstart(pm.ref[:gmd_branch], l, "dc_start"))
 
     dc_expr = Dict([((l,i,j), -1.0*dc[(l,i,j)]) for (l,i,j) in pm.ref[:gmd_arcs_from]])
     dc_expr = merge(dc_expr, Dict([((l,j,i), 1.0*dc[(l,i,j)]) for (l,i,j) in pm.ref[:gmd_arcs_from]]))
 
     pm.model.ext[:dc_expr] = dc_expr
 
-    return dc
+    # return dc
 end
 
 # define qloss for each branch, it flows into the "to" side of the branch
 function variable_qloss{T}(pm::GenericPowerModel{T})
     # TODO: if you want to define qloss only on the "to" side you should define on the set keys(pm.ref[:branch]) or :arcs_to
-    @variable(pm.model, qloss[(l,i,j) in pm.ref[:arcs]], start = PMs.getstart(pm.ref[:branch], l, "qloss_start"))
+    pm.var[:qloss] = @variable(pm.model, qloss[(l,i,j) in pm.ref[:arcs]], start = PMs.getstart(pm.ref[:branch], l, "qloss_start"))
 
-    return qloss
+    # return qloss
 end
 
 function variable_demand_factor{T}(pm::GenericPowerModel{T})
-    @variable(pm.model, 0 <= z_demand[i in keys(pm.ref[:bus])] <= 1, start = PMs.getstart(pm.ref[:bus], i, "z_demand_start", 1.0))
-    return z_demand
+    pm.var[:z_demand] = @variable(pm.model, 0 <= z_demand[i in keys(pm.ref[:bus])] <= 1, start = PMs.getstart(pm.ref[:bus], i, "z_demand_start", 1.0))
+    # return z_demand
 end
 
 function variable_shunt_factor{T}(pm::GenericPowerModel{T})
-    @variable(pm.model, 0 <= z_shunt[i in keys(pm.ref[:bus])] <= 1, start = PMs.getstart(pm.ref[:bus], i, "z_shunt_nstart", 1.0))
-    return z_shunt
+    pm.var[:z_shunt] = @variable(pm.model, 0 <= z_shunt[i in keys(pm.ref[:bus])] <= 1, start = PMs.getstart(pm.ref[:bus], i, "z_shunt_nstart", 1.0))
+    # return z_shunt
 end
 
 
@@ -241,8 +242,8 @@ end
 ################### Objective ###################
 # OPF objective
 function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
-    i_dc_mag = getindex(pm.model, :i_dc_mag)
-    pg = getindex(pm.model, :pg)
+    i_dc_mag = pm.var[:i_dc_mag]
+    pg = pm.var[:pg]
 
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
@@ -253,10 +254,10 @@ end
 
 # SSE objective: keep generators as close as possible to original setpoint
 function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
-    i_dc_mag = getindex(pm.model, :i_dc_mag)
-    pg = getindex(pm.model, :pg)
-    qg = getindex(pm.model, :qg)
-    z_demand = getindex(pm.model, :z_demand)
+    i_dc_mag = pm.var[:i_dc_mag]
+    pg = pm.var[:pg]
+    qg = pm.var[:qg]
+    z_demand = pm.var[:z_demand]
 
     pmax = 0.0
 
@@ -289,16 +290,16 @@ function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, bus; load_shed=fa
     gs = bus["gs"]
     bs = bus["bs"]
 
-    v = getindex(pm.model, :v)[i]
-    p = getindex(pm.model, :p)
-    q = getindex(pm.model, :q)
-    pg = getindex(pm.model, :pg)
-    qg = getindex(pm.model, :qg)
-    qloss = getindex(pm.model, :qloss)
+    # v = pm.var[:v][i]
+    p = pm.var[:p]
+    q = pm.var[:q]
+    pg = pm.var[:pg]
+    qg = pm.var[:qg]
+    qloss = pm.var[:qloss]
 
     if load_shed == true
         println("Allowing load shed")
-        z_demand = getindex(pm.model, :z_demand)[i]
+        z_demand = pm.var[:z_demand][i]
         #c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand)
         #c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd*z_demand)
         c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand)
@@ -327,7 +328,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
 
     if branch["type"] != "xf"
         k = branch["index"]
-        ieff = getindex(pm.model, :i_dc_mag)
+        ieff = pm.var[:i_dc_mag]
         c = @constraint(pm.model, ieff[k] >= 0.0)
         return Set([c])
     end
@@ -336,7 +337,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
     if branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
         println("  Ungrounded config, ieff constrained to zero")
         k = branch["index"]
-        ieff = getindex(pm.model, :i_dc_mag)
+        ieff = pm.var[:i_dc_mag]
         c = @constraint(pm.model, ieff[k] >= 0.0)
         return Set([c])
     end
@@ -355,8 +356,8 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         ih = br_hi["f_bus"]
         jh = br_hi["t_bus"]
 
-        ieff = getindex(pm.model, :i_dc_mag)
-        ihi = getindex(pm.model, :dc)[(kh,ih,jh)]        
+        ieff = pm.var[:i_dc_mag]
+        ihi = pm.var[:dc][(kh,ih,jh)]        
 
         # println("branch[$k]: hi_branch[$kh]")
 
@@ -387,9 +388,9 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         il = br_lo["f_bus"]
         jl = br_lo["t_bus"]
 
-        ieff = getindex(pm.model, :i_dc_mag)
-        ihi = getindex(pm.model, :dc)[(kh,ih,jh)]        
-        ilo = getindex(pm.model, :dc)[(kl,il,jl)]        
+        ieff = pm.var[:i_dc_mag]
+        ihi = pm.var[:dc][(kh,ih,jh)]        
+        ilo = pm.var[:dc][(kl,il,jl)]        
 
         vhi = pm.ref[:bus][i]["base_kv"]
         vlo = pm.ref[:bus][j]["base_kv"]
@@ -425,9 +426,9 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
         ic = br_com["f_bus"]
         jc = br_com["t_bus"]
 
-        ieff = getindex(pm.model, :i_dc_mag)
-        is = getindex(pm.model, :dc)[(ks,is,js)]        
-        ic = getindex(pm.model, :dc)[(kc,ic,jc)]        
+        ieff = pm.var[:i_dc_mag]
+        is = pm.var[:dc][(ks,is,js)]        
+        ic = pm.var[:dc][(kc,ic,jc)]        
 
         ihi = -is
         ilo = ic + is
@@ -447,7 +448,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch)
 
     #@printf "Unrecognized branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
     k = branch["index"]
-    ieff = getindex(pm.model, :i_dc_mag)
+    ieff = pm.var[:i_dc_mag]
     c = @constraint(pm.model, ieff[k] >= 0.0)
     return Set([c])
 end
@@ -460,7 +461,7 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus)
     # print("Bus branches:")
     # println(bus_branches)
 
-    v_dc = getindex(pm.model, :v_dc)
+    v_dc = pm.var[:v_dc]
     # println()
     # println("v_dc: $v_dc")
 
@@ -499,9 +500,9 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
 
-    vf = getindex(pm.model, :v_dc)[f_bus] # from dc voltage
-    vt = getindex(pm.model, :v_dc)[t_bus] # to dc voltage
-    dc = getindex(pm.model, :dc)[(i,f_bus,t_bus)]
+    vf = pm.var[:v_dc][f_bus] # from dc voltage
+    vt = pm.var[:v_dc][t_bus] # to dc voltage
+    dc = pm.var[:dc][(i,f_bus,t_bus)]
 
     bus1 = pm.ref[:gmd_bus][f_bus]
     bus2 = pm.ref[:gmd_bus][t_bus]
@@ -530,8 +531,8 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, branch)
 
     bus = pm.ref[:bus][i]
 
-    i_dc_mag = getindex(pm.model, :i_dc_mag)
-    qloss = getindex(pm.model, :qloss)
+    i_dc_mag = pm.var[:i_dc_mag]
+    qloss = pm.var[:qloss]
         
     if "gmd_k" in keys(branch)
 
@@ -558,19 +559,19 @@ end
 
 
 ################### Outputs ###################
-function add_bus_dc_voltage_setpoint{T}(sol, pm::GenericPowerModel{T})
+function add_bus_dc_voltage_setpoint(sol, pm::GenericPowerModel)
     # dc voltage is measured line-neutral not line-line, so divide by sqrt(3)
     # fields are: solution, power model, dict name, index name, param name, variable symbol
-    PMs.add_setpoint(sol, pm, "gmd_bus", "index", "gmd_vdc", :v_dc)
+    PMs.add_setpoint(sol, pm, "gmd_bus", "gmd_vdc", :v_dc)
 end
 
-function add_bus_dc_current_mag_setpoint{T}(sol, pm::GenericPowerModel{T})
+function add_bus_dc_current_mag_setpoint(sol, pm::GenericPowerModel)
     # PMs.add_setpoint(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
-    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc_mag", :i_dc_mag)
+    PMs.add_setpoint(sol, pm, "branch", "gmd_idc_mag", :i_dc_mag)
 end
 
-function add_bus_load_shed_setpoint{T}(sol, pm::GenericPowerModel{T})
-    PMs.add_setpoint(sol, pm, "bus", "index", "demand_served_ratio", :z_demand)
+function add_bus_load_shed_setpoint(sol, pm::GenericPowerModel)
+    PMs.add_setpoint(sol, pm, "bus", "demand_served_ratio", :z_demand)
 end
 
 
@@ -580,19 +581,19 @@ function current_pu_to_si(x,item,pm)
     return x*1e3*mva_base/(sqrt(3)*kv_base)
 end
 
-function add_branch_dc_flow_setpoint{T}(sol, pm::GenericPowerModel{T})
+function add_branch_dc_flow_setpoint(sol, pm::GenericPowerModel)
     # check the line flows were requested
     # mva_base = pm.data["baseMVA"]
 
     if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-        PMs.add_setpoint(sol, pm, "gmd_branch", "index", "gmd_idc", :dc; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+        PMs.add_setpoint(sol, pm, "gmd_branch", "gmd_idc", :dc; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
         # PMs.add_setpoint(sol, pm, "branch", "index", "gmd_idc", :dc; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
     end
 end
 
 # need to scale by base MVA
-function add_bus_qloss_setpoint{T}(sol, pm::GenericPowerModel{T})
+function add_bus_qloss_setpoint(sol, pm::GenericPowerModel)
     mva_base = pm.data["baseMVA"]
     # mva_base = 1.0
-    PMs.add_setpoint(sol, pm, "branch", "index", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["hi_bus"], item["lo_bus"])], scale = (x,item) -> x*mva_base)
+    PMs.add_setpoint(sol, pm, "branch", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["hi_bus"], item["lo_bus"])], scale = (x,item) -> x*mva_base)
 end
