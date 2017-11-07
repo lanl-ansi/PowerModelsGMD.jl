@@ -43,11 +43,13 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     variable_dc_line_flow(pm)
 
     # get the index of the slack bus
+    println("Ref buses:")
+    println(keys(pm.ref[:ref_buses]))
 
     #PMs.constraint_theta_ref(pm) 
-    for (i,bus) in pm.ref[:ref_buses]
-        PMs.constraint_theta_ref(pm, bus)
-    end
+    # for (i,bus) in pm.ref[:ref_buses]
+    #     PMs.constraint_theta_ref(pm, bus)
+    # end
 
     if :setting in keys(Dict(kwargs))
         setting = Dict(Dict(kwargs)[:setting])
