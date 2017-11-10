@@ -115,7 +115,7 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
             PMs.constraint_thermal_limit_from(pm, branch)
             PMs.constraint_thermal_limit_to(pm, branch)
             PMs.constraint_voltage(pm) 
-            PMs.constraint_phase_angle_difference(pm, branch) 
+            PMs.constraint_voltage_angle_difference(pm, branch) 
         else
             # PMs.constraint_thermal_limit_from(pm, branch)
             # PMs.constraint_thermal_limit_to(pm, branch)
