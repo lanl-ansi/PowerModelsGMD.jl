@@ -1,8 +1,12 @@
 # Formulations of GMD Problems
-export run_gmd, run_ac_gmd
+export run_gmd, run_ac_gmd, run_dc_gmd
+
+function run_dc_gmd(file, solver; kwargs...)
+    return run_gmd(file, PMs.GICPowerModel, solver; kwargs...)
+end
 
 function run_ac_gmd(file, solver; kwargs...)
-    return run_gmd(file, PMs.ACPPowerModel, solver; kwargs...)
+    return run_gmd(file, PMs.GICACPPowerModel, solver; kwargs...)
 end
 
 function run_gmd(file::AbstractString, model_constructor, solver; kwargs...)
@@ -26,6 +30,26 @@ function run_gmd(data::Dict{String,Any}, model_constructor, solver; kwargs...)
     # TODO with improvements to PowerModels, see if this function can be replaced by,
     # return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...) 
 end
+
+#function run_dc_gmd(data::Dict{String,Any}, model_constructor, solver; kwargs...)
+function run_gmd(data::Dict{String,Any}, solver; kwargs...)
+    #println("Data gmd branches:", keys(data["gmd_branch"]))
+    model_constructor = PMs.ACPPowerModel
+    pm = model_constructor(data; kwargs...)
+    #println("Ref gmd branches:", keys(pm.ref[:gmd_branch]))
+
+    PowerModelsGMD.add_gmd_ref(pm)
+    #println("GMD ref gmd branches:", keys(pm.ref[:gmd_branch]))
+
+    post_dc_gmd(pm; kwargs...)
+
+    solution = solve_generic_model(pm, solver; solution_builder = get_gmd_solution)
+
+    return solution
+    # TODO with improvements to PowerModels, see if this function can be replaced by,
+    # return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...) 
+end
+
 
 function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     #println("Power Model GMD data")
@@ -148,6 +172,31 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
 
     #println()
 end
+
+# post problem corresponding to the dc gic problem
+# this is a linear constraint satisfaction problem
+function post_dc_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
+    variable_dc_voltage(pm)
+    variable_dc_line_flow(pm)
+
+    if :setting in keys(Dict(kwargs))
+        setting = Dict(Dict(kwargs)[:setting])
+    else
+        setting = Dict()
+    end
+
+    println("GMD ref branches:", keys(pm.ref[:gmd_branch]))
+
+    ### DC network constraints ###
+    for (i,bus) in pm.ref[:gmd_bus]
+        constraint_dc_kcl_shunt(pm, bus)
+    end
+
+    for (i,branch) in pm.ref[:gmd_branch]
+        constraint_dc_ohms(pm, branch)
+    end
+end
+
 
 
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
