@@ -1,4 +1,6 @@
 {
+  "multinetwork": false,
+  "per_unit": false,
   "bus": {
     "4": {
       "lat": 40.0,
@@ -35,7 +37,7 @@
       "gmd_k": 0.001,
       "bus_i": 1,
       "lon": -89.0,
-      "bus_type": 3,
+      "bus_type": 1,
       "name": "bus1",
       "sid": 1,
       "gs": 0.0,
@@ -63,7 +65,7 @@
       "gmd_k": 0.001,
       "bus_i": 2,
       "lon": -87.0,
-      "bus_type": 3,
+      "bus_type": 1,
       "name": "bus2",
       "sid": 2,
       "gs": 0.0,
@@ -91,7 +93,7 @@
       "gmd_k": 0.001,
       "bus_i": 3,
       "lon": -89.0,
-      "bus_type": 3,
+      "bus_type": 1,
       "name": "bus3",
       "sid": 1,
       "gs": 0.0,
