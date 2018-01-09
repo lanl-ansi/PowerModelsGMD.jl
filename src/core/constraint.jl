@@ -29,145 +29,144 @@ function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, i; load_s
 end
 constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, i; kwargs...) = constraint_gmd_kcl_shunt(pm, pm.cnw, i; kwargs...)
 
+"DC current on normal lines"
+function constraint_dc_current_mag_line{T}(pm::GenericPowerModel{T}, n::Int, k)
+    ieff = pm.var[:nw][n][:i_dc_mag]
+    c = @constraint(pm.model, ieff[k] >= 0.0)  
+end
+constraint_dc_current_mag_line{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag_line(pm, pm.cnw, k)
+
+"DC current on grounded transformers"
+function constraint_dc_current_mag_grounded_xf{T}(pm::GenericPowerModel{T}, n::Int, k)
+    ieff = pm.var[:nw][n][:i_dc_mag]
+    c = @constraint(pm.model, ieff[k] >= 0.0)  
+end
+constraint_dc_current_mag_grounded_xf{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag_grounded_xf(pm, pm.cnw, k)
+
+"DC current on ungrounded gwye-delta transformers"
+function constraint_dc_current_mag_gwye_delta_xf{T}(pm::GenericPowerModel{T}, n::Int, k)
+    branch = ref(pm, n, :branch, k)  
+  
+    kh = branch["gmd_br_hi"]
+    br_hi = pm.ref[:nw][n][:gmd_branch][kh]
+
+    ih = br_hi["f_bus"]
+    jh = br_hi["t_bus"]
+
+    ieff = pm.var[:nw][n][:i_dc_mag]
+    ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
+
+    # println("branch[$k]: hi_branch[$kh]")
+
+    c = @constraint(pm.model, ieff[k] >= ihi)
+    c = @constraint(pm.model, ieff[k] >= -ihi)  
+end
+constraint_dc_current_mag_gwye_delta_xf{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag_gwye_delta_xf(pm, pm.cnw, k)
+
+
+"DC current on ungrounded gwye-gwye transformers"
+function constraint_dc_current_mag_gwye_gwye_xf{T}(pm::GenericPowerModel{T}, n::Int, k)
+    branch = ref(pm, n, :branch, k)  
+  
+    kh = branch["gmd_br_hi"]
+    kl = branch["gmd_br_lo"]
+
+    br_hi = pm.ref[:nw][n][:gmd_branch][kh]
+    br_lo = pm.ref[:nw][n][:gmd_branch][kl]
+
+    i = branch["f_bus"]
+    j = branch["t_bus"]
+
+    ih = br_hi["f_bus"]
+    jh = br_hi["t_bus"]
+
+    il = br_lo["f_bus"]
+    jl = br_lo["t_bus"]
+
+    ieff = pm.var[:nw][n][:i_dc_mag]
+    ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
+    ilo = pm.var[:nw][n][:dc][(kl,il,jl)]        
+
+    vhi = pm.ref[:nw][n][:bus][i]["base_kv"]
+    vlo = pm.ref[:nw][n][:bus][j]["base_kv"]
+    a = vhi/vlo
+
+    println("branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+
+    c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
+    c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
+end
+constraint_dc_current_mag_gwye_gwye_xf{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag_gwye_gwye_xf(pm, pm.cnw, k)
+
+"DC current on ungrounded gwye-gwye auto transformers"
+function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}, n::Int, k)
+    branch = ref(pm, n, :branch, k)  
+    ks = branch["gmd_br_series"]
+    kc = branch["gmd_br_common"]
+
+    @printf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc
+    #println("GMD branches:", keys(pm.ref[:gmd_branch]))
+
+    br_ser = pm.ref[:nw][n][:gmd_branch][ks]
+    br_com = pm.ref[:nw][n][:gmd_branch][kc]
+
+    #k = branch["index"]
+    i = branch["f_bus"]
+    j = branch["t_bus"]
+
+    is = br_ser["f_bus"]
+    js = br_ser["t_bus"]
+
+    ic = br_com["f_bus"]
+    jc = br_com["t_bus"]
+
+    ieff = pm.var[:nw][n][:i_dc_mag]
+    is = pm.var[:nw][n][:dc][(ks,is,js)]        
+    ic = pm.var[:nw][n][:dc][(kc,ic,jc)]        
+
+    ihi = -is
+    ilo = ic + is
+
+    vhi = pm.ref[:nw][n][:bus][j]["base_kv"]
+    vlo = pm.ref[:nw][n][:bus][i]["base_kv"]
+    a = vhi/vlo
+
+    # println("branch[$k]: ser_branch[$ks], com_branch[$kc]")
+
+    c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
+    c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
+    c = @constraint(pm.model, ieff[k] >= 0.0)  
+end
+constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag_gwye_gwye_auto_xf(pm, pm.cnw, k)
+
 # correct equation is ieff = |a*ihi + ilo|/a
 # just use ihi for now
 function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, k)
-    #k = branch["index"]
     branch = ref(pm, n, :branch, k)  
         
-    if "config" in keys(branch)
-        cfg = branch["config"]
-    else
-        cfg = "N/A"
-    end
+#    if "config" in keys(branch)
+ #       cfg = branch["config"]
+  #  else
+   #     cfg = "N/A"
+   # end
 
     #@printf "Branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
 
     if branch["type"] != "xf"
-    #    k = branch["index"]
+        constraint_dc_current_mag_line(pm,n,k)
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        println("  Ungrounded config, ieff constrained to zero")        
+        constraint_dc_current_mag_grounded_xf(pm,n,k)   
+    elseif branch["config"] in ["delta-gwye","gwye-delta"]
+        constraint_dc_current_mag_gwye_delta_xf(pm,n,k)
+    elseif branch["config"] == "gwye-gwye"
+        constraint_dc_current_mag_gwye_gwye_xf(pm,n,k)
+    elseif branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto"
+        constraint_dc_current_mag_gwye_gwye_auto_xf(pm,n,k)
+    else
         ieff = pm.var[:nw][n][:i_dc_mag]
-        c = @constraint(pm.model, ieff[k] >= 0.0)
-        return
+        c = @constraint(pm.model, ieff[k] >= 0.0)      
     end
-
-
-    if branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-        println("  Ungrounded config, ieff constrained to zero")
-     #   k = branch["index"]
-        ieff = pm.var[:nw][n][:i_dc_mag]
-        c = @constraint(pm.model, ieff[k] >= 0.0)
-        return
-    end
-
-
-    # Ungrounded types:
-    # lines, series capacitors, delta-delta xfs, delta-wye xfs, wye-delta xfs, wye-wye xfs
-    # Delta-Gywe transformer
-    # GWye-Delta transformer
-    if branch["config"] in ["delta-gwye","gwye-delta"] 
-      #  k = branch["index"]
-
-        kh = branch["gmd_br_hi"]
-        br_hi = pm.ref[:nw][n][:gmd_branch][kh]
-
-        ih = br_hi["f_bus"]
-        jh = br_hi["t_bus"]
-
-        ieff = pm.var[:nw][n][:i_dc_mag]
-        ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
-
-        # println("branch[$k]: hi_branch[$kh]")
-
-        c = @constraint(pm.model, ieff[k] >= ihi)
-        c = @constraint(pm.model, ieff[k] >= -ihi)
-
-        return
-    end
-
-    # need to add support for other trarnsformer types
-    # println("Key not found")
-
-    # Gwye-Gwye transformer
-    if branch["config"] == "gwye-gwye" 
-        kh = branch["gmd_br_hi"]
-        kl = branch["gmd_br_lo"]
-
-        br_hi = pm.ref[:nw][n][:gmd_branch][kh]
-        br_lo = pm.ref[:nw][n][:gmd_branch][kl]
-
-       # k = branch["index"]
-        i = branch["f_bus"]
-        j = branch["t_bus"]
-
-        ih = br_hi["f_bus"]
-        jh = br_hi["t_bus"]
-
-        il = br_lo["f_bus"]
-        jl = br_lo["t_bus"]
-
-        ieff = pm.var[:nw][n][:i_dc_mag]
-        ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
-        ilo = pm.var[:nw][n][:dc][(kl,il,jl)]        
-
-        vhi = pm.ref[:nw][n][:bus][i]["base_kv"]
-        vlo = pm.ref[:nw][n][:bus][j]["base_kv"]
-        a = vhi/vlo
-
-        println("branch[$k]: hi_branch[$kh], lo_branch[$kl]")
-
-        c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
-        c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
-
-        return 
-    end
-
-    # GWye-GWye autodransformer
-    #if "gmd_br_series" in keys(branch) && "gmd_br_common" in keys(branch)
-    if branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto" 
-        ks = branch["gmd_br_series"]
-        kc = branch["gmd_br_common"]
-
-        @printf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc
-        #println("GMD branches:", keys(pm.ref[:gmd_branch]))
-
-        br_ser = pm.ref[:nw][n][:gmd_branch][ks]
-        br_com = pm.ref[:nw][n][:gmd_branch][kc]
-
-        #k = branch["index"]
-        i = branch["f_bus"]
-        j = branch["t_bus"]
-
-        is = br_ser["f_bus"]
-        js = br_ser["t_bus"]
-
-        ic = br_com["f_bus"]
-        jc = br_com["t_bus"]
-
-        ieff = pm.var[:nw][n][:i_dc_mag]
-        is = pm.var[:nw][n][:dc][(ks,is,js)]        
-        ic = pm.var[:nw][n][:dc][(kc,ic,jc)]        
-
-        ihi = -is
-        ilo = ic + is
-
-        vhi = pm.ref[:nw][n][:bus][j]["base_kv"]
-        vlo = pm.ref[:nw][n][:bus][i]["base_kv"]
-        a = vhi/vlo
-
-        # println("branch[$k]: ser_branch[$ks], com_branch[$kc]")
-
-        c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
-        c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
-        c = @constraint(pm.model, ieff[k] >= 0.0)
-        return 
-    end
-
-
-    #@printf "Unrecognized branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
-    #k = branch["index"]
-    ieff = pm.var[:nw][n][:i_dc_mag]
-    c = @constraint(pm.model, ieff[k] >= 0.0)
-    return 
 end
 constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag(pm, pm.cnw, k)
 
