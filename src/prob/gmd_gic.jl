@@ -1,5 +1,5 @@
 # Formulations of GMD Problems that solves for the GIC current only
-export run_gmd, run_ac_gmd
+export run_gmd_gic, run_ac_gmd_gic
 
 "Run GIC current model only"
 function run_gmd_gic(file::AbstractString, model_constructor, solver; kwargs...)
