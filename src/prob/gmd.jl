@@ -182,6 +182,58 @@ function post_gmd(pm::GICPowerModel; kwargs...)
     end
 end
 
+""
+function post_quasic_dynamic_pf(pm::ACPPowerModel; kwargs...)
+    PMs.variable_voltage(pm)
+    PMs.variable_generation(pm) 
+    PMs.variable_line_flow(pm) 
+
+    if :setting in keys(Dict(kwargs))
+        setting = Dict(Dict(kwargs)[:setting])
+    else
+        setting = Dict()
+    end
+
+    variable_demand_factor(pm)
+    objective_min_error(pm) # todo: add new function
+    constraint_quasi_dynamic_kcl_shunt(pm, bus, load_shed=true) # todo: add new function
+
+    for (i,branch) in pm.ref[:branch]
+        @printf "Adding constraints for branch %d\n" i
+        constraint_dc_current_mag(pm, branch)
+        constraint_qloss(pm, branch)
+
+        PMs.constraint_ohms_yt_from(pm, branch) 
+        PMs.constraint_ohms_yt_to(pm, branch) 
+
+        PMs.constraint_thermal_limit_from(pm, branch)
+        PMs.constraint_thermal_limit_to(pm, branch)
+        PMs.constraint_voltage(pm) 
+        PMs.constraint_voltage_angle_difference(pm, branch) 
+    end
+
+    #println()
+    #println("Buses")
+    #println("--------------------")
+
+    ### DC network constraints ###
+    for (i,bus) in pm.ref[:gmd_bus]
+        # println("bus:")
+        # println(bus)
+        constraint_dc_kcl_shunt(pm, bus)
+    end
+
+    #println()
+    #println("Branches")
+    #println("--------------------")
+
+    for (i,branch) in pm.ref[:gmd_branch]
+        constraint_dc_ohms(pm, branch)
+    end
+
+    #println()
+end
+
 
 
 function get_gmd_solution{T}(pm::GenericPowerModel{T})
