@@ -46,22 +46,23 @@ end
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
 
-#        PowerModels.update_data(data, result["solution"])
- #       PowerModelsGMD.add_gmd_data(data)
-        
         solution = result["solution"]
 
-        # changes due to the fact that becouse update_data does not do some of the stuff that merge_result does
-        #@test isapprox(data["bus"]["1"]["gmd_vdc"], -32, atol=0.1)
-#        @test isapprox(data["bus"]["1"]["vm"], 0.933660, atol=1e-3)
- #       @test isapprox(data["branch"]["3"]["p_from"], -1007.680670, atol=1e-3)
-  #      @test isapprox(data["branch"]["3"]["q_from"], -434.504704, atol=1e-3)
-
-          
         @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32, atol=0.1)       
         @test isapprox(solution["bus"]["1"]["vm"], 0.933660, atol=1e-3)
         @test isapprox(solution["branch"]["3"]["pf"], -10.07680670, atol=1e-3)
-        @test isapprox(solution["branch"]["3"]["qf"], -4.34504704, atol=1e-3)          
+        @test isapprox(solution["branch"]["3"]["qf"], -4.9425007298552615, atol=1e-3)          
+          
+        # check the update function that converts qloss into a nodal, rather than edge quantity
+        data = PowerModels.parse_file("../test/data/b4gic.json")
+        PowerModels.update_data(data, solution)
+        PowerModels.make_mixed_units(data)
+        PowerModelsGMD.add_gmd_data(data)
+        @test isapprox(data["bus"]["1"]["gmd_vdc"], -32, atol=0.1)
+        @test isapprox(data["bus"]["1"]["vm"], 0.933660, atol=1e-3)
+        @test isapprox(data["branch"]["3"]["pf"], -1007.680670, atol=1e-3)
+        @test isapprox(data["branch"]["3"]["qf"], -434.504704, atol=1e-3)
+            
     end
 
     @testset "6-bus case" begin
@@ -76,7 +77,7 @@ end
         # check that kcl with qloss is being done correctly
         # br23
         @test isapprox(solution["branch"]["2"]["qf"], -0.36478387, atol=1e-3)
-        @test isapprox(solution["branch"]["2"]["qt"], 0.490899781, atol=1e-3)
+        @test isapprox(solution["branch"]["2"]["qt"], 0.3697549224489615, atol=1e-3)
         # T2 gwye-gwye auto
         @test isapprox(solution["branch"]["4"]["qf"], -0.36402340, atol=1e-3)
         @test isapprox(solution["branch"]["4"]["qt"], 0.364783871, atol=1e-3)
@@ -85,26 +86,26 @@ end
         @test isapprox(solution["branch"]["5"]["pt"], 1.00648681, atol=1e-3)
         @test isapprox(solution["branch"]["5"]["qf"], -0.49089978, atol=1e-3)
         @test isapprox(solution["branch"]["5"]["qt"], 0.486800005, atol=1e-3)
-        
-            
+                        
+        data = PowerModels.parse_file("../test/data/b6gic_nerc.json")
+        PowerModels.update_data(data, solution)
+        PowerModels.make_mixed_units(data)
+        PowerModelsGMD.add_gmd_data(data)
 
-        #PowerModels.update_data(data, result["solution"])
-        #PowerModelsGMD.add_gmd_data(data)
-
-        #@test isapprox(data["bus"]["2"]["gmd_vdc"], -23.022192, atol=1e-1)
-        #@test isapprox(data["bus"]["2"]["vm"], 0.92784494, atol=1e-3)
+        @test isapprox(data["bus"]["2"]["gmd_vdc"], -23.022192, atol=1e-1)
+        @test isapprox(data["bus"]["2"]["vm"], 0.92784494, atol=1e-3)
         # check that kcl with qloss is being done correctly
         # br23
-        #@test isapprox(data["branch"]["2"]["q_from"], -36.478387, atol=1e-3)
-        #@test isapprox(data["branch"]["2"]["q_to"], 49.0899781, atol=1e-3)
+        @test isapprox(data["branch"]["2"]["qf"], -36.478387, atol=1e-3)
+        @test isapprox(data["branch"]["2"]["qt"], 49.0899781, atol=1e-3)
         # T2 gwye-gwye auto
-        #@test isapprox(data["branch"]["4"]["q_from"], -36.402340, atol=1e-3)
-        #@test isapprox(data["branch"]["4"]["q_to"], 36.4783871, atol=1e-3)
+        @test isapprox(data["branch"]["4"]["qf"], -36.402340, atol=1e-3)
+        @test isapprox(data["branch"]["4"]["qt"], 36.4783871, atol=1e-3)
         # br45
-        #@test isapprox(data["branch"]["5"]["p_from"], -100.40386, atol=1e-3)
-        #@test isapprox(data["branch"]["5"]["p_to"], 100.648681, atol=1e-3)
-        #@test isapprox(data["branch"]["5"]["q_from"], -49.089978, atol=1e-3)
-        #@test isapprox(data["branch"]["5"]["q_to"], 48.6800005, atol=1e-3)
+        @test isapprox(data["branch"]["5"]["pf"], -100.40386, atol=1e-3)
+        @test isapprox(data["branch"]["5"]["pt"], 100.648681, atol=1e-3)
+        @test isapprox(data["branch"]["5"]["qf"], -49.089978, atol=1e-3)
+        @test isapprox(data["branch"]["5"]["qt"], 48.6800005, atol=1e-3)
     end
 
     @testset "19-bus case" begin
