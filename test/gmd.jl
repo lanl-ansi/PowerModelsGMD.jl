@@ -112,7 +112,7 @@ end
         result = run_ac_gmd("../test/data/epri21.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 5.08585e5; atol = 1e2)
+        @test isapprox(result["objective"], 5.08585e5; atol = 1e3)
          
         solution = result["solution"]
         @test isapprox(solution["gmd_bus"]["14"]["gmd_vdc"], 44.31, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
@@ -130,7 +130,7 @@ end
         result = run_ac_gmd("../test/data/uiuc150.json", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 9.52847e5; atol = 1e2)
+        @test isapprox(result["objective"], 9.52847e5; atol = 1e5)
         
 #        println(result["objective"])  
             
