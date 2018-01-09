@@ -96,9 +96,9 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
 
     for (i,bus) in ref(pm,:bus)
         if objective == "min_error"
-            constraint_gmd_kcl_shunt(pm, bus, load_shed=true) 
+            constraint_gmd_kcl_shunt(pm, i, load_shed=true) 
         else
-            constraint_gmd_kcl_shunt(pm, bus, load_shed=false)
+            constraint_gmd_kcl_shunt(pm, i, load_shed=false)
         end
     end
 
@@ -106,8 +106,8 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
 
     for (i,branch) in ref(pm,:branch)
         @printf "Adding constraints for branch %d\n" i
-        constraint_dc_current_mag(pm, branch)
-        constraint_qloss(pm, branch)
+        constraint_dc_current_mag(pm, i)
+        constraint_qloss(pm, i)
 
         PMs.constraint_ohms_yt_from(pm, i) 
         PMs.constraint_ohms_yt_to(pm, i) 
@@ -138,7 +138,7 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     for (i,bus) in ref(pm,:gmd_bus)
         # println("bus:")
         # println(bus)
-        constraint_dc_kcl_shunt(pm, bus)
+        constraint_dc_kcl_shunt(pm, i)
     end
 
     #println()
@@ -146,7 +146,7 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     #println("--------------------")
 
     for (i,branch) in ref(pm,:gmd_branch)
-        constraint_dc_ohms(pm, branch)
+        constraint_dc_ohms(pm, i)
     end
 
     #println()

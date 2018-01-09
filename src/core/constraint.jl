@@ -1,6 +1,6 @@
 ""
-function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, bus; load_shed=false)
-    i = bus["index"]
+function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, i; load_shed=false)
+    bus = ref(pm, n, :bus, i)  
     bus_arcs = pm.ref[:nw][n][:bus_arcs][i]
     bus_gens = pm.ref[:nw][n][:bus_gens][i]
     pd = bus["pd"]
@@ -27,11 +27,14 @@ function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, bus; load
         c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd)
     end
 end
-constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, bus; kwargs...) = constraint_gmd_kcl_shunt(pm, pm.cnw, bus; kwargs...)
+constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, i; kwargs...) = constraint_gmd_kcl_shunt(pm, pm.cnw, i; kwargs...)
 
 # correct equation is ieff = |a*ihi + ilo|/a
 # just use ihi for now
-function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, branch)
+function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, k)
+    #k = branch["index"]
+    branch = ref(pm, n, :branch, k)  
+        
     if "config" in keys(branch)
         cfg = branch["config"]
     else
@@ -41,7 +44,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, branch)
     #@printf "Branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
 
     if branch["type"] != "xf"
-        k = branch["index"]
+    #    k = branch["index"]
         ieff = pm.var[:nw][n][:i_dc_mag]
         c = @constraint(pm.model, ieff[k] >= 0.0)
         return
@@ -50,7 +53,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, branch)
 
     if branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
         println("  Ungrounded config, ieff constrained to zero")
-        k = branch["index"]
+     #   k = branch["index"]
         ieff = pm.var[:nw][n][:i_dc_mag]
         c = @constraint(pm.model, ieff[k] >= 0.0)
         return
@@ -62,7 +65,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, branch)
     # Delta-Gywe transformer
     # GWye-Delta transformer
     if branch["config"] in ["delta-gwye","gwye-delta"] 
-        k = branch["index"]
+      #  k = branch["index"]
 
         kh = branch["gmd_br_hi"]
         br_hi = pm.ref[:nw][n][:gmd_branch][kh]
@@ -92,7 +95,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, branch)
         br_hi = pm.ref[:nw][n][:gmd_branch][kh]
         br_lo = pm.ref[:nw][n][:gmd_branch][kl]
 
-        k = branch["index"]
+       # k = branch["index"]
         i = branch["f_bus"]
         j = branch["t_bus"]
 
@@ -130,7 +133,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, branch)
         br_ser = pm.ref[:nw][n][:gmd_branch][ks]
         br_com = pm.ref[:nw][n][:gmd_branch][kc]
 
-        k = branch["index"]
+        #k = branch["index"]
         i = branch["f_bus"]
         j = branch["t_bus"]
 
@@ -161,16 +164,17 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, branch)
 
 
     #@printf "Unrecognized branch: %s, type=%s, config=%s\n" branch["name"] branch["type"] cfg
-    k = branch["index"]
+    #k = branch["index"]
     ieff = pm.var[:nw][n][:i_dc_mag]
     c = @constraint(pm.model, ieff[k] >= 0.0)
     return 
 end
-constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, branch) = constraint_dc_current_mag(pm, pm.cnw, branch)
+constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag(pm, pm.cnw, k)
 
 ""
-function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, dcbus)
-    i = dcbus["index"]
+function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, i)
+    dcbus = ref(pm, n, :gmd_bus, i)   
+#    i = dcbus["index"]
     gmd_bus_arcs = pm.ref[:nw][n][:gmd_bus_arcs][i]
 
     # print("Bus branches:")
@@ -208,12 +212,12 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, dcbus)
     # println("solo bus, skipping")
     # println("done")
 end
-constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, dcbus) = constraint_dc_kcl_shunt(pm, pm.cnw, dcbus)
-
+constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, i) = constraint_dc_kcl_shunt(pm, pm.cnw, i)
 
 ""
-function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, branch)
-    i = branch["index"]
+function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, i)
+    branch = ref(pm, n, :gmd_branch, i)       
+    #i = branch["index"]
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
 
@@ -239,11 +243,12 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, branch)
     c = @constraint(pm.model, dc == gs*(vf + vs - vt))
     return 
 end
-constraint_dc_ohms{T}(pm::GenericPowerModel{T}, branch) = constraint_dc_ohms(pm, pm.cnw, branch)
+constraint_dc_ohms{T}(pm::GenericPowerModel{T}, i) = constraint_dc_ohms(pm, pm.cnw, i)
 
 ""
-function constraint_qloss{T}(pm::GenericPowerModel{T}, n::Int, branch)
-    k = branch["index"]
+function constraint_qloss{T}(pm::GenericPowerModel{T}, n::Int, k)
+   branch = ref(pm, n, :branch, k)        
+#   k = branch["index"]
 
     i = branch["hi_bus"]
     j = branch["lo_bus"]
@@ -275,5 +280,5 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, n::Int, branch)
 
     return 
 end
-constraint_qloss{T}(pm::GenericPowerModel{T}, branch) = constraint_qloss(pm, pm.cnw, branch)
+constraint_qloss{T}(pm::GenericPowerModel{T}, k) = constraint_qloss(pm, pm.cnw, k)
 
