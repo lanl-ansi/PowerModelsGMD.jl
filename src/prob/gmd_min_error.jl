@@ -1,5 +1,5 @@
 # Formulations of GMD Problems
-export run_gmd, run_ac_gmd
+export run_gmd_min_error, run_ac_gmd_min_error
 
 "Run GMD with the nonlinear AC equations - This model minimizes distance from a specified set point"
 function run_ac_gmd_min_error(file, solver; kwargs...)
