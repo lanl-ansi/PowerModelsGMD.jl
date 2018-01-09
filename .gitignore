@@ -5,3 +5,4 @@
 deps/deps.jl
 *.swp
 .project
+test/test-mixed-units.jl
