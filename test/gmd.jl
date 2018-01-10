@@ -32,6 +32,8 @@
 end
 
 
+
+
 @testset "test ac gmd" begin
     @testset "4-bus case solution" begin
         result = run_ac_gmd("../test/data/b4gic.json", ipopt_solver)
@@ -100,16 +102,16 @@ end
         #@test isapprox(data["bus"]["2"]["vm"], 0.92784494, atol=1e-3)
         # check that kcl with qloss is being done correctly
         # br23
-        @test isapprox(data["branch"]["2"]["qf"], -36.478387, atol=1e-3)
-        @test isapprox(data["branch"]["2"]["qt"], 49.0899781, atol=1e-3)
+        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=1e-3)
+        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=1e-3)
         # T2 gwye-gwye auto
-        @test isapprox(data["branch"]["4"]["qf"], -36.402340, atol=1e-3)
-        @test isapprox(data["branch"]["4"]["qt"], 36.4783871, atol=1e-3)
+        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=1e-3)
+        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=1e-3)
         # br45
-        @test isapprox(data["branch"]["5"]["pf"], -100.40386, atol=1e-3)
-        @test isapprox(data["branch"]["5"]["pt"], 100.648681, atol=1e-3)
-        @test isapprox(data["branch"]["5"]["qf"], -49.089978, atol=1e-3)
-        @test isapprox(data["branch"]["5"]["qt"], 48.6800005, atol=1e-3)
+        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=1e-3)
+        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=1e-3)
+        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=1e-3)
+        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=1e-3)
     end
 
     @testset "19-bus case" begin
