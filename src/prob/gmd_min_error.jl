@@ -36,7 +36,7 @@ function post_gmd_min_error{T}(pm::GenericPowerModel{T}; kwargs...)
     for (i,branch) in ref(pm,:branch)
         @printf "Adding constraints for branch %d\n" i
         constraint_dc_current_mag(pm, i)
-        constraint_qloss(pm, i)
+        constraint_qloss_constant_v(pm, i)
 
         PMs.constraint_ohms_yt_from(pm, i) 
         PMs.constraint_ohms_yt_to(pm, i) 

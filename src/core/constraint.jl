@@ -199,7 +199,7 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, i)
     # println()
     # println("v_dc: $v_dc")
 
-    dc_expr = pm.model.ext[:dc_expr]
+    dc_expr = pm.model.ext[:nw][n][:dc_expr]
 
     gs = dcbus["g_gnd"]
     # println()
@@ -219,7 +219,8 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, i)
     end
 
     if length(gmd_bus_arcs) > 0
-        c = @constraint(pm.model, sum(dc_expr[a] for a in gmd_bus_arcs) == gs*v_dc[i])
+        @constraint(pm.model, sum(dc_expr[a] for a in gmd_bus_arcs) == gs*v_dc[i])
+       # println(c)
         # println("done")
         return
     end
@@ -261,7 +262,7 @@ end
 constraint_dc_ohms{T}(pm::GenericPowerModel{T}, i) = constraint_dc_ohms(pm, pm.cnw, i)
 
 ""
-function constraint_qloss{T}(pm::GenericPowerModel{T}, n::Int, k)
+function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, n::Int, k)
    branch = ref(pm, n, :branch, k)        
 #   k = branch["index"]
 
@@ -272,6 +273,8 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, n::Int, k)
 
     i_dc_mag = pm.var[:nw][n][:i_dc_mag]
     qloss = pm.var[:nw][n][:qloss]
+      
+    V = 1.0  
         
     if "gmd_k" in keys(branch)
 
@@ -285,7 +288,7 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, n::Int, k)
           
         #@printf "k = %d, Kold = %f, vb = %f, ib = %f, Knew = %f\n" k branch["gmd_k"] bus["base_kv"] ibase K 
         # K is per phase
-        c = @constraint(pm.model, qloss[(k,i,j)] == K*i_dc_mag[k]/(3.0*branch["baseMVA"]))
+        c = @constraint(pm.model, qloss[(k,i,j)] == K*V*i_dc_mag[k]/(3.0*branch["baseMVA"]))
         c = @constraint(pm.model, qloss[(k,j,i)] == 0.0)
         # c = @constraint(pm.model, qloss[l] == i_dc_mag[k])
     else
@@ -295,5 +298,5 @@ function constraint_qloss{T}(pm::GenericPowerModel{T}, n::Int, k)
 
     return 
 end
-constraint_qloss{T}(pm::GenericPowerModel{T}, k) = constraint_qloss(pm, pm.cnw, k)
+constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, k) = constraint_qloss_constant_v(pm, pm.cnw, k)
 

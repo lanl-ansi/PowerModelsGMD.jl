@@ -3,6 +3,7 @@ isdefined(Base, :__precompile__) && __precompile__()
 module PowerModelsGMD
     using PowerModels
     using JuMP
+    using CurveFit
 
     const PMs = PowerModels
 
@@ -22,4 +23,5 @@ module PowerModelsGMD
 
     include("prob/gmd.jl")
     include("prob/gmd_min_error.jl")
+    include("prob/gmd_ls.jl")
 end
