@@ -95,3 +95,80 @@ end
 function variable_shunt_factor{T}(pm::GenericPowerModel{T},n::Int=pm.cnw)
     pm.var[:nw][n][:z_shunt] = @variable(pm.model, 0 <= z_shunt[i in keys(pm.ref[:nw][n][:bus])] <= 1, start = PMs.getstart(pm.ref[:nw][n][:bus], i, "z_shunt_nstart", 1.0))
 end
+
+
+"variable: `pd[j]` for `j` in `bus`"
+function variable_active_load(pm::GenericPowerModel, n::Int=pm.cnw; bounded = true)
+    if bounded
+        pm.var[:nw][n][:pd] = @variable(pm.model,
+            [i in keys(pm.ref[:nw][n][:bus])], basename="$(n)_pd",
+            lowerbound = min(0,pm.ref[:nw][n][:bus][i]["pd"]),
+            upperbound = max(0,pm.ref[:nw][n][:bus][i]["pd"]),
+            start = PowerModels.getstart(pm.ref[:nw][n][:bus], i, "pd_start")
+        )
+    else
+        pm.var[:nw][n][:pd] = @variable(pm.model,
+            [i in keys(pm.ref[:nw][n][:bus])], basename="$(n)_pd",
+            start = PowerModels.getstart(pm.ref[:nw][n][:bus], i, "pd_start")
+        )
+    end
+end
+
+"variable: `qd[j]` for `j` in `bus`"
+function variable_reactive_load(pm::GenericPowerModel, n::Int=pm.cnw; bounded = true)
+    if bounded
+        pm.var[:nw][n][:qd] = @variable(pm.model,
+            [i in keys(pm.ref[:nw][n][:bus])], basename="$(n)_qd",
+            lowerbound = min(0,pm.ref[:nw][n][:bus][i]["qd"]),
+            upperbound = max(0,pm.ref[:nw][n][:bus][i]["qd"]),
+            start = PowerModels.getstart(pm.ref[:nw][n][:bus], i, "qd_start")
+        )
+    else
+        pm.var[:nw][n][:qd] = @variable(pm.model,
+            [i in keys(pm.ref[:nw][n][:bus])], basename="$(n)_qd",
+            start = PowerModels.getstart(pm.ref[:nw][n][:bus], i, "qd_start")
+        )
+    end
+end
+
+"generates variables for both `active` and `reactive` load"
+function variable_load(pm::GenericPowerModel, n::Int=pm.cnw; kwargs...)
+    variable_active_load(pm, n; kwargs...)
+    variable_reactive_load(pm, n; kwargs...)
+end
+
+#"variable: `i_ac_mag_sqr[j]` for `j` in `branch'"
+# ALREADY 
+#function variable_ac_current_mag_sqr{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+ #   if bounded
+  #      pm.var[:nw][n][:i_ac_mag_sqr] = @variable(pm.model, 
+   #       [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_ac_mag_sqr",
+    #      lowerbound = 0,
+     #     upperbound = calc_ac_mag_max(pm, i, n)^2,
+      #    start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "i_ac_mag_sqr_start")
+      #  )  
+    #else
+     #   pm.var[:nw][n][:i_ac_mag_sqr] = @variable(pm.model, 
+      #    [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_ac_mag_sqr",
+       #   start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "i_ac_mag_sqr_start")
+      #  )
+    #end
+#end
+
+"variable: `i_ac_mag[j]` for `j` in `branch'"
+function variable_ac_current_mag{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+    if bounded
+        pm.var[:nw][n][:i_ac_mag] = @variable(pm.model, 
+          [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_ac_mag",
+          lowerbound = 0,
+          upperbound = calc_ac_mag_max(pm, i, n),
+          start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "i_ac_mag_start")
+        )  
+    else
+        pm.var[:nw][n][:i_ac_mag] = @variable(pm.model, 
+          [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_ac_mag",
+          start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "i_ac_mag_start")
+        )
+    end
+end
+
