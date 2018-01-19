@@ -36,6 +36,26 @@ function variable_dc_current_mag{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; boun
     #pm.var[:nw][n][:i_dc_mag] = @variable(pm.model, i_dc_mag[i in keys(pm.ref[:nw][n][:branch])], start = PMs.getstart(pm.ref[:nw][n][:branch], i, "i_dc_mag_start"))
 end
 
+
+"variable: `i_dc_mag_sqr[j]` for `j` in `branch`"
+function variable_dc_current_mag_sqr{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+    if bounded
+        pm.var[:nw][n][:i_dc_mag_sqr] = @variable(pm.model, 
+          [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_dc_mag_sqr",
+          lowerbound = 0,
+          upperbound = calc_dc_mag_max(pm,i,n)^2,
+          start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "i_dc_mag_sqr_start")
+        )  
+    else
+        pm.var[:nw][n][:i_dc_mag_sqr] = @variable(pm.model, 
+          [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_dc_mag_sqr",
+          start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "i_dc_mag_sqr_start")
+        )
+    end    
+        
+    #pm.var[:nw][n][:i_dc_mag] = @variable(pm.model, i_dc_mag[i in keys(pm.ref[:nw][n][:branch])], start = PMs.getstart(pm.ref[:nw][n][:branch], i, "i_dc_mag_start"))
+end
+
 "variable: `dc[j]` for `j` in `gmd_branch`"
 function variable_dc_line_flow{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
     if bounded
@@ -137,24 +157,6 @@ function variable_load(pm::GenericPowerModel, n::Int=pm.cnw; kwargs...)
     variable_reactive_load(pm, n; kwargs...)
 end
 
-#"variable: `i_ac_mag_sqr[j]` for `j` in `branch'"
-# ALREADY 
-#function variable_ac_current_mag_sqr{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
- #   if bounded
-  #      pm.var[:nw][n][:i_ac_mag_sqr] = @variable(pm.model, 
-   #       [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_ac_mag_sqr",
-    #      lowerbound = 0,
-     #     upperbound = calc_ac_mag_max(pm, i, n)^2,
-      #    start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "i_ac_mag_sqr_start")
-      #  )  
-    #else
-     #   pm.var[:nw][n][:i_ac_mag_sqr] = @variable(pm.model, 
-      #    [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_ac_mag_sqr",
-       #   start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "i_ac_mag_sqr_start")
-      #  )
-    #end
-#end
-
 "variable: `i_ac_mag[j]` for `j` in `branch'"
 function variable_ac_current_mag{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
     if bounded
@@ -171,4 +173,13 @@ function variable_ac_current_mag{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; boun
         )
     end
 end
+
+"variable: `iv[j]` for `j` in `arcs`"
+function variable_iv{T}(pm::GenericPowerModel{T},n::Int=pm.cnw)
+    pm.var[:nw][n][:iv] = @variable(pm.model, 
+        [(l,i,j) in pm.ref[:nw][n][:arcs]], basename="$(n)_iv",
+        start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "iv_start")
+    )
+end
+
 

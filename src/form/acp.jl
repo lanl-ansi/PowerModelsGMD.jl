@@ -32,3 +32,13 @@ end
 function variable_ac_current{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
    variable_ac_current_mag(pm,n)
 end
+
+""
+function variable_dc_current{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+   variable_dc_current_mag(pm,n)
+end
+
+""
+function variable_reactive_loss{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+   variable_qloss(pm,n)
+end

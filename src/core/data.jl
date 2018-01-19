@@ -64,8 +64,9 @@ function calc_ac_mag_max(pm::GenericPowerModel, i, n::Int=pm.cnw)
     branch = pm.ref[:nw][n][:branch][i]  
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
-    ac_max = branch["rate_a"] / min(pm.ref[:nw][n][:bus][f_bus]["vmin"], pm.ref[:nw][n][:bus][t_bus]["vmin"])
-        
+    ac_max = branch["rate_a"]*branch["tap"] / min(pm.ref[:nw][n][:bus][f_bus]["vmin"], pm.ref[:nw][n][:bus][t_bus]["vmin"])
+          
+          
    # println(i, " " , ac_max, " ", branch["rate_a"], " ", pm.ref[:nw][n][:bus][f_bus]["vmin"], " ", pm.ref[:nw][n][:bus][t_bus]["vmin"])
       
       
