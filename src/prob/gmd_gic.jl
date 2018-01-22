@@ -2,7 +2,7 @@
 export run_gmd_gic, run_ac_gmd_gic
 
 "Run GIC current model only"
-function run_gmd_gic(file::AbstractString, solver; kwargs...)
+function run_gmd_gic(file, solver; kwargs...)
     return run_generic_model(file, ACPPowerModel, solver, post_gmd_gic; solution_builder = get_gmd_solution, kwargs...)
 end
 

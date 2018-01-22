@@ -11,7 +11,7 @@ function run_ac_gmd(file, solver; kwargs...)
 end
 
 "Run the basic GMD model"
-function run_gmd(file::AbstractString, model_constructor, solver; kwargs...)
+function run_gmd(file, model_constructor, solver; kwargs...)
     return run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...)
 end
 
