@@ -21,6 +21,7 @@ module PowerModelsGMD
     include("form/wr.jl")
     include("form/wrm.jl")
 
+    include("prob/gmd_gic.jl")
     include("prob/gmd.jl")
     include("prob/gmd_min_error.jl")
     include("prob/gmd_ls.jl")

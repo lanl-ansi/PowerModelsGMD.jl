@@ -5,3 +5,8 @@
 deps/deps.jl
 *.swp
 .project
+test/test-mixed-units.jl
+test/test-gmd-gic.jl
+test/gmd_gic.jl
+test/gmd.log
+

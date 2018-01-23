@@ -1,3 +1,5 @@
+import Logging
+
 "KCL constraint"
 function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, i)
     bus = ref(pm, n, :bus, i)  
@@ -105,7 +107,7 @@ function constraint_dc_current_mag_gwye_gwye_xf{T}(pm::GenericPowerModel{T}, n::
     vlo = pm.ref[:nw][n][:bus][j]["base_kv"]
     a = vhi/vlo
 
-    println("branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+    debug("branch[$k]: hi_branch[$kh], lo_branch[$kl]")
 
     c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
     c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
@@ -118,7 +120,7 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
 
-    @printf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc
+    debug(@sprintf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc)
     #println("GMD branches:", keys(pm.ref[:gmd_branch]))
 
     br_ser = pm.ref[:nw][n][:gmd_branch][ks]
@@ -169,7 +171,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, k)
     if branch["type"] != "xf"
         constraint_dc_current_mag_line(pm,n,k)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-        println("  Ungrounded config, ieff constrained to zero")        
+        debug("  Ungrounded config, ieff constrained to zero")        
         constraint_dc_current_mag_grounded_xf(pm,n,k)   
     elseif branch["config"] in ["delta-gwye","gwye-delta"]
         constraint_dc_current_mag_gwye_delta_xf(pm,n,k)
@@ -252,7 +254,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, i)
         gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    @printf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs
+    debug(@sprintf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs)
 
     c = @constraint(pm.model, dc == gs*(vf + vs - vt))
     return 
