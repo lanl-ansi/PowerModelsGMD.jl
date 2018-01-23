@@ -12,10 +12,14 @@ function QCWRTriPowerModel(data::Dict{String,Any}; kwargs...)
     return GenericGMDPowerModel(data, QCWRTriForm; kwargs...)
 end
 
+""
+function variable_ac_current_on_off{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T},n::Int=pm.cnw)
+   variable_ac_current_mag(pm,n;bounded=false) # needs to be false since this is an on/off variable
+end
 
 ""
 function variable_ac_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
-   variable_ac_current_mag(pm,n)
+   variable_ac_current_mag(pm,n;bounded=bounded)
     
    parallel_branch = filter((i, branch) -> pm.ref[:nw][n][:buspairs][(branch["f_bus"], branch["t_bus"])]["branch"] != i, pm.ref[:nw][n][:branch])     
    cm_min = Dict([(l, 0) for l in keys(parallel_branch)]    )
@@ -30,13 +34,13 @@ end
 
 ""
 function variable_dc_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
-   variable_dc_current_mag(pm,n)
-   variable_dc_current_mag_sqr(pm,n)
+   variable_dc_current_mag(pm,n;bounded=bounded)
+   variable_dc_current_mag_sqr(pm,n;bounded=bounded)
 end
 
 ""
 function variable_reactive_loss{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
-   variable_qloss(pm,n)
+   variable_qloss(pm,n;bounded=bounded)
    variable_iv(pm,n)
 end
 
@@ -86,6 +90,32 @@ function constraint_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerMod
         PowerModels.relaxation_sqr(pm.model, i_ac_mag, l) 
     end
 end
+
+"Constraint for relating current to power flow on_off"
+function constraint_current_on_off{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i)
+    branch = ref(pm, n, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    pair = (f_bus, t_bus)
+    buspair = ref(pm, n, :buspairs, pair)
+    arc_from = (i, f_bus, t_bus)  
+    
+    ac_ub    = calc_ac_mag_max(pm, i, n)
+    ac_lb    = 0 # this implementation of the on/off relaxation is only valid for lower bounds of 0
+    
+    i_ac_mag = pm.var[:nw][n][:i_ac_mag][i] 
+    l        = pm.var[:nw][n][:cm][i]        
+    z        = pm.var[:nw][n][:branch_z][i]
+                
+    # p_fr^2 + q_fr^2 <= l * w comes for free with constraint_power_magnitude_sqr of PowerModels.jl
+    @constraint(pm.model, l >= i_ac_mag^2)
+    @constraint(pm.model, l <= ac_ub*i_ac_mag)
+          
+    @constraint(pm.model, i_ac_mag <= z * ac_ub)
+    @constraint(pm.model, i_ac_mag >= z * ac_lb)    
+end
+
+
 
 "Constraint for computing thermal protection of transformers"
 function constraint_thermal_protection{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i)

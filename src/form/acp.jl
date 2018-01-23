@@ -7,7 +7,26 @@ const ACPPowerModel = GenericPowerModel{PowerModels.StandardACPForm}
 ACPPowerModel(data::Dict{String,Any}; kwargs...) =
     GenericGMDPowerModel(data, PowerModels.StandardACPForm; kwargs...)
 
-    
+""
+function variable_ac_current{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+   variable_ac_current_mag(pm,n;bounded=bounded)
+end
+
+""
+function variable_ac_current_on_off{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw)
+   variable_ac_current_mag(pm,n;bounded=false) # needs to be false because this is an on/off variable
+end
+
+""
+function variable_dc_current{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+   variable_dc_current_mag(pm,n;bounded=bounded)
+end
+
+""
+function variable_reactive_loss{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+   variable_qloss(pm,n;bounded=bounded)
+end    
+     
 """
 ```
 sum(p[a] for a in bus_arcs)  == sum(pg[g] for g in bus_gens) - pd - gs*v^2 + pd_ls
@@ -28,17 +47,3 @@ function constraint_kcl_shunt_gmd_ls{T <: PowerModels.AbstractACPForm}(pm::Gener
     pm.con[:nw][n][:kcl_q][i] = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd + bs*vm^2 + qd_ls[i])
 end
 
-""
-function variable_ac_current{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
-   variable_ac_current_mag(pm,n)
-end
-
-""
-function variable_dc_current{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
-   variable_dc_current_mag(pm,n)
-end
-
-""
-function variable_reactive_loss{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
-   variable_qloss(pm,n)
-end

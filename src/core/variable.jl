@@ -182,4 +182,13 @@ function variable_iv{T}(pm::GenericPowerModel{T},n::Int=pm.cnw)
     )
 end
 
-
+"variable: `0 <= gen_z[i] <= 1` for `i` in `generator`s"
+function variable_gen_indicator(pm::GenericPowerModel, n::Int=pm.cnw)
+    pm.var[:nw][n][:gen_z] = @variable(pm.model, 
+        [i in keys(pm.ref[:nw][n][:gen])], basename="$(n)_gen_z",
+        lowerbound = 0,
+        upperbound = 1,
+        category = :Int,
+        start = PowerModels.getstart(pm.ref[:nw][n][:gen], i, "gen_z_start", 1.0)
+    )
+end

@@ -72,25 +72,3 @@ function post_gmd_ls{T}(pm::GenericPowerModel{T}; kwargs...)
         constraint_dc_ohms(pm, i) # variation of constraint 3t
     end   
 end
-
-
-## Variables ####
-
-#### Objective ####
-
-" Minimizes load shedding and fuel cost"
-function objective_gmd_min_ls{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
-    pg = Dict(n => pm.var[:nw][n][:pg] for n in nws) 
-    pd = Dict(n => pm.var[:nw][n][:pd] for n in nws) 
-    qd = Dict(n => pm.var[:nw][n][:qd] for n in nws)     
-    shed_cost = calc_load_shed_cost(pm, nws)          
-    return @objective(pm.model, Min, sum(
-                                          sum(gen["cost"][1]*pg[n][i]^2 + gen["cost"][2]*pg[n][i] 
-                                           + gen["cost"][3] for (i,gen) in pm.ref[:nw][n][:gen])                                             
-                                           + sum(shed_cost*(pd[n][i]+qd[n][i]) for (i,bus) in pm.ref[:nw][n][:bus])                                            
-                                          for n in nws)                    
-                                        )
-end
-
-###### Constraints #####
-

@@ -24,4 +24,5 @@ module PowerModelsGMD
     include("prob/gmd.jl")
     include("prob/gmd_min_error.jl")
     include("prob/gmd_ls.jl")
+    include("prob/gmd_ots.jl")    
 end
