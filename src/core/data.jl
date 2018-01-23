@@ -95,6 +95,83 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{AbstractString,Any})
     end
 end
 
+"Computes the maximum AC current on a branch"
+function calc_ac_mag_max(pm::GenericPowerModel, i, n::Int=pm.cnw)
+    # ac_mag_max
+    branch = pm.ref[:nw][n][:branch][i]  
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    ac_max = branch["rate_a"]*branch["tap"] / min(pm.ref[:nw][n][:bus][f_bus]["vmin"], pm.ref[:nw][n][:bus][t_bus]["vmin"])
+          
+          
+   # println(i, " " , ac_max, " ", branch["rate_a"], " ", pm.ref[:nw][n][:bus][f_bus]["vmin"], " ", pm.ref[:nw][n][:bus][t_bus]["vmin"])
+      
+      
+    return ac_max
+end
+
+"Computes the maximum DC current on a branch"
+function calc_dc_mag_max{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw)
+    branch = pm.ref[:nw][n][:branch][i]  
+      
+    ac_max = -Inf
+    for i in keys(pm.ref[:nw][n][:branch])  
+        ac_max = max(calc_ac_mag_max(pm, i, n),ac_max)
+    end
+    ibase = calc_branch_ibase(pm,i,n)
+       #println(i , " ", 2 * ac_max * ibase, " ", ibase, " ", ac_max)  
+    
+    
+    return 2 * ac_max * ibase #   branch["ibase"]
+end
+
+"Computes the ibase for a branch"
+function calc_branch_ibase{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw)
+    branch = pm.ref[:nw][n][:branch][i]
+    hi = branch["hi_bus"]
+    bus = pm.ref[:nw][n][:bus][hi]
+    return branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+end
+
+"Computes a load shed cost"
+function calc_load_shed_cost{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
+    max_cost = 0
+    for n in nws
+        for (i,gen) in  pm.ref[:nw][n][:gen]
+            if gen["pmax"] != 0
+                cost_mw = (gen["cost"][1]*gen["pmax"]^2 + gen["cost"][2]*gen["pmax"]) / gen["pmax"] + gen["cost"][3]
+                max_cost = max(max_cost, cost_mw)
+            end    
+        end
+    end
+    return max_cost * 2.0
+end
+
+"Computes the thermal coeffieicents for a branch"
+function calc_branch_thermal_coeff{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw)
+    branch = pm.ref[:nw][n][:branch][i]
+    buses = pm.ref[:nw][n][:bus]
+
+    if !(branch["type"] == "xf")
+        return NaN
+    end    
+      
+    x0 = pm.data["thermal_cap_x0"]./calc_branch_ibase(pm,i,n)  #branch["ibase"]
+    y0 = pm.data["thermal_cap_y0"]./100  # convert to %
+
+    y = calc_ac_mag_max(pm,i,n) .* y0 # branch["ac_mag_max"] .* y0
+    x = x0
+
+    fit = poly_fit(x,y,2)
+    fit = round(fit.*1e+5)./1e+5
+    return fit
+end
+
+"Computes the maximum dc voltage difference between buses"
+function calc_max_dc_voltage_difference{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw)
+    return 1e6 # TODO, actually formally calculate
+end
+
 ""
 function apply_func(data::Dict{String,Any}, key::String, func)
     if haskey(data, key)

@@ -4,7 +4,7 @@ export GenericGMDPowerModel
 # override the default generic constructor for Power Models that have GMD modeling
 function GenericGMDPowerModel(data::Dict{String,Any}, T::DataType; kwargs...)
     pm = GenericPowerModel(data,T; kwargs...)    
-    build_gmd_ref(pm)    
+    build_gmd_ref(pm)
     return pm
 end
 
@@ -51,5 +51,4 @@ function build_gmd_ref(pm::GenericPowerModel)
    end  
 end
 
-### Helper functions for ignoring multinetwork support
 
