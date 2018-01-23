@@ -27,6 +27,6 @@ pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver
 setting = Dict{AbstractString,Any}("output" => Dict{AbstractString,Any}("branch_flows" => true))
 
 include("gmd_ls.jl")
-include("gmd.jl")
-include("gmd_gic.jl")
-#include("gmd_ots.jl")
+#include("gmd.jl")
+#include("gmd_gic.jl")
+include("gmd_ots.jl")

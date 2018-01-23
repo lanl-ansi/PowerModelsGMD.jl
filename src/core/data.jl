@@ -284,3 +284,18 @@ function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
     end
 
 end
+
+"Computes the maximum DC voltage at a gmd bus "
+function calc_max_dc_voltage{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw)
+    return Inf
+end
+
+"Computes the maximum DC voltage at a gmd bus "
+function calc_min_dc_voltage{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw)
+    return -Inf
+end
+
+"Computes the minimim absolute value AC current on a branch"
+function calc_ac_mag_min(pm::GenericPowerModel, i, n::Int=pm.cnw)
+    return 0
+end
