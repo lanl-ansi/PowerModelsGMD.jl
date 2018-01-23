@@ -212,3 +212,20 @@ function variable_gen_indicator(pm::GenericPowerModel, n::Int=pm.cnw)
         start = PowerModels.getstart(pm.ref[:nw][n][:gen], i, "gen_z_start", 1.0)
     )
 end
+
+"variable: `pg[j]^2` for `j` in `gen`"
+function variable_active_generation_sqr_cost(pm::GenericPowerModel, n::Int=pm.cnw; bounded = true)
+    if bounded
+        pm.var[:nw][n][:pg_sqr] = @variable(pm.model,
+            [i in keys(pm.ref[:nw][n][:gen])], basename="$(n)_pg_sqr",
+            lowerbound = 0,
+            upperbound = pm.ref[:nw][n][:gen][i]["cost"][1] * pm.ref[:nw][n][:gen][i]["pmax"]^2,
+            start = PowerModels.getstart(pm.ref[:nw][n][:gen], i, "pg_sqr_start")
+        )
+    else
+        pm.var[:nw][n][:pg_sqr] = @variable(pm.model,
+            [i in keys(pm.ref[:nw][n][:gen])], basename="$(n)_pg_sqr",
+            start = PowerModels.getstart(pm.ref[:nw][n][:gen], i, "pg_sqr_start")
+        )
+    end
+end

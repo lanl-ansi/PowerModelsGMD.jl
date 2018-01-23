@@ -29,6 +29,7 @@ function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
     PowerModels.variable_reactive_branch_flow(pm) # q_ij
     # no bounds because of the on/off constraints
     PowerModels.variable_generation(pm, bounded=false) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r
+    variable_active_generation_sqr_cost(pm)
     PowerModels.variable_branch_indicator(pm) # z_e variable 
     variable_load(pm) # l_i^p, l_i^q
     variable_ac_current_on_off(pm) # \tilde I^a_e and l_e
@@ -56,6 +57,7 @@ function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
     for i in ids(pm, :gen)
         constraint_gen_on_off(pm, i) # variation of 3q, 3r 
         constraint_gen_ots_on_off(pm, i)
+        constraint_gen_perspective(pm, i)
     end
     
     for (i,branch) in ref(pm,:branch)

@@ -407,6 +407,17 @@ function constraint_gen_ots_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
 end
 constraint_gen_ots_on_off{T}(pm::GenericPowerModel{T}, i) = constraint_gen_ots_on_off(pm, pm.cnw, i)
 
+"Perspective Constraint for generation cost"
+function constraint_gen_perspective{T}(pm::GenericPowerModel{T}, n::Int, i)
+    gen      = ref(pm, n, :gen, i)
+    z        = pm.var[:nw][n][:gen_z][i]
+    pg_sqr   = pm.var[:nw][n][:pg_sqr][i]
+    pg       = pm.var[:nw][n][:pg][i]
+      
+    @constraint(pm.model, z*pg_sqr >= gen["cost"][1]*pg^2 )    
+end
+constraint_gen_perspective{T}(pm::GenericPowerModel{T}, i) = constraint_gen_perspective(pm, pm.cnw, i)
+
 
 ""
 function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
