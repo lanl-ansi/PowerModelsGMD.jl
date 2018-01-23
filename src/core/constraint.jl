@@ -151,8 +151,8 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}
 
     # println("branch[$k]: ser_branch[$ks], com_branch[$kc]")
 
-    c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
-    c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)
+    c = @constraint(pm.model, ieff[k] >= (a*is + ic)/(a + 1.0))
+    c = @constraint(pm.model, ieff[k] >= -(a*is + ic)/(a + 1.0))
     c = @constraint(pm.model, ieff[k] >= 0.0)  
 end
 constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag_gwye_gwye_auto_xf(pm, pm.cnw, k)

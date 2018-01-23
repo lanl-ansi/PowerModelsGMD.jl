@@ -1,34 +1,69 @@
 export make_gmd_mixed_units, adjust_gmd_qloss
 
+function calculate_qloss(branch, case, solution)
+    k = "$(branch["index"])"
+    i = "$(branch["hi_bus"])"
+    j = "$(branch["lo_bus"])"
+
+    br_soln = solution["branch"][k]
+    bus = case["bus"][i]
+    i_dc_mag = abs(br_soln["gmd_idc"])
+        
+    if "gmd_k" in keys(branch)
+        ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+        K = branch["gmd_k"]*data["baseMVA"]/ibase
+
+        # K is per phase
+        return K*i_dc_mag/(3.0*branch["baseMVA"])
+    end
+        
+    return 0.0
+end    
+
 ""
-function add_gmd_data(data)
-
-    for (k,bus) in data["bus"]
+function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,Any}; decoupled=false)
+    for (k,bus) in case["bus"]
         j = "$(bus["gmd_bus"])"
-        bus["gmd_vdc"] = data["gmd_bus"][j]["gmd_vdc"]
+        bus["gmd_vdc"] = solution["gmd_bus"][j]["gmd_vdc"]
     end
 
-    for (k,sub) in data["sub"]
-        i = "$(sub["gmd_bus"])"
-        sub["gmd_vdc"] = data["gmd_bus"][i]["gmd_vdc"]
-    end
+    # for (k,sub) in solution["sub"]
+    #     i = "$(sub["gmd_bus"])"
+    #     sub["gmd_vdc"] = solution["gmd_bus"][i]["gmd_vdc"]
+    # end
 
-    for (k,br) in data["branch"]
-        if br["hi_bus"] == br["f_bus"]
-            br["qf"] += br["gmd_qloss"]
-        else
-            br["qt"] += br["gmd_qloss"]
-        end
 
-        br["ieff"] = br["gmd_idc_mag"]
-        br["qloss_from"] = br["gmd_qloss"]
+    for (i,br) in case["branch"]
+        br_soln = solution["branch"][i]
 
         if br["type"] == "line"
-            i = "$(br["gmd_br"])"
-            br["gmd_idc"] = data["gmd_branch"][i]["gmd_idc"]
-        end
-    end
+            k = "$(br["gmd_br"])"
+            br["gmd_idc"] = solution["gmd_branch"][k]["gmd_idc"]/3.0
+        else # branch is transformer
+            if decoupled
+                # get he high-side gmd branch
+                k = br["dc_brid_hi"]
+                # TODO: add calculations from constraint_dc_current_mag
+                br["gmd_idc"] = 0.0
 
+
+                br["ieff"] = abs(br["gmd_idc"])
+                br["qloss"] = calculate_qloss(br, case, solution)
+            else
+                br["ieff"] = br_soln["gmd_idc_mag"]
+                br["qloss"] = br_soln["gmd_qloss"]
+            end
+
+            if br["f_bus"] == br["hi_bus"]
+                br_soln["qf"] += br_soln["gmd_qloss"]
+            else
+                br_soln["qt"] += br_soln["gmd_qloss"]
+            end
+        end
+
+        br["qf"] = br_soln["qf"]
+        br["qt"] = br_soln["qt"]
+    end
 end
 
 
