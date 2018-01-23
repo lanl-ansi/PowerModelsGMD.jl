@@ -35,7 +35,7 @@ function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
     variable_gen_indicator(pm) # z variables for the generators
     
     # DC modeling
-    variable_dc_voltage(pm) # V^d_i 
+    variable_dc_voltage_on_off(pm) # V^d_i 
     variable_reactive_loss(pm) # Q_e^loss for each edge (used to compute  Q_i^loss for each node)
     variable_dc_current(pm) # \tilde I^d_e
     variable_dc_line_flow(pm;bounded=false) # I^d_e

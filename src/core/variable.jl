@@ -1,4 +1,3 @@
-
 "variable: `v_dc[j]` for `j` in `gmd_bus`"
 function variable_dc_voltage{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)    
     if bounded
@@ -16,6 +15,34 @@ function variable_dc_voltage{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded 
     end    
 #    pm.var[:nw][n][:v_dc] = @variable(pm.model, v_dc[i in keys(pm.ref[:nw][n][:gmd_bus])], start = PMs.getstart(pm.ref[:nw][n][:gmd_bus], i, "v_dc_start"))
 end
+
+"variable: `v_dc[j]` for `j` in `gmd_bus`"
+function variable_dc_voltage_on_off{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)    
+    variable_dc_voltage(pm,n;bounded=bounded)
+    if bounded
+        pm.var[:nw][n][:v_dc_diff] = @variable(pm.model, 
+          [i in keys(pm.ref[:nw][n][:gmd_branch])], basename="$(n)_v_dc_diff",
+          lowerbound = -calc_max_dc_voltage_difference(pm, i, n),
+          upperbound = calc_max_dc_voltage_difference(pm, i, n),
+          start = PowerModels.getstart(pm.ref[:nw][n][:gmd_branch], i, "v_dc_start_diff")
+        )  
+    else
+        pm.var[:nw][n][:v_dc_diff] = @variable(pm.model, 
+          [i in keys(pm.ref[:nw][n][:gmd_branch])], basename="$(n)_v_dc_diff",
+          start = PowerModels.getstart(pm.ref[:nw][n][:gmd_branch], i, "v_dc_start_diff")
+        )
+    end
+    
+    # McCormick variable
+    pm.var[:nw][n][:vz] = @variable(pm.model, 
+          [i in keys(pm.ref[:nw][n][:gmd_branch])], basename="$(n)_vz",
+          start = PowerModels.getstart(pm.ref[:nw][n][:gmd_branch], i, "v_vz_start")
+    )
+    
+            
+end
+
+
 
 "variable: `i_dc_mag[j]` for `j` in `branch`"
 function variable_dc_current_mag{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)

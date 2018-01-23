@@ -415,6 +415,9 @@ function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
 
     vf = pm.var[:nw][n][:v_dc][f_bus] # from dc voltage
     vt = pm.var[:nw][n][:v_dc][t_bus] # to dc voltage
+    v_dc_diff = pm.var[:nw][n][:v_dc_diff][i] # voltage diff
+    vz = pm.var[:nw][n][:vz][i] # voltage diff
+
     dc = pm.var[:nw][n][:dc][(i,f_bus,t_bus)]
     z  = pm.var[:nw][n][:branch_z][ac_branch]  
 
@@ -431,7 +434,11 @@ function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
         gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    @constraint(pm.model, dc == z*gs*(vf + vs - vt))
+    @constraint(pm.model, v_dc_diff == vf - vt)
+    PowerModels.relaxation_product(pm.model, z, v_dc_diff, vz)
+    @constraint(pm.model, dc == gs*(vz + z*vs) )
+        
+    #@constraint(pm.model, dc == z*gs*(vf + vs - vt))
       
     return 
 end

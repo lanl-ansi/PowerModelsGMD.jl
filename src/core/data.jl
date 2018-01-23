@@ -130,3 +130,7 @@ function calc_branch_thermal_coeff{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw
     return fit
 end
 
+"Computes the maximum dc voltage difference between buses"
+function calc_max_dc_voltage_difference{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw)
+    return 1e6 # TODO, actually formally calculate
+end
