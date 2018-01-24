@@ -34,7 +34,7 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     objective_gmd_min_fuel(pm)
 
    for (i,bus) in ref(pm,:bus)       
-       constraint_gmd_kcl_shunt(pm, i)
+       constraint_kcl_gmd(pm, i)
    end
 
    for (i,branch) in ref(pm,:branch)

@@ -1,49 +1,17 @@
 import Logging
 
-"KCL constraint"
-function constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, n::Int, i)
-    bus = ref(pm, n, :bus, i)  
-    bus_arcs = pm.ref[:nw][n][:bus_arcs][i]
-    bus_gens = pm.ref[:nw][n][:bus_gens][i]
-    pd = bus["pd"]
-    qd = bus["qd"]
-    gs = bus["gs"]
-    bs = bus["bs"]
-
+function constraint_kcl_gmd{T}(pm::GenericPowerModel{T}, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, pd, qd)
     p = pm.var[:nw][n][:p]
     q = pm.var[:nw][n][:q]
     pg = pm.var[:nw][n][:pg]
     qg = pm.var[:nw][n][:qg]
     qloss = pm.var[:nw][n][:qloss]
 
-    # why is gs and bs missing?
-    c1 = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd)
-    c2 = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd)
-   
+    # Bus Shunts for gs and bs are missing.  If you add it, you'll have to bifurcate one form of this constraint
+    # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
+    @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd)
+    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd)   
 end
-constraint_gmd_kcl_shunt{T}(pm::GenericPowerModel{T}, i) = constraint_gmd_kcl_shunt(pm, pm.cnw, i)
-
-"KCL constraint with load shedding"
-function constraint_gmd_kcl_shunt_ls{T}(pm::GenericPowerModel{T}, n::Int, i)
-    bus = ref(pm, n, :bus, i)  
-    bus_arcs = pm.ref[:nw][n][:bus_arcs][i]
-    bus_gens = pm.ref[:nw][n][:bus_gens][i]
-    pd = bus["pd"]
-    qd = bus["qd"]
-    gs = bus["gs"]
-    bs = bus["bs"]
-
-    p = pm.var[:nw][n][:p]
-    q = pm.var[:nw][n][:q]
-    pg = pm.var[:nw][n][:pg]
-    qg = pm.var[:nw][n][:qg]
-    qloss = pm.var[:nw][n][:qloss]
-
-    z_demand = pm.var[:nw][n][:z_demand][i]
-    @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd*z_demand)
-    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd*z_demand)  
-end
-constraint_gmd_kcl_shunt_ls{T}(pm::GenericPowerModel{T}, i) = constraint_gmd_kcl_shunt_ls(pm, pm.cnw, i)
 
 "DC current on normal lines"
 function constraint_dc_current_mag_line{T}(pm::GenericPowerModel{T}, n::Int, k)
@@ -71,8 +39,6 @@ function constraint_dc_current_mag_gwye_delta_xf{T}(pm::GenericPowerModel{T}, n:
 
     ieff = pm.var[:nw][n][:i_dc_mag]
     ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
-
-    # println("branch[$k]: hi_branch[$kh]")
 
     c = @constraint(pm.model, ieff[k] >= ihi)
     c = @constraint(pm.model, ieff[k] >= -ihi)  
@@ -126,7 +92,6 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}
     br_ser = pm.ref[:nw][n][:gmd_branch][ks]
     br_com = pm.ref[:nw][n][:gmd_branch][kc]
 
-    #k = branch["index"]
     i = branch["f_bus"]
     j = branch["t_bus"]
 
@@ -451,8 +416,6 @@ function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
     PowerModels.relaxation_product(pm.model, z, v_dc_diff, vz)
     @constraint(pm.model, dc == gs*(vz + z*vs) )
         
-    #@constraint(pm.model, dc == z*gs*(vf + vs - vt))
-      
     return 
 end
 constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, i) = constraint_dc_ohms_on_off(pm, pm.cnw, i)

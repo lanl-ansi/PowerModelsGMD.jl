@@ -43,7 +43,7 @@ function constraint_kcl_shunt_gmd_ls{T <: PowerModels.AbstractACPForm}(pm::Gener
     pd_ls = pm.var[:nw][n][:pd]
     qd_ls = pm.var[:nw][n][:qd]
       
-    pm.con[:nw][n][:kcl_p][i] = @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd - gs*vm^2 + pd_ls[i])
-    pm.con[:nw][n][:kcl_q][i] = @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd + bs*vm^2 + qd_ls[i])
+    @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd - gs*vm^2 + pd_ls[i])
+    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd + bs*vm^2 + qd_ls[i])
 end
 

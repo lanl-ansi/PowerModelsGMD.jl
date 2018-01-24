@@ -30,7 +30,7 @@ function post_gmd_min_error{T}(pm::GenericPowerModel{T}; kwargs...)
     objective_gmd_min_error(pm)
    
     for (i,bus) in ref(pm,:bus)
-         constraint_gmd_kcl_shunt_ls(pm, i)        
+         constraint_kcl_shunt_gmd_ls(pm, i)        
     end
 
     for (i,branch) in ref(pm,:branch)
