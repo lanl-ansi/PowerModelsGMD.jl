@@ -72,39 +72,39 @@ end
         close(f)
 
         @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 11832.5; atol = 1e2)
+        @test isapprox(result["objective"], 11832.5; atol = 1e3)
           
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
         adjust_gmd_qloss(case, solution)
 
         @test isapprox(solution["gmd_bus"]["5"]["gmd_vdc"], -23.022192, atol=1e-1)
-        @test isapprox(solution["bus"]["2"]["vm"], 0.92784494, atol=1e-3)
+        @test isapprox(solution["bus"]["2"]["vm"], 0.92784494, atol=1e-2)
         # check that kcl with qloss is being done correctly
         # br23
-        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=1e-3)
-        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=1e-3)
+        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
+        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
         # T2 gwye-gwye auto
-        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=1e-3)
-        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=1e-3)
+        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
+        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
         # br45
-        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=1e-3)
-        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=1e-3)
-        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=1e-3)
-        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=1e-3)
+        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
         
         # check that kcl with qloss is being done correctly
         # br23
-        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=1e-3)
-        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=1e-3)
+        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
+        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
         # T2 gwye-gwye auto
-        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=1e-3)
-        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=1e-3)
+        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
+        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
         # br45
-        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=1e-3)
-        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=1e-3)
-        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=1e-3)
-        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=1e-3)
+        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
     end
 
     @testset "19-bus case" begin
@@ -112,7 +112,7 @@ end
         result = run_ac_gmd(casename, ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 5.08585e5; atol = 1e3)
+        @test isapprox(result["objective"], 5.08585e5; atol = 1e4)
          
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
@@ -126,7 +126,7 @@ end
         result = run_ac_gmd(casename, ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 9.52847e5; atol = 5e4)
+        @test isapprox(result["objective"], 9.52847e5; atol = 1e5)
                     
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
