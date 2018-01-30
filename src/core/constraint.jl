@@ -151,6 +151,31 @@ function constraint_gen_ots_on_off{T}(pm::GenericPowerModel{T}, n::Int, i, bus_a
     @constraint(pm.model, z <= sum(zb[a[1]] for a in bus_arcs))    
 end
 
+"Perspective Constraint for generation cost"
+function constraint_gen_perspective{T}(pm::GenericPowerModel{T}, n::Int, i, cost)
+    z        = pm.var[:nw][n][:gen_z][i]
+    pg_sqr   = pm.var[:nw][n][:pg_sqr][i]
+    pg       = pm.var[:nw][n][:pg][i]      
+    @constraint(pm.model, z*pg_sqr >= cost[1]*pg^2 )    
+end
+
+"DC Ohms constraint for GIC"
+function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i, gs, vs)
+    vf = pm.var[:nw][n][:v_dc][f_bus] # from dc voltage
+    vt = pm.var[:nw][n][:v_dc][t_bus] # to dc voltage
+    v_dc_diff = pm.var[:nw][n][:v_dc_diff][i] # voltage diff
+    vz = pm.var[:nw][n][:vz][i] # voltage diff
+
+    dc = pm.var[:nw][n][:dc][(i,f_bus,t_bus)]
+    z  = pm.var[:nw][n][:branch_z][ac_branch]  
+    
+    
+    @constraint(pm.model, v_dc_diff == vf - vt)
+    PowerModels.relaxation_product(pm.model, z, v_dc_diff, vz)
+    @constraint(pm.model, dc == gs*(vz + z*vs) )
+        
+end
+
 #### Constraints that don't require templates ######
 
 "DC current on normal lines"
@@ -190,56 +215,3 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, k)
     end
 end
 constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag(pm, pm.cnw, k)
-
-### Todo ######
-
-
-
-
-"Perspective Constraint for generation cost"
-function constraint_gen_perspective{T}(pm::GenericPowerModel{T}, n::Int, i)
-    gen      = ref(pm, n, :gen, i)
-    z        = pm.var[:nw][n][:gen_z][i]
-    pg_sqr   = pm.var[:nw][n][:pg_sqr][i]
-    pg       = pm.var[:nw][n][:pg][i]
-      
-    @constraint(pm.model, z*pg_sqr >= gen["cost"][1]*pg^2 )    
-end
-constraint_gen_perspective{T}(pm::GenericPowerModel{T}, i) = constraint_gen_perspective(pm, pm.cnw, i)
-
-
-""
-function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
-    branch = ref(pm, n, :gmd_branch, i)       
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    ac_branch = branch["parent_index"]  
-
-    vf = pm.var[:nw][n][:v_dc][f_bus] # from dc voltage
-    vt = pm.var[:nw][n][:v_dc][t_bus] # to dc voltage
-    v_dc_diff = pm.var[:nw][n][:v_dc_diff][i] # voltage diff
-    vz = pm.var[:nw][n][:vz][i] # voltage diff
-
-    dc = pm.var[:nw][n][:dc][(i,f_bus,t_bus)]
-    z  = pm.var[:nw][n][:branch_z][ac_branch]  
-
-    bus1 = pm.ref[:nw][n][:gmd_bus][f_bus]
-    bus2 = pm.ref[:nw][n][:gmd_bus][t_bus]
-
-    dkm = branch["len_km"]
-
-    vs = branch["br_v"]       # line dc series voltage
-
-    if branch["br_r"] === nothing
-        gs = 0.0
-    else
-        gs = 1.0/branch["br_r"]   # line dc series resistance
-    end
-
-    @constraint(pm.model, v_dc_diff == vf - vt)
-    PowerModels.relaxation_product(pm.model, z, v_dc_diff, vz)
-    @constraint(pm.model, dc == gs*(vz + z*vs) )
-        
-    return 
-end
-constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, i) = constraint_dc_ohms_on_off(pm, pm.cnw, i)
