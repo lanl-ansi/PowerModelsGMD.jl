@@ -29,7 +29,7 @@ function variable_ac_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerMo
         lowerbound = cm_min[l],
         upperbound = cm_max[l],
         start = PowerModels.getstart(pm.ref[:nw][n][:branch], l, "cm_start")
-    )   
+   )   
 end
 
 ""
@@ -66,10 +66,7 @@ function constraint_kcl_shunt_gmd_ls{T <: PowerModels.AbstractWRForm}(pm::Generi
 end
 
 "Constraint for relating current to power flow"
-function constraint_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i)
-    branch = ref(pm, n, :branch, i)
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
+function constraint_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i, f_idx, f_bus, t_bus, tm)
     pair = (f_bus, t_bus)
     buspair = ref(pm, n, :buspairs, pair)
     arc_from = (i, f_bus, t_bus)  
@@ -92,15 +89,7 @@ function constraint_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerMod
 end
 
 "Constraint for relating current to power flow on_off"
-function constraint_current_on_off{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i)
-    branch = ref(pm, n, :branch, i)
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    pair = (f_bus, t_bus)
-    buspair = ref(pm, n, :buspairs, pair)
-    arc_from = (i, f_bus, t_bus)  
-    
-    ac_ub    = calc_ac_mag_max(pm, i, n)
+function constraint_current_on_off{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i, ac_ub)
     ac_lb    = 0 # this implementation of the on/off relaxation is only valid for lower bounds of 0
     
     i_ac_mag = pm.var[:nw][n][:i_ac_mag][i] 
@@ -115,52 +104,37 @@ function constraint_current_on_off{T <: PowerModels.AbstractWRForm}(pm::GenericP
     @constraint(pm.model, i_ac_mag >= z * ac_lb)    
 end
 
-
-
 "Constraint for computing thermal protection of transformers"
-function constraint_thermal_protection{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i)
-    branch = ref(pm, n, :branch, i)
-    if branch["type"] != "xf"
-        return  
-    end  
-
-    coeff = calc_branch_thermal_coeff(pm,i,n)
-    ibase = calc_branch_ibase(pm, i, n)
-
+function constraint_thermal_protection{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i, coeff, ibase)
     i_ac_mag = pm.var[:nw][n][:i_ac_mag][i] 
     ieff = pm.var[:nw][n][:i_dc_mag][i] 
     ieff_sqr = pm.var[:nw][n][:i_dc_mag_sqr][i] 
 
     @constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff_sqr/(ibase^2))      
-    PowerModels.relaxation_sqr(pm.model, ieff, ieff_sqr) 
-    
+    PowerModels.relaxation_sqr(pm.model, ieff, ieff_sqr)     
 end
 
-""
-function constraint_qloss{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, k)
-    branch = ref(pm, n, :branch, k)        
-
-    i = branch["hi_bus"]
-    j = branch["lo_bus"]
-
-    bus = pm.ref[:nw][n][:bus][i]
-
+"Constraint for computing qloss"
+function constraint_qloss{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, k, i, j)
     i_dc_mag = pm.var[:nw][n][:i_dc_mag][k]
     qloss = pm.var[:nw][n][:qloss]
     iv = pm.var[:nw][n][:iv][(k,i,j)]    
     vm = pm.var[:nw][n][:vm][i]
-        
-    if "gmd_k" in keys(branch)
-        ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
-        K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
 
-        # K is per phase
-        @constraint(pm.model, qloss[(k,i,j)] == K*iv/(3.0*branch["baseMVA"]))
-        @constraint(pm.model, qloss[(k,j,i)] == 0.0)
-    else
-        @constraint(pm.model, qloss[(k,i,j)] == 0.0)
-        @constraint(pm.model, qloss[(k,j,i)] == 0.0)
-    end
+    @constraint(pm.model, qloss[(k,i,j)] == 0.0)
+    @constraint(pm.model, qloss[(k,j,i)] == 0.0)      
+    PowerModels.relaxation_product(pm.model, i_dc_mag, vm, iv)       
+end
 
-    PowerModels.relaxation_product(pm.model, i_dc_mag, vm, iv) 
+"Constraint for computing qloss"
+function constraint_qloss{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, k, i, j, K, branchMVA)
+    i_dc_mag = pm.var[:nw][n][:i_dc_mag][k]
+    qloss = pm.var[:nw][n][:qloss]
+    iv = pm.var[:nw][n][:iv][(k,i,j)]    
+    vm = pm.var[:nw][n][:vm][i]
+           
+    # K is per phase
+    @constraint(pm.model, qloss[(k,i,j)] == K*iv/(3.0*branchMVA))
+    @constraint(pm.model, qloss[(k,j,i)] == 0.0)      
+    PowerModels.relaxation_product(pm.model, i_dc_mag, vm, iv)       
 end

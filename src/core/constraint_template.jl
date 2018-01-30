@@ -176,7 +176,7 @@ function constraint_current{T}(pm::GenericPowerModel{T}, n::Int, i)
     f_idx = (i, f_bus, t_bus)
     tm       = branch["tap"]^2 
       
-    constraint_current(pm, n, i, f_idx, f_bus, tm)   
+    constraint_current(pm, n, i, f_idx, f_bus, t_bus, tm)   
 end
 constraint_current{T}(pm::GenericPowerModel{T}, i) = constraint_current(pm, pm.cnw, i)
 
