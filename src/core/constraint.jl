@@ -116,20 +116,17 @@ function constraint_gen_perspective{T}(pm::GenericPowerModel{T}, n::Int, i, cost
 end
 
 "DC Ohms constraint for GIC"
-function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i, gs, vs)
-    vf = pm.var[:nw][n][:v_dc][f_bus] # from dc voltage
-    vt = pm.var[:nw][n][:v_dc][t_bus] # to dc voltage
+function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i, gs, vs, f_bus, t_bus, ac_branch)
+    vf        = pm.var[:nw][n][:v_dc][f_bus] # from dc voltage
+    vt        = pm.var[:nw][n][:v_dc][t_bus] # to dc voltage
     v_dc_diff = pm.var[:nw][n][:v_dc_diff][i] # voltage diff
-    vz = pm.var[:nw][n][:vz][i] # voltage diff
-
-    dc = pm.var[:nw][n][:dc][(i,f_bus,t_bus)]
-    z  = pm.var[:nw][n][:branch_z][ac_branch]  
-    
-    
+    vz        = pm.var[:nw][n][:vz][i] # voltage diff
+    dc        = pm.var[:nw][n][:dc][(i,f_bus,t_bus)]
+    z         = pm.var[:nw][n][:branch_z][ac_branch]  
+        
     @constraint(pm.model, v_dc_diff == vf - vt)
     PowerModels.relaxation_product(pm.model, z, v_dc_diff, vz)
-    @constraint(pm.model, dc == gs*(vz + z*vs) )
-        
+    @constraint(pm.model, dc == gs*(vz + z*vs) )        
 end
 
 #### Constraints that don't require templates ######

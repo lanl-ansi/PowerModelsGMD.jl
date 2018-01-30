@@ -17,7 +17,7 @@ using Base.Test
 # default setup for solvers
 #ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 ipopt_solver = IpoptSolver(tol=1e-6)
-#bonmin_solver = BonminNLSolver()
+bonmin_solver = BonminNLSolver()
 
 gurobi_solver = GurobiSolver() # change to Pajarito
 cbc_solver = CbcSolver()
@@ -29,4 +29,4 @@ setting = Dict{AbstractString,Any}("output" => Dict{AbstractString,Any}("branch_
 include("gmd_ls.jl")
 include("gmd.jl")
 include("gmd_gic.jl")
-#include("gmd_ots.jl")
+include("gmd_ots.jl")

@@ -242,7 +242,6 @@ function constraint_gen_perspective{T}(pm::GenericPowerModel{T}, n::Int, i)
     gen      = ref(pm, n, :gen, i)
     cost     = gen["cost"]    
     constraint_gen_perspective(pm, n, i, cost)        
-    @constraint(pm.model, z*pg_sqr >= cost[1]*pg^2 )    
 end
 constraint_gen_perspective{T}(pm::GenericPowerModel{T}, i) = constraint_gen_perspective(pm, pm.cnw, i)
 
@@ -266,6 +265,6 @@ function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
         gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    constraint_dc_ohms_on_off(pm, n, i, gs, vs)
+    constraint_dc_ohms_on_off(pm, n, i, gs, vs, f_bus, t_bus, ac_branch)
 end
 constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, i) = constraint_dc_ohms_on_off(pm, pm.cnw, i)
