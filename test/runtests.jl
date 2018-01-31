@@ -7,6 +7,7 @@ using Pajarito
 using Cbc
 using AmplNLWriter
 using CoinOptServices
+using Juniper
 
 
 # suppress warnings during testing
@@ -17,7 +18,8 @@ using Base.Test
 # default setup for solvers
 #ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 ipopt_solver = IpoptSolver(tol=1e-6)
-bonmin_solver = BonminNLSolver()
+bonmin_solver = AmplNLSolver(CoinOptServices.bonmin)
+juniper_solver = JuniperSolver(ipopt_solver)
 
 gurobi_solver = GurobiSolver() # change to Pajarito
 cbc_solver = CbcSolver()

@@ -13,9 +13,9 @@ end
 
 @testset "test ac gmd ots" begin
     @testset "OTS Test" begin
-        result = run_ac_gmd_ots("../test/data/ots_test.json", bonmin_solver)        
+        result = run_ac_gmd_ots("../test/data/ots_test.json", juniper_solver)        
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
-        @test isapprox(result["objective"], 2.341798831737309e6; atol = 1e-1)          
+        @test isapprox(result["objective"], 2.34180007e6; atol = 1e-1)          
     end
 end
 
