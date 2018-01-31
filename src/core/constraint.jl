@@ -18,34 +18,34 @@ end
 
 "DC current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf{T}(pm::GenericPowerModel{T}, n::Int, k, kh, ih, jh)
-    ieff = pm.var[:nw][n][:i_dc_mag]
+    ieff = pm.var[:nw][n][:i_dc_mag][k]
     ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
 
-    c = @constraint(pm.model, ieff[k] >= ihi)
-    c = @constraint(pm.model, ieff[k] >= -ihi)  
+    c = @constraint(pm.model, ieff >= ihi)
+    c = @constraint(pm.model, ieff >= -ihi)  
 end
 
 "DC current on ungrounded gwye-gwye transformers"
 function constraint_dc_current_mag_gwye_gwye_xf{T}(pm::GenericPowerModel{T}, n::Int, k, kh, ih, jh, kl, il, jl, a)
     debug("branch[$k]: hi_branch[$kh], lo_branch[$kl]")
     
-    ieff = pm.var[:nw][n][:i_dc_mag]
+    ieff = pm.var[:nw][n][:i_dc_mag][k]
     ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
     ilo = pm.var[:nw][n][:dc][(kl,il,jl)]        
     
-    c = @constraint(pm.model, ieff[k] >= (a*ihi + ilo)/a)
-    c = @constraint(pm.model, ieff[k] >= -(a*ihi + ilo)/a)    
+    c = @constraint(pm.model, ieff >= (a*ihi + ilo)/a)
+    c = @constraint(pm.model, ieff >= -(a*ihi + ilo)/a)    
 end
 
 "DC current on ungrounded gwye-gwye auto transformers"
 function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}, n::Int, k, ks, is, js, kc, ic, jc, a)
-    ieff = pm.var[:nw][n][:i_dc_mag]
+    ieff = pm.var[:nw][n][:i_dc_mag][k]
     is = pm.var[:nw][n][:dc][(ks,is,js)]        
     ic = pm.var[:nw][n][:dc][(kc,ic,jc)]        
     
-    c = @constraint(pm.model, ieff[k] >= (a*is + ic)/(a + 1.0))
-    c = @constraint(pm.model, ieff[k] >= -(a*is + ic)/(a + 1.0))
-    c = @constraint(pm.model, ieff[k] >= 0.0)
+    c = @constraint(pm.model, ieff >= (a*is + ic)/(a + 1.0))
+    c = @constraint(pm.model, ieff >= -(a*is + ic)/(a + 1.0))
+    c = @constraint(pm.model, ieff >= 0.0)
      
 end
 
@@ -127,6 +127,13 @@ function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i, gs, v
     @constraint(pm.model, v_dc_diff == vf - vt)
     PowerModels.relaxation_product(pm.model, z, v_dc_diff, vz)
     @constraint(pm.model, dc == gs*(vz + z*vs) )        
+end
+
+"On/off DC current on the AC lines"
+function constraint_dc_current_mag_on_off{T}(pm::GenericPowerModel{T}, n::Int, k, dc_max)
+    ieff = pm.var[:nw][n][:i_dc_mag][k]
+    z    = pm.var[:nw][n][:branch_z][k]        
+    @constraint(pm.model, ieff <= z*dc_max)
 end
 
 #### Constraints that don't require templates ######

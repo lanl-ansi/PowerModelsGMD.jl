@@ -185,7 +185,7 @@ function constraint_current_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
     branch = ref(pm, n, :branch, i)
     ac_max = calc_ac_mag_max(pm, i, n)
     
-    constraint_current(pm,n,i)
+#    constraint_current(pm,n,i)
     constraint_current_on_off(pm, n, i, ac_max)    
 end
 constraint_current_on_off{T}(pm::GenericPowerModel{T}, i) = constraint_current_on_off(pm, pm.cnw, i)
@@ -268,3 +268,11 @@ function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
     constraint_dc_ohms_on_off(pm, n, i, gs, vs, f_bus, t_bus, ac_branch)
 end
 constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, i) = constraint_dc_ohms_on_off(pm, pm.cnw, i)
+
+"On/off constraint for current magnitude "
+function constraint_dc_current_mag_on_off{T}(pm::GenericPowerModel{T}, n::Int, k)
+    branch = ref(pm, n, :branch, k)  
+    dc_max = calc_dc_mag_max(pm,k,n)
+    constraint_dc_current_mag_on_off(pm, n, k, dc_max)        
+end
+constraint_dc_current_mag_on_off{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag_on_off(pm, pm.cnw, k)

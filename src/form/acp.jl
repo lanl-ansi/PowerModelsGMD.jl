@@ -76,11 +76,15 @@ end
 "Constraint for computing qloss"
 function constraint_qloss{T <: PowerModels.AbstractACPForm}(pm::GenericPowerModel{T}, n::Int, k, i, j, K, branchMVA)
     qloss = pm.var[:nw][n][:qloss]
-    i_dc_mag = pm.var[:nw][n][:i_dc_mag]
-    vm = pm.var[:nw][n][:vm]
-           
+    i_dc_mag = pm.var[:nw][n][:i_dc_mag][k]
+    vm = pm.var[:nw][n][:vm][i]
+    
+    if getlowerbound(i_dc_mag) > 0.0 || getupperbound(i_dc_mag) < 0.0
+        println("Warning: DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results")  
+    end
+        
     # K is per phase
-    @constraint(pm.model, qloss[(k,i,j)] == K*vm[i]*i_dc_mag[k]/(3.0*branchMVA))
+    @constraint(pm.model, qloss[(k,i,j)] == K*vm*i_dc_mag/(3.0*branchMVA))
     @constraint(pm.model, qloss[(k,j,i)] == 0.0)
 end
 

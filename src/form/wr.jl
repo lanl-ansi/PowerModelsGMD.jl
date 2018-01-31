@@ -132,7 +132,11 @@ function constraint_qloss{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel
     qloss = pm.var[:nw][n][:qloss]
     iv = pm.var[:nw][n][:iv][(k,i,j)]    
     vm = pm.var[:nw][n][:vm][i]
-           
+  
+    if getlowerbound(i_dc_mag) > 0.0 || getupperbound(i_dc_mag) < 0.0
+        println("Warning: DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results")  
+    end
+      
     # K is per phase
     @constraint(pm.model, qloss[(k,i,j)] == K*iv/(3.0*branchMVA))
     @constraint(pm.model, qloss[(k,j,i)] == 0.0)      

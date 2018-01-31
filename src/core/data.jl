@@ -27,12 +27,6 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,Any}; decoup
         bus["gmd_vdc"] = solution["gmd_bus"][j]["gmd_vdc"]
     end
 
-    # for (k,sub) in solution["sub"]
-    #     i = "$(sub["gmd_bus"])"
-    #     sub["gmd_vdc"] = solution["gmd_bus"][i]["gmd_vdc"]
-    # end
-
-
     for (i,br) in case["branch"]
         br_soln = solution["branch"][i]
 

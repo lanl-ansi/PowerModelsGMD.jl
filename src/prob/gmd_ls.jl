@@ -33,8 +33,8 @@ function post_gmd_ls{T}(pm::GenericPowerModel{T}; kwargs...)
     # DC modeling
     variable_dc_voltage(pm) # V^d_i 
     variable_reactive_loss(pm) # Q_e^loss for each edge (used to compute  Q_i^loss for each node)
-    variable_dc_current(pm) # \tilde I^d_e
-    variable_dc_line_flow(pm) # I^d_e
+    variable_dc_current(pm) # \tilde I^d_e - This is the computed dc current on the AC network lines - this is generally treated as bounded variable
+    variable_dc_line_flow(pm) # I^d_e - This is the actual dc current on lines in the DC network
 
     # Minimize load shedding and fuel cost 
     objective_gmd_min_ls(pm) # variation of equation 3a

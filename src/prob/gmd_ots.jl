@@ -62,6 +62,8 @@ function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
     
     for (i,branch) in ref(pm,:branch)
         constraint_dc_current_mag(pm, i) # constraints 3u
+        constraint_dc_current_mag_on_off(pm, i) # helper constraint to force the "psuedo" DC current 0 when line is turned off
+        
         constraint_qloss(pm, i) # individual terms of righthand side of constraints 3x
         constraint_thermal_protection(pm, i) # constraints 3w
         constraint_current_on_off(pm, i) # constraints 3k, 3l, and 3n
