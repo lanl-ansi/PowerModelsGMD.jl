@@ -20,6 +20,7 @@ cbc_solver = CbcSolver()
 # default setup for solvers
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 #ipopt_solver = IpoptSolver(tol=1e-6)
+
 #bonmin_solver = AmplNLSolver(CoinOptServices.bonmin)
 juniper_solver = JuniperSolver(ipopt_solver, mip_solver=cbc_solver)
 
