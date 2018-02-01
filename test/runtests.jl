@@ -5,8 +5,6 @@ using PowerModelsGMD
 using Logging
 using Pajarito
 using Cbc
-#using AmplNLWriter
-#using CoinOptServices
 using Juniper
 
 
