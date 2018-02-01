@@ -5,8 +5,8 @@ using PowerModelsGMD
 using Logging
 using Pajarito
 using Cbc
-using AmplNLWriter
-using CoinOptServices
+#using AmplNLWriter
+#using CoinOptServices
 using Juniper
 
 
@@ -15,14 +15,15 @@ Logging.configure(level=ERROR)
 
 using Base.Test
 
+cbc_solver = CbcSolver()
+
 # default setup for solvers
-#ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
-ipopt_solver = IpoptSolver(tol=1e-6)
-bonmin_solver = AmplNLSolver(CoinOptServices.bonmin)
-juniper_solver = JuniperSolver(ipopt_solver)
+ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
+#ipopt_solver = IpoptSolver(tol=1e-6)
+#bonmin_solver = AmplNLSolver(CoinOptServices.bonmin)
+juniper_solver = JuniperSolver(ipopt_solver, mip_solver=cbc_solver)
 
 gurobi_solver = GurobiSolver() # change to Pajarito
-cbc_solver = CbcSolver()
 pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=1)
 
 
