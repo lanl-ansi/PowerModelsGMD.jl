@@ -19,10 +19,10 @@ cbc_solver = CbcSolver()
 ipopt_solver = IpoptSolver(tol=1e-6, print_level=0)
 #ipopt_solver = IpoptSolver(tol=1e-6)
 
-#bonmin_solver = AmplNLSolver(CoinOptServices.bonmin)
-juniper_solver = JuniperSolver(ipopt_solver, mip_solver=cbc_solver)
+#juniper_solver = JuniperSolver(ipopt_solver, mip_solver=cbc_solver)
+juniper_solver = JuniperSolver(ipopt_solver, mip_solver=cbc_solver, log_levels=[])
 
-gurobi_solver = GurobiSolver() # change to Pajarito
+gurobi_solver = GurobiSolver(OutputFlag=0) # change to Pajarito
 pajarito_solver = PajaritoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, log_level=1)
 
 
