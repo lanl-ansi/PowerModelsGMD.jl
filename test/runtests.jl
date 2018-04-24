@@ -2,14 +2,14 @@ using Ipopt
 using Gurobi
 using PowerModels
 using PowerModelsGMD
-using Logging
 using Pajarito
 using Cbc
 using Juniper
+using Memento
 
-
-# suppress warnings during testing
-Logging.configure(level=ERROR)
+# Suppress warnings during testing.
+setlevel!(getlogger(InfrastructureModels), "error")
+setlevel!(getlogger(PowerModels), "error")
 
 using Base.Test
 

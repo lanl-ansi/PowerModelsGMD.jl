@@ -1,7 +1,3 @@
-using Logging
-
-Logging.configure(level=INFO, output=open("gmd.log", "a"))
-
 # Formulations of GMD Problems
 export run_gmd, run_ac_gmd
 
@@ -38,7 +34,7 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
    end
 
    for (i,branch) in ref(pm,:branch)
-        debug(@sprintf "Adding constraints for branch %d\n" i)
+        debug(LOGGER, @sprintf "Adding constraints for branch %d\n" i)
         constraint_dc_current_mag(pm, i)
         constraint_qloss_constant_v(pm, i)
 

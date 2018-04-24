@@ -82,7 +82,7 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
 
-    debug(@sprintf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc)
+    debug(LOGGER, @sprintf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc)
 
     br_ser = pm.ref[:nw][n][:gmd_branch][ks]
     br_com = pm.ref[:nw][n][:gmd_branch][kc]
@@ -140,7 +140,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, i)
         gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    debug(@sprintf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs)
+    debug(LOGGER, @sprintf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs)
    
     constraint_dc_ohms(pm, n, i, f_bus, t_bus, vs, gs)
 end

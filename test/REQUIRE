@@ -1,8 +1,9 @@
 julia 0.6
 
-Logging
 Ipopt
 Cbc
-Pajarito
-Juniper
+Juniper 0.2.0
+Pajarito 0.4.2
 Gurobi
+
+Memento 0.5.0

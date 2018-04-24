@@ -4,6 +4,9 @@ module PowerModelsGMD
     using PowerModels
     using JuMP
     using CurveFit
+    using Memento
+
+    const LOGGER = getlogger(PowerModels)
 
     const PMs = PowerModels
 
