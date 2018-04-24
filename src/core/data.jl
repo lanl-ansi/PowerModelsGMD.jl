@@ -157,7 +157,7 @@ function calc_branch_thermal_coeff{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw
     x = x0
 
     fit = poly_fit(x,y,2)
-    fit = round(fit.*1e+5)./1e+5
+    fit = round.(fit.*1e+5)./1e+5
     return fit
 end
 
