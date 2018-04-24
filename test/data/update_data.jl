@@ -4,6 +4,8 @@ using JSON
 using PowerModels
 
 function update_json!(gmd_data::Dict{String,Any})
+
+    # PowerModels v0.6 load / shunt update
     #=
     loads = Dict{String,Any}()
     shunts = Dict{String,Any}()
@@ -44,6 +46,8 @@ function update_json!(gmd_data::Dict{String,Any})
     gmd_data["shunt"] = shunts
     =#
 
+    # PowerModels v0.6 branch model update
+    #=
     for (i, branch) in gmd_data["branch"]
         branch["g_fr"] = 0
         branch["g_to"] = 0
@@ -51,6 +55,7 @@ function update_json!(gmd_data::Dict{String,Any})
         branch["b_to"] = branch["br_b"]/2.0
         delete!(branch, "br_b")
     end
+    =#
 
     #PowerModels.check_network_data(gmd_data)
 end

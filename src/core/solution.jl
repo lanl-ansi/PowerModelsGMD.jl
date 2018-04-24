@@ -2,15 +2,22 @@
 ""
 function get_gmd_solution{T}(pm::GenericPowerModel{T}, sol::Dict{String,Any})
     PMs.add_bus_voltage_setpoint(sol, pm);
-    PMs.add_bus_demand_setpoint(sol, pm)
     PMs.add_generator_power_setpoint(sol, pm)
     PMs.add_branch_flow_setpoint(sol, pm)
       
     add_bus_dc_current_mag_setpoint(sol, pm)
     add_bus_qloss_setpoint(sol, pm)
-    add_bus_load_shed_setpoint(sol, pm)
+    add_load_shed_setpoint(sol, pm)
+    add_load_demand_setpoint(sol, pm)
     add_bus_dc_voltage_setpoint(sol, pm)
     add_branch_dc_flow_setpoint(sol, pm)
+end
+
+""
+function add_load_demand_setpoint(sol, pm::GenericPowerModel)
+    mva_base = pm.data["baseMVA"]
+    PMs.add_setpoint(sol, pm, "load", "pd", :pd; default_value = (item) -> item["pd"]*mva_base)
+    PMs.add_setpoint(sol, pm, "load", "qd", :qd; default_value = (item) -> item["qd"]*mva_base)
 end
 
 ""
@@ -27,8 +34,8 @@ function add_bus_dc_current_mag_setpoint(sol, pm::GenericPowerModel)
 end
 
 ""
-function add_bus_load_shed_setpoint(sol, pm::GenericPowerModel)
-    PMs.add_setpoint(sol, pm, "bus", "demand_served_ratio", :z_demand)
+function add_load_shed_setpoint(sol, pm::GenericPowerModel)
+    PMs.add_setpoint(sol, pm, "load", "demand_served_ratio", :z_demand)
 end
 
 ""
