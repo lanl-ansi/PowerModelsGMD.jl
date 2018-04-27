@@ -1,9 +1,7 @@
-import Logging
-
 ##### Templated Constraints #######
 
 "Constraint of kcl with shunts"
-function constraint_kcl_gmd{T}(pm::GenericPowerModel{T}, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, pd, qd)
+function constraint_kcl_gmd{T}(pm::GenericPowerModel{T}, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_loads, bus_shunts, pd, qd)
     p = pm.var[:nw][n][:p]
     q = pm.var[:nw][n][:q]
     pg = pm.var[:nw][n][:pg]
@@ -12,8 +10,8 @@ function constraint_kcl_gmd{T}(pm::GenericPowerModel{T}, n::Int, i, bus_arcs, bu
 
     # Bus Shunts for gs and bs are missing.  If you add it, you'll have to bifurcate one form of this constraint
     # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
-    @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd)
-    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - qd)   
+    @constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd[d] for d in bus_loads))
+    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd[d] for d in bus_loads))
 end
 
 "DC current on ungrounded gwye-delta transformers"
@@ -27,7 +25,7 @@ end
 
 "DC current on ungrounded gwye-gwye transformers"
 function constraint_dc_current_mag_gwye_gwye_xf{T}(pm::GenericPowerModel{T}, n::Int, k, kh, ih, jh, kl, il, jl, a)
-    debug("branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+    debug(LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
     
     ieff = pm.var[:nw][n][:i_dc_mag][k]
     ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
@@ -161,7 +159,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, k)
     if branch["type"] != "xf"
         constraint_dc_current_mag_line(pm,n,k)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-        debug("  Ungrounded config, ieff constrained to zero")        
+        debug(LOGGER, "  Ungrounded config, ieff constrained to zero")        
         constraint_dc_current_mag_grounded_xf(pm,n,k)   
     elseif branch["config"] in ["delta-gwye","gwye-delta"]
         constraint_dc_current_mag_gwye_delta_xf(pm,n,k)

@@ -4,11 +4,11 @@ function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
     pg = Dict(n => pm.var[:nw][n][:pg] for n in nws) #pm.var[:pg]
 
     return @objective(pm.model, Min, sum(
-                                          sum(gen["cost"][1]*pg[n][i]^2 + gen["cost"][2]*pg[n][i] 
-                                           + gen["cost"][3] for (i,gen) in pm.ref[:nw][n][:gen]) 
-                                           + sum(i_dc_mag[n][i]^2 for i in keys(pm.ref[:nw][n][:branch]))
-                                          for n in nws)
-                     )
+      sum(gen["cost"][1]*pg[n][i]^2 + gen["cost"][2]*pg[n][i] 
+       + gen["cost"][3] for (i,gen) in pm.ref[:nw][n][:gen]) 
+       + sum(i_dc_mag[n][i]^2 for i in keys(pm.ref[:nw][n][:branch]))
+      for n in nws)
+     )
 end
 
 " SSE objective: keep generators as close as possible to original setpoint"
@@ -31,11 +31,11 @@ function objective_gmd_min_error{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
 
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
-    return @objective(pm.model, Min, sum(      
+    return @objective(pm.model, Min, sum(
                                         sum((pg[n][i] - gen["pg"])^2  for (i,gen) in pm.ref[:nw][n][:gen])
                                          + sum((qg[n][i] - gen["qg"])^2  for (i,gen) in pm.ref[:nw][n][:gen]) 
                                          + sum(i_dc_mag[n][i]^2 for (i,branch) in pm.ref[:nw][n][:branch])
-                                         - sum(100.0*pmax^2*z_demand[n][i] for (i,bus) in pm.ref[:nw][n][:bus])
+                                         - sum(100.0*pmax^2*z_demand[n][i] for (i,load) in pm.ref[:nw][n][:load])
                                            for n in nws)
                                            )
 
@@ -48,26 +48,26 @@ function objective_gmd_min_ls{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
     qd = Dict(n => pm.var[:nw][n][:qd] for n in nws)     
     shed_cost = calc_load_shed_cost(pm, nws)          
     return @objective(pm.model, Min, sum(
-                                          sum(gen["cost"][1]*pg[n][i]^2 + gen["cost"][2]*pg[n][i] 
-                                           + gen["cost"][3] for (i,gen) in pm.ref[:nw][n][:gen])                                             
-                                           + sum(shed_cost*(pd[n][i]+qd[n][i]) for (i,bus) in pm.ref[:nw][n][:bus])                                            
-                                          for n in nws)                    
-                                        )
+      sum(gen["cost"][1]*pg[n][i]^2 + gen["cost"][2]*pg[n][i]
+       + gen["cost"][3] for (i,gen) in pm.ref[:nw][n][:gen])
+       + sum(shed_cost*(pd[n][i]+qd[n][i]) for (i,load) in pm.ref[:nw][n][:load])
+      for n in nws)
+    )
 end
 
 " Minimizes load shedding and fuel cost"
 function objective_gmd_min_ls_on_off{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
     pg     = Dict(n => pm.var[:nw][n][:pg] for n in nws)
-    pd     = Dict(n => pm.var[:nw][n][:pd] for n in nws) 
-    qd     = Dict(n => pm.var[:nw][n][:qd] for n in nws)     
-    z      = Dict(n => pm.var[:nw][n][:gen_z] for n in nws)       
-    pg_sqr = Dict(n => pm.var[:nw][n][:pg_sqr] for n in nws)        
+    pd     = Dict(n => pm.var[:nw][n][:pd] for n in nws)
+    qd     = Dict(n => pm.var[:nw][n][:qd] for n in nws)
+    z      = Dict(n => pm.var[:nw][n][:gen_z] for n in nws)
+    pg_sqr = Dict(n => pm.var[:nw][n][:pg_sqr] for n in nws)
 
-    shed_cost = calc_load_shed_cost(pm, nws)          
+    shed_cost = calc_load_shed_cost(pm, nws)
     return @objective(pm.model, Min, sum(
-                                          sum(pg_sqr[n][i] + gen["cost"][2]*pg[n][i] 
-                                           + gen["cost"][3]*z[n][i] for (i,gen) in pm.ref[:nw][n][:gen])                                             
-                                           + sum(shed_cost*(pd[n][i]+qd[n][i]) for (i,bus) in pm.ref[:nw][n][:bus])                                            
-                                          for n in nws)                    
-                                        )
+      sum(pg_sqr[n][i] + gen["cost"][2]*pg[n][i] 
+       + gen["cost"][3]*z[n][i] for (i,gen) in pm.ref[:nw][n][:gen])                                             
+       + sum(shed_cost*(pd[n][i]+qd[n][i]) for (i,load) in pm.ref[:nw][n][:load])                                            
+      for n in nws)                    
+    )
 end

@@ -13,12 +13,12 @@ function QCWRTriPowerModel(data::Dict{String,Any}; kwargs...)
 end
 
 ""
-function variable_ac_current_on_off{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T},n::Int=pm.cnw)
+function variable_ac_current_on_off(pm::GenericPowerModel{T},n::Int=pm.cnw) where T <: PowerModels.AbstractWRForm
    variable_ac_current_mag(pm,n;bounded=false) # needs to be false since this is an on/off variable
 end
 
 ""
-function variable_ac_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+function variable_ac_current(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true) where T <: PowerModels.AbstractWRForm
    variable_ac_current_mag(pm,n;bounded=bounded)
     
    parallel_branch = filter((i, branch) -> pm.ref[:nw][n][:buspairs][(branch["f_bus"], branch["t_bus"])]["branch"] != i, pm.ref[:nw][n][:branch])     
@@ -33,13 +33,13 @@ function variable_ac_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerMo
 end
 
 ""
-function variable_dc_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+function variable_dc_current(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true) where T <: PowerModels.AbstractWRForm
    variable_dc_current_mag(pm,n;bounded=bounded)
    variable_dc_current_mag_sqr(pm,n;bounded=bounded)
 end
 
 ""
-function variable_reactive_loss{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+function variable_reactive_loss(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true) where T <: PowerModels.AbstractWRForm
    variable_qloss(pm,n;bounded=bounded)
    variable_iv(pm,n)
 end
@@ -50,23 +50,23 @@ sum(p[a] for a in bus_arcs) + sum(p_dc[a_dc] for a_dc in bus_arcs_dc) == sum(pg[
 sum(q[a] for a in bus_arcs) + sum(q_dc[a_dc] for a_dc in bus_arcs_dc) == sum(qg[g] for g in bus_gens) - qd + bs*w[i] + qd_ls - qloss
 ```
 """
-function constraint_kcl_shunt_gmd_ls{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, pd, qd, gs, bs)
+function constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel{T}, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_loads, bus_shunts, pd, qd, gs, bs) where T <: PowerModels.AbstractWRForm
     w = pm.var[:nw][n][:w][i]
     pg = pm.var[:nw][n][:pg]
     qg = pm.var[:nw][n][:qg]
     p = pm.var[:nw][n][:p]
     q = pm.var[:nw][n][:q]
-    
-    qloss = pm.var[:nw][n][:qloss]  
-    pd_ls = pm.var[:nw][n][:pd]
-    qd_ls = pm.var[:nw][n][:qd]     
 
-    @constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - pd - gs*w + pd_ls[i])
-    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*w + qd_ls[i])
+    qloss = pm.var[:nw][n][:qloss]
+    pd_ls = pm.var[:nw][n][:pd]
+    qd_ls = pm.var[:nw][n][:qd]
+
+    @constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd[d] for d in bus_loads) - sum(gs[s] for s in bus_shunts)*w + sum(pd_ls[d] for d in bus_loads))
+    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd[d] for d in bus_loads) + sum(bs[s] for s in bus_shunts)*w + sum(qd_ls[d] for d in bus_loads))
 end
 
 "Constraint for relating current to power flow"
-function constraint_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i, f_idx, f_bus, t_bus, tm)
+function constraint_current(pm::GenericPowerModel{T}, n::Int, i, f_idx, f_bus, t_bus, tm) where T <: PowerModels.AbstractWRForm
     pair = (f_bus, t_bus)
     buspair = ref(pm, n, :buspairs, pair)
     arc_from = (i, f_bus, t_bus)  
@@ -89,7 +89,7 @@ function constraint_current{T <: PowerModels.AbstractWRForm}(pm::GenericPowerMod
 end
 
 "Constraint for relating current to power flow on_off"
-function constraint_current_on_off{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i, ac_ub)
+function constraint_current_on_off(pm::GenericPowerModel{T}, n::Int, i, ac_ub) where T <: PowerModels.AbstractWRForm
     ac_lb    = 0 # this implementation of the on/off relaxation is only valid for lower bounds of 0
     
     i_ac_mag = pm.var[:nw][n][:i_ac_mag][i] 
@@ -105,7 +105,7 @@ function constraint_current_on_off{T <: PowerModels.AbstractWRForm}(pm::GenericP
 end
 
 "Constraint for computing thermal protection of transformers"
-function constraint_thermal_protection{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, i, coeff, ibase)
+function constraint_thermal_protection(pm::GenericPowerModel{T}, n::Int, i, coeff, ibase) where T <: PowerModels.AbstractWRForm
     i_ac_mag = pm.var[:nw][n][:i_ac_mag][i] 
     ieff = pm.var[:nw][n][:i_dc_mag][i] 
     ieff_sqr = pm.var[:nw][n][:i_dc_mag_sqr][i] 
@@ -115,7 +115,7 @@ function constraint_thermal_protection{T <: PowerModels.AbstractWRForm}(pm::Gene
 end
 
 "Constraint for computing qloss"
-function constraint_qloss{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, k, i, j)
+function constraint_qloss(pm::GenericPowerModel{T}, n::Int, k, i, j) where T <: PowerModels.AbstractWRForm
     i_dc_mag = pm.var[:nw][n][:i_dc_mag][k]
     qloss = pm.var[:nw][n][:qloss]
     iv = pm.var[:nw][n][:iv][(k,i,j)]    
@@ -127,7 +127,7 @@ function constraint_qloss{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel
 end
 
 "Constraint for computing qloss"
-function constraint_qloss{T <: PowerModels.AbstractWRForm}(pm::GenericPowerModel{T}, n::Int, k, i, j, K, branchMVA)
+function constraint_qloss(pm::GenericPowerModel{T}, n::Int, k, i, j, K, branchMVA) where T <: PowerModels.AbstractWRForm
     i_dc_mag = pm.var[:nw][n][:i_dc_mag][k]
     qloss = pm.var[:nw][n][:qloss]
     iv = pm.var[:nw][n][:iv][(k,i,j)]    

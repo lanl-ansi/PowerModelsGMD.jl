@@ -10,7 +10,7 @@
     @testset "6-bus case ac opf" begin
         result = run_ac_opf("../test/data/b6gic_nerc.json", ipopt_solver)
         
-        println(result["objective"])
+        #println(result["objective"])
         
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 980; atol = 1e0)

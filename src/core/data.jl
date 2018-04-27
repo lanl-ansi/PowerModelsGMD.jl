@@ -157,7 +157,7 @@ function calc_branch_thermal_coeff{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw
     x = x0
 
     fit = poly_fit(x,y,2)
-    fit = round(fit.*1e+5)./1e+5
+    fit = round.(fit.*1e+5)./1e+5
     return fit
 end
 
@@ -266,7 +266,7 @@ function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
 
             if "model" in keys(gen) && "cost" in keys(gen)
                 if gen["model"] != 2
-                    warn("Skipping generator cost model of type other than 2")
+                    warn(LOGGER, "Skipping generator cost model of type other than 2")
                 else
                     degree = length(gen["cost"])
                     for (i, item) in enumerate(gen["cost"])

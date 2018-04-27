@@ -4,8 +4,13 @@ function constraint_kcl_gmd(pm::GenericPowerModel, n::Int, i::Int)
     bus_arcs = ref(pm, n, :bus_arcs, i)
     bus_arcs_dc = ref(pm, n, :bus_arcs_dc, i)
     bus_gens = ref(pm, n, :bus_gens, i)
+    bus_loads = ref(pm, n, :bus_loads, i)
+    bus_shunts = ref(pm, n, :bus_shunts, i)
 
-    constraint_kcl_gmd(pm, n, i, bus_arcs, bus_arcs_dc, bus_gens, bus["pd"], bus["qd"])
+    pd = Dict(k => v["pd"] for (k,v) in ref(pm, n, :load))
+    qd = Dict(k => v["qd"] for (k,v) in ref(pm, n, :load))
+
+    constraint_kcl_gmd(pm, n, i, bus_arcs, bus_arcs_dc, bus_gens, bus_loads, bus_shunts, pd, qd)
 end
 constraint_kcl_gmd(pm::GenericPowerModel, i::Int) = constraint_kcl_gmd(pm, pm.cnw, i::Int)
 
@@ -16,8 +21,16 @@ function constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel, n::Int, i::Int)
     bus_arcs = ref(pm, n, :bus_arcs, i)
     bus_arcs_dc = ref(pm, n, :bus_arcs_dc, i)
     bus_gens = ref(pm, n, :bus_gens, i)
+    bus_loads = ref(pm, n, :bus_loads, i)
+    bus_shunts = ref(pm, n, :bus_shunts, i)
 
-    constraint_kcl_shunt_gmd_ls(pm, n, i, bus_arcs, bus_arcs_dc, bus_gens, bus["pd"], bus["qd"], bus["gs"], bus["bs"])
+    pd = Dict(k => v["pd"] for (k,v) in ref(pm, n, :load))
+    qd = Dict(k => v["qd"] for (k,v) in ref(pm, n, :load))
+
+    gs = Dict(k => v["gs"] for (k,v) in ref(pm, n, :shunt))
+    bs = Dict(k => v["bs"] for (k,v) in ref(pm, n, :shunt))
+
+    constraint_kcl_shunt_gmd_ls(pm, n, i, bus_arcs, bus_arcs_dc, bus_gens, bus_loads, bus_shunts, pd, qd, gs, bs)
 end
 constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel, i::Int) = constraint_kcl_shunt_gmd_ls(pm, pm.cnw, i::Int)
 
@@ -69,7 +82,7 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
 
-    debug(@sprintf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc)
+    debug(LOGGER, @sprintf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc)
 
     br_ser = pm.ref[:nw][n][:gmd_branch][ks]
     br_com = pm.ref[:nw][n][:gmd_branch][kc]
@@ -127,7 +140,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, i)
         gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    debug(@sprintf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs)
+    debug(LOGGER, @sprintf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs)
    
     constraint_dc_ohms(pm, n, i, f_bus, t_bus, vs, gs)
 end
@@ -218,7 +231,7 @@ function constraint_gen_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
     qmin = gen["qmin"]
     qmax = gen["qmax"]  
     
-    constraint_gen_on_off(pm, n, i, pmin, pmax, qmin, qmax)                
+    constraint_gen_on_off(pm, n, i, pmin, pmax, qmin, qmax)
 end
 constraint_gen_on_off{T}(pm::GenericPowerModel{T}, i) = constraint_gen_on_off(pm, pm.cnw, i)
 
@@ -226,13 +239,21 @@ constraint_gen_on_off{T}(pm::GenericPowerModel{T}, i) = constraint_gen_on_off(pm
 function constraint_gen_ots_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
     gen = ref(pm, n, :gen, i)
     bus = ref(pm, n, :bus, gen["gen_bus"])
-
-    # has load, so gen can not be on if not connected      
-    if bus["pd"] != 0.0 && bus["qd"] != 0.0     
-        return  
+    bus_loads = ref(pm, n, :bus_loads, bus["index"])
+    if length(bus_loads) > 0 
+        pd = sum([ref(pm, n, :load, i)["pd"] for i in bus_loads])
+        qd = sum([ref(pm, n, :load, i)["qd"] for i in bus_loads])
+    else
+        pd = 0.0
+        qd = 0.0
     end
-    bus_arcs = ref(pm, n, :bus_arcs, i)                      
-    
+
+    # has load, so gen can not be on if not connected
+    if pd != 0.0 && qd != 0.0
+        return
+    end
+    bus_arcs = ref(pm, n, :bus_arcs, i)
+
     constraint_gen_ots_on_off(pm, n, i, bus_arcs)
 end
 constraint_gen_ots_on_off{T}(pm::GenericPowerModel{T}, i) = constraint_gen_ots_on_off(pm, pm.cnw, i)

@@ -1,5 +1,5 @@
 "variable: `v_dc[j]` for `j` in `gmd_bus`"
-function variable_dc_voltage{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)    
+function variable_dc_voltage(pm::GenericPowerModel,n::Int=pm.cnw; bounded = true)    
     if bounded
         pm.var[:nw][n][:v_dc] = @variable(pm.model, 
           [i in keys(pm.ref[:nw][n][:gmd_bus])], basename="$(n)_v_dc",
@@ -16,7 +16,7 @@ function variable_dc_voltage{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded 
 end
 
 "variable: `v_dc[j]` for `j` in `gmd_branch`"
-function variable_dc_voltage_difference{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+function variable_dc_voltage_difference(pm::GenericPowerModel,n::Int=pm.cnw; bounded = true)
     if bounded
         pm.var[:nw][n][:v_dc_diff] = @variable(pm.model, 
           [i in keys(pm.ref[:nw][n][:gmd_branch])], basename="$(n)_v_dc_diff",
@@ -34,7 +34,7 @@ function variable_dc_voltage_difference{T}(pm::GenericPowerModel{T},n::Int=pm.cn
 end
 
 "variable: `v_dc[j]` for `j` in `gmd_bus`"
-function variable_dc_voltage_on_off{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)    
+function variable_dc_voltage_on_off(pm::GenericPowerModel,n::Int=pm.cnw; bounded = true)    
     variable_dc_voltage(pm,n;bounded=bounded)
     variable_dc_voltage_difference(pm,n;bounded=bounded)
     
@@ -46,7 +46,7 @@ function variable_dc_voltage_on_off{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; b
 end
 
 "variable: `i_dc_mag[j]` for `j` in `branch`"
-function variable_dc_current_mag{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+function variable_dc_current_mag(pm::GenericPowerModel,n::Int=pm.cnw; bounded = true)
     if bounded
         pm.var[:nw][n][:i_dc_mag] = @variable(pm.model, 
           [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_dc_mag",
@@ -63,7 +63,7 @@ function variable_dc_current_mag{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; boun
 end
 
 "variable: `i_dc_mag_sqr[j]` for `j` in `branch`"
-function variable_dc_current_mag_sqr{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+function variable_dc_current_mag_sqr(pm::GenericPowerModel,n::Int=pm.cnw; bounded = true)
     if bounded
         pm.var[:nw][n][:i_dc_mag_sqr] = @variable(pm.model, 
           [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_dc_mag_sqr",
@@ -80,7 +80,7 @@ function variable_dc_current_mag_sqr{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; 
 end
 
 "variable: `dc[j]` for `j` in `gmd_branch`"
-function variable_dc_line_flow{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+function variable_dc_line_flow(pm::GenericPowerModel,n::Int=pm.cnw; bounded = true)
     if bounded
         pm.var[:nw][n][:dc] = @variable(pm.model, 
           [(l,i,j) in pm.ref[:nw][n][:gmd_arcs]], basename="$(n)_dc",
@@ -110,7 +110,7 @@ function variable_dc_line_flow{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounde
 end
 
 "variable: `qloss[j]` for `j` in `arcs`"
-function variable_qloss{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+function variable_qloss(pm::GenericPowerModel,n::Int=pm.cnw; bounded = true)
     if bounded
        pm.var[:nw][n][:qloss] = @variable(pm.model, 
           [(l,i,j) in pm.ref[:nw][n][:arcs]], basename="$(n)_qloss",
@@ -127,12 +127,12 @@ function variable_qloss{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = tru
 end
 
 ""
-function variable_demand_factor{T}(pm::GenericPowerModel{T},n::Int=pm.cnw)
+function variable_demand_factor(pm::GenericPowerModel,n::Int=pm.cnw)
     pm.var[:nw][n][:z_demand] = @variable(pm.model, 0 <= z_demand[i in keys(pm.ref[:nw][n][:bus])] <= 1, start = PMs.getstart(pm.ref[:nw][n][:bus], i, "z_demand_start", 1.0))
 end
 
 ""
-function variable_shunt_factor{T}(pm::GenericPowerModel{T},n::Int=pm.cnw)
+function variable_shunt_factor(pm::GenericPowerModel,n::Int=pm.cnw)
     pm.var[:nw][n][:z_shunt] = @variable(pm.model, 0 <= z_shunt[i in keys(pm.ref[:nw][n][:bus])] <= 1, start = PMs.getstart(pm.ref[:nw][n][:bus], i, "z_shunt_nstart", 1.0))
 end
 
@@ -141,15 +141,15 @@ end
 function variable_active_load(pm::GenericPowerModel, n::Int=pm.cnw; bounded = true)
     if bounded
         pm.var[:nw][n][:pd] = @variable(pm.model,
-            [i in keys(pm.ref[:nw][n][:bus])], basename="$(n)_pd",
-            lowerbound = min(0,pm.ref[:nw][n][:bus][i]["pd"]),
-            upperbound = max(0,pm.ref[:nw][n][:bus][i]["pd"]),
-            start = PowerModels.getstart(pm.ref[:nw][n][:bus], i, "pd_start")
+            [i in keys(pm.ref[:nw][n][:load])], basename="$(n)_pd",
+            lowerbound = min(0,pm.ref[:nw][n][:load][i]["pd"]),
+            upperbound = max(0,pm.ref[:nw][n][:load][i]["pd"]),
+            start = PowerModels.getstart(pm.ref[:nw][n][:load], i, "pd_start")
         )
     else
         pm.var[:nw][n][:pd] = @variable(pm.model,
-            [i in keys(pm.ref[:nw][n][:bus])], basename="$(n)_pd",
-            start = PowerModels.getstart(pm.ref[:nw][n][:bus], i, "pd_start")
+            [i in keys(pm.ref[:nw][n][:load])], basename="$(n)_pd",
+            start = PowerModels.getstart(pm.ref[:nw][n][:load], i, "pd_start")
         )
     end
 end
@@ -158,15 +158,15 @@ end
 function variable_reactive_load(pm::GenericPowerModel, n::Int=pm.cnw; bounded = true)
     if bounded
         pm.var[:nw][n][:qd] = @variable(pm.model,
-            [i in keys(pm.ref[:nw][n][:bus])], basename="$(n)_qd",
-            lowerbound = min(0,pm.ref[:nw][n][:bus][i]["qd"]),
-            upperbound = max(0,pm.ref[:nw][n][:bus][i]["qd"]),
-            start = PowerModels.getstart(pm.ref[:nw][n][:bus], i, "qd_start")
+            [i in keys(pm.ref[:nw][n][:load])], basename="$(n)_qd",
+            lowerbound = min(0,pm.ref[:nw][n][:load][i]["qd"]),
+            upperbound = max(0,pm.ref[:nw][n][:load][i]["qd"]),
+            start = PowerModels.getstart(pm.ref[:nw][n][:load], i, "qd_start")
         )
     else
         pm.var[:nw][n][:qd] = @variable(pm.model,
-            [i in keys(pm.ref[:nw][n][:bus])], basename="$(n)_qd",
-            start = PowerModels.getstart(pm.ref[:nw][n][:bus], i, "qd_start")
+            [i in keys(pm.ref[:nw][n][:load])], basename="$(n)_qd",
+            start = PowerModels.getstart(pm.ref[:nw][n][:load], i, "qd_start")
         )
     end
 end
@@ -178,7 +178,7 @@ function variable_load(pm::GenericPowerModel, n::Int=pm.cnw; kwargs...)
 end
 
 "variable: `i_ac_mag[j]` for `j` in `branch'"
-function variable_ac_current_mag{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; bounded = true)
+function variable_ac_current_mag(pm::GenericPowerModel,n::Int=pm.cnw; bounded = true)
     if bounded
         pm.var[:nw][n][:i_ac_mag] = @variable(pm.model, 
           [i in keys(pm.ref[:nw][n][:branch])], basename="$(n)_i_ac_mag",
@@ -195,7 +195,7 @@ function variable_ac_current_mag{T}(pm::GenericPowerModel{T},n::Int=pm.cnw; boun
 end
 
 "variable: `iv[j]` for `j` in `arcs`"
-function variable_iv{T}(pm::GenericPowerModel{T},n::Int=pm.cnw)
+function variable_iv(pm::GenericPowerModel,n::Int=pm.cnw)
     pm.var[:nw][n][:iv] = @variable(pm.model, 
         [(l,i,j) in pm.ref[:nw][n][:arcs]], basename="$(n)_iv",
         start = PowerModels.getstart(pm.ref[:nw][n][:branch], i, "iv_start")
