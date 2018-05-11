@@ -123,7 +123,7 @@ function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i, gs, v
     z         = pm.var[:nw][n][:branch_z][ac_branch]  
         
     @constraint(pm.model, v_dc_diff == vf - vt)
-    PowerModels.relaxation_product(pm.model, z, v_dc_diff, vz)
+    InfrastructureModels.relaxation_product(pm.model, z, v_dc_diff, vz)
     @constraint(pm.model, dc == gs*(vz + z*vs) )        
 end
 

@@ -76,7 +76,7 @@ function constraint_current(pm::GenericPowerModel{T}, n::Int, i, f_idx, f_bus, t
     if buspair["branch"] == i       
         # p_fr^2 + q_fr^2 <= l * w comes for free with constraint_power_magnitude_sqr of PowerModels.jl
         l = pm.var[:nw][n][:cm][(f_bus, t_bus)]        
-        PowerModels.relaxation_sqr(pm.model, i_ac_mag, l)
+        InfrastructureModels.relaxation_sqr(pm.model, i_ac_mag, l)
     else
         l = pm.var[:nw][n][:cm_p][i]        
         w = pm.var[:nw][n][:w][f_bus]
@@ -84,7 +84,7 @@ function constraint_current(pm::GenericPowerModel{T}, n::Int, i, f_idx, f_bus, t
         q_fr = pm.var[:nw][n][:q][arc_from]  
 
         @constraint(pm.model, p_fr^2 + q_fr^2 <= l * w)  
-        PowerModels.relaxation_sqr(pm.model, i_ac_mag, l) 
+        InfrastructureModels.relaxation_sqr(pm.model, i_ac_mag, l)
     end
 end
 
@@ -110,27 +110,27 @@ function constraint_thermal_protection(pm::GenericPowerModel{T}, n::Int, i, coef
     ieff = pm.var[:nw][n][:i_dc_mag][i] 
     ieff_sqr = pm.var[:nw][n][:i_dc_mag_sqr][i] 
 
-    @constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff_sqr/(ibase^2))      
-    PowerModels.relaxation_sqr(pm.model, ieff, ieff_sqr)     
+    @constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff_sqr/(ibase^2))
+    InfrastructureModels.relaxation_sqr(pm.model, ieff, ieff_sqr)
 end
 
 "Constraint for computing qloss"
 function constraint_qloss(pm::GenericPowerModel{T}, n::Int, k, i, j) where T <: PowerModels.AbstractWRForm
     i_dc_mag = pm.var[:nw][n][:i_dc_mag][k]
     qloss = pm.var[:nw][n][:qloss]
-    iv = pm.var[:nw][n][:iv][(k,i,j)]    
+    iv = pm.var[:nw][n][:iv][(k,i,j)]
     vm = pm.var[:nw][n][:vm][i]
 
     @constraint(pm.model, qloss[(k,i,j)] == 0.0)
-    @constraint(pm.model, qloss[(k,j,i)] == 0.0)      
-    PowerModels.relaxation_product(pm.model, i_dc_mag, vm, iv)       
+    @constraint(pm.model, qloss[(k,j,i)] == 0.0)
+    InfrastructureModels.relaxation_product(pm.model, i_dc_mag, vm, iv)
 end
 
 "Constraint for computing qloss"
 function constraint_qloss(pm::GenericPowerModel{T}, n::Int, k, i, j, K, branchMVA) where T <: PowerModels.AbstractWRForm
     i_dc_mag = pm.var[:nw][n][:i_dc_mag][k]
     qloss = pm.var[:nw][n][:qloss]
-    iv = pm.var[:nw][n][:iv][(k,i,j)]    
+    iv = pm.var[:nw][n][:iv][(k,i,j)]
     vm = pm.var[:nw][n][:vm][i]
   
     if getlowerbound(i_dc_mag) > 0.0 || getupperbound(i_dc_mag) < 0.0
@@ -139,6 +139,6 @@ function constraint_qloss(pm::GenericPowerModel{T}, n::Int, k, i, j, K, branchMV
       
     # K is per phase
     @constraint(pm.model, qloss[(k,i,j)] == K*iv/(3.0*branchMVA))
-    @constraint(pm.model, qloss[(k,j,i)] == 0.0)      
-    PowerModels.relaxation_product(pm.model, i_dc_mag, vm, iv)       
+    @constraint(pm.model, qloss[(k,j,i)] == 0.0)
+    InfrastructureModels.relaxation_product(pm.model, i_dc_mag, vm, iv)
 end

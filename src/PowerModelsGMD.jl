@@ -1,8 +1,9 @@
 isdefined(Base, :__precompile__) && __precompile__()
 
 module PowerModelsGMD
-    using PowerModels
     using JuMP
+    using InfrastructureModels
+    using PowerModels
     using CurveFit
     using Memento
 
