@@ -26,11 +26,12 @@ end
 "Adds the data structures that are specific for GMD modeling" 
 function build_gmd_ref(pm::GenericPowerModel)
     nws = pm.ref[:nw]
-    
-    if pm.data["multinetwork"]
-        nws_data = pm.data["nw"]
+    data = pm.data
+      
+    if InfrastructureModels.ismultinetwork(data)
+        nws_data = data["nw"]
     else
-        nws_data = Dict{String,Any}("0" => pm.data)
+        nws_data = Dict{String,Any}("0" => data)
     end
     
     for (n,nw_data) in nws_data
