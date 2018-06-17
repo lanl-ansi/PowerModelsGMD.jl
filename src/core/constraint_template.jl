@@ -131,7 +131,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, i)
     bus1 = pm.ref[:nw][n][:gmd_bus][f_bus]
     bus2 = pm.ref[:nw][n][:gmd_bus][t_bus]
 
-    dkm = branch["len_km"]
+#    dkm = branch["len_km"]
     vs = branch["br_v"]       # line dc series voltage
 
     if branch["br_r"] === nothing
@@ -140,7 +140,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, i)
         gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    debug(LOGGER, @sprintf "branch %d: (%d,%d): d (mi) = %0.3f, vs = %0.3f, gs = %0.3f\n" i f_bus t_bus dkm vs gs)
+    debug(LOGGER, @sprintf "branch %d: (%d,%d): vs = %0.3f, gs = %0.3f\n" i f_bus t_bus vs gs)
    
     constraint_dc_ohms(pm, n, i, f_bus, t_bus, vs, gs)
 end
@@ -276,7 +276,7 @@ function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, n::Int, i)
     bus1 = pm.ref[:nw][n][:gmd_bus][f_bus]
     bus2 = pm.ref[:nw][n][:gmd_bus][t_bus]
 
-    dkm = branch["len_km"]
+   # dkm = branch["len_km"]
 
     vs = branch["br_v"]       # line dc series voltage
 

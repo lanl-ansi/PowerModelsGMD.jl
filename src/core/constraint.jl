@@ -19,8 +19,8 @@ function constraint_dc_current_mag_gwye_delta_xf{T}(pm::GenericPowerModel{T}, n:
     ieff = pm.var[:nw][n][:i_dc_mag][k]
     ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
 
-    c = @constraint(pm.model, ieff >= ihi)
-    c = @constraint(pm.model, ieff >= -ihi)  
+    @constraint(pm.model, ieff >= ihi)
+    @constraint(pm.model, ieff >= -ihi)  
 end
 
 "DC current on ungrounded gwye-gwye transformers"
@@ -31,8 +31,8 @@ function constraint_dc_current_mag_gwye_gwye_xf{T}(pm::GenericPowerModel{T}, n::
     ihi = pm.var[:nw][n][:dc][(kh,ih,jh)]        
     ilo = pm.var[:nw][n][:dc][(kl,il,jl)]        
     
-    c = @constraint(pm.model, ieff >= (a*ihi + ilo)/a)
-    c = @constraint(pm.model, ieff >= -(a*ihi + ilo)/a)    
+    @constraint(pm.model, ieff >= (a*ihi + ilo)/a)
+    @constraint(pm.model, ieff >= -(a*ihi + ilo)/a)    
 end
 
 "DC current on ungrounded gwye-gwye auto transformers"
@@ -41,10 +41,9 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}
     is = pm.var[:nw][n][:dc][(ks,is,js)]        
     ic = pm.var[:nw][n][:dc][(kc,ic,jc)]        
     
-    c = @constraint(pm.model, ieff >= (a*is + ic)/(a + 1.0))
-    c = @constraint(pm.model, ieff >= -(a*is + ic)/(a + 1.0))
-    c = @constraint(pm.model, ieff >= 0.0)
-     
+    @constraint(pm.model, ieff >= (a*is + ic)/(a + 1.0))
+    @constraint(pm.model, ieff >= -(a*is + ic)/(a + 1.0))
+    @constraint(pm.model, ieff >= 0.0)
 end
 
 "The KCL constraint for DC (GIC) circuits"
@@ -74,16 +73,16 @@ function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, n::Int, k, i, 
     qloss = pm.var[:nw][n][:qloss]      
             
     # K is per phase
-    c = @constraint(pm.model, qloss[(k,i,j)] == K*V*i_dc_mag/(3.0*branchMVA))
-    c = @constraint(pm.model, qloss[(k,j,i)] == 0.0)
+    @constraint(pm.model, qloss[(k,i,j)] == K*V*i_dc_mag/(3.0*branchMVA))
+    @constraint(pm.model, qloss[(k,j,i)] == 0.0)
 end
 
 "Constraint for computing qloss assuming DC voltage is constant"
 function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, n::Int, k, i, j)
     qloss = pm.var[:nw][n][:qloss]      
         
-    c = @constraint(pm.model, qloss[(k,i,j)] == 0.0)
-    c = @constraint(pm.model, qloss[(k,j,i)] == 0.0)
+    @constraint(pm.model, qloss[(k,i,j)] == 0.0)
+    @constraint(pm.model, qloss[(k,j,i)] == 0.0)
 end
 
 "Constraint for turning generators on and off"
@@ -139,14 +138,14 @@ end
 "DC current on normal lines"
 function constraint_dc_current_mag_line{T}(pm::GenericPowerModel{T}, n::Int, k)
     ieff = pm.var[:nw][n][:i_dc_mag]
-    c = @constraint(pm.model, ieff[k] >= 0.0)  
+    @constraint(pm.model, ieff[k] >= 0.0)  
 end
 constraint_dc_current_mag_line{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag_line(pm, pm.cnw, k)
 
 "DC current on grounded transformers"
 function constraint_dc_current_mag_grounded_xf{T}(pm::GenericPowerModel{T}, n::Int, k)
     ieff = pm.var[:nw][n][:i_dc_mag]
-    c = @constraint(pm.model, ieff[k] >= 0.0)  
+    @constraint(pm.model, ieff[k] >= 0.0)  
 end
 constraint_dc_current_mag_grounded_xf{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag_grounded_xf(pm, pm.cnw, k)
 
@@ -169,7 +168,7 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, k)
         constraint_dc_current_mag_gwye_gwye_auto_xf(pm,n,k)
     else
         ieff = pm.var[:nw][n][:i_dc_mag]
-        c = @constraint(pm.model, ieff[k] >= 0.0)      
+        @constraint(pm.model, ieff[k] >= 0.0)      
     end
 end
 constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k) = constraint_dc_current_mag(pm, pm.cnw, k)

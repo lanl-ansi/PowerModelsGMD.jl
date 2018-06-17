@@ -10,6 +10,7 @@ function calculate_qloss(branch, case, solution)
     i_dc_mag = abs(br_soln["gmd_idc"])
         
     if "gmd_k" in keys(branch)
+      
         ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
         K = branch["gmd_k"]*data["baseMVA"]/ibase
 
@@ -149,9 +150,32 @@ function calc_branch_thermal_coeff{T}(pm::GenericPowerModel{T}, i, n::Int=pm.cnw
     if !(branch["type"] == "xf")
         return NaN
     end    
-      
-    x0 = pm.data["thermal_cap_x0"]./calc_branch_ibase(pm,i,n)  #branch["ibase"]
-    y0 = pm.data["thermal_cap_y0"]./100  # convert to %
+    
+    # A hack for now....
+    thermal_cap_x0 = pm.data["thermal_cap_x0"]
+    if isa(thermal_cap_x0, Dict)
+        thermal_cap_x0 = []
+        for (key, value) in sort(pm.data["thermal_cap_x0"]["1"])
+            if key == "index"
+                continue
+            end          
+            push!(thermal_cap_x0, value)  
+        end               
+    end  
+    
+    thermal_cap_y0 = pm.data["thermal_cap_y0"]
+    if isa(thermal_cap_y0, Dict)
+        thermal_cap_y0 = []
+        for (key, value) in sort(pm.data["thermal_cap_y0"]["1"])
+            if key == "index"
+                continue
+            end          
+            push!(thermal_cap_y0, value)  
+        end               
+    end
+    
+    x0 = thermal_cap_x0./calc_branch_ibase(pm,i,n)  #branch["ibase"]
+    y0 = thermal_cap_y0./100  # convert to %
 
     y = calc_ac_mag_max(pm,i,n) .* y0 # branch["ac_mag_max"] .* y0
     x = x0
