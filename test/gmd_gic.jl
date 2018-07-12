@@ -1,17 +1,14 @@
 @testset "test gic gmd" begin
     @testset "4-bus case solution" begin
-        result = run_gmd_gic("../test/data/b4gic.json", ipopt_solver)
+        result = run_gmd_gic("../test/data/b4gic.m", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
     end
 
     @testset "4-bus case" begin
-        casename = "../test/data/b4gic.json"        
-        f = open(casename)
-        case = JSON.parse(f)
-        close(f)
-
-        result = run_gmd_gic("../test/data/b4gic.json", ipopt_solver; setting=setting)
+        casename = "../test/data/b4gic.m"        
+        case = PowerModels.parse_file(casename)
+        result = run_gmd_gic(casename, ipopt_solver; setting=setting)
 
         @test result["status"] == :LocalOptimal
 
@@ -23,12 +20,9 @@
     end
 
     @testset "6-bus case" begin
-        casename = "../test/data/b6gic_nerc.json"
+        casename = "../test/data/b6gic_nerc.m"
         result = run_gmd_gic(casename, ipopt_solver; setting=setting)
-
-        f = open(casename)
-        case = JSON.parse(f)
-        close(f)
+        case = PowerModels.parse_file(casename)
 
         @test result["status"] == :LocalOptimal
           
@@ -40,13 +34,9 @@
     end
 
     @testset "19-bus case" begin
-        casename = "../test/data/epri21.json"
+        casename = "../test/data/epri21.m"
         result = run_gmd_gic(casename, ipopt_solver)
-
-        f = open(casename)
-        case = JSON.parse(f)
-        close(f)
-
+        case = PowerModels.parse_file(casename)
         @test result["status"] == :LocalOptimal
          
         solution = result["solution"]
@@ -57,13 +47,9 @@
     end
 
     @testset "150-bus case" begin
-        casename = "../test/data/uiuc150.json"
+        casename = "../test/data/uiuc150.m"
         result = run_gmd_gic(casename, ipopt_solver)
-
-        f = open(casename)
-        case = JSON.parse(f)
-        close(f)
-
+        case = PowerModels.parse_file(casename)
         @test result["status"] == :LocalOptimal
         
         solution = result["solution"]

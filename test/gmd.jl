@@ -1,30 +1,27 @@
 @testset "test ac data" begin
     @testset "4-bus case ac opf" begin
-        result = run_ac_opf("../test/data/b4gic.json", ipopt_solver)
-        
+        result = run_ac_opf("../test/data/b4gic.m", ipopt_solver)
         
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 116914; atol = 1e2)
     end
 
     @testset "6-bus case ac opf" begin
-        result = run_ac_opf("../test/data/b6gic_nerc.json", ipopt_solver)
-        
-        #println(result["objective"])
-        
+        result = run_ac_opf("../test/data/b6gic_nerc.m", ipopt_solver)
+                
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 980; atol = 1e0)
     end
 
     @testset "19-bus case ac opf" begin
-        result = run_ac_opf("../test/data/epri21.json", ipopt_solver)
+        result = run_ac_opf("../test/data/epri21.m", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 401802; atol = 1e2)
     end
 
     @testset "150-bus case ac opf" begin
-        result = run_ac_opf("../test/data/uiuc150.json", ipopt_solver)
+        result = run_ac_opf("../test/data/uiuc150.m", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 893768; atol = 1e2)
@@ -36,19 +33,17 @@ end
 
 @testset "test ac gmd" begin
     @testset "4-bus case solution" begin
-        result = run_ac_gmd("../test/data/b4gic.json", ipopt_solver)
+        result = run_ac_gmd("../test/data/b4gic.m", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
     end
 
     @testset "4-bus case" begin
-        casename = "../test/data/b4gic.json"        
-        f = open(casename)
-        case = JSON.parse(f)
-        close(f)
-
-        result = run_ac_gmd("../test/data/b4gic.json", ipopt_solver; setting=setting)
+        casename = "../test/data/b4gic.m"                
+        case = PowerModels.parse_file(casename)
+        
+        result = run_ac_gmd(casename, ipopt_solver; setting=setting)
 
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
@@ -64,13 +59,11 @@ end
     end
 
     @testset "6-bus case" begin
-        casename = "../test/data/b6gic_nerc.json"
+        casename = "../test/data/b6gic_nerc.m"
         result = run_ac_gmd(casename, ipopt_solver; setting=setting)
 
-        f = open(casename)
-        case = JSON.parse(f)
-        close(f)
-
+        case = PowerModels.parse_file(casename)
+                
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 11832.5; atol = 1e3)
           
@@ -78,6 +71,8 @@ end
         make_gmd_mixed_units(solution, 100.0)
         adjust_gmd_qloss(case, solution)
 
+#        println(solution["bus"]["2"]["vm"])
+        
         @test isapprox(solution["gmd_bus"]["5"]["gmd_vdc"], -23.022192, atol=1e-1)
         @test isapprox(solution["bus"]["2"]["vm"], 0.92784494, atol=1e-2)
         # check that kcl with qloss is being done correctly
@@ -108,7 +103,7 @@ end
     end
 
     @testset "19-bus case" begin
-        casename = "../test/data/epri21.json"
+        casename = "../test/data/epri21.m"
         result = run_ac_gmd(casename, ipopt_solver)
 
         @test result["status"] == :LocalOptimal
@@ -122,7 +117,7 @@ end
     end
 
     @testset "150-bus case" begin
-        casename = "../test/data/uiuc150.json"
+        casename = "../test/data/uiuc150.m"
         result = run_ac_gmd(casename, ipopt_solver)
 
         @test result["status"] == :LocalOptimal
