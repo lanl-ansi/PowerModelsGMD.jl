@@ -52,7 +52,7 @@ end
 "DC current on ungrounded gwye-gwye transformers"
 function constraint_dc_current_mag_gwye_gwye_xf{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = ref(pm, nw, :branch, k)
-  
+
     kh = branch["gmd_br_hi"]
     kl = branch["gmd_br_lo"]
 
@@ -100,8 +100,8 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}
     ihi = -is
     ilo = ic + is
 
-    vhi = ref(pm, nw, :bus, i, "base_kv")
-    vlo = ref(pm, nw, :bus, j, "base_kv")
+    vhi = ref(pm, nw, :bus, j, "base_kv")
+    vlo = ref(pm, nw, :bus, i, "base_kv")
     a = vhi/vlo
 
     constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, cnd, k, ks, is, js, kc, ic, jc, a)
