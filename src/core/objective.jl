@@ -1,25 +1,53 @@
-" OPF objective"
-function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
-    i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
-    pg = Dict(n => pm.var[:nw][n][:pg] for n in nws) #pm.var[:pg]
-
-    return @objective(pm.model, Min, sum(
-      sum(gen["cost"][1]*pg[n][i]^2 + gen["cost"][2]*pg[n][i] 
-       + gen["cost"][3] for (i,gen) in pm.ref[:nw][n][:gen]) 
-       + sum(i_dc_mag[n][i]^2 for i in keys(pm.ref[:nw][n][:branch]))
-      for n in nws)
-     )
+"Computes a load shed cost"
+function calc_load_shed_cost{T}(pm::GenericPowerModel{T}) # TODO
+    max_cost = 0
+    for (n, nw_ref) in nws(pm)
+        for (i,gen) in nw_ref[:gen]
+            if gen["pmax"] != 0
+                cost_mw = (gen["cost"][1]*gen["pmax"]^2 + gen["cost"][2]*gen["pmax"]) / gen["pmax"] + gen["cost"][3]
+                max_cost = max(max_cost, cost_mw)
+            end
+        end
+    end
+    return max_cost * 2.0
 end
 
+
+" OPF objective"
+function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
+    #@assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
+
+    #i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
+    #pg = Dict(n => pm.var[:nw][n][:pg] for n in nws) #pm.var[:pg]
+
+    return @objective(pm.model, Min,
+    sum(
+        sum(
+            gen["cost"][1]*sum( var(pm, n, c, :pg, i) for c in conductor_ids(pm, n))^2 +
+            gen["cost"][2]*sum( var(pm, n, c, :pg, i) for c in conductor_ids(pm, n)) +
+            gen["cost"][3]
+        for (i,gen) in nw_ref[:gen]) +
+        sum(
+            sum( var(pm, n, c, :i_dc_mag, i)^2 for c in conductor_ids(pm, n) )
+        for (i,branch) in nw_ref[:branch])
+    for (n, nw_ref) in nws(pm))
+    )
+
+end
+
+
 " SSE objective: keep generators as close as possible to original setpoint"
-function objective_gmd_min_error{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
-    i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
-    pg = Dict(n => pm.var[:nw][n][:pg] for n in nws) # pm.var[:pg]
-    qg = Dict(n => pm.var[:nw][n][:qg] for n in nws) # pm.var[:qg]
-    z_demand = Dict(n => pm.var[:nw][n][:z_demand] for n in nws) # pm.var[:z_demand]
+function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
+    @assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
 
-    pmax = 0.0
+    #i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
+    #pg = Dict(n => pm.var[:nw][n][:pg] for n in nws) # pm.var[:pg]
+    #qg = Dict(n => pm.var[:nw][n][:qg] for n in nws) # pm.var[:qg]
+    #z_demand = Dict(n => pm.var[:nw][n][:z_demand] for n in nws) # pm.var[:z_demand]
 
+    M_p = Dict(n => max([gen["pmax"] for (i,gen) in nw_ref[:gen]]) for (n, nw_ref) in nws(pm))
+
+    #=
     for n in nws
         for (i,gen) in pm.ref[:nw][n][:gen]
             @printf "sg[%d] = %f + j%f\n" i gen["pg"] gen["qg"]
@@ -28,46 +56,76 @@ function objective_gmd_min_error{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
             end
         end
     end
+    =#
 
     # return @objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return @objective(pm.model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in pm.ref[:gen]) )
-    return @objective(pm.model, Min, sum(
-                                        sum((pg[n][i] - gen["pg"])^2  for (i,gen) in pm.ref[:nw][n][:gen])
-                                         + sum((qg[n][i] - gen["qg"])^2  for (i,gen) in pm.ref[:nw][n][:gen]) 
-                                         + sum(i_dc_mag[n][i]^2 for (i,branch) in pm.ref[:nw][n][:branch])
-                                         - sum(100.0*pmax^2*z_demand[n][i] for (i,load) in pm.ref[:nw][n][:load])
-                                           for n in nws)
-                                           )
+    return @objective(pm.model, Min,
+    sum(
+        sum(
+            (gen["pg"] - var(pm, :pg, i, nw=n))^2 + (gen["qg"] - var(pm, :qg, i, nw=n))^2
+        for (i,gen) in ref(pm, n, :gen)) +
+        sum(
+            var(pm, :i_dc_mag, i, nw=n)^2
+        for (i,branch) in ref(pm, n, :branch)) +
+        sum(
+            -100.0*M_p^2*var(pm, :z_demand, i, nw=n)
+        for (i,load) in ref(pm, n, :load))
+    for (n, nw_ref) in nws(pm))
+    )
 
 end
 
+
 " Minimizes load shedding and fuel cost"
-function objective_gmd_min_ls{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
-    pg = Dict(n => pm.var[:nw][n][:pg] for n in nws) 
-    pd = Dict(n => pm.var[:nw][n][:pd] for n in nws) 
-    qd = Dict(n => pm.var[:nw][n][:qd] for n in nws)     
-    shed_cost = calc_load_shed_cost(pm, nws)          
-    return @objective(pm.model, Min, sum(
-      sum(gen["cost"][1]*pg[n][i]^2 + gen["cost"][2]*pg[n][i]
-       + gen["cost"][3] for (i,gen) in pm.ref[:nw][n][:gen])
-       + sum(shed_cost*(pd[n][i]+qd[n][i]) for (i,load) in pm.ref[:nw][n][:load])
-      for n in nws)
+function objective_gmd_min_ls{T}(pm::GenericPowerModel{T})
+    @assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
+
+    #pg = Dict(n => pm.var[:nw][n][:pg] for n in nws)
+    #pd = Dict(n => pm.var[:nw][n][:pd] for n in nws)
+    #qd = Dict(n => pm.var[:nw][n][:qd] for n in nws)
+
+    shed_cost = calc_load_shed_cost(pm)
+
+    return @objective(pm.model, Min, 
+    sum(
+        sum(
+            gen["cost"][1]*var(pm, :pg, i, nw=n)^2 +
+            gen["cost"][2]*var(pm, :pg, i, nw=n) +
+            gen["cost"][3]
+        for (i,gen) in nw_ref[:gen]) +
+        sum(
+            shed_cost*(var(pm, :pd, i, nw=n) + var(pm, :qd, i, nw=n))
+        for (i,load) in nw_ref[:load])
+    for (n, nw_ref) in nws(pm))
     )
+
 end
 
-" Minimizes load shedding and fuel cost"
-function objective_gmd_min_ls_on_off{T}(pm::GenericPowerModel{T}, nws=[pm.cnw])
-    pg     = Dict(n => pm.var[:nw][n][:pg] for n in nws)
-    pd     = Dict(n => pm.var[:nw][n][:pd] for n in nws)
-    qd     = Dict(n => pm.var[:nw][n][:qd] for n in nws)
-    z      = Dict(n => pm.var[:nw][n][:gen_z] for n in nws)
-    pg_sqr = Dict(n => pm.var[:nw][n][:pg_sqr] for n in nws)
 
-    shed_cost = calc_load_shed_cost(pm, nws)
-    return @objective(pm.model, Min, sum(
-      sum(pg_sqr[n][i] + gen["cost"][2]*pg[n][i] 
-       + gen["cost"][3]*z[n][i] for (i,gen) in pm.ref[:nw][n][:gen])                                             
-       + sum(shed_cost*(pd[n][i]+qd[n][i]) for (i,load) in pm.ref[:nw][n][:load])                                            
-      for n in nws)                    
+" Minimizes load shedding and fuel cost"
+function objective_gmd_min_ls_on_off{T}(pm::GenericPowerModel{T})
+    @assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
+
+    #pg     = Dict(n => pm.var[:nw][n][:pg] for n in nws)
+    #pd     = Dict(n => pm.var[:nw][n][:pd] for n in nws)
+    #qd     = Dict(n => pm.var[:nw][n][:qd] for n in nws)
+    #z      = Dict(n => pm.var[:nw][n][:gen_z] for n in nws)
+    #pg_sqr = Dict(n => pm.var[:nw][n][:pg_sqr] for n in nws)
+
+    shed_cost = calc_load_shed_cost(pm)
+
+    return @objective(pm.model, Min,
+    sum(
+        sum(
+            var(pm, :pg_sqr, i, nw=n) + 
+            gen["cost"][2]*var(pm, :pg, i, nw=n) +
+            gen["cost"][3]*var(pm, :gen_z, i, nw=n)
+        for (i,gen) in nw_ref[:gen]) +
+        sum(
+            shed_cost*(var(pm, :pd, i, nw=n) + var(pm, :qd, i, nw=n))
+        for (i,load) in nw_ref[:load])
+    for (n, nw_ref) in nws(pm))
     )
+
 end

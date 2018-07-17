@@ -12,11 +12,11 @@ function post_gmd_gic{T}(pm::GenericPowerModel{T}; kwargs...)
     variable_dc_line_flow(pm)
 
     ### DC network constraints ###
-    for (i,bus) in ref(pm,:gmd_bus)
+    for i in ids(pm, :gmd_bus)
         constraint_dc_kcl_shunt(pm, i)
     end
 
-    for (i,branch) in ref(pm,:gmd_branch)
+    for i in ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
 end
