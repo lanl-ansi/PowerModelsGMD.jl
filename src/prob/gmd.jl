@@ -22,7 +22,7 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     variable_qloss(pm)
 
     PMs.variable_generation(pm)
-    PMs.variable_active_branch_flow(pm)
+    PMs.variable_active_branch_flow(pm) #TODO simplify
     PMs.variable_reactive_branch_flow(pm)
    
     variable_dc_line_flow(pm)
@@ -30,6 +30,10 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     objective_gmd_min_fuel(pm)
 
     PMs.constraint_voltage(pm)
+
+    for i in ids(pm, :ref_buses)
+        PMs.constraint_theta_ref(pm, i)
+    end
 
     for i in ids(pm, :bus)
         constraint_kcl_gmd(pm, i)

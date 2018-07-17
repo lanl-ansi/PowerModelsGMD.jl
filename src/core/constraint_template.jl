@@ -56,9 +56,8 @@ function constraint_dc_current_mag_gwye_gwye_xf{T}(pm::GenericPowerModel{T}, k; 
     kh = branch["gmd_br_hi"]
     kl = branch["gmd_br_lo"]
 
-    # TODO
-    br_hi = pm.ref[:nw][nw][:gmd_branch][kh]
-    br_lo = pm.ref[:nw][nw][:gmd_branch][kl]
+    br_hi = ref(pm, nw, :gmd_branch, kh)
+    br_lo = ref(pm, nw, :gmd_branch, kl)
 
     i = branch["f_bus"]
     j = branch["t_bus"]
@@ -68,7 +67,6 @@ function constraint_dc_current_mag_gwye_gwye_xf{T}(pm::GenericPowerModel{T}, k; 
 
     il = br_lo["f_bus"]
     jl = br_lo["t_bus"]
-
 
     vhi = ref(pm, nw, :bus, i, "base_kv")
     vlo = ref(pm, nw, :bus, j, "base_kv")
@@ -86,9 +84,8 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf{T}(pm::GenericPowerModel{T}
 
     debug(LOGGER, @sprintf "Series GMD branch: %d, Common GMD branch: %d\n" ks kc)
 
-    # TODO
-    br_ser = pm.ref[:nw][nw][:gmd_branch][ks]
-    br_com = pm.ref[:nw][nw][:gmd_branch][kc]
+    br_ser = ref(pm, nw, :gmd_branch, ks)
+    br_com = ref(pm, nw, :gmd_branch, kc)
 
     i = branch["f_bus"]
     j = branch["t_bus"]

@@ -107,11 +107,11 @@ end
 function calc_ac_mag_max(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     # ac_mag_max
     branch = ref(pm, nw, :branch, i)
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    ac_max = branch["rate_a"]*branch["tap"] / min(ref(pm, nw, :bus, f_bus)["vmin"], ref(pm, nw, :bus, t_bus)["vmin"])
+    f_bus = ref(pm, nw, :bus, branch["f_bus"])
+    t_bus = ref(pm, nw, :bus, branch["t_bus"])
+    ac_max = branch["rate_a"]*branch["tap"] / min(f_bus["vmin"], t_bus["vmin"])
 
-   # println(i, " " , ac_max, " ", branch["rate_a"], " ", pm.ref[:nw][n][:bus][f_bus]["vmin"], " ", pm.ref[:nw][n][:bus][t_bus]["vmin"])
+    # println(i, " " , ac_max, " ", branch["rate_a"], " ", pm.ref[:nw][n][:bus][f_bus]["vmin"], " ", pm.ref[:nw][n][:bus][t_bus]["vmin"])
 
     return ac_max
 end
@@ -135,8 +135,7 @@ end
 "Computes the ibase for a branch"
 function calc_branch_ibase{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = ref(pm, nw, :branch, i)
-    hi = branch["hi_bus"]
-    bus = ref(pm, nw, :bus, hi)
+    bus = ref(pm, nw, :bus, branch["hi_bus"])
     return branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
 end
 

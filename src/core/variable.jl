@@ -178,7 +178,7 @@ function variable_reactive_load(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=
 end
 
 "generates variables for both `active` and `reactive` load"
-function variable_load(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, kwargs...)
+function variable_load(pm::GenericPowerModel; kwargs...)
     variable_active_load(pm; kwargs...)
     variable_reactive_load(pm; kwargs...)
 end

@@ -68,7 +68,7 @@ function constraint_thermal_protection(pm::GenericPowerModel{T}, n::Int, c::Int,
     i_ac_mag = var(pm, n, c, :i_ac_mag)[i] 
     ieff = var(pm, n, c, :i_dc_mag)[i] 
 
-    @constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff^2/(ibase^2))    
+    @constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff^2/(ibase^2))
 end
 
 "Constraint for computing qloss"
