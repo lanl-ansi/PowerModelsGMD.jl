@@ -40,7 +40,7 @@ function constraint_dc_current_mag_gwye_delta_xf{T}(pm::GenericPowerModel{T}, k;
     branch = ref(pm, nw, :branch, k)
 
     kh = branch["gmd_br_hi"]
-    br_hi = pm.ref[:nw][nw][:gmd_branch][kh] #TODO
+    br_hi = ref(pm, nw, :gmd_branch, kh)
 
     ih = br_hi["f_bus"]
     jh = br_hi["t_bus"]
@@ -113,7 +113,7 @@ function constraint_dc_kcl_shunt{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw,
     dcbus = ref(pm, nw, :gmd_bus, i)
     gmd_bus_arcs = pm.ref[:nw][nw][:gmd_bus_arcs][i]
 
-    dc_expr = pm.model.ext[:nw][nw][:dc_expr] #TODO
+    dc_expr = pm.model.ext[:nw][nw][:dc_expr]
 
     gs = dcbus["g_gnd"]
 
@@ -127,9 +127,8 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd:
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
 
-    #TODO
-    bus1 = pm.ref[:nw][nw][:gmd_bus][f_bus]
-    bus2 = pm.ref[:nw][nw][:gmd_bus][t_bus]
+    bus1 = ref(pm, nw, :gmd_bus, f_bus)
+    bus2 = ref(pm, nw, :gmd_bus, t_bus)
 
 #    dkm = branch["len_km"]
     vs = branch["br_v"]       # line dc series voltage
@@ -273,9 +272,8 @@ function constraint_dc_ohms_on_off{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cn
     t_bus = branch["t_bus"]
     ac_branch = branch["parent_index"]
 
-    # TODO
-    bus1 = pm.ref[:nw][nw][:gmd_bus][f_bus]
-    bus2 = pm.ref[:nw][nw][:gmd_bus][t_bus]
+    bus1 = ref(pm, nw, :gmd_bus, f_bus)
+    bus2 = ref(pm, nw, :gmd_bus, t_bus)
 
    # dkm = branch["len_km"]
 

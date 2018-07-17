@@ -24,8 +24,7 @@ function post_gmd_ls{T}(pm::GenericPowerModel{T}; kwargs...)
 
     # AC modeling
     PMs.variable_voltage(pm) # theta_i and V_i, includes constraint 3o 
-    PMs.variable_active_branch_flow(pm) # p_ij  #TODO simplify
-    PMs.variable_reactive_branch_flow(pm) # q_ij
+    PMs.variable_branch_flow(pm) # p_ij, q_ij
     PMs.variable_generation(pm) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r 
     variable_load(pm) # l_i^p, l_i^q
     variable_ac_current(pm) # \tilde I^a_e and l_e

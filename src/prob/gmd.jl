@@ -22,9 +22,8 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     variable_qloss(pm)
 
     PMs.variable_generation(pm)
-    PMs.variable_active_branch_flow(pm) #TODO simplify
-    PMs.variable_reactive_branch_flow(pm)
-   
+    PMs.variable_branch_flow(pm)
+
     variable_dc_line_flow(pm)
 
     objective_gmd_min_fuel(pm)

@@ -1,5 +1,5 @@
 "Computes a load shed cost"
-function calc_load_shed_cost{T}(pm::GenericPowerModel{T}) # TODO
+function calc_load_shed_cost{T}(pm::GenericPowerModel{T})
     max_cost = 0
     for (n, nw_ref) in nws(pm)
         for (i,gen) in nw_ref[:gen]
