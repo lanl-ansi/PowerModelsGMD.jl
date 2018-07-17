@@ -1,7 +1,7 @@
 ##### Templated Constraints #######
 
 "Constraint of kcl with shunts"
-function constraint_kcl_gmd{T}(pm::GenericPowerModel{T}, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_loads, bus_shunts, pd, qd)
+function constraint_kcl_gmd{T}(pm::GenericPowerModel{T}, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
     p = var(pm, n, c, :p)
     q = var(pm, n, c, :q)
     pg = var(pm, n, c, :pg)
@@ -10,8 +10,8 @@ function constraint_kcl_gmd{T}(pm::GenericPowerModel{T}, n::Int, c::Int, i, bus_
 
     # Bus Shunts for gs and bs are missing.  If you add it, you'll have to bifurcate one form of this constraint
     # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
-    @constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd[d] for d in bus_loads))
-    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd[d] for d in bus_loads))
+    @constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd))
+    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd for (i, qd) in bus_qd))
 end
 
 "DC current on ungrounded gwye-delta transformers"

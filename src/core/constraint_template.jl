@@ -5,13 +5,11 @@ function constraint_kcl_gmd(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::
     bus_arcs_dc = ref(pm, nw, :bus_arcs_dc, i)
     bus_gens = ref(pm, nw, :bus_gens, i)
     bus_loads = ref(pm, nw, :bus_loads, i)
-    bus_shunts = ref(pm, nw, :bus_shunts, i)
 
-    pd = Dict(k => v["pd"] for (k,v) in ref(pm, nw, :load))
-    qd = Dict(k => v["qd"] for (k,v) in ref(pm, nw, :load))
+    bus_pd = Dict(k => ref(pm, nw, :load, k, "pd", cnd) for k in bus_loads)
+    bus_qd = Dict(k => ref(pm, nw, :load, k, "qd", cnd) for k in bus_loads)
 
-    #TODO optimize this
-    constraint_kcl_gmd(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_loads, bus_shunts, pd, qd)
+    constraint_kcl_gmd(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
 end
 
 
@@ -24,14 +22,13 @@ function constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel, i::Int; nw::Int=pm.c
     bus_loads = ref(pm, nw, :bus_loads, i)
     bus_shunts = ref(pm, nw, :bus_shunts, i)
 
-    pd = Dict(k => v["pd"] for (k,v) in ref(pm, nw, :load))
-    qd = Dict(k => v["qd"] for (k,v) in ref(pm, nw, :load))
+    bus_pd = Dict(k => ref(pm, nw, :load, k, "pd", cnd) for k in bus_loads)
+    bus_qd = Dict(k => ref(pm, nw, :load, k, "qd", cnd) for k in bus_loads)
 
-    gs = Dict(k => v["gs"] for (k,v) in ref(pm, nw, :shunt))
-    bs = Dict(k => v["bs"] for (k,v) in ref(pm, nw, :shunt))
+    bus_gs = Dict(k => ref(pm, nw, :shunt, k, "gs", cnd) for k in bus_shunts)
+    bus_bs = Dict(k => ref(pm, nw, :shunt, k, "bs", cnd) for k in bus_shunts)
 
-    #TODO optimize this
-    constraint_kcl_shunt_gmd_ls(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_loads, bus_shunts, pd, qd, gs, bs)
+    constraint_kcl_shunt_gmd_ls(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 end
 
 

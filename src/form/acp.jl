@@ -31,7 +31,7 @@ sum(p[a] for a in bus_arcs)  == sum(pg[g] for g in bus_gens) - pd - gs*v^2 + pd_
 sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_ls - qloss
 ```
 """
-function constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel{T}, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_loads, bus_shunts, pd, qd, gs, bs) where T <: PowerModels.AbstractACPForm
+function constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel{T}, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs) where T <: PowerModels.AbstractACPForm
     vm = var(pm, n, c, :vm)[i]
     p = var(pm, n, c, :p)
     q = var(pm, n, c, :q)
@@ -41,8 +41,8 @@ function constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel{T}, n::Int, c::Int, i
     pd_ls = var(pm, n, c, :pd)
     qd_ls = var(pm, n, c, :qd)
 
-    @constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd[d] for d in bus_loads) - sum(gs[s] for s in bus_shunts)*vm^2 + sum(pd_ls[d] for d in bus_loads))
-    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd[d] for d in bus_loads) + sum(bs[s] for s in bus_shunts)*vm^2 + sum(qd_ls[d] for d in bus_loads))
+    @constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_ls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs)*vm^2)
+    @constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd - qd_ls[i] for (i, qd) in bus_qd) + sum(bs for (i, bs) in bus_bs)*vm^2)
 end
 
 "Constraint for relating current to power flow"
