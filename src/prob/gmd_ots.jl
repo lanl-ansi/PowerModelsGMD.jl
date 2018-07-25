@@ -24,13 +24,13 @@ end
 function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
 
     # AC modeling
-    PowerModels.variable_voltage_on_off(pm) # theta_i and V_i, includes constraint 3o 
-    PowerModels.variable_active_branch_flow(pm) # p_ij 
-    PowerModels.variable_reactive_branch_flow(pm) # q_ij
+    PMs.variable_voltage_on_off(pm) # theta_i and V_i, includes constraint 3o 
+    PMs.variable_active_branch_flow(pm) # p_ij 
+    PMs.variable_reactive_branch_flow(pm) # q_ij
     # no bounds because of the on/off constraints
-    PowerModels.variable_generation(pm, bounded=false) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r
+    PMs.variable_generation(pm, bounded=false) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r
     variable_active_generation_sqr_cost(pm)
-    PowerModels.variable_branch_indicator(pm) # z_e variable 
+    PMs.variable_branch_indicator(pm) # z_e variable 
     variable_load(pm) # l_i^p, l_i^q
     variable_ac_current_on_off(pm) # \tilde I^a_e and l_e
     variable_gen_indicator(pm) # z variables for the generators
@@ -44,10 +44,10 @@ function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
     # Minimize load shedding and fuel cost 
     objective_gmd_min_ls_on_off(pm) # variation of equation 3a
 
-    PowerModels.constraint_voltage_on_off(pm) 
-       
+    PMs.constraint_voltage_on_off(pm) 
+
     for i in ids(pm, :ref_buses)
-        PowerModels.constraint_theta_ref(pm, i)
+        PMs.constraint_theta_ref(pm, i)
     end
 
     for i in ids(pm, :bus)
@@ -60,7 +60,7 @@ function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
         constraint_gen_perspective(pm, i)
     end
     
-    for (i,branch) in ref(pm,:branch)
+    for i in ids(pm, :branch)
         constraint_dc_current_mag(pm, i) # constraints 3u
         constraint_dc_current_mag_on_off(pm, i) # helper constraint to force the "psuedo" DC current 0 when line is turned off
         
@@ -68,20 +68,20 @@ function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
         constraint_thermal_protection(pm, i) # constraints 3w
         constraint_current_on_off(pm, i) # constraints 3k, 3l, and 3n
 
-        PowerModels.constraint_ohms_yt_from_on_off(pm, i) # constraints 3d, 3e
-        PowerModels.constraint_ohms_yt_to_on_off(pm, i)   # constraints 3f, 3g
+        PMs.constraint_ohms_yt_from_on_off(pm, i) # constraints 3d, 3e
+        PMs.constraint_ohms_yt_to_on_off(pm, i)   # constraints 3f, 3g
               
-        PowerModels.constraint_thermal_limit_from_on_off(pm, i) # constraints 3m
-        PowerModels.constraint_thermal_limit_to_on_off(pm, i)   # constraints 3m
-        PowerModels.constraint_voltage_angle_difference_on_off(pm, i) # constraints 3p
+        PMs.constraint_thermal_limit_from_on_off(pm, i) # constraints 3m
+        PMs.constraint_thermal_limit_to_on_off(pm, i)   # constraints 3m
+        PMs.constraint_voltage_angle_difference_on_off(pm, i) # constraints 3p
     end
  
     ### DC network constraints ###
-    for (i,bus) in ref(pm,:gmd_bus)
+    for i in ids(pm, :gmd_bus)
        constraint_dc_kcl_shunt(pm, i) # constraint 3s
     end
 
-    for (i,branch) in ref(pm,:gmd_branch)
+    for i in ids(pm, :gmd_branch)
         constraint_dc_ohms_on_off(pm, i) # constraint 3t
     end   
 end

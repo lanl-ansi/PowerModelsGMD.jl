@@ -23,13 +23,12 @@ end
 function post_gmd_ls{T}(pm::GenericPowerModel{T}; kwargs...)
 
     # AC modeling
-    PowerModels.variable_voltage(pm) # theta_i and V_i, includes constraint 3o 
-    PowerModels.variable_active_branch_flow(pm) # p_ij 
-    PowerModels.variable_reactive_branch_flow(pm) # q_ij
-    PowerModels.variable_generation(pm) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r 
+    PMs.variable_voltage(pm) # theta_i and V_i, includes constraint 3o 
+    PMs.variable_branch_flow(pm) # p_ij, q_ij
+    PMs.variable_generation(pm) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r 
     variable_load(pm) # l_i^p, l_i^q
     variable_ac_current(pm) # \tilde I^a_e and l_e
-    
+
     # DC modeling
     variable_dc_voltage(pm) # V^d_i 
     variable_reactive_loss(pm) # Q_e^loss for each edge (used to compute  Q_i^loss for each node)
@@ -39,36 +38,36 @@ function post_gmd_ls{T}(pm::GenericPowerModel{T}; kwargs...)
     # Minimize load shedding and fuel cost 
     objective_gmd_min_ls(pm) # variation of equation 3a
 
-    PowerModels.constraint_voltage(pm) # Make this on/off
-       
+    PMs.constraint_voltage(pm) # Make this on/off
+
     for i in ids(pm, :ref_buses)
-        PowerModels.constraint_theta_ref(pm, i)
+        PMs.constraint_theta_ref(pm, i)
     end
 
     for i in ids(pm, :bus)
         constraint_kcl_shunt_gmd_ls(pm, i) # variation of 3b, 3c
     end
-    
-    for (i,branch) in ref(pm,:branch)
+
+    for i in ids(pm, :branch)
         constraint_dc_current_mag(pm, i) # constraints 3u
         constraint_qloss(pm, i) # individual terms of righthand side of constraints 3x
         constraint_thermal_protection(pm, i) # constraints 3w
         constraint_current(pm, i) # constraints 3k and 3l
 
-        PowerModels.constraint_ohms_yt_from(pm, i) # variation of constraints 3d, 3e
-        PowerModels.constraint_ohms_yt_to(pm, i)   # variation of constraints 3f, 3g
-              
-        PowerModels.constraint_thermal_limit_from(pm, i) # variation of constraints 3m
-        PowerModels.constraint_thermal_limit_to(pm, i)   # variation of constraints 3m
-        PowerModels.constraint_voltage_angle_difference(pm, i) # variation of constraints 3p
+        PMs.constraint_ohms_yt_from(pm, i) # variation of constraints 3d, 3e
+        PMs.constraint_ohms_yt_to(pm, i)   # variation of constraints 3f, 3g
+
+        PMs.constraint_thermal_limit_from(pm, i) # variation of constraints 3m
+        PMs.constraint_thermal_limit_to(pm, i)   # variation of constraints 3m
+        PMs.constraint_voltage_angle_difference(pm, i) # variation of constraints 3p
     end
- 
+
     ### DC network constraints ###
-    for (i,bus) in ref(pm,:gmd_bus)
+    for i in ids(pm, :gmd_bus)
        constraint_dc_kcl_shunt(pm, i) # variation of constraint 3s
     end
 
-    for (i,branch) in ref(pm,:gmd_branch)
+    for i in ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i) # variation of constraint 3t
-    end   
+    end
 end

@@ -107,13 +107,22 @@ end
         result = run_ac_gmd(casename, ipopt_solver)
 
         @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 5.08585e5; atol = 1e4)
-         
+
+        # result before PowerModels v0.8
+        #@test isapprox(result["objective"], 5.08585e5; atol = 1e4) 
+        #@test isapprox(solution["gmd_bus"]["14"]["gmd_vdc"],  44.31, atol=1e-1)
+        #@test isapprox(solution["gmd_bus"]["23"]["gmd_vdc"], -41.01, atol=1e-1)
+
+        # after computing a diff on the generated JuMP models from v0.7 and v0.8
+        # only coeffents in constraint_ohms_yt_from and constraint_ohms_yt_to changed slightly
+        # most likely ipopt was getting stuck in a local min previously
+        @test isapprox(result["objective"], 4.99564e5; atol = 1e4)
+
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
         # adjust_gmd_qloss(case, solution)
-        @test isapprox(solution["gmd_bus"]["14"]["gmd_vdc"], 44.31, atol=1e-1) 
-        @test isapprox(solution["gmd_bus"]["23"]["gmd_vdc"],  -41.01, atol=1e-1)         
+        @test isapprox(solution["gmd_bus"]["14"]["gmd_vdc"],  44.26, atol=1e-1)
+        @test isapprox(solution["gmd_bus"]["23"]["gmd_vdc"], -40.95, atol=1e-1)
     end
 
     @testset "150-bus case" begin
@@ -122,12 +131,12 @@ end
 
         @test result["status"] == :LocalOptimal
         @test isapprox(result["objective"], 9.52847e5; atol = 1e5)
-                    
+
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
 
-        @test isapprox(solution["gmd_bus"]["190"]["gmd_vdc"], 7.00, atol=1e-1) 
-        @test isapprox(solution["gmd_bus"]["197"]["gmd_vdc"], -32.74, atol=1e-1) 
+        @test isapprox(solution["gmd_bus"]["190"]["gmd_vdc"], 7.00, atol=1e-1)
+        @test isapprox(solution["gmd_bus"]["197"]["gmd_vdc"], -32.74, atol=1e-1)
     end
 end
 

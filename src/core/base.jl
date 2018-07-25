@@ -3,7 +3,7 @@ export GenericGMDPowerModel
 
 # override the default generic constructor for Power Models that have GMD modeling
 function GenericGMDPowerModel(data::Dict{String,Any}, T::DataType; kwargs...)
-    pm = GenericPowerModel(data,T; kwargs...)    
+    pm = GenericPowerModel(data,T; kwargs...)
     build_gmd_ref(pm)
     return pm
 end
@@ -11,8 +11,8 @@ end
 ""
 function check_gmd_branch_parent_status(ref, i, gmd_branch)
     parent_id = gmd_branch["parent_index"]
-    status = false    
-#    @printf "gmd branch %d with parent %d:" i parent_id 
+    status = false
+#    @printf "gmd branch %d with parent %d:" i parent_id
 
     if parent_id in keys(ref[:branch])
         parent_branch = ref[:branch][parent_id]
@@ -48,8 +48,8 @@ function build_gmd_ref(pm::GenericPowerModel)
         for (l,i,j) in ref[:gmd_arcs]
            push!(gmd_bus_arcs[i], (l,i,j))
         end
-        ref[:gmd_bus_arcs] = gmd_bus_arcs      
-   end  
+        ref[:gmd_bus_arcs] = gmd_bus_arcs
+   end
 end
 
 

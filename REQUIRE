@@ -1,6 +1,6 @@
 julia 0.6
 
-PowerModels 0.7 0.8-
+PowerModels 0.8 0.9-
 InfrastructureModels 0.0.4 0.2-
 CurveFit
 

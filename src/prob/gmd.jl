@@ -21,42 +21,45 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
     variable_dc_current_mag(pm)
     variable_qloss(pm)
 
-    PMs.variable_generation(pm) 
-    PowerModels.variable_active_branch_flow(pm)
-    PowerModels.variable_reactive_branch_flow(pm)
-   
+    PMs.variable_generation(pm)
+    PMs.variable_branch_flow(pm)
+
     variable_dc_line_flow(pm)
 
     objective_gmd_min_fuel(pm)
 
-   for (i,bus) in ref(pm,:bus)       
-       constraint_kcl_gmd(pm, i)
-   end
+    PMs.constraint_voltage(pm)
 
-   for (i,branch) in ref(pm,:branch)
+    for i in ids(pm, :ref_buses)
+        PMs.constraint_theta_ref(pm, i)
+    end
+
+    for i in ids(pm, :bus)
+        constraint_kcl_gmd(pm, i)
+    end
+
+    for i in ids(pm, :branch)
         debug(LOGGER, @sprintf "Adding constraints for branch %d\n" i)
         constraint_dc_current_mag(pm, i)
         constraint_qloss_constant_v(pm, i)
 
         PMs.constraint_ohms_yt_from(pm, i) 
         PMs.constraint_ohms_yt_to(pm, i) 
-      
-        
-        #Why do we have the thermal limits turned off?        
+
+        #Why do we have the thermal limits turned off?
         #PMs.constraint_thermal_limit_from(pm, i)
         #PMs.constraint_thermal_limit_to(pm, i)
-        PMs.constraint_voltage(pm) 
-        PMs.constraint_voltage_angle_difference(pm, i) 
-    end
- 
-    ### DC network constraints ###
-    for (i,bus) in ref(pm,:gmd_bus)
-      constraint_dc_kcl_shunt(pm, i)
+        PMs.constraint_voltage_angle_difference(pm, i)
     end
 
-    for (i,branch) in ref(pm,:gmd_branch)
+    ### DC network constraints ###
+    for i in ids(pm, :gmd_bus)
+        constraint_dc_kcl_shunt(pm, i)
+    end
+
+    for i in ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
-    end   
+    end
 end
 
 
