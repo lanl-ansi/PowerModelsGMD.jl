@@ -67,7 +67,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, c::Int, i, f_bu
     @constraint(pm.model, dc == gs*(vf + vs - vt))  
 end
 
-"Constraint for computing qloss assuming DC voltage is constant"
+"Constraint for computing qloss assuming ac primary voltage is constant"
 function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, V, branchMVA)
     i_dc_mag = var(pm, n, c, :i_dc_mag)[k]
     qloss = var(pm, n, c, :qloss)
@@ -77,7 +77,7 @@ function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, n::Int, c::Int
     @constraint(pm.model, qloss[(k,j,i)] == 0.0)
 end
 
-"Constraint for computing qloss assuming DC voltage is constant"
+"Constraint for computing qloss assuming ac primary voltage is constant"
 function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j)
     qloss = var(pm, n, c, :qloss)
 

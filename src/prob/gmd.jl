@@ -46,9 +46,8 @@ function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
         PMs.constraint_ohms_yt_from(pm, i) 
         PMs.constraint_ohms_yt_to(pm, i) 
 
-        #Why do we have the thermal limits turned off?
-        #PMs.constraint_thermal_limit_from(pm, i)
-        #PMs.constraint_thermal_limit_to(pm, i)
+        PMs.constraint_thermal_limit_from(pm, i)
+        PMs.constraint_thermal_limit_to(pm, i)
         PMs.constraint_voltage_angle_difference(pm, i)
     end
 
