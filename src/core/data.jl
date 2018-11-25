@@ -76,17 +76,17 @@ end
 gmd_not_pu = Set(["gmd_gs","gmd_e_field_mag"])
 gmd_not_rad = Set(["gmd_e_field_dir"])
 
-function make_gmd_per_unit!(data::Dict{AbstractString,Any})
+function make_gmd_per_unit(data::Dict{AbstractString,Any})
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
     if !haskey(data, "GMDperUnit") || data["GMDperUnit"] == false
-        make_gmd_per_unit!(data["baseMVA"], data)
+        make_gmd_per_unit(data["baseMVA"], data)
         data["GMDperUnit"] = true
     end
 end
 
-function make_gmd_per_unit!(mva_base::Number, data::Dict{AbstractString,Any})
+function make_gmd_per_unit(mva_base::Number, data::Dict{AbstractString,Any})
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
@@ -320,14 +320,14 @@ end
 # Functions for the decoupled gmd formulation
 "DC current on gwye-delta transformers"
 # calculate the current magnitude for each gmd branch
-function dc_current_mag_gwye_delta_xf!(branch, case, solution)
+function dc_current_mag_gwye_delta_xf(branch, case, solution)
     # find the corresponding gmd branch
     khi = branch["gmd_br_hi"]
     branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
 end
 
 "DC current on gwye-gwye transformers"
-function dc_current_mag_gwye_gwye_xf!(branch, case, solution)
+function dc_current_mag_gwye_gwye_xf(branch, case, solution)
     # find the corresponding gmd branch
     k = branch["index"]
     khi = branch["gmd_br_hi"]
@@ -346,7 +346,7 @@ function dc_current_mag_gwye_gwye_xf!(branch, case, solution)
 end
 
 "DC current on gwye-gwye auto transformers"
-function dc_current_mag_gwye_gwye_auto_xf!(branch, case, solution)
+function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
     # find the corresponding gmd branch:
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
@@ -367,13 +367,13 @@ end
 
 
 "DC current on normal lines"
-function dc_current_mag_line!(branch, case, solution)
+function dc_current_mag_line(branch, case, solution)
     branch["ieff"] = 0.0
 end
 
 
 "DC current on ungrounded transformers"
-function dc_current_mag_grounded_xf!(branch, case, solution)
+function dc_current_mag_grounded_xf(branch, case, solution)
     branch["ieff"] = 0.0
 end
 
@@ -381,27 +381,27 @@ end
 # correct equation is ieff = |a*ihi + ilo|/a
 # just use ihi for now
 "Constraint for computing the DC current magnitude"
-function dc_current_mag!(branch, case, solution)
+function dc_current_mag(branch, case, solution)
     branch["ieff"] = 0.0
 
     if branch["type"] != "xf"
-        dc_current_mag_line!(branch, case, solution)
+        dc_current_mag_line(branch, case, solution)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
         println("  Ungrounded config, ieff constrained to zero")
-        dc_current_mag_grounded_xf!(branch, case, solution)
+        dc_current_mag_grounded_xf(branch, case, solution)
     elseif branch["config"] in ["delta-gwye","gwye-delta"]
-        dc_current_mag_gwye_delta_xf!(branch, case, solution)
+        dc_current_mag_gwye_delta_xf(branch, case, solution)
     elseif branch["config"] == "gwye-gwye"
-        dc_current_mag_gwye_gwye_xf!(branch, case, solution)
+        dc_current_mag_gwye_gwye_xf(branch, case, solution)
     elseif branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto"
-        dc_current_mag_gwye_gwye_auto_xf!(branch, case, solution)
+        dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
     end
 end
 
 # Function to convert dc currents to be compatible with powerworld
 # conventions
 # TODO: do this also for ieff?
-function adjust_gmd_phasing!(dc_result)
+function adjust_gmd_phasing(dc_result)
     gmd_branches = dc_result["solution"]["gmd_branch"]
 
     for b in values(gmd_branches)
