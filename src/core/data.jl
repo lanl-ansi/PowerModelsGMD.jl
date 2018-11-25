@@ -316,3 +316,99 @@ end
 function calc_ac_mag_min(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return 0
 end
+
+# Functions for the decoupled gmd formulation
+"DC current on gwye-delta transformers"
+# calculate the current magnitude for each gmd branch
+function dc_current_mag_gwye_delta_xf!(branch, case, solution)
+    # find the corresponding gmd branch
+    khi = branch["gmd_br_hi"]
+    branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+end
+
+"DC current on gwye-gwye transformers"
+function dc_current_mag_gwye_gwye_xf!(branch, case, solution)
+    # find the corresponding gmd branch
+    k = branch["index"]
+    khi = branch["gmd_br_hi"]
+    klo = branch["gmd_br_lo"]
+    println("branch[$k]: hi_branch[$khi], lo_branch[$klo]")
+    ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+
+    jfr = branch["f_bus"]
+    jto = branch["t_bus"]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    a = vhi/vlo
+
+    branch["ieff"] = abs((a*ihi + ilo)/a)
+end
+
+"DC current on gwye-gwye auto transformers"
+function dc_current_mag_gwye_gwye_auto_xf!(branch, case, solution)
+    # find the corresponding gmd branch:
+    ks = branch["gmd_br_series"]
+    kc = branch["gmd_br_common"]
+    is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+    ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+
+    ihi = -is
+    ilo = ic + is
+
+    jfr = branch["f_bus"]
+    jto = branch["t_bus"]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    a = vhi/vlo
+
+    branch["ieff"] = abs((a*is + ic)/(a + 1.0))
+end
+
+
+"DC current on normal lines"
+function dc_current_mag_line!(branch, case, solution)
+    branch["ieff"] = 0.0
+end
+
+
+"DC current on ungrounded transformers"
+function dc_current_mag_grounded_xf!(branch, case, solution)
+    branch["ieff"] = 0.0
+end
+
+
+# correct equation is ieff = |a*ihi + ilo|/a
+# just use ihi for now
+"Constraint for computing the DC current magnitude"
+function dc_current_mag!(branch, case, solution)
+    branch["ieff"] = 0.0
+
+    if branch["type"] != "xf"
+        dc_current_mag_line!(branch, case, solution)
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        println("  Ungrounded config, ieff constrained to zero")
+        dc_current_mag_grounded_xf!(branch, case, solution)
+    elseif branch["config"] in ["delta-gwye","gwye-delta"]
+        dc_current_mag_gwye_delta_xf!(branch, case, solution)
+    elseif branch["config"] == "gwye-gwye"
+        dc_current_mag_gwye_gwye_xf!(branch, case, solution)
+    elseif branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto"
+        dc_current_mag_gwye_gwye_auto_xf!(branch, case, solution)
+    end
+end
+
+# Function to convert dc currents to be compatible with powerworld
+# conventions
+# TODO: do this also for ieff?
+function adjust_gmd_phasing!(dc_result)
+    gmd_branches = dc_result["solution"]["gmd_branch"]
+
+    for b in values(gmd_branches)
+        b["gmd_idc"] /= 3
+    end
+
+    return dc_result
+end
+
+
