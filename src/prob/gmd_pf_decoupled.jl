@@ -16,23 +16,37 @@ end
  
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
 function post_decoupled_gmd_pf(pm::GenericPowerModel, nominal_voltage; kwargs...)
-    PowerModels.variable_voltage(pm)
-    PowerModelsGMD.variable_qloss(pm)
+    # Todo: abbreviate PowerModels
+    PowerModels.variable_voltage(pm, bounded = false)
+    variable_qloss(pm)
 
-    PowerModels.variable_generation(pm)
-    PowerModels.variable_branch_flow(pm)
+    PowerModels.variable_generation(pm, bounded = false)
+    PowerModels.variable_branch_flow(pm, bounded = false)
+    # TODO: add dc line flow
+    # Powermodels.variable_dcline_flow(pm, bounded = false):w
 
-    # TODO: Why does this use a different objective function than regular acopf?
-    PowerModels.objective_min_fuel_cost(pm)
-
+    # What exactly does this do?
     PowerModels.constraint_voltage(pm)
 
     for k in ids(pm, :ref_buses)
+        @assert bus["bus_type"] == 3
         PowerModels.constraint_theta_ref(pm, k)
+        PowerModels.constraint_voltage_magnitude_setpoint(pm, k)
     end
 
     for k in ids(pm, :bus)
-        PowerModelsGMD.constraint_kcl_gmd(pm, k)
+        constraint_kcl_gmd(pm, k)
+
+        # PV Bus Constraints
+        if length(ref(pm, :bus_gens, k)) > 0 && !(k in ids(pm,:ref_buses))
+            # this assumes inactive generators are filtered out of bus_gens
+            @assert bus["bus_type"] == 2
+
+            PowerModels.constraint_voltage_magnitude_setpoint(pm, k)
+            for j in ref(pm, :bus_gens, k)
+                PowerModels.constraint_active_gen_setpoint(pm, j)
+            end
+        end
     end
 
     for k in ids(pm, :branch)
@@ -44,11 +58,24 @@ function post_decoupled_gmd_pf(pm::GenericPowerModel, nominal_voltage; kwargs...
 
         PowerModels.constraint_ohms_yt_from(pm, k) 
         PowerModels.constraint_ohms_yt_to(pm, k) 
-
-        PowerModels.constraint_thermal_limit_from(pm, k)
-        PowerModels.constraint_thermal_limit_to(pm, k)
-        PowerModels.constraint_voltage_angle_difference(pm, k)
     end
+
+    # Todo: add dclines
+    # for (i,dcline) in ref(pm, :dcline)
+    #     #constraint_dcline(pm, i) not needed, active power flow fully defined by dc line setpoints
+    #     constraint_active_dcline_setpoint(pm, i)
+
+    #     f_bus = ref(pm, :bus)[dcline["f_bus"]]
+    #     if f_bus["bus_type"] == 1
+    #         constraint_voltage_magnitude_setpoint(pm, f_bus["index"])
+    #     end
+
+    #     t_bus = ref(pm, :bus)[dcline["t_bus"]]
+    #     if t_bus["bus_type"] == 1
+    #         constraint_voltage_magnitude_setpoint(pm, t_bus["index"])
+    #     end
+    # end
+
 end
 
 "Run basic GMD with the nonlinear AC equations"
