@@ -1,5 +1,5 @@
 # Formulations of GMD Problems
-export run_gmd, run_ac_gmd
+export run_decoupled_gmd, run_ac_decoupled_gmd, run_decoupled_gmd_nominal_voltage, run_ac_decoupled_gmd_nominal_voltage
 
 
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
@@ -36,9 +36,6 @@ function post_decoupled_gmd(pm::GenericPowerModel, nominal_voltage; kwargs...)
     end
 
     for k in ids(pm, :branch)
-        println(@sprintf "Adding constraints for branch %d" k)
-        dc_current_mag!(ac_case["branch"]["$k"], ac_case, dc_solution)
-
         if nominal_voltage 
             constraint_nominal_voltage_qloss(pm, k)
         else
