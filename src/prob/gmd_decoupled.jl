@@ -1,5 +1,5 @@
 # Formulations of GMD Problems
-export run_decoupled_gmd, run_ac_decoupled_gmd, run_decoupled_gmd_nominal_voltage, run_ac_decoupled_gmd_nominal_voltage
+export run_decoupled_gmd, run_ac_decoupled_gmd, run_decoupled_gmd_nominal_voltage, run_ac_decoupled_gmd_nominal_voltage, run_decoupled_gmd_ac
 
 
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
@@ -71,5 +71,28 @@ function run_decoupled_gmd_nominal_voltage(file, model_constructor, solver; kwar
     return run_generic_model(file, model_constructor, solver, post_decoupled_gmd_nominal_voltage; solution_builder = get_decoupled_gmd_solution, kwargs...)
 end
 
+# change this to run_decoupled_gmd and rename others to run_decoupled_gmd_gic
+function run_decoupled_gmd_ac(dc_case, solver, settings; kwargs...)
+    # add logic to read file if needed
+    #dc_case = PowerModels.parse_file(file)
+    dc_result = PowerModelsGMD.run_gmd_gic(dc_case, solver; setting=settings)
+    dc_solution = dc_result["solution"]
+    make_gmd_mixed_units(dc_solution, 100.0)
+    ac_case = deepcopy(dc_case)
+
+    for (k,br) in ac_case["branch"]
+        dc_current_mag(br, ac_case, dc_solution)
+    end
+
+    ac_result = run_ac_decoupled_gmd(ac_case, solver, setting=settings)
+
+    data = Dict()
+    data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
+    data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
+
+    adjust_gmd_phasing(dc_result)
+    return data
+end
 
 
+     
