@@ -1,5 +1,5 @@
 # Formulations of GMD Problems
-export run_decoupled_gmd_pf, run_ac_pf_decoupled_gmd, run_decoupled_gmd_pf_nominal_voltage, run_ac_pf_decoupled_gmd_nominal_voltage, run_decoupled_gmd_ac_pf
+export run_decoupled_gmd_pf, run_decoupled_gmd_ac_pf, run_decoupled_gmd_pf_nominal_voltage, run_decoupled_gmd_ac_pf_nominal_voltage, run_decoupled_gmd_ac_pf_nominal_voltage, run_sequential_gmd_ac_pf
 
 
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
@@ -79,12 +79,12 @@ function post_decoupled_gmd_pf(pm::GenericPowerModel, nominal_voltage; kwargs...
 end
 
 "Run basic GMD with the nonlinear AC equations"
-function run_ac_decoupled_gmd_pf(file, solver; kwargs...)
+function run_decoupled_gmd_ac_pf(file, solver; kwargs...)
     return run_decoupled_gmd_pf(file, ACPPowerModel, solver; kwargs...)
 end
 
 "Run basic GMD with the nonlinear AC equations"
-function run_ac_decoupled_gmd_pf_nominal_voltage(file, solver; kwargs...)
+function run_decoupled_gmd_ac_pf_nominal_voltage(file, solver; kwargs...)
     return run_decoupled_gmd_pf_nominal_voltage(file, ACPPowerModel, solver; kwargs...)
 end
 
@@ -99,7 +99,7 @@ function run_decoupled_gmd_pf_nominal_voltage(file, model_constructor, solver; k
 end
 
 # change this to run_decoupled_gmd and rename others to run_decoupled_gmd_gic
-function run_decoupled_gmd_ac(dc_case, solver, settings; kwargs...)
+function run_sequential_gmd_ac_pf(dc_case, solver, settings; kwargs...)
     # add logic to read file if needed
     #dc_case = PowerModels.parse_file(file)
     dc_result = PowerModelsGMD.run_gmd_gic(dc_case, solver; setting=settings)

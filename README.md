@@ -10,6 +10,8 @@
 ### Todo: 
 * Add quasi-dynamic formulation which uses SSE with respect to the previous time step as opposed to the initial time step
 * Add Decoupled GIC + AC-OPF formulation where the AC-OPF is solved for after the GIC has been solved 
+* Add time-extended GIC + AC-OTS formulation
+* Add GIC + AC harmonic power flow formulation
 
 
 Extensions to PowerModels.jl for Geomagnetic Disturbance Studies.
@@ -28,10 +30,10 @@ Pkg.test("PowerModelsGMD")
 
 ## Quick Start
 <!-- check that the test datasets correspond to those used in the test cases -->
-GIC `run_gmd_gic("test/data/b4gic.m")`
-GIC + AC-OPF `run_gmd("test/data/b4gic.m")`
-GIC + AC-MLS `run_gmd_ls("test/data/b4gic.m")`
-GIC + AC-OTS `run_gmd_ots("test/data/b4gic.m")`
-GIC + AC-OTS `run_gmd_min_error("test/data/b4gic.m")`
+1. GIC `run_gmd_gic("test/data/b4gic.m")`
+2. GIC + AC-OPF `run_gmd("test/data/b4gic.m")`
+3. GIC + AC-MLS `run_gmd_ls("test/data/b4gic.m")`
+4. GIC + AC-OTS `run_gmd_ots("test/data/b4gic.m")`
+5. GIC + AC-OTS `run_gmd_min_error("test/data/b4gic.m")`
 
 

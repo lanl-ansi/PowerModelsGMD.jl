@@ -28,6 +28,7 @@ module PowerModelsGMD
     include("prob/gmd_gic.jl")
     include("prob/gmd.jl")
     include("prob/gmd_decoupled.jl")
+    include("prob/gmd_pf_decoupled.jl")
     include("prob/gmd_min_error.jl")
     include("prob/gmd_ls.jl")
     include("prob/gmd_ots.jl")    
