@@ -14,7 +14,7 @@ end
 
 
 " OPF objective"
-function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
+function objective_gic_min_fuel{T}(pm::GenericPowerModel{T})
     #@assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
 
     #i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
@@ -37,7 +37,7 @@ end
 
 
 " SSE objective: keep generators as close as possible to original setpoint"
-function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
+function objective_gic_min_error{T}(pm::GenericPowerModel{T})
     @assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
 
     #i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
@@ -78,7 +78,7 @@ end
 
 
 " Minimizes load shedding and fuel cost"
-function objective_gmd_min_ls{T}(pm::GenericPowerModel{T})
+function objective_gic_min_ls{T}(pm::GenericPowerModel{T})
     @assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
 
     #pg = Dict(n => pm.var[:nw][n][:pg] for n in nws)
@@ -104,7 +104,7 @@ end
 
 
 " Minimizes load shedding and fuel cost"
-function objective_gmd_min_ls_on_off{T}(pm::GenericPowerModel{T})
+function objective_gic_min_ls_on_off{T}(pm::GenericPowerModel{T})
     @assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
 
     #pg     = Dict(n => pm.var[:nw][n][:pg] for n in nws)

@@ -3,25 +3,25 @@
 # This corresponds to model C1
 # No longer treating generator transformers as resistance-less edges anymore
 
-export run_gmd_ots, run_ac_gmd_ots, run_qc_gmd_ots
+export run_gic_ots, run_ac_gic_ots, run_qc_gic_ots
 
 "Run the GMD mitigation with the nonlinear AC equations"
-function run_ac_gmd_ots(file, solver; kwargs...)
-    return run_gmd_ots(file, ACPPowerModel, solver; kwargs...)
+function run_ac_gic_ots(file, solver; kwargs...)
+    return run_gic_ots(file, ACPPowerModel, solver; kwargs...)
 end
 
 "Run the GMD mitigation with the QC AC equations"
-function run_qc_gmd_ots(file, solver; kwargs...)
-    return run_gmd_ots(file, QCWRTriPowerModel, solver; kwargs...)
+function run_qc_gic_ots(file, solver; kwargs...)
+    return run_gic_ots(file, QCWRTriPowerModel, solver; kwargs...)
 end
 
 "Minimize load shedding and fuel costs for GMD mitigation"
-function run_gmd_ots(file::AbstractString, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_gmd_ots; solution_builder = get_gmd_solution, kwargs...)
+function run_gic_ots(file::AbstractString, model_constructor, solver; kwargs...)
+    return run_generic_model(file, model_constructor, solver, post_gic_ots; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "GMD Model - Minimizes Generator Dispatch and Load Shedding"
-function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gic_ots{T}(pm::GenericPowerModel{T}; kwargs...)
 
     # AC modeling
     PMs.variable_voltage_on_off(pm) # theta_i and V_i, includes constraint 3o 
@@ -42,7 +42,7 @@ function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
     variable_dc_line_flow(pm;bounded=false) # I^d_e
 
     # Minimize load shedding and fuel cost 
-    objective_gmd_min_ls_on_off(pm) # variation of equation 3a
+    objective_gic_min_ls_on_off(pm) # variation of equation 3a
 
     PMs.constraint_voltage_on_off(pm) 
 
@@ -51,7 +51,7 @@ function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
     end
 
     for i in ids(pm, :bus)
-        constraint_kcl_shunt_gmd_ls(pm, i) # variation of 3b, 3c 
+        constraint_kcl_shunt_gic_ls(pm, i) # variation of 3b, 3c 
     end
     
     for i in ids(pm, :gen)

@@ -1,18 +1,18 @@
 # Formulations of GMD Problems
-export run_gmd_quasi_dynamic, run_ac_gmd_quasi_dynamic
+export run_gic_ots_ts, run_ac_gic_ots_ts
 
 "Run basic GMD with the nonlinear AC equations"
-function run_ac_gmd_quasi_dynamic(file, solver; kwargs...)
+function run_ac_gic_ots_ts(file, solver; kwargs...)
     return run_gmd(file, ACPPowerModel, solver; kwargs...)
 end
 
 "Run the basic GMD model"
-function run_gmd_quasi_dynamic(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...)
+function run_gic_ots_ts(file, model_constructor, solver; kwargs...)
+    return run_generic_model(file, model_constructor, solver, post_gic_opf; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "Basic GMD Model - Minimizes Generator Dispatch"
-function post_gmd_quasi_dynamic{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gic_ts{T}(pm::GenericPowerModel{T}; kwargs...)
 
     PMs.variable_voltage(pm)
 
@@ -35,7 +35,7 @@ function post_gmd_quasi_dynamic{T}(pm::GenericPowerModel{T}; kwargs...)
     end
 
     for i in ids(pm, :bus)
-        constraint_kcl_gmd(pm, i)
+        constraint_kcl_gic(pm, i)
     end
 
     for i in ids(pm, :branch)

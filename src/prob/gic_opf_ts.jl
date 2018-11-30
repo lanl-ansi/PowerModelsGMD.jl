@@ -1,19 +1,19 @@
 
 # Formulations of GMD Problems
-export run_gmd_quasic_dynamic_pf, run_ac_gmd_quasic_dynamic_pf
+export run_gic_opf_ts, run_ac_gic_opf_ts
 
 "Run basic GMD with the nonlinear AC equations"
-function run_ac_gmd_quasic_dynamic_pf(file, solver; kwargs...)
-    return run_gmd_quasic_dynamic_pf(file, ACPPowerModel, solver; kwargs...)
+function run_ac_gic_opf_ts(file, solver; kwargs...)
+    return run_gic_opf_ts(file, ACPPowerModel, solver; kwargs...)
 end
 
 "Run the basic GMD model"
-function run_gmd_quasic_dynamic_pf(file::AbstractString, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_gmd_quasic_dynamic_pf; solution_builder = get_gmd_solution, kwargs...)
+function run_gic_opf_ts(file::AbstractString, model_constructor, solver; kwargs...)
+    return run_generic_model(file, model_constructor, solver, post_gic_opf_ts; solution_builder = get_gmd_solution, kwargs...)
 end
 
-"Stub out quasi dynamic gmd"
-function post_gmd_quasic_dynamic_pf(pm::ACPPowerModel; kwargs...)
+"Stub out time-series gic problem"
+function post_gic_opf_ts(pm::ACPPowerModel; kwargs...)
     PMs.variable_voltage(pm)
     PMs.variable_generation(pm)
     PMs.variable_line_flow(pm)
