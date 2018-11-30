@@ -35,7 +35,7 @@ function post_gic_opf{T}(pm::GenericPowerModel{T}; kwargs...)
     end
 
     for i in ids(pm, :bus)
-        constraint_kcl_gmd(pm, i)
+        constraint_kcl_gic(pm, i)
     end
 
     for i in ids(pm, :branch)

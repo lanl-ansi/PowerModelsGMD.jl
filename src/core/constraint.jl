@@ -1,7 +1,7 @@
 ##### Templated Constraints #######
 
 "Constraint of kcl with shunts"
-function constraint_kcl_gmd{T}(pm::GenericPowerModel{T}, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
+function constraint_kcl_gic{T}(pm::GenericPowerModel{T}, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
     p = var(pm, n, c, :p)
     q = var(pm, n, c, :q)
     pg = var(pm, n, c, :pg)
@@ -68,7 +68,7 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, c::Int, i, f_bu
 end
 
 "Constraint for computing qloss assuming ac primary voltage is constant"
-function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, V, branchMVA)
+function constraint_qloss_vnom{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, V, branchMVA)
     i_dc_mag = var(pm, n, c, :i_dc_mag)[k]
     qloss = var(pm, n, c, :qloss)
 
@@ -78,7 +78,7 @@ function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, n::Int, c::Int
 end
 
 "Constraint for computing qloss assuming ac primary voltage is constant"
-function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j)
+function constraint_qloss_vnom{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j)
     qloss = var(pm, n, c, :qloss)
 
     @constraint(pm.model, qloss[(k,i,j)] == 0.0)

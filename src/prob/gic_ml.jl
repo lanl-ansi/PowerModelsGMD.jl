@@ -2,25 +2,25 @@
 # Reference - "Optimal Transmission Line Switching under Geomagnetic Disturbances", IEEE Transactions on Power Systems
 # This corresponds to model C4
 
-export run_gmd_ls, run_ac_gmd_ls, run_qc_gmd_ls
+export run_gic_ml, run_ac_gic_ml, run_qc_gic_ml
 
 "Run the GMD mitigation with the nonlinear AC equations"
-function run_ac_gmd_ls(file, solver; kwargs...)
-    return run_gmd_ls(file, ACPPowerModel, solver; kwargs...)
+function run_ac_gic_ml(file, solver; kwargs...)
+    return run_gic_ml(file, ACPPowerModel, solver; kwargs...)
 end
 
 "Run the GMD mitigation with the QC AC equations"
-function run_qc_gmd_ls(file, solver; kwargs...)
-    return run_gmd_ls(file, QCWRTriPowerModel, solver; kwargs...)
+function run_qc_gic_ml(file, solver; kwargs...)
+    return run_gic_ml(file, QCWRTriPowerModel, solver; kwargs...)
 end
 
 "Minimize load shedding and fuel costs for GMD mitigation"
-function run_gmd_ls(file::AbstractString, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_gmd_ls; solution_builder = get_gmd_solution, kwargs...)
+function run_gic_ml(file::AbstractString, model_constructor, solver; kwargs...)
+    return run_generic_model(file, model_constructor, solver, post_gic_ml; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "GMD Model - Minimizes Generator Dispatch and Load Shedding"
-function post_gmd_ls{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gic_ml{T}(pm::GenericPowerModel{T}; kwargs...)
 
     # AC modeling
     PMs.variable_voltage(pm) # theta_i and V_i, includes constraint 3o 
@@ -45,7 +45,7 @@ function post_gmd_ls{T}(pm::GenericPowerModel{T}; kwargs...)
     end
 
     for i in ids(pm, :bus)
-        constraint_kcl_shunt_gmd_ls(pm, i) # variation of 3b, 3c
+        constraint_kcl_shunt_gic(pm, i) # variation of 3b, 3c
     end
 
     for i in ids(pm, :branch)
