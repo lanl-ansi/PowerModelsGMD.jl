@@ -1,21 +1,23 @@
 # Formulations of GMD Problems
-export run_decoupled_gmd, run_ac_decoupled_gmd, run_decoupled_gmd_nominal_voltage, run_ac_decoupled_gmd_nominal_voltage, run_decoupled_gmd_ac
+export run_opf_qloss, run_opf_qloss_vnom
+export run_ac_opf_qloss, run_ac_opf_qloss_vnom
+export run_ac_gic_opf_decoupled
 
 
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_decoupled_gmd(pm::GenericPowerModel; kwargs...)
-    use_nominal_voltage = false
-    post_decoupled_gmd(pm::GenericPowerModel, use_nominal_voltage; kwargs...)
+function post_opf_qloss(pm::GenericPowerModel; kwargs...)
+    use_vnom = false
+    post_opf_qloss(pm::GenericPowerModel, use_vnom; kwargs...)
 end
  
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_decoupled_gmd_nominal_voltage(pm::GenericPowerModel; kwargs...)
-    use_nominal_voltage = true
-    post_decoupled_gmd(pm::GenericPowerModel, use_nominal_voltage; kwargs...)
+function post_opf_qloss_vnom(pm::GenericPowerModel; kwargs...)
+    use_vnom = true
+    post_opf_qloss(pm::GenericPowerModel, use_vnom; kwargs...)
 end
  
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_decoupled_gmd(pm::GenericPowerModel, nominal_voltage; kwargs...)
+function post_opf_qloss(pm::GenericPowerModel, vnom; kwargs...)
     PowerModels.variable_voltage(pm)
     PowerModelsGMD.variable_qloss(pm)
 
@@ -36,8 +38,8 @@ function post_decoupled_gmd(pm::GenericPowerModel, nominal_voltage; kwargs...)
     end
 
     for k in ids(pm, :branch)
-        if nominal_voltage 
-            constraint_nominal_voltage_qloss(pm, k)
+        if vnom 
+            constraint_vnom_qloss(pm, k)
         else
             constraint_qloss(pm, k)
         end
@@ -52,30 +54,29 @@ function post_decoupled_gmd(pm::GenericPowerModel, nominal_voltage; kwargs...)
 end
 
 "Run basic GMD with the nonlinear AC equations"
-function run_ac_decoupled_gmd(file, solver; kwargs...)
-    return run_decoupled_gmd(file, ACPPowerModel, solver; kwargs...)
+function run_ac_opf_qloss(file, solver; kwargs...)
+    return run_opf_qloss(file, ACPPowerModel, solver; kwargs...)
 end
 
 "Run basic GMD with the nonlinear AC equations"
-function run_ac_decoupled_gmd_nominal_voltage(file, solver; kwargs...)
-    return run_decoupled_gmd_nominal_voltage(file, ACPPowerModel, solver; kwargs...)
+function run_ac_opf_qloss_vnom(file, solver; kwargs...)
+    return run_opf_qloss_vnom(file, ACPPowerModel, solver; kwargs...)
 end
 
 "Run the basic GMD model"
-function run_decoupled_gmd(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_decoupled_gmd; solution_builder = get_decoupled_gmd_solution, kwargs...)
+function run_opf_qloss(file, model_constructor, solver; kwargs...)
+    return run_generic_model(file, model_constructor, solver, post_opf_qloss; solution_builder = get_opf_qloss_solution, kwargs...)
 end
 
 "Run the basic GMD model"
-function run_decoupled_gmd_nominal_voltage(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_decoupled_gmd_nominal_voltage; solution_builder = get_decoupled_gmd_solution, kwargs...)
+function run_opf_qloss_vnom(file, model_constructor, solver; kwargs...)
+    return run_generic_model(file, model_constructor, solver, post_opf_qloss; solution_builder = get_opf_qloss_solution, kwargs...)
 end
 
-# change this to run_decoupled_gmd and rename others to run_decoupled_gmd_gic
-function run_decoupled_gmd_ac(dc_case, solver, settings; kwargs...)
+function run_ac_gic_opf_decoupled(dc_case, solver, settings; kwargs...)
     # add logic to read file if needed
     #dc_case = PowerModels.parse_file(file)
-    dc_result = PowerModelsGMD.run_gmd_gic(dc_case, solver; setting=settings)
+    dc_result = PowerModelsGMD.run_gic(dc_case, solver; setting=settings)
     dc_solution = dc_result["solution"]
     make_gmd_mixed_units(dc_solution, 100.0)
     ac_case = deepcopy(dc_case)
@@ -84,7 +85,7 @@ function run_decoupled_gmd_ac(dc_case, solver, settings; kwargs...)
         dc_current_mag(br, ac_case, dc_solution)
     end
 
-    ac_result = run_ac_decoupled_gmd(ac_case, solver, setting=settings)
+    ac_result = run_ac_opf_qloss(ac_case, solver, setting=settings)
 
     data = Dict()
     data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)

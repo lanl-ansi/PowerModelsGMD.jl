@@ -1,6 +1,6 @@
 
 ""
-function get_gmd_solution{T}(pm::GenericPowerModel{T}, sol::Dict{String,Any})
+function get_opf_qloss_solution{T}(pm::GenericPowerModel{T}, sol::Dict{String,Any})
     PMs.add_bus_voltage_setpoint(sol, pm);
     PMs.add_generator_power_setpoint(sol, pm)
     PMs.add_branch_flow_setpoint(sol, pm)
