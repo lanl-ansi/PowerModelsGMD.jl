@@ -34,6 +34,7 @@ function post_opf_qloss(pm::GenericPowerModel, vnom; kwargs...)
     end
 
     for k in ids(pm, :bus)
+        # TODO: check that this constraint is correct to use
         PowerModelsGMD.constraint_kcl_gmd(pm, k)
     end
 
