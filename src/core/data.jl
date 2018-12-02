@@ -401,6 +401,7 @@ end
 # Function to convert dc currents to be compatible with powerworld
 # conventions
 # TODO: do this also for ieff?
+"Convert effective GIC to PowerWorld to-phase convention"
 function adjust_gmd_phasing(dc_result)
     gmd_branches = dc_result["solution"]["gmd_branch"]
 
@@ -411,4 +412,24 @@ function adjust_gmd_phasing(dc_result)
     return dc_result
 end
 
+
+# Thermal model functions
+# These are for a single time point and transformer...how to elegantly apply to multiples times/transformers??
+# what are the values for delta_re and ne
+""
+function steady_state_top_oil_temperature(p, q, delta_re, ne)
+    # check that this formula is correct, the p + q seems a bit sketchy
+    return delta_re*abs(p + q)^(2.9*ne)
+end
+    
+
+""
+function top_oil_temperature(delta_eu, delta_eu_prev, delta_e_prev, tau_oil)
+    return (delta_eu - delta_eu_prev)/(1 + tau_oil) + delta_e_prev*(1 - tau_oil)/(1 + tau_oil)
+end
+
+""
+function hotspot_temperature(Re, Ieff, Ieff_prev, nu_e_prev, tau_hs)
+    return (Ieff + Ieff_prev)/(1 + tau_oil) + nu_e_prev*(1 - tau_hs)/(1 + tau_hs)
+end
 
