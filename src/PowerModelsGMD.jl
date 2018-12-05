@@ -4,7 +4,6 @@ module PowerModelsGMD
     using JuMP
     using InfrastructureModels
     using PowerModels
-    using CurveFit
     using Memento
 
     const LOGGER = getlogger(PowerModels)

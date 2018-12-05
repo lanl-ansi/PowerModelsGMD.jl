@@ -139,6 +139,28 @@ function calc_branch_ibase{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd::
     return branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
 end
 
+"""
+Fits a polynomial of degree `n` through a set of points.
+Taken from CurveFit.jl by Paul Jabardo
+https://github.com/pjabardo/CurveFit.jl/blob/master/src/linfit.jl
+Simple algorithm, doesn't use orthogonal polynomials or any such thing 
+and therefore unconditioned matrices are possible. Use it only for low
+degree polynomials. 
+This function returns a the coefficients of the polynomial.
+"""
+function poly_fit(x, y, n)
+
+    nx = length(x)
+    A = zeros(eltype(x), nx, n+1)
+    A[:,1] .= 1.0
+    for i in 1:n
+        for k in 1:nx
+            A[k,i+1] = A[k,i] * x[k]
+        end
+    end
+    A\y
+end
+
 
 "Computes the thermal coeffieicents for a branch"
 function calc_branch_thermal_coeff{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
@@ -178,6 +200,9 @@ function calc_branch_thermal_coeff{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cn
     y = calc_ac_mag_max(pm, i, nw=nw) .* y0 # branch["ac_mag_max"] .* y0
     x = x0
 
+    println("x: $x") 
+    println("y: $y") 
+    println()
     fit = poly_fit(x, y, 2)
     fit = round.(fit.*1e+5)./1e+5
     return fit
