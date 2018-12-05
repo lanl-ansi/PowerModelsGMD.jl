@@ -200,9 +200,6 @@ function calc_branch_thermal_coeff{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cn
     y = calc_ac_mag_max(pm, i, nw=nw) .* y0 # branch["ac_mag_max"] .* y0
     x = x0
 
-    println("x: $x") 
-    println("y: $y") 
-    println()
     fit = poly_fit(x, y, 2)
     fit = round.(fit.*1e+5)./1e+5
     return fit
