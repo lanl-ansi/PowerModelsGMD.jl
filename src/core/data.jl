@@ -122,8 +122,8 @@ function calc_dc_mag_max(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.c
     branch = ref(pm, nw, :branch, i)
 
     ac_max = -Inf
-    for i in ids(pm, nw, :branch)
-        ac_max = max(calc_ac_mag_max(pm, i, nw=nw), ac_max)
+    for l in ids(pm, nw, :branch)
+        ac_max = max(calc_ac_mag_max(pm, l, nw=nw), ac_max)
     end
     ibase = calc_branch_ibase(pm, i, nw=nw)
     #println(i , " ", 2 * ac_max * ibase, " ", ibase, " ", ac_max)
