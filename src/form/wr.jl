@@ -24,9 +24,9 @@ function variable_ac_current(pm::GenericPowerModel{T}; kwargs...) where T <: Pow
    nw = pm.cnw
    cnd = pm.ccnd
 
-   parallel_branch = filter((i, branch) -> ref(pm, nw, :buspairs)[(branch["f_bus"], branch["t_bus"])]["branch"] != i, ref(pm, nw, :branch))
-   cm_min = Dict([(l, 0) for l in keys(parallel_branch)])
-   cm_max = Dict([(l, (branch["rate_a"]*branch["tap"]/ref(pm, nw, :bus)[branch["f_bus"]]["vmin"])^2) for (l, branch) in parallel_branch])
+   parallel_branch = Dict(x for x in ref(pm, nw, :branch) if ref(pm, nw, :buspairs)[(x.second["f_bus"], x.second["t_bus"])]["branch"] != x.first)
+   cm_min = Dict((l, 0) for l in keys(parallel_branch))
+   cm_max = Dict((l, (branch["rate_a"]*branch["tap"]/ref(pm, nw, :bus)[branch["f_bus"]]["vmin"])^2) for (l, branch) in parallel_branch)
 
    var(pm, nw, cnd)[:cm_p] = @variable(pm.model,
         [l in keys(parallel_branch)], basename="$(nw)_$(cnd)_cm_p",
