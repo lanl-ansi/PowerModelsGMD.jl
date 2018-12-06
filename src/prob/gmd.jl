@@ -12,7 +12,7 @@ function run_gmd(file, model_constructor, solver; kwargs...)
 end
 
 "Basic GMD Model - Minimizes Generator Dispatch"
-function post_gmd{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gmd(pm::GenericPowerModel; kwargs...)
 
     PMs.variable_voltage(pm)
 
