@@ -32,9 +32,10 @@ setting = Dict{AbstractString,Any}("output" => Dict{AbstractString,Any}("branch_
 
 @testset "PowerModelsGMD" begin
 
-include("gmd.jl")
-#include("gmd_ls.jl")
-include("gmd_gic.jl")
+include("gic.jl")
+#include("gic_pf_decoupled.jl")
+#include("gic_opf_decoupled.jl")
+#include("gmd_opf.jl")
 #include("gmd_ots.jl")
 
 end
