@@ -1,6 +1,6 @@
 @testset "test ac data" begin
     @testset "4-bus case ac opf" begin
-        result = run_ac_gic_opf("../test/data/b4gic.m", ipopt_solver)
+        result = run_ac_opf("../test/data/b4gic.m", ipopt_solver)
         println("Testing objective $(result["objective"]) within 116914 +/- 1e2")
         
         @test result["status"] == :LocalOptimal
@@ -8,7 +8,7 @@
     end
 
     @testset "6-bus case ac opf" begin
-        result = run_ac_gic_opf("../test/data/b6gic_nerc.m", ipopt_solver)
+        result = run_ac_opf("../test/data/b6gic_nerc.m", ipopt_solver)
         println("Testing objective $(result["objective"]) within 980 +/- 1e0")
                 
         @test result["status"] == :LocalOptimal
@@ -16,7 +16,7 @@
     end
 
     @testset "19-bus case ac opf" begin
-        result = run_ac_gic_opf("../test/data/epri21.m", ipopt_solver)
+        result = run_ac_opf("../test/data/epri21.m", ipopt_solver)
         println("Testing objective $(result["objective"]) within 401802 +/- 1e2")
 
         @test result["status"] == :LocalOptimal
@@ -24,7 +24,7 @@
     end
 
     @testset "150-bus case ac opf" begin
-        result = run_ac_gic_opf("../test/data/uiuc150.m", ipopt_solver)
+        result = run_ac_opf("../test/data/uiuc150.m", ipopt_solver)
         println("Testing objective $(result["objective"]) within 893768 +/- 1e2")
 
         @test result["status"] == :LocalOptimal
@@ -35,7 +35,7 @@ end
 
 
 
-@testset "test ac gmd" begin
+@testset "test ac gic + gmd" begin
     @testset "4-bus case solution" begin
         result = run_ac_gic_opf("../test/data/b4gic.m", ipopt_solver)
         println("Testing objective $(result["objective"]) within 1.398e5 +/- 1e2")

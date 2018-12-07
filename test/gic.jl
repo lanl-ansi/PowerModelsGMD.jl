@@ -1,4 +1,4 @@
-@testset "test gic gmd" begin
+@testset "test gic" begin
     @testset "4-bus case solution" begin
         result = run_gic("../test/data/b4gic.m", ipopt_solver)
 
