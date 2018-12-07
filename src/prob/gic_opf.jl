@@ -26,7 +26,7 @@ function post_gic_opf{T}(pm::GenericPowerModel{T}; kwargs...)
 
     variable_dc_line_flow(pm)
 
-    objective_gmd_min_fuel(pm)
+    objective_gic_min_fuel(pm)
 
     PMs.constraint_voltage(pm)
 
@@ -41,7 +41,7 @@ function post_gic_opf{T}(pm::GenericPowerModel{T}; kwargs...)
     for i in ids(pm, :branch)
         debug(LOGGER, @sprintf "Adding constraints for branch %d\n" i)
         constraint_dc_current_mag(pm, i)
-        constraint_qloss_constant_v(pm, i)
+        constraint_qloss_vnom(pm, i)
 
         PMs.constraint_ohms_yt_from(pm, i) 
         PMs.constraint_ohms_yt_to(pm, i) 

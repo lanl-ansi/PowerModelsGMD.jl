@@ -1,5 +1,5 @@
 "KCL Constraint without load shedding and no shunts"
-function constraint_kcl_gmd(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_kcl_gic(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     bus = ref(pm, nw, :bus, i)
     bus_arcs = ref(pm, nw, :bus_arcs, i)
     bus_arcs_dc = ref(pm, nw, :bus_arcs_dc, i)
@@ -9,12 +9,12 @@ function constraint_kcl_gmd(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::
     bus_pd = Dict(k => ref(pm, nw, :load, k, "pd", cnd) for k in bus_loads)
     bus_qd = Dict(k => ref(pm, nw, :load, k, "qd", cnd) for k in bus_loads)
 
-    constraint_kcl_gmd(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
+    constraint_kcl_gic(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
 end
 
 
 "KCL Constraint with load shedding"
-function constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_kcl_shunt_gic_ls(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     bus = ref(pm, nw, :bus, i)
     bus_arcs = ref(pm, nw, :bus_arcs, i)
     bus_arcs_dc = ref(pm, nw, :bus_arcs_dc, i)
@@ -28,7 +28,7 @@ function constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel, i::Int; nw::Int=pm.c
     bus_gs = Dict(k => ref(pm, nw, :shunt, k, "gs", cnd) for k in bus_shunts)
     bus_bs = Dict(k => ref(pm, nw, :shunt, k, "bs", cnd) for k in bus_shunts)
 
-    constraint_kcl_shunt_gmd_ls(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+    constraint_kcl_shunt_gic_ls(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 end
 
 
@@ -143,7 +143,7 @@ end
 
 
 "Constraint for computing qloss assuming DC voltage is constant"
-function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_qloss_vnom{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = ref(pm, nw, :branch, k)
 
     i = branch["hi_bus"]
@@ -156,9 +156,9 @@ function constraint_qloss_constant_v{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.
     if "gmd_k" in keys(branch)
         ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
         K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
-        constraint_qloss_constant_v(pm, nw, cnd, k, i, j, K, V, branchMVA)
+        constraint_qloss_vnom(pm, nw, cnd, k, i, j, K, V, branchMVA)
     else
-       constraint_qloss_constant_v(pm, nw, cnd, k, i, j)
+       constraint_qloss_vnom(pm, nw, cnd, k, i, j)
     end
 end
 
