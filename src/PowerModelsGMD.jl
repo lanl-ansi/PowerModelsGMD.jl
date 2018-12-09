@@ -32,7 +32,7 @@ module PowerModelsGMD
     #include("prob/gic_opf_ts.jl")
     #include("prob/gic_opf_ts_decoupled.jl")
     #include("prob/gic_msse_decoupled.jl")
-    #include("prob/gic_ml.jl")
+    include("prob/gic_ml.jl")
     #include("prob/gic_ots.jl")    
     #include("prob/gic_ots_ts.jl")
 end

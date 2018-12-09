@@ -31,7 +31,7 @@ sum(p[a] for a in bus_arcs)  == sum(pg[g] for g in bus_gens) - pd - gs*v^2 + pd_
 sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_ls - qloss
 ```
 """
-function constraint_kcl_shunt_gmd_ls(pm::GenericPowerModel{T}, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs) where T <: PowerModels.AbstractACPForm
+function constraint_kcl_shunt_gic_ls(pm::GenericPowerModel{T}, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs) where T <: PowerModels.AbstractACPForm
     vm = var(pm, n, c, :vm)[i]
     p = var(pm, n, c, :p)
     q = var(pm, n, c, :q)
@@ -72,7 +72,7 @@ function constraint_thermal_protection(pm::GenericPowerModel{T}, n::Int, c::Int,
 end
 
 "Constraint for computing qloss"
-function constraint_qloss(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, branchMVA) where T <: PowerModels.AbstractACPForm
+function constraint_qloss_vnom(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, branchMVA) where T <: PowerModels.AbstractACPForm
     qloss = var(pm, n, c, :qloss)
     i_dc_mag = var(pm, n, c, :i_dc_mag)[k]
     vm = var(pm, n, c, :vm)[i]
@@ -87,7 +87,7 @@ function constraint_qloss(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, 
 end
 
 "Constraint for computing qloss"
-function constraint_qloss(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j) where T <: PowerModels.AbstractACPForm
+function constraint_qloss_vnom(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j) where T <: PowerModels.AbstractACPForm
     qloss = var(pm, n, c, :qloss)
     @constraint(pm.model, qloss[(k,i,j)] == 0.0)
     @constraint(pm.model, qloss[(k,j,i)] == 0.0)

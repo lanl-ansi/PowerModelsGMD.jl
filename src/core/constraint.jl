@@ -189,16 +189,6 @@ function constraint_qloss(pm, n::Int, c::Int, k, i, j, ih, K, ieff, branchMVA)
 end
 
 
-"Constraint for computing qloss assuming 1.0 pu ac voltage"
-function constraint_nominal_voltage_qloss(pm, n::Int, c::Int, k, i, j, K, ieff, branchMVA)
-    qloss = var(pm, n, c, :qloss)
-
-    # K is per phase
-    @constraint(pm.model, qloss[(k,i,j)] == K*ieff/(3.0*branchMVA))
-    @constraint(pm.model, qloss[(k,j,i)] == 0.0)
-end
-
-
 "Constraint for computing qloss"
 function constraint_zero_qloss(pm::GenericPowerModel, n::Int, c::Int, k, i, j)
     qloss = var(pm, n, c, :qloss)

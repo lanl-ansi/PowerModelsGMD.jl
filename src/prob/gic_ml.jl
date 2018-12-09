@@ -36,7 +36,7 @@ function post_gic_ml{T}(pm::GenericPowerModel{T}; kwargs...)
     variable_dc_line_flow(pm) # I^d_e - This is the actual dc current on lines in the DC network
 
     # Minimize load shedding and fuel cost 
-    objective_gmd_min_ls(pm) # variation of equation 3a
+    objective_gic_min_ls(pm) # variation of equation 3a
 
     PMs.constraint_voltage(pm) # Make this on/off
 
@@ -45,12 +45,12 @@ function post_gic_ml{T}(pm::GenericPowerModel{T}; kwargs...)
     end
 
     for i in ids(pm, :bus)
-        constraint_kcl_shunt_gic(pm, i) # variation of 3b, 3c
+        constraint_kcl_shunt_gic_ls(pm, i) # variation of 3b, 3c
     end
 
     for i in ids(pm, :branch)
         constraint_dc_current_mag(pm, i) # constraints 3u
-        constraint_qloss(pm, i) # individual terms of righthand side of constraints 3x
+        constraint_qloss_vnom(pm, i) # individual terms of righthand side of constraints 3x
         constraint_thermal_protection(pm, i) # constraints 3w
         constraint_current(pm, i) # constraints 3k and 3l
 
