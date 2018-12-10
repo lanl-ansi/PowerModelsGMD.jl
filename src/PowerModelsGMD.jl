@@ -1,10 +1,12 @@
-isdefined(Base, :__precompile__) && __precompile__()
-
 module PowerModelsGMD
     using JuMP
     using InfrastructureModels
     using PowerModels
     using Memento
+
+    if VERSION > v"0.7.0-"
+        using Printf
+    end
 
     const LOGGER = getlogger(PowerModels)
 

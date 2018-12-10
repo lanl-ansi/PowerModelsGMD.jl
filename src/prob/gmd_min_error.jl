@@ -12,7 +12,7 @@ function run_gmd_min_error(file::AbstractString, model_constructor, solver; kwar
 end
 
 "GMD Model - This model minimizes distance from a specified set point"
-function post_gmd_min_error{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gmd_min_error(pm::GenericPowerModel; kwargs...)
     PMs.variable_voltage(pm)
 
     variable_dc_voltage(pm)

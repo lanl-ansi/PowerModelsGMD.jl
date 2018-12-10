@@ -1,5 +1,6 @@
 using Ipopt
 #using Gurobi
+using InfrastructureModels
 using PowerModels
 #using CPLEX
 using PowerModelsGMD
@@ -12,7 +13,16 @@ using Memento
 setlevel!(getlogger(InfrastructureModels), "error")
 setlevel!(getlogger(PowerModels), "error")
 
-using Base.Test
+
+
+if VERSION < v"0.7.0-"
+    using Base.Test
+end
+
+if VERSION > v"0.7.0-"
+    using Test
+end
+
 
 cbc_solver = CbcSolver()
 

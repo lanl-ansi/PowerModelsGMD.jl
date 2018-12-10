@@ -37,8 +37,9 @@ function build_gmd_ref(pm::GenericPowerModel)
     for (n,nw_data) in nws_data
         nw_id = parse(Int, n)
         ref = nws[nw_id]
-        
-        ref[:gmd_branch] = filter((i, gmd_branch) -> check_gmd_branch_parent_status(ref, i, gmd_branch), ref[:gmd_branch])
+
+        ref[:gmd_branch] = Dict(x for x in ref[:gmd_branch] if check_gmd_branch_parent_status(ref, x.first, x.second))
+
 
         ref[:gmd_arcs_from] = [(i,branch["f_bus"],branch["t_bus"]) for (i,branch) in ref[:gmd_branch]]
         ref[:gmd_arcs_to]   = [(i,branch["t_bus"],branch["f_bus"]) for (i,branch) in ref[:gmd_branch]]

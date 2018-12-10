@@ -21,7 +21,7 @@ function run_gmd_ots(file::AbstractString, model_constructor, solver; kwargs...)
 end
 
 "GMD Model - Minimizes Generator Dispatch and Load Shedding"
-function post_gmd_ots{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gmd_ots(pm::GenericPowerModel; kwargs...)
 
     # AC modeling
     PMs.variable_voltage_on_off(pm) # theta_i and V_i, includes constraint 3o 

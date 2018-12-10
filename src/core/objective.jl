@@ -1,5 +1,5 @@
 "Computes a load shed cost"
-function calc_load_shed_cost{T}(pm::GenericPowerModel{T})
+function calc_load_shed_cost(pm::GenericPowerModel)
     max_cost = 0
     for (n, nw_ref) in nws(pm)
         for (i,gen) in nw_ref[:gen]
@@ -14,7 +14,7 @@ end
 
 
 " OPF objective"
-function objective_gmd_min_fuel{T}(pm::GenericPowerModel{T})
+function objective_gmd_min_fuel(pm::GenericPowerModel)
     #@assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
 
     #i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
@@ -37,7 +37,7 @@ end
 
 
 " SSE objective: keep generators as close as possible to original setpoint"
-function objective_gmd_min_error{T}(pm::GenericPowerModel{T})
+function objective_gmd_min_error(pm::GenericPowerModel)
     @assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
 
     #i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
@@ -78,7 +78,7 @@ end
 
 
 " Minimizes load shedding and fuel cost"
-function objective_gmd_min_ls{T}(pm::GenericPowerModel{T})
+function objective_gmd_min_ls(pm::GenericPowerModel)
     @assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
 
     #pg = Dict(n => pm.var[:nw][n][:pg] for n in nws)
@@ -104,7 +104,7 @@ end
 
 
 " Minimizes load shedding and fuel cost"
-function objective_gmd_min_ls_on_off{T}(pm::GenericPowerModel{T})
+function objective_gmd_min_ls_on_off(pm::GenericPowerModel)
     @assert all(!PMs.ismulticonductor(pm) for n in nws(pm))
 
     #pg     = Dict(n => pm.var[:nw][n][:pg] for n in nws)
