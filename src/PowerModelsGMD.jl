@@ -27,7 +27,7 @@ module PowerModelsGMD
 
     include("prob/gic.jl")
     include("prob/gic_opf.jl")
-    #include("prob/gic_opf_decoupled.jl")
+    include("prob/gic_opf_decoupled.jl")
     #include("prob/gic_pf_decoupled.jl")
     #include("prob/gic_opf_ts.jl")
     #include("prob/gic_opf_ts_decoupled.jl")

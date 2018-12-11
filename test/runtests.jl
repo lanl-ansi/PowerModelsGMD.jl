@@ -34,7 +34,7 @@ setting = Dict{AbstractString,Any}("output" => Dict{AbstractString,Any}("branch_
 
 include("gic.jl")
 #include("gic_pf_decoupled.jl")
-#include("gic_opf_decoupled.jl")
+include("gic_opf_decoupled.jl")
 ##include("gic_opf.jl")
 include("gic_ml.jl")
 #include("gic_ots.jl")

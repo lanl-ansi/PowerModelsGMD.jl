@@ -74,10 +74,18 @@ function run_opf_qloss_vnom(file, model_constructor, solver; kwargs...)
     return run_generic_model(file, model_constructor, solver, post_opf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
-function run_ac_gic_opf_decoupled(dc_case, solver, settings; kwargs...)
+
+""
+function run_ac_gic_opf_decoupled(file::String, solver;  kwargs...)
+    data = PowerModels.parse_file(file)
+    return run_ac_gic_opf_decoupled(data, solver; kwargs...)
+end
+
+"Run GIC followed by AC OPF with Qloss constraints"
+function run_ac_gic_opf_decoupled(dc_case::Dict{String,Any}, solver; kwargs...)
     # add logic to read file if needed
     #dc_case = PowerModels.parse_file(file)
-    dc_result = PowerModelsGMD.run_gic(dc_case, solver; setting=settings)
+    dc_result = PowerModelsGMD.run_gic(dc_case, solver)
     dc_solution = dc_result["solution"]
     make_gmd_mixed_units(dc_solution, 100.0)
     ac_case = deepcopy(dc_case)
