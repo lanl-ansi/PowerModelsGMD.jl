@@ -37,115 +37,128 @@ end
 
 @testset "test ac gic + gmd decoupled" begin
     @testset "4-bus case solution" begin
-        result = run_ac_gic_opf_decoupled("../test/data/b4gic.m", ipopt_solver)["ac"]["result"]
-        println("Testing objective $(result["objective"]) within 1.398e5 +/- 1e2")
-
-        @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 1.398e5; atol = 1e2)
+        ac_result = run_ac_gic_opf_decoupled("../test/data/b4gic.m", ipopt_solver)["ac"]["result"]
+        @test ac_result["status"] == :LocalOptimal
+        println("Testing objective $(ac_result["objective"]) within tolerance")
+        @test isapprox(ac_result["objective"], 1.398e5; atol = 1e2)
     end
 
     @testset "4-bus case" begin
         casename = "../test/data/b4gic.m"                
         case = PowerModels.parse_file(casename)
         
-        result = run_ac_gic_opf_decoupled(casename, ipopt_solver; setting=setting)["ac"]["result"]
-        println("Testing objective $(result["objective"]) within 1.398e5 +/- 1e2")
+        settings = Dict{AbstractString,Any}("output" => Dict{AbstractString,Any}("branch_flows" => true))
+        output = run_ac_gic_opf_decoupled(casename, ipopt_solver; setting=settings)
 
-        @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 1.398e5; atol = 1e2)
+        outfile = "/home/abarnes/repos/gic/data/decoupled_gmd_results.json"
+        f = open(outfile, "w")
+        JSON.print(f, output)
+        close(f)
 
-        solution = result["solution"]
-        make_gmd_mixed_units(solution, 100.0)
-        adjust_gmd_qloss(case, solution)
 
-        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32, atol=0.1)       
-        @test isapprox(solution["bus"]["1"]["vm"], 0.933660, atol=1e-3)
-        @test isapprox(solution["branch"]["3"]["pf"], -1007.680670, atol=1e-3)
-        @test isapprox(solution["branch"]["3"]["qf"], -434.504704, atol=1e-3)          
+        ac_result = output["ac"]["result"]
+        println("Testing objective $(ac_result["objective"]) within 1.398e5 +/- 1e2")
+
+        @test ac_result["status"] == :LocalOptimal
+        @test isapprox(ac_result["objective"], 1.398e5; atol = 1e2)
+
+        dc_solution = output["dc"]["result"]["solution"]
+        ac_solution = output["ac"]["result"]["solution"]
+
+        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -32, atol=0.1)       
+        @test isapprox(ac_solution["bus"]["1"]["vm"], 0.933660, atol=1e-3)
+        @test isapprox(ac_solution["branch"]["3"]["pf"], -1007.680670, atol=1e-3)
+        @test isapprox(ac_solution["branch"]["3"]["qf"], -434.504704, atol=1e-3)          
     end
 
     @testset "6-bus case" begin
         casename = "../test/data/b6gic_nerc.m"
-        result = run_ac_gic_opf_decoupled(casename, ipopt_solver; setting=setting)["ac"]["result"]
-        println("Testing objective $(result["objective"]) within 11832.5 +/- 1e3")
+        output = run_ac_gic_opf_decoupled(casename, ipopt_solver; setting=setting)
+        ac_result = output["ac"]["result"]
+        println("Testing objective $(ac_result["objective"]) within 11832.5 +/- 1e3")
 
         case = PowerModels.parse_file(casename)
                 
-        @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 11832.5; atol = 1e3)
+        @test ac_result["status"] == :LocalOptimal
+        @test isapprox(ac_result["objective"], 11832.5; atol = 1e3)
           
-        solution = result["solution"]
-        make_gmd_mixed_units(solution, 100.0)
-        adjust_gmd_qloss(case, solution)
+        dc_solution = output["dc"]["result"]["solution"]
+        ac_solution = output["ac"]["result"]["solution"]
+        #make_gmd_mixed_units(dc_solution, 100.0)
+        make_gmd_mixed_units(ac_solution, 100.0)
+        adjust_gmd_qloss(case, ac_solution)
 
 #        println(solution["bus"]["2"]["vm"])
         
-        @test isapprox(solution["gmd_bus"]["5"]["gmd_vdc"], -23.022192, atol=1e-1)
-        @test isapprox(solution["bus"]["2"]["vm"], 0.92784494, atol=1e-2)
+        @test isapprox(dc_solution["gmd_bus"]["5"]["gmd_vdc"], -23.022192, atol=1e-1)
+        @test isapprox(ac_solution["bus"]["2"]["vm"], 0.92784494, atol=1e-2)
         # check that kcl with qloss is being done correctly
         # br23
-        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
-        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
+        @test isapprox(ac_solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
+        @test isapprox(ac_solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
         # T2 gwye-gwye auto
-        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
-        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
+        @test isapprox(ac_solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
+        @test isapprox(ac_solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
         # br45
-        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
-        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
-        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
-        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
+        @test isapprox(ac_solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
+        @test isapprox(ac_solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
+        @test isapprox(ac_solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
+        @test isapprox(ac_solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
         
         # check that kcl with qloss is being done correctly
         # br23
-        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
-        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
+        @test isapprox(ac_solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
+        @test isapprox(ac_solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
         # T2 gwye-gwye auto
-        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
-        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
+        @test isapprox(ac_solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
+        @test isapprox(ac_solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
         # br45
-        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
-        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
-        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
-        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
+        @test isapprox(ac_solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
+        @test isapprox(ac_solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
+        @test isapprox(ac_solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
+        @test isapprox(ac_solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
     end
 
     @testset "19-bus case" begin
         casename = "../test/data/epri21.m"
-        result = run_ac_gic_opf_decoupled(casename, ipopt_solver)["ac"]["result"]
-        println("Testing objective $(result["objective"]) within 4.99564e5 +/- 1e4")
+        output = run_ac_gic_opf_decoupled(casename, ipopt_solver)
+        ac_result = output["ac"]["result"]
+        println("Testing objective $(ac_result["objective"]) within 4.99564e5 +/- 1e4")
 
-        @test result["status"] == :LocalOptimal
+        @test ac_result["status"] == :LocalOptimal
+
+        dc_solution = output["dc"]["result"]["solution"]
 
         # result before PowerModels v0.8
-        #@test isapprox(result["objective"], 5.08585e5; atol = 1e4) 
-        #@test isapprox(solution["gmd_bus"]["14"]["gmd_vdc"],  44.31, atol=1e-1)
-        #@test isapprox(solution["gmd_bus"]["23"]["gmd_vdc"], -41.01, atol=1e-1)
+        #@test isapprox(ac_result["objective"], 5.08585e5; atol = 1e4) 
+        #@test isapprox(dc_solution["gmd_bus"]["14"]["gmd_vdc"],  44.31, atol=1e-1)
+        #@test isapprox(dc_solution["gmd_bus"]["23"]["gmd_vdc"], -41.01, atol=1e-1)
 
         # after computing a diff on the generated JuMP models from v0.7 and v0.8
         # only coeffents in constraint_ohms_yt_from and constraint_ohms_yt_to changed slightly
         # most likely ipopt was getting stuck in a local min previously
-        @test isapprox(result["objective"], 4.99564e5; atol = 1e4)
+        @test isapprox(ac_result["objective"], 4.99564e5; atol = 1e4)
 
-        solution = result["solution"]
-        make_gmd_mixed_units(solution, 100.0)
+        make_gmd_mixed_units(dc_solution, 100.0)
         # adjust_gmd_qloss(case, solution)
-        @test isapprox(solution["gmd_bus"]["14"]["gmd_vdc"],  44.26, atol=1e-1)
-        @test isapprox(solution["gmd_bus"]["23"]["gmd_vdc"], -40.95, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["14"]["gmd_vdc"],  44.26, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["23"]["gmd_vdc"], -40.95, atol=1e-1)
     end
 
     @testset "150-bus case" begin
         casename = "../test/data/uiuc150.m"
-        result = run_ac_gic_opf_decoupled(casename, ipopt_solver)["ac"]["result"]
-        println("Testing objective $(result["objective"]) within 9.52847e5 +/- 1e5")
+        output = run_ac_gic_opf_decoupled(casename, ipopt_solver)
+        ac_result = output["ac"]["result"]
+        println("Testing objective $(ac_result["objective"]) within 9.52847e5 +/- 1e5")
 
-        @test result["status"] == :LocalOptimal
-        @test isapprox(result["objective"], 9.52847e5; atol = 1e5)
+        @test ac_result["status"] == :LocalOptimal
+        @test isapprox(ac_result["objective"], 9.52847e5; atol = 1e5)
 
-        solution = result["solution"]
-        make_gmd_mixed_units(solution, 100.0)
+        dc_solution = output["dc"]["result"]["solution"]
+        make_gmd_mixed_units(dc_solution, 100.0)
 
-        @test isapprox(solution["gmd_bus"]["190"]["gmd_vdc"], 7.00, atol=1e-1)
-        @test isapprox(solution["gmd_bus"]["197"]["gmd_vdc"], -32.74, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["190"]["gmd_vdc"], 7.00, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["197"]["gmd_vdc"], -32.74, atol=1e-1)
     end
 end
 

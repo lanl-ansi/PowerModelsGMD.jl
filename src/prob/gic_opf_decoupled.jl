@@ -35,7 +35,7 @@ function post_opf_qloss(pm::GenericPowerModel, vnom; kwargs...)
 
     for k in ids(pm, :bus)
         # TODO: check that this constraint is correct to use
-        PowerModelsGMD.constraint_kcl_gmd(pm, k)
+        PowerModelsGMD.constraint_kcl_gic(pm, k)
     end
 
     for k in ids(pm, :branch)
@@ -71,18 +71,21 @@ end
 
 "Run the basic GMD model"
 function run_opf_qloss_vnom(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_opf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
+    return run_generic_model(file, model_constructor, solver, post_opf_qloss_vnom; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
 
 ""
-function run_ac_gic_opf_decoupled(file::String, solver;  kwargs...)
+function run_ac_gic_opf_decoupled(file::String, solver;  setting=Dict(), kwargs...)
     data = PowerModels.parse_file(file)
     return run_ac_gic_opf_decoupled(data, solver; kwargs...)
 end
 
 "Run GIC followed by AC OPF with Qloss constraints"
-function run_ac_gic_opf_decoupled(dc_case::Dict{String,Any}, solver; kwargs...)
+function run_ac_gic_opf_decoupled(dc_case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
+    branch_setting = Dict{AbstractString,Any}("output" => Dict{AbstractString,Any}("branch_flows" => true))
+    merge!(setting, branch_setting)
+
     # add logic to read file if needed
     #dc_case = PowerModels.parse_file(file)
     dc_result = PowerModelsGMD.run_gic(dc_case, solver)
@@ -94,7 +97,13 @@ function run_ac_gic_opf_decoupled(dc_case::Dict{String,Any}, solver; kwargs...)
         dc_current_mag(br, ac_case, dc_solution)
     end
 
-    ac_result = run_ac_opf_qloss(ac_case, solver, setting=settings)
+    println("run_ac_opf settings:")
+    println(setting)
+    ac_result = run_ac_opf_qloss(ac_case, solver, setting=setting)
+    ac_solution = ac_result["solution"]
+    make_gmd_mixed_units(ac_solution, 100.0)
+    adjust_gmd_qloss(ac_case, ac_solution)
+  
 
     data = Dict()
     data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
