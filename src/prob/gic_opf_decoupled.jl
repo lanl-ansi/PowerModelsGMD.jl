@@ -97,10 +97,11 @@ function run_ac_gic_opf_decoupled(dc_case::Dict{String,Any}, solver; setting=Dic
         dc_current_mag(br, ac_case, dc_solution)
     end
 
-    println("Running ac opf with voltage-dependent qloss")
-    ac_result = run_ac_opf_qloss(ac_case, solver, setting=setting)
-    #println("Running ac opf with voltage-independent qloss")
-    #ac_result = run_ac_opf_qloss_vnom(ac_case, solver, setting=setting)
+    #println("Running ac opf with voltage-dependent qloss")
+    #ac_result = run_ac_opf_qloss(ac_case, solver, setting=setting)
+
+    println("Running ac opf with voltage-independent qloss")
+    ac_result = run_ac_opf_qloss_vnom(ac_case, solver, setting=setting)
     ac_solution = ac_result["solution"]
     make_gmd_mixed_units(ac_solution, 100.0)
     adjust_gmd_qloss(ac_case, ac_solution)

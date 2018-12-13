@@ -1,33 +1,33 @@
 @testset "test ac data" begin
     @testset "4-bus case ac opf" begin
         result = run_ac_opf("../test/data/b4gic.m", ipopt_solver)
-        println("Testing objective $(result["objective"]) within 116914 +/- 1e2")
         
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 116914; atol = 1e2)
     end
 
     @testset "6-bus case ac opf" begin
         result = run_ac_opf("../test/data/b6gic_nerc.m", ipopt_solver)
-        println("Testing objective $(result["objective"]) within 980 +/- 1e0")
                 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 980; atol = 1e0)
     end
 
     @testset "19-bus case ac opf" begin
         result = run_ac_opf("../test/data/epri21.m", ipopt_solver)
-        println("Testing objective $(result["objective"]) within 401802 +/- 1e2")
 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 401802; atol = 1e2)
     end
 
     @testset "150-bus case ac opf" begin
         result = run_ac_opf("../test/data/uiuc150.m", ipopt_solver)
-        println("Testing objective $(result["objective"]) within 893768 +/- 1e2")
 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 893768; atol = 1e2)
     end
 end
@@ -38,9 +38,9 @@ end
 @testset "test ac gic + gmd" begin
     @testset "4-bus case solution" begin
         result = run_ac_gic_opf("../test/data/b4gic.m", ipopt_solver)
-        println("Testing objective $(result["objective"]) within 1.398e5 +/- 1e2")
 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
     end
 
@@ -49,9 +49,9 @@ end
         case = PowerModels.parse_file(casename)
         
         result = run_ac_gic_opf(casename, ipopt_solver; setting=setting)
-        println("Testing objective $(result["objective"]) within 1.398e5 +/- 1e2")
 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
 
         solution = result["solution"]
@@ -67,11 +67,11 @@ end
     @testset "6-bus case" begin
         casename = "../test/data/b6gic_nerc.m"
         result = run_ac_gic_opf(casename, ipopt_solver; setting=setting)
-        println("Testing objective $(result["objective"]) within 11832.5 +/- 1e3")
 
         case = PowerModels.parse_file(casename)
                 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 11832.5; atol = 1e3)
           
         solution = result["solution"]
@@ -112,11 +112,11 @@ end
     @testset "19-bus case" begin
         casename = "../test/data/epri21.m"
         result = run_ac_gic_opf(casename, ipopt_solver)
-        println("Testing objective $(result["objective"]) within 4.99564e5 +/- 1e4")
 
         @test result["status"] == :LocalOptimal
 
         # result before PowerModels v0.8
+        println("Testing objective $(result["objective"]) within tolerance")
         #@test isapprox(result["objective"], 5.08585e5; atol = 1e4) 
         #@test isapprox(solution["gmd_bus"]["14"]["gmd_vdc"],  44.31, atol=1e-1)
         #@test isapprox(solution["gmd_bus"]["23"]["gmd_vdc"], -41.01, atol=1e-1)
@@ -136,9 +136,9 @@ end
     @testset "150-bus case" begin
         casename = "../test/data/uiuc150.m"
         result = run_ac_gic_opf(casename, ipopt_solver)
-        println("Testing objective $(result["objective"]) within 9.52847e5 +/- 1e5")
 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 9.52847e5; atol = 1e5)
 
         solution = result["solution"]

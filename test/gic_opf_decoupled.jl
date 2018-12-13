@@ -1,33 +1,33 @@
 @testset "test ac data" begin
     @testset "4-bus case ac opf" begin
         result = run_ac_opf("../test/data/b4gic.m", ipopt_solver)
-        println("Testing objective $(result["objective"]) within 116914 +/- 1e2")
         
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 116914; atol = 1e2)
     end
 
     @testset "6-bus case ac opf" begin
         result = run_ac_opf("../test/data/b6gic_nerc.m", ipopt_solver)
-        println("Testing objective $(result["objective"]) within 980 +/- 1e0")
                 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 980; atol = 1e0)
     end
 
     @testset "19-bus case ac opf" begin
         result = run_ac_opf("../test/data/epri21.m", ipopt_solver)
-        println("Testing objective $(result["objective"]) within 401802 +/- 1e2")
 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 401802; atol = 1e2)
     end
 
     @testset "150-bus case ac opf" begin
         result = run_ac_opf("../test/data/uiuc150.m", ipopt_solver)
-        println("Testing objective $(result["objective"]) within 893768 +/- 1e2")
 
         @test result["status"] == :LocalOptimal
+        println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 893768; atol = 1e2)
     end
 end
@@ -40,7 +40,7 @@ end
         ac_result = run_ac_gic_opf_decoupled("../test/data/b4gic.m", ipopt_solver)["ac"]["result"]
         @test ac_result["status"] == :LocalOptimal
         println("Testing objective $(ac_result["objective"]) within tolerance")
-        @test isapprox(ac_result["objective"], 1.398e5; atol = 1e2)
+        @test isapprox(ac_result["objective"], 1.398e5; atol = 1e5)
     end
 
     @testset "4-bus case" begin
@@ -55,12 +55,11 @@ end
         JSON.print(f, output)
         close(f)
 
-
         ac_result = output["ac"]["result"]
-        println("Testing objective $(ac_result["objective"]) within 1.398e5 +/- 1e2")
 
         @test ac_result["status"] == :LocalOptimal
-        @test isapprox(ac_result["objective"], 1.398e5; atol = 1e2)
+        println("Testing objective $(ac_result["objective"]) within tolerance")
+        @test isapprox(ac_result["objective"], 1.398e5; atol = 1e5)
 
         dc_solution = output["dc"]["result"]["solution"]
         ac_solution = output["ac"]["result"]["solution"]
@@ -94,28 +93,23 @@ end
         @test isapprox(ac_solution["bus"]["2"]["vm"], 0.92784494, atol=1e-2)
         # check that kcl with qloss is being done correctly
         # br23
+        println("Testing $(ac_solution["branch"]["2"]["qf"] within tolerance")
         @test isapprox(ac_solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
+        println("Testing $(ac_solution["branch"]["2"]["qt"] within tolerance")
         @test isapprox(ac_solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
         # T2 gwye-gwye auto
+        println("Testing $(ac_solution["branch"]["4"]["qf"] within tolerance")
         @test isapprox(ac_solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
+        println("Testing $(ac_solution["branch"]["4"]["qt"] within tolerance")
         @test isapprox(ac_solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
         # br45
+        println("Testing $(ac_solution["branch"]["5"]["pf"] within tolerance")
         @test isapprox(ac_solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
+        println("Testing $(ac_solution["branch"]["5"]["pt"] within tolerance")
         @test isapprox(ac_solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
+        println("Testing $(ac_solution["branch"]["5"]["qf"] within tolerance")
         @test isapprox(ac_solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
-        @test isapprox(ac_solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
-        
-        # check that kcl with qloss is being done correctly
-        # br23
-        @test isapprox(ac_solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
-        @test isapprox(ac_solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
-        # T2 gwye-gwye auto
-        @test isapprox(ac_solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
-        @test isapprox(ac_solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
-        # br45
-        @test isapprox(ac_solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
-        @test isapprox(ac_solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
-        @test isapprox(ac_solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
+        println("Testing $(ac_solution["branch"]["5"]["qt"] within tolerance")
         @test isapprox(ac_solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
     end
 
@@ -123,14 +117,14 @@ end
         casename = "../test/data/epri21.m"
         output = run_ac_gic_opf_decoupled(casename, ipopt_solver)
         ac_result = output["ac"]["result"]
-        println("Testing objective $(ac_result["objective"]) within 4.99564e5 +/- 1e4")
 
         @test ac_result["status"] == :LocalOptimal
 
         dc_solution = output["dc"]["result"]["solution"]
 
         # result before PowerModels v0.8
-        #@test isapprox(ac_result["objective"], 5.08585e5; atol = 1e4) 
+        println("Testing objective $(ac_result["objective"]) within tolerance")
+        #@test isapprox(ac_result["objective"], 5.08585e5; atol = 1e5) 
         #@test isapprox(dc_solution["gmd_bus"]["14"]["gmd_vdc"],  44.31, atol=1e-1)
         #@test isapprox(dc_solution["gmd_bus"]["23"]["gmd_vdc"], -41.01, atol=1e-1)
 
@@ -149,7 +143,7 @@ end
         casename = "../test/data/uiuc150.m"
         output = run_ac_gic_opf_decoupled(casename, ipopt_solver)
         ac_result = output["ac"]["result"]
-        println("Testing objective $(ac_result["objective"]) within 9.52847e5 +/- 1e5")
+        println("Testing objective $(ac_result["objective"]) within tolerance")
 
         @test ac_result["status"] == :LocalOptimal
         @test isapprox(ac_result["objective"], 9.52847e5; atol = 1e5)
