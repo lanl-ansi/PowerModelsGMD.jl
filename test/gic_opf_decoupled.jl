@@ -93,24 +93,24 @@ end
         @test isapprox(ac_solution["bus"]["2"]["vm"], 0.92784494, atol=1e-2)
         # check that kcl with qloss is being done correctly
         # br23
-        println("Testing $(ac_solution["branch"]["2"]["qf"] within tolerance")
-        @test isapprox(ac_solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
-        println("Testing $(ac_solution["branch"]["2"]["qt"] within tolerance")
-        @test isapprox(ac_solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
+        println("Testing $(ac_solution["branch"]["2"]["qf"]) within tolerance")
+        @test isapprox(ac_solution["branch"]["2"]["qf"], -3647.8387, atol=5e2)
+        println("Testing $(ac_solution["branch"]["2"]["qt"]) within tolerance")
+        @test isapprox(ac_solution["branch"]["2"]["qt"], 4908.99781, atol=5e2)
         # T2 gwye-gwye auto
-        println("Testing $(ac_solution["branch"]["4"]["qf"] within tolerance")
-        @test isapprox(ac_solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
-        println("Testing $(ac_solution["branch"]["4"]["qt"] within tolerance")
-        @test isapprox(ac_solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
+        println("Testing $(ac_solution["branch"]["4"]["qf"]) within tolerance")
+        @test isapprox(ac_solution["branch"]["4"]["qf"], -3640.2340, atol=5e2)
+        println("Testing $(ac_solution["branch"]["4"]["qt"]) within tolerance")
+        @test isapprox(ac_solution["branch"]["4"]["qt"], 36478.3871, atol=5e2)
         # br45
-        println("Testing $(ac_solution["branch"]["5"]["pf"] within tolerance")
-        @test isapprox(ac_solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
-        println("Testing $(ac_solution["branch"]["5"]["pt"] within tolerance")
-        @test isapprox(ac_solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
-        println("Testing $(ac_solution["branch"]["5"]["qf"] within tolerance")
-        @test isapprox(ac_solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
-        println("Testing $(ac_solution["branch"]["5"]["qt"] within tolerance")
-        @test isapprox(ac_solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
+        println("Testing $(ac_solution["branch"]["5"]["pf"]) within tolerance")
+        @test isapprox(ac_solution["branch"]["5"]["pf"], -10040.386, atol=5e2)
+        println("Testing $(ac_solution["branch"]["5"]["pt"]) within tolerance")
+        @test isapprox(ac_solution["branch"]["5"]["pt"], 10064.8681, atol=5e2)
+        println("Testing $(ac_solution["branch"]["5"]["qf"]) within tolerance")
+        @test isapprox(ac_solution["branch"]["5"]["qf"], -4908.9978, atol=5e2)
+        println("Testing $(ac_solution["branch"]["5"]["qt"]) within tolerance")
+        @test isapprox(ac_solution["branch"]["5"]["qt"], 4868.00005, atol=5e2)
     end
 
     @testset "19-bus case" begin
