@@ -40,9 +40,9 @@ function post_opf_qloss(pm::GenericPowerModel, vnom; kwargs...)
 
     for k in ids(pm, :branch)
         if vnom 
-            constraint_qloss_vnom(pm, k)
+            constraint_qloss_decoupled_vnom(pm, k)
         else
-            constraint_qloss(pm, k)
+            constraint_qloss_decoupled(pm, k)
         end
 
         PowerModels.constraint_ohms_yt_from(pm, k) 
@@ -97,9 +97,10 @@ function run_ac_gic_opf_decoupled(dc_case::Dict{String,Any}, solver; setting=Dic
         dc_current_mag(br, ac_case, dc_solution)
     end
 
-    println("run_ac_opf settings:")
-    println(setting)
-    ac_result = run_ac_opf_qloss_vnom(ac_case, solver, setting=setting)
+    println("Running ac opf with voltage-dependent qloss")
+    ac_result = run_ac_opf_qloss(ac_case, solver, setting=setting)
+    #println("Running ac opf with voltage-independent qloss")
+    #ac_result = run_ac_opf_qloss_vnom(ac_case, solver, setting=setting)
     ac_solution = ac_result["solution"]
     make_gmd_mixed_units(ac_solution, 100.0)
     adjust_gmd_qloss(ac_case, ac_solution)

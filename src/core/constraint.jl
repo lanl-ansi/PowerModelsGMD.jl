@@ -180,7 +180,7 @@ constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.cnw, cnd::I
 # This is what is called for each branch
 # constraint_qloss(pm, n, c, k, i, j, K, ieff, branchMVA)
 "Constraint for computing qloss accounting for ac voltage"
-function constraint_qloss(pm, n::Int, c::Int, k, i, j, ih, K, ieff, branchMVA)
+function constraint_qloss_decoupled(pm, n::Int, c::Int, k, i, j, ih, K, ieff, branchMVA)
     qloss = var(pm, n, c, :qloss)
     v = var(pm, n, c, :vm)[ih] # ih is the index of the high-side bus
 
@@ -191,7 +191,7 @@ end
 
 
 "Constraint for computing qloss assuming 1.0 pu ac voltage"
-function constraint_qloss_vnom(pm, n::Int, c::Int, k, i, j, K, ieff, branchMVA)
+function constraint_qloss_decoupled_vnom(pm, n::Int, c::Int, k, i, j, K, ieff, branchMVA)
     qloss = var(pm, n, c, :qloss)
 
     # K is per phase
@@ -208,9 +208,28 @@ function constraint_zero_qloss(pm::GenericPowerModel, n::Int, c::Int, k, i, j)
     @constraint(pm.model, qloss[(k,j,i)] == 0.0)
 end
 
+"Constraint for computing qloss assuming varying ac voltage"
+function constraint_qloss_vnom(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    branch = ref(pm, nw, :branch, k)
+
+    i = branch["hi_bus"]
+    j = branch["lo_bus"]
+
+    bus = ref(pm, nw, :bus, i)
+    branchMVA = branch["baseMVA"]
+
+    if "gmd_k" in keys(branch)
+        ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+        K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
+        constraint_qloss_vnom(pm, nw, cnd, k, i, j, K, branchMVA)
+    else
+       constraint_zero_qloss(pm, nw, cnd, k, i, j)
+    end
+end
+
 
 "Constraint for computing qloss assuming varying ac voltage"
-function constraint_qloss(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_qloss_decoupled(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = ref(pm, nw, :branch, k)
 
     i = branch["hi_bus"]
@@ -224,7 +243,7 @@ function constraint_qloss(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.
         K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
         ieff = branch["ieff"]
         ih = branch["hi_bus"]
-        constraint_qloss(pm, nw, cnd, k, i, j, ih, K, ieff, branchMVA)
+        constraint_qloss_decoupled(pm, nw, cnd, k, i, j, ih, K, ieff, branchMVA)
     else
        constraint_zero_qloss(pm, nw, cnd, k, i, j)
     end
@@ -232,7 +251,7 @@ end
 
 
 "Constraint for computing qloss assuming ac voltage is 1.0 pu"
-function constraint_qloss_vnom(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_qloss_decoupled_vnom(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = ref(pm, nw, :branch, k)
 
     i = branch["hi_bus"]
@@ -245,7 +264,7 @@ function constraint_qloss_vnom(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::In
         ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
         K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
         ieff = branch["ieff"]
-        constraint_qloss_vnom(pm, nw, cnd, k, i, j, K, ieff, branchMVA)
+        constraint_qloss_decoupled_vnom(pm, nw, cnd, k, i, j, K, ieff, branchMVA)
     else
        constraint_zero_qloss(pm, nw, cnd, k, i, j)
     end
