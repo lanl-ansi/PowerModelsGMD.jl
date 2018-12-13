@@ -40,7 +40,7 @@ function post_opf_qloss(pm::GenericPowerModel, vnom; kwargs...)
 
     for k in ids(pm, :branch)
         if vnom 
-            constraint_vnom_qloss(pm, k)
+            constraint_qloss_vnom(pm, k)
         else
             constraint_qloss(pm, k)
         end
@@ -99,7 +99,7 @@ function run_ac_gic_opf_decoupled(dc_case::Dict{String,Any}, solver; setting=Dic
 
     println("run_ac_opf settings:")
     println(setting)
-    ac_result = run_ac_opf_qloss(ac_case, solver, setting=setting)
+    ac_result = run_ac_opf_qloss_vnom(ac_case, solver, setting=setting)
     ac_solution = ac_result["solution"]
     make_gmd_mixed_units(ac_solution, 100.0)
     adjust_gmd_qloss(ac_case, ac_solution)

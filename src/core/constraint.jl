@@ -68,22 +68,23 @@ function constraint_dc_ohms{T}(pm::GenericPowerModel{T}, n::Int, c::Int, i, f_bu
 end
 
 "Constraint for computing qloss assuming ac primary voltage is constant"
-function constraint_qloss_vnom{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, V, branchMVA)
+function constraint_qloss_vnom{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, branchMVA)
     i_dc_mag = var(pm, n, c, :i_dc_mag)[k]
     qloss = var(pm, n, c, :qloss)
 
     # K is per phase
-    @constraint(pm.model, qloss[(k,i,j)] == K*V*i_dc_mag/(3.0*branchMVA))
+    # Assume that V = 1.0 pu
+    @constraint(pm.model, qloss[(k,i,j)] == K*i_dc_mag/(3.0*branchMVA))
     @constraint(pm.model, qloss[(k,j,i)] == 0.0)
 end
 
-"Constraint for computing qloss assuming ac primary voltage is constant"
-function constraint_qloss_vnom{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j)
-    qloss = var(pm, n, c, :qloss)
-
-    @constraint(pm.model, qloss[(k,i,j)] == 0.0)
-    @constraint(pm.model, qloss[(k,j,i)] == 0.0)
-end
+#"Constraint for computing qloss assuming ac primary voltage is constant"
+#function constraint_qloss_vnom{T}(pm::GenericPowerModel{T}, n::Int, c::Int, k, i, j)
+#    qloss = var(pm, n, c, :qloss)
+#
+#    @constraint(pm.model, qloss[(k,i,j)] == 0.0)
+#    @constraint(pm.model, qloss[(k,j,i)] == 0.0)
+#end
 
 "Constraint for turning generators on and off"
 function constraint_gen_on_off{T}(pm::GenericPowerModel{T}, n::Int, c::Int, i, pmin, pmax, qmin, qmax)
@@ -189,6 +190,16 @@ function constraint_qloss(pm, n::Int, c::Int, k, i, j, ih, K, ieff, branchMVA)
 end
 
 
+"Constraint for computing qloss assuming 1.0 pu ac voltage"
+function constraint_qloss_vnom(pm, n::Int, c::Int, k, i, j, K, ieff, branchMVA)
+    qloss = var(pm, n, c, :qloss)
+
+    # K is per phase
+    @constraint(pm.model, qloss[(k,i,j)] == K*ieff/(3.0*branchMVA))
+    @constraint(pm.model, qloss[(k,j,i)] == 0.0)
+end
+
+
 "Constraint for computing qloss"
 function constraint_zero_qloss(pm::GenericPowerModel, n::Int, c::Int, k, i, j)
     qloss = var(pm, n, c, :qloss)
@@ -196,6 +207,7 @@ function constraint_zero_qloss(pm::GenericPowerModel, n::Int, c::Int, k, i, j)
     @constraint(pm.model, qloss[(k,i,j)] == 0.0)
     @constraint(pm.model, qloss[(k,j,i)] == 0.0)
 end
+
 
 "Constraint for computing qloss assuming varying ac voltage"
 function constraint_qloss(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
@@ -220,7 +232,7 @@ end
 
 
 "Constraint for computing qloss assuming ac voltage is 1.0 pu"
-function constraint_nominal_voltage_qloss(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_qloss_vnom(pm::GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = ref(pm, nw, :branch, k)
 
     i = branch["hi_bus"]
@@ -233,7 +245,7 @@ function constraint_nominal_voltage_qloss(pm::GenericPowerModel, k; nw::Int=pm.c
         ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
         K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
         ieff = branch["ieff"]
-        constraint_nominal_voltage_qloss(pm, nw, cnd, k, i, j, K, ieff, branchMVA)
+        constraint_qloss_vnom(pm, nw, cnd, k, i, j, K, ieff, branchMVA)
     else
        constraint_zero_qloss(pm, nw, cnd, k, i, j)
     end
