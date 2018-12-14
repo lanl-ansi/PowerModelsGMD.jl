@@ -59,5 +59,5 @@ end
 function add_bus_qloss_setpoint(sol, pm::GenericPowerModel)
     mva_base = pm.data["baseMVA"]
     # mva_base = 1.0
-    PMs.add_setpoint(sol, pm, "branch", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["hi_bus"], item["lo_bus"])], scale = (x,item) -> x*mva_base)
+    PMs.add_setpoint(sol, pm, "branch", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["hi_bus"], item["lo_bus"])], scale = (x,item,i) -> x*mva_base)
 end
