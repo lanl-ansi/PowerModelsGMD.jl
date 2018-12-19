@@ -13,17 +13,12 @@ end
 
 "Basic GMD Model - Minimizes Generator Dispatch"
 function post_gic_opf{T}(pm::GenericPowerModel{T}; kwargs...)
-
     PMs.variable_voltage(pm)
-
     variable_dc_voltage(pm)
-
     variable_dc_current_mag(pm)
     variable_qloss(pm)
-
     PMs.variable_generation(pm)
     PMs.variable_branch_flow(pm)
-
     variable_dc_line_flow(pm)
 
     objective_gic_min_fuel(pm)
