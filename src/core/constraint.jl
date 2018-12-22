@@ -172,6 +172,8 @@ function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, n::Int, c::Int, 
         @constraint(pm.model, ieff[k] >= 0.0)
     end
 end
+
+
 constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag(pm, nw, cnd, k)
 
 

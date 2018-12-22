@@ -8,11 +8,13 @@ end
 
 "Run the basic GMD model"
 function run_gic_opf(file, model_constructor, solver; kwargs...)
+    println("Calling run_generic_model")
     return run_generic_model(file, model_constructor, solver, post_gic_opf; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "Basic GMD Model - Minimizes Generator Dispatch"
 function post_gic_opf{T}(pm::GenericPowerModel{T}; kwargs...)
+    println("Starting post_gic_opf")
     PMs.variable_voltage(pm)
     variable_dc_voltage(pm)
     variable_dc_current_mag(pm)
