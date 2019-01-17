@@ -300,3 +300,52 @@ function constraint_dc_current_mag_on_off{T}(pm::GenericPowerModel{T}, k; nw::In
     constraint_dc_current_mag_on_off(pm, nw, cnd, k, dc_max)
 end
 
+### Thermal Constraints ###
+
+""
+function constraint_temperature_thermal_limit(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    temperature = ref(pm, nw, :storage, i)
+    constraint_temperature_thermal_limit(pm, nw, cnd, i, temperature["thermal_rating"][cnd])
+end
+
+""
+function constraint_temperature_current_limit(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    temperature = ref(pm, nw, :storage, i)
+    constraint_temperature_current_limit(pm, nw, cnd, i, temperature["storage_bus"], storage["current_rating"][cnd])
+end
+
+""
+function constraint_temperature_exchange(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    temperature = ref(pm, nw, :storage, i)
+
+    constraint_temperature_complementarity(pm, nw, i)
+    constraint_temperature_loss(pm, nw, i, temperature["storage_bus"], temperature["r"][cnd], temperature["x"][cnd], temperature["standby_loss"])
+end
+
+""
+function constraint_temperature_state(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw)
+    temperature = ref(pm, nw, :storage, i)
+
+    if haskey(pm.data, "time_elapsed")
+        time_elapsed = pm.data["time_elapsed"]
+    else
+        warn("network data should specify time_elapsed, using 1.0 as a default")
+        time_elapsed = 1.0
+    end
+
+    constraint_temperature_state_initial(pm, nw, i, temperature["energy"], temperature["charge_efficiency"], temperature["discharge_efficiency"], time_elapsed)
+end
+
+""
+function constraint_temperature_state(pm::GenericPowerModel, i::Int, nw_1::Int, nw_2::Int)
+    temperature = ref(pm, nw_2, :storage, i)
+
+    if haskey(pm.data, "time_elapsed")
+        time_elapsed = pm.data["time_elapsed"]
+    else
+        warn("network data should specify time_elapsed, using 1.0 as a default")
+        time_elapsed = 1.0
+    end
+
+    constraint_temperature_state(pm, nw_1, nw_2, i, temperature["charge_efficiency"], temperature["discharge_efficiency"], time_elapsed)
+e

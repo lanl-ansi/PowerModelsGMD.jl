@@ -1,4 +1,4 @@
-export make_gmd_mixed_units, adjust_gmd_qloss
+export make_gmd_mixed_units, adjust_gmd_qloss, top_oil_rise, hotspot_rise, update_top_oil_rise, update_hotspot_rise
 
 function calculate_qloss(branch, case, solution)
     @assert !InfrastructureModels.ismultinetwork(case)
@@ -439,19 +439,80 @@ end
 # These are for a single time point and transformer...how to elegantly apply to multiples times/transformers??
 # what are the values for delta_re and ne
 ""
-function steady_state_top_oil_temperature(p, q, delta_re, ne)
-    # check that this formula is correct, the p + q seems a bit sketchy
-    return delta_re*abs(p + q)^(2.9*ne)
+function ss_top_oil_rise(branch, result; delta_rated=75)
+    if !branch["transformer"]
+        return 0
+    end
+        
+    i = branch["index"]
+    bs = result["solution"]["branch"]["$i"]
+    S = sqrt(bs["pf"]^2 + bs["qf"]^2)
+    K = S/branch["rate_a"] # calculate the loading
+
+    @printf "S: %0.3f, Smax: %0.3f\n" S branch["rate_a"]
+    # this assumes that no-load transformer losses are very small
+    # 75 = top oil temp rise at rated power
+    # 30 = ambient temperature
+    return delta_rated*K^2
 end
-    
+
+   
 
 ""
-function top_oil_temperature(delta_eu, delta_eu_prev, delta_e_prev, tau_oil)
-    return (delta_eu - delta_eu_prev)/(1 + tau_oil) + delta_e_prev*(1 - tau_oil)/(1 + tau_oil)
+# tau_oil = 71 mins
+function top_oil_rise(branch, result; tau_oil=4260, Delta_t=10)
+    delta_oil_ss = ss_top_oil_rise(branch, result)
+    delta_oil = delta_oil_ss # if we are at 1st iteration then assume starts from steady-state
+
+    if ("delta_oil" in keys(branch) && "delta_oil_ss" in keys(branch))
+        println("Updating oil temperature")
+        delta_oil_prev = branch["delta_oil"]
+        delta_oil_ss_prev = branch["delta_oil_ss"] 
+
+
+        # trapezoidal integration
+        tau = 2*tau_oil/Delta_t
+        delta_oil = (delta_oil_ss + delta_oil_ss_prev)/(1 + tau) - delta_oil_prev*(1 - tau)/(1 + tau)
+    else
+        println("Setting initial oil temperature")
+    end
+
+   branch["delta_oil_ss"] = delta_oil_ss 
+   branch["delta_oil"] = delta_oil
+end
+
+
+""
+# for the time-extension mitigation problem 
+# Re comes from Randy Horton's report, transformer model E on p. 52
+function hotspot_rise(branch, result, Ie_prev; tau_hs=150, Delta_t=10, Re=0.63)
+    delta_hs = 0
+    Ie = branch["ieff"]
+    tau = 2*tau_hs/Delta_t
+
+    if Ie_prev === nothing
+        delta_hs = Re*Ie
+    else
+        delta_hs_prev = branch["delta_hs"]
+        delta_hs = Re*(Ie + Ie_prev)/(1 + tau) - delta_hs_prev*(1 - tau)/(1 + tau)
+    end
+
+    branch["delta_hs"] = delta_hs
 end
 
 ""
-function hotspot_temperature(Re, Ieff, Ieff_prev, nu_e_prev, tau_hs)
-    return (Ieff + Ieff_prev)/(1 + tau_oil) + nu_e_prev*(1 - tau_hs)/(1 + tau_hs)
+function update_top_oil_rise(branch, net)
+    k = "$(branch["index"])"
+    # update top-oil rise for the network
+    net["branch"][k]["delta_oil"] = branch["delta_oil"]
+    net["branch"][k]["delta_oil_ss"] = branch["delta_oil_ss"]
 end
+
+""
+function update_hotspot_rise(branch, net)
+    k = "$(branch["index"])"
+    # update top-oil rise for the network
+    net["branch"][k]["delta_hs"] = branch["delta_hs"]
+end
+
 
