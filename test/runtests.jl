@@ -1,5 +1,6 @@
 using Ipopt
 #using Gurobi
+using InfrastructureModels
 using PowerModels
 #using CPLEX
 using PowerModelsGMD
