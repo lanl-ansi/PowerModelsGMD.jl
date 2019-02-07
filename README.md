@@ -5,9 +5,6 @@
 * Coupled GIC + AC Optimal Power Flow (OPF): Solve the AC-OPF problem for a network subjected to GIC. The dc network couples to the ac network by means of reactive power loss in transformers.
 * Coupled GIC + AC Minimum Load Shed (MLS). Solve the minimum-load shedding problem for a network subjected to GIC.
 * Coupled GIC + AC Optimal Transmission Switching (OTS). Solve the minimum-load shedding problem for a network subjected to GIC where lines and transformers can be opened or closed.
-* Couped GIC + AC Mimimum Error: Solve for a new set of generator operating points that is feasible for a network subjected to GIC where the new operating points are as close as possible to the baseline operating points in terms of sum-squared error (SSE).
-
-
 
 ### Todo: 
 * Add quasi-dynamic formulation which uses SSE with respect to the previous time step as opposed to the initial time step
