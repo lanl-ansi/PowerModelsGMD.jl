@@ -118,7 +118,7 @@ end
 
 
 "Computes the maximum DC current on a branch"
-function calc_dc_mag_max{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_dc_mag_max(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = ref(pm, nw, :branch, i)
 
     ac_max = -Inf
@@ -133,7 +133,7 @@ end
 
 
 "Computes the ibase for a branch"
-function calc_branch_ibase{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_branch_ibase(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = ref(pm, nw, :branch, i)
     bus = ref(pm, nw, :bus, branch["hi_bus"])
     return branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
@@ -163,7 +163,7 @@ end
 
 
 "Computes the thermal coeffieicents for a branch"
-function calc_branch_thermal_coeff{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_branch_thermal_coeff(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = ref(pm, nw, :branch, i)
     buses = ref(pm, nw, :bus)
 
@@ -207,7 +207,7 @@ end
 
 
 "Computes the maximum dc voltage difference between buses"
-function calc_max_dc_voltage_difference{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_max_dc_voltage_difference(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return 1e6 # TODO, actually formally calculate
 end
 
@@ -325,12 +325,12 @@ function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
 end
 
 "Computes the maximum DC voltage at a gmd bus "
-function calc_max_dc_voltage{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_max_dc_voltage(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return Inf
 end
 
 "Computes the maximum DC voltage at a gmd bus "
-function calc_min_dc_voltage{T}(pm::GenericPowerModel{T}, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_min_dc_voltage(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return -Inf
 end
 

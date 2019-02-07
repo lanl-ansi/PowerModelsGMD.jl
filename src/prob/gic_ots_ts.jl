@@ -12,7 +12,7 @@ function run_gic_ots_ts(file, model_constructor, solver; kwargs...)
 end
 
 "Basic GMD Model - Minimizes Generator Dispatch"
-function post_gic_ts{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gic_ts(pm::GenericPowerModel; kwargs...)
 
     PMs.variable_voltage(pm)
 

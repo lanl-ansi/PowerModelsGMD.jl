@@ -7,7 +7,7 @@ function run_gic(file, solver; kwargs...)
 end
 
 "Post problem corresponding to the dc gic problem this is a linear constraint satisfaction problem"
-function post_gic{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gic(pm::GenericPowerModel; kwargs...)
     variable_dc_voltage(pm)
     variable_dc_line_flow(pm)
 

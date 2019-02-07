@@ -20,7 +20,7 @@ function run_gic_ml(file::AbstractString, model_constructor, solver; kwargs...)
 end
 
 "GMD Model - Minimizes Generator Dispatch and Load Shedding"
-function post_gic_ml{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gic_ml(pm::GenericPowerModel; kwargs...)
 
     # AC modeling
     PMs.variable_voltage(pm) # theta_i and V_i, includes constraint 3o 
