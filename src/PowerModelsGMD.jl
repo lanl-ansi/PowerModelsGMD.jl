@@ -4,6 +4,10 @@ module PowerModelsGMD
     using PowerModels
     using Memento
 
+    if VERSION > v"0.7.0-"
+        using Printf
+    end
+
     const LOGGER = getlogger(PowerModels)
 
     const PMs = PowerModels
