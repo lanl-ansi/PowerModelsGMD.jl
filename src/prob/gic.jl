@@ -1,7 +1,10 @@
 # Formulations of GMD Problems that solves for the GIC current only
 export run_gic
 
-"Run GIC current model only"
+"""
+    run_gic(file, solver)
+Run GIC current model only
+"""
 function run_gic(file, solver; kwargs...)
     return run_generic_model(file, ACPPowerModel, solver, post_gic; solution_builder = get_gmd_solution, kwargs...)
 end
