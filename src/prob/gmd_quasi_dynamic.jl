@@ -4,16 +4,16 @@ export run_gmd_quasic_dynamic_pf, run_ac_gmd_quasic_dynamic_pf
 
 "Run basic GMD with the nonlinear AC equations"
 function run_ac_gmd_quasic_dynamic_pf(file, solver; kwargs...)
-    return run_gmd_quasic_dynamic_pf(file, ACPPowerModel, solver; kwargs...)
+    return run_gmd_quasic_dynamic_pf(file, PMs.ACPPowerModel, solver; kwargs...)
 end
 
 "Run the basic GMD model"
 function run_gmd_quasic_dynamic_pf(file::AbstractString, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_gmd_quasic_dynamic_pf; solution_builder = get_gmd_solution, kwargs...)
+    return PMs.run_generic_model(file, model_constructor, solver, post_gmd_quasic_dynamic_pf; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "Stub out quasi dynamic gmd"
-function post_gmd_quasic_dynamic_pf(pm::ACPPowerModel; kwargs...)
+function post_gmd_quasic_dynamic_pf(pm::PMs.ACPPowerModel; kwargs...)
     PMs.variable_voltage(pm)
     PMs.variable_generation(pm)
     PMs.variable_line_flow(pm)
@@ -39,11 +39,11 @@ function post_gmd_quasic_dynamic_pf(pm::ACPPowerModel; kwargs...)
     end
 
     ### DC network constraints ###
-    for i in ids(pm, :gmd_bus)
+    for i in PMs.ids(pm, :gmd_bus)
       constraint_dc_kcl_shunt(pm, i)
     end
 
-    for i in ids(pm, :gmd_branch)
+    for i in PMs.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
 
