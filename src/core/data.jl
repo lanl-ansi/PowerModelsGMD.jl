@@ -25,7 +25,7 @@ function calculate_qloss(branch, case, solution)
 end
 
 ""
-function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,Any}; decoupled=false)
+function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
@@ -76,7 +76,7 @@ end
 gmd_not_pu = Set(["gmd_gs","gmd_e_field_mag"])
 gmd_not_rad = Set(["gmd_e_field_dir"])
 
-function make_gmd_per_unit!(data::Dict{AbstractString,Any})
+function make_gmd_per_unit!(data::Dict{String,<:Any})
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
@@ -86,7 +86,7 @@ function make_gmd_per_unit!(data::Dict{AbstractString,Any})
     end
 end
 
-function make_gmd_per_unit!(mva_base::Number, data::Dict{AbstractString,Any})
+function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 

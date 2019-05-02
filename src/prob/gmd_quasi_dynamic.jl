@@ -8,7 +8,7 @@ function run_ac_gmd_quasic_dynamic_pf(file, solver; kwargs...)
 end
 
 "Run the basic GMD model"
-function run_gmd_quasic_dynamic_pf(file::AbstractString, model_constructor, solver; kwargs...)
+function run_gmd_quasic_dynamic_pf(file::String, model_constructor, solver; kwargs...)
     return PMs.run_generic_model(file, model_constructor, solver, post_gmd_quasic_dynamic_pf; solution_builder = get_gmd_solution, kwargs...)
 end
 

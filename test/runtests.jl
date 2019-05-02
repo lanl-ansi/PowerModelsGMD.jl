@@ -34,7 +34,7 @@ juniper_solver = Juniper.JuniperSolver(ipopt_solver, mip_solver=cbc_solver, log_
 pavito_solver = Pavito.PavitoSolver(mip_solver=cbc_solver, cont_solver=ipopt_solver, mip_solver_drives=false, log_level=1)
 
 
-setting = Dict{AbstractString,Any}("output" => Dict{AbstractString,Any}("branch_flows" => true))
+setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
 @testset "PowerModelsGMD" begin
 

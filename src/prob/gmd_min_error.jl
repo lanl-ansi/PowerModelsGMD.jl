@@ -7,7 +7,7 @@ function run_ac_gmd_min_error(file, solver; kwargs...)
 end
 
 "Run the ordinary GMD model - This model minimizes distance from a specified set point"
-function run_gmd_min_error(file::AbstractString, model_constructor, solver; kwargs...)
+function run_gmd_min_error(file::String, model_constructor, solver; kwargs...)
     return PMs.run_generic_model(file, model_constructor, solver, post_gmd_min_error; solution_builder = get_gmd_solution, kwargs...)
 end
 

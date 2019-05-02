@@ -118,7 +118,7 @@ function objective_gmd_min_ls_on_off(pm::PMs.GenericPowerModel)
     return JuMP.@objective(pm.model, Min,
     sum(
         sum(
-            PMs.var(pm, :pg_sqr, i, nw=n) +
+            get(gen["cost"], 1, 0.0)*PMs.var(pm, :pg_sqr, i, nw=n) +
             get(gen["cost"], 2, 0.0)*PMs.var(pm, :pg, i, nw=n) +
             get(gen["cost"], 3, 0.0)*PMs.var(pm, :gen_z, i, nw=n)
         for (i,gen) in nw_ref[:gen]) +
