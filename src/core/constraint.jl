@@ -50,7 +50,7 @@ end
 function constraint_dc_kcl_shunt(pm::PMs.GenericPowerModel, n::Int, c::Int, i, dc_expr, gs, gmd_bus_arcs)
     v_dc = PMs.var(pm, n, c, :v_dc)[i]
     if length(gmd_bus_arcs) > 0
-         if JuMP.getlowerbound(v_dc) > 0 || JuMP.getupperbound(v_dc) < 0
+         if JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0
              println("Warning DC voltage cannot go to 0. This could make the DC KCL constraint overly constrained in switching applications")
          end
          JuMP.@constraint(pm.model, sum(dc_expr[a] for a in gmd_bus_arcs) == gs*v_dc) # as long as v_dc can go to 0, this is ok
