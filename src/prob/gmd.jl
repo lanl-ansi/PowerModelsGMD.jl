@@ -8,11 +8,11 @@ end
 
 "Run the basic GMD model"
 function run_gmd(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...)
+    return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "Basic GMD Model - Minimizes Generator Dispatch"
-function post_gmd(pm::GenericPowerModel; kwargs...)
+function post_gmd(pm::PMs.GenericPowerModel; kwargs...)
 
     PMs.variable_voltage(pm)
 
@@ -30,21 +30,21 @@ function post_gmd(pm::GenericPowerModel; kwargs...)
 
     PMs.constraint_voltage(pm)
 
-    for i in ids(pm, :ref_buses)
+    for i in PMs.ids(pm, :ref_buses)
         PMs.constraint_theta_ref(pm, i)
     end
 
-    for i in ids(pm, :bus)
+    for i in PMs.ids(pm, :bus)
         constraint_kcl_gmd(pm, i)
     end
 
-    for i in ids(pm, :branch)
-        debug(LOGGER, @sprintf "Adding constraints for branch %d\n" i)
+    for i in PMs.ids(pm, :branch)
+        Memento.debug(LOGGER, @sprintf "Adding constraints for branch %d\n" i)
         constraint_dc_current_mag(pm, i)
         constraint_qloss_constant_v(pm, i)
 
-        PMs.constraint_ohms_yt_from(pm, i) 
-        PMs.constraint_ohms_yt_to(pm, i) 
+        PMs.constraint_ohms_yt_from(pm, i)
+        PMs.constraint_ohms_yt_to(pm, i)
 
         #Why do we have the thermal limits turned off?
         #PMs.constraint_thermal_limit_from(pm, i)
@@ -53,11 +53,11 @@ function post_gmd(pm::GenericPowerModel; kwargs...)
     end
 
     ### DC network constraints ###
-    for i in ids(pm, :gmd_bus)
+    for i in PMs.ids(pm, :gmd_bus)
         constraint_dc_kcl_shunt(pm, i)
     end
 
-    for i in ids(pm, :gmd_branch)
+    for i in PMs.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
 end

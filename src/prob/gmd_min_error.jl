@@ -7,12 +7,12 @@ function run_ac_gmd_min_error(file, solver; kwargs...)
 end
 
 "Run the ordinary GMD model - This model minimizes distance from a specified set point"
-function run_gmd_min_error(file::AbstractString, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_gmd_min_error; solution_builder = get_gmd_solution, kwargs...)
+function run_gmd_min_error(file::String, model_constructor, solver; kwargs...)
+    return PMs.run_generic_model(file, model_constructor, solver, post_gmd_min_error; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "GMD Model - This model minimizes distance from a specified set point"
-function post_gmd_min_error(pm::GenericPowerModel; kwargs...)
+function post_gmd_min_error(pm::PMs.GenericPowerModel; kwargs...)
     PMs.variable_voltage(pm)
 
     variable_dc_voltage(pm)
@@ -20,22 +20,22 @@ function post_gmd_min_error(pm::GenericPowerModel; kwargs...)
     variable_dc_current_mag(pm)
     variable_qloss(pm)
 
-    PMs.variable_generation(pm) 
+    PMs.variable_generation(pm)
     PMs.variable_active_branch_flow(pm)
     PMs.variable_reactive_branch_flow(pm)
-   
+
     variable_dc_line_flow(pm)
     variable_demand_factor(pm)
-   
+
     objective_gmd_min_error(pm)
 
     PMs.constraint_voltage(pm)
 
-    for i in ids(pm, :bus)
+    for i in PMs.ids(pm, :bus)
          constraint_kcl_shunt_gmd_ls(pm, i)
     end
 
-    for i in ids(pm, :branch)
+    for i in PMs.ids(pm, :branch)
         @printf "Adding constraints for branch %d\n" i
         constraint_dc_current_mag(pm, i)
         constraint_qloss_constant_v(pm, i)
@@ -50,11 +50,11 @@ function post_gmd_min_error(pm::GenericPowerModel; kwargs...)
     end
 
     ### DC network constraints ###
-    for i in ids(pm, :gmd_bus)
+    for i in PMs.ids(pm, :gmd_bus)
         constraint_dc_kcl_shunt(pm, i)
     end
 
-    for i in ids(pm, :gmd_branch)
+    for i in PMs.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
 

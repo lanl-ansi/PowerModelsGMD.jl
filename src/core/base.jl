@@ -2,8 +2,9 @@
 export GenericGMDPowerModel
 
 # override the default generic constructor for Power Models that have GMD modeling
-function GenericGMDPowerModel(data::Dict{String,Any}, T::DataType; kwargs...)
-    pm = GenericPowerModel(data,T; kwargs...)
+function GenericGMDPowerModel(data::Dict{String,<:Any}, T::DataType; kwargs...)
+    PowerModels.standardize_cost_terms(data, order=2)
+    pm = PMs.GenericPowerModel(data,T; kwargs...)
     build_gmd_ref(pm)
     return pm
 end
@@ -23,17 +24,17 @@ function check_gmd_branch_parent_status(ref, i, gmd_branch)
     return status
 end
 
-"Adds the data structures that are specific for GMD modeling" 
-function build_gmd_ref(pm::GenericPowerModel)
+"Adds the data structures that are specific for GMD modeling"
+function build_gmd_ref(pm::PMs.GenericPowerModel)
     nws = pm.ref[:nw]
     data = pm.data
-      
+
     if InfrastructureModels.ismultinetwork(data)
         nws_data = data["nw"]
     else
         nws_data = Dict{String,Any}("0" => data)
     end
-    
+
     for (n,nw_data) in nws_data
         nw_id = parse(Int, n)
         ref = nws[nw_id]

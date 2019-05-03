@@ -1,15 +1,14 @@
 module PowerModelsGMD
-    using JuMP
-    using InfrastructureModels
-    using PowerModels
-    using Memento
+    import JuMP
 
-    if VERSION > v"0.7.0-"
-        using Printf
-    end
+    import InfrastructureModels
+    import PowerModels
 
-    const LOGGER = getlogger(PowerModels)
+    import Memento
 
+    using Printf: @printf, @sprintf
+
+    const LOGGER = Memento.getlogger(PowerModels)
     const PMs = PowerModels
 
     include("core/base.jl")
@@ -30,5 +29,5 @@ module PowerModelsGMD
     include("prob/gmd.jl")
     include("prob/gmd_min_error.jl")
     include("prob/gmd_ls.jl")
-    include("prob/gmd_ots.jl")    
+    include("prob/gmd_ots.jl")
 end
