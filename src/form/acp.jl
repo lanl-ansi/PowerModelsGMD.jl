@@ -77,7 +77,7 @@ function constraint_qloss(pm::PMs.GenericPowerModel{T}, n::Int, c::Int, k, i, j,
     i_dc_mag = PMs.var(pm, n, c, :i_dc_mag)[k]
     vm = PMs.var(pm, n, c, :vm)[i]
 
-    if JuMP.getlowerbound(i_dc_mag) > 0.0 || JuMP.getupperbound(i_dc_mag) < 0.0
+    if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
         println("Warning: DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results")
     end
 
