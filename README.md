@@ -9,7 +9,7 @@
 ### Todo: 
 * Add quasi-dynamic formulation which uses SSE with respect to the previous time step as opposed to the initial time step
 * Add time-extended GIC + AC-OTS formulation
-* ADD GIC Matrix time-series formulation
+* Move GIC Matrix time-series formulation to overload `run_gic`
 * Add GIC + AC harmonic power flow formulation
 
 
