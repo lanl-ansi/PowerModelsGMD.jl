@@ -1,27 +1,16 @@
 language: julia
+os:
+  - linux
+  - osx
 julia:
-  - 0.5
-
-cache:
- directories:
-   - /home/travis/.julia
-sudo: false
-addons:
-  apt_packages:
-    - gfortran
-    - liblapack-dev
-    - libgmp-dev
-    - libglpk-dev
-
-before_install:
-  - julia -e 'Pkg.add("Coverage")'
-  - julia -e 'Pkg.update()' #make sure we get the latest version of METADATA
-
+  - 1.0
+  - 1.1
+  - nightly
+matrix:
+  allow_failures:
+    - julia: nightly
 script:
-  - julia -e 'Pkg.clone(pwd())'
-  - julia -e 'Pkg.test("PowerModelsGMD", coverage=true)'
-
+  - julia --project -e 'import Pkg; Pkg.build(); Pkg.instantiate()'
+  - julia --project -e 'import Pkg; Pkg.test(coverage=true);'
 after_success:
-  - echo $TRAVIS_JULIA_VERSION
-  # this needs to be updated
-  #- export REPO_TOKEN=9c0bd91b-c273-45a8-a221-a4d4e63ac464; julia -e 'using Coverage; cd(Pkg.dir("PowerModels")); Codecov.submit(process_folder("."));'
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'

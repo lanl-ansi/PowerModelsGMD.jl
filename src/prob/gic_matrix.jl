@@ -1,14 +1,20 @@
 # Formulations of GMD Problems that solves for the GIC current only
 export run_gic_matrix
 
-"Run gic matrix solve on a file"
+"""
+    run_gic_matrix(file)
+Run gic matrix solve on a file
+"""
 function run_gic_matrix(file::String, model_constructor, solver, post_method; kwargs...)
     data = PowerModels.parse_file(file)
     return run_gic_matrix(data; kwargs...)
 end
 
 
-"Run gic matrix solve on data structure"
+"""
+    run_gic_matrix(net)
+Run gic matrix solve on data structure
+"""
 function run_gic_matrix(net::Dict{String,Any}; kwargs...)
     # I assume the branchListStruct and busListStruct are snatched directly from
     # jsondecode.  First I need to make these maps for somewhat easier access.

@@ -11,21 +11,21 @@ function calculate_qloss(branch, case, solution)
     br_soln = solution["branch"][k]
     bus = case["bus"][i]
     i_dc_mag = abs(br_soln["gmd_idc"])
-        
+
     if "gmd_k" in keys(branch)
-      
+
         ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
         K = branch["gmd_k"]*data["baseMVA"]/ibase
 
         # K is per phase
         return K*i_dc_mag/(3.0*branch["baseMVA"])
     end
-        
+
     return 0.0
-end    
+end
 
 ""
-function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,Any}; decoupled=false)
+function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
@@ -76,7 +76,7 @@ end
 gmd_not_pu = Set(["gmd_gs","gmd_e_field_mag"])
 gmd_not_rad = Set(["gmd_e_field_dir"])
 
-function make_gmd_per_unit(data::Dict{AbstractString,Any})
+function make_gmd_per_unit!(data::Dict{String,<:Any})
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
@@ -86,7 +86,7 @@ function make_gmd_per_unit(data::Dict{AbstractString,Any})
     end
 end
 
-function make_gmd_per_unit(mva_base::Number, data::Dict{AbstractString,Any})
+function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
@@ -104,11 +104,11 @@ end
 
 
 "Computes the maximum AC current on a branch"
-function calc_ac_mag_max(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_ac_mag_max(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     # ac_mag_max
-    branch = ref(pm, nw, :branch, i)
-    f_bus = ref(pm, nw, :bus, branch["f_bus"])
-    t_bus = ref(pm, nw, :bus, branch["t_bus"])
+    branch = PMs.ref(pm, nw, :branch, i)
+    f_bus = PMs.ref(pm, nw, :bus, branch["f_bus"])
+    t_bus = PMs.ref(pm, nw, :bus, branch["t_bus"])
     ac_max = branch["rate_a"]*branch["tap"] / min(f_bus["vmin"], t_bus["vmin"])
 
     # println(i, " " , ac_max, " ", branch["rate_a"], " ", pm.ref[:nw][n][:bus][f_bus]["vmin"], " ", pm.ref[:nw][n][:bus][t_bus]["vmin"])
@@ -118,12 +118,12 @@ end
 
 
 "Computes the maximum DC current on a branch"
-function calc_dc_mag_max(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    branch = ref(pm, nw, :branch, i)
+function calc_dc_mag_max(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    branch = PMs.ref(pm, nw, :branch, i)
 
     ac_max = -Inf
-    for i in ids(pm, nw, :branch)
-        ac_max = max(calc_ac_mag_max(pm, i, nw=nw), ac_max)
+    for l in PMs.ids(pm, nw, :branch)
+        ac_max = max(calc_ac_mag_max(pm, l, nw=nw), ac_max)
     end
     ibase = calc_branch_ibase(pm, i, nw=nw)
     #println(i , " ", 2 * ac_max * ibase, " ", ibase, " ", ac_max)
@@ -133,9 +133,9 @@ end
 
 
 "Computes the ibase for a branch"
-function calc_branch_ibase(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    branch = ref(pm, nw, :branch, i)
-    bus = ref(pm, nw, :bus, branch["hi_bus"])
+function calc_branch_ibase(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    branch = PMs.ref(pm, nw, :branch, i)
+    bus = PMs.ref(pm, nw, :bus, branch["hi_bus"])
     return branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
 end
 
@@ -143,9 +143,9 @@ end
 Fits a polynomial of degree `n` through a set of points.
 Taken from CurveFit.jl by Paul Jabardo
 https://github.com/pjabardo/CurveFit.jl/blob/master/src/linfit.jl
-Simple algorithm, doesn't use orthogonal polynomials or any such thing 
+Simple algorithm, doesn't use orthogonal polynomials or any such thing
 and therefore unconditioned matrices are possible. Use it only for low
-degree polynomials. 
+degree polynomials.
 This function returns a the coefficients of the polynomial.
 """
 function poly_fit(x, y, n)
@@ -163,9 +163,9 @@ end
 
 
 "Computes the thermal coeffieicents for a branch"
-function calc_branch_thermal_coeff(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    branch = ref(pm, nw, :branch, i)
-    buses = ref(pm, nw, :bus)
+function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    branch = PMs.ref(pm, nw, :branch, i)
+    buses = PMs.ref(pm, nw, :bus)
 
     if !(branch["type"] == "xf")
         return NaN
@@ -207,7 +207,7 @@ end
 
 
 "Computes the maximum dc voltage difference between buses"
-function calc_max_dc_voltage_difference(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_max_dc_voltage_difference(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return 1e6 # TODO, actually formally calculate
 end
 
@@ -311,7 +311,7 @@ function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
 
             if "model" in keys(gen) && "cost" in keys(gen)
                 if gen["model"] != 2
-                    warn(LOGGER, "Skipping generator cost model of type other than 2")
+                    Memento.warn(LOGGER, "Skipping generator cost model of type other than 2")
                 else
                     degree = length(gen["cost"])
                     for (i, item) in enumerate(gen["cost"])
@@ -325,17 +325,17 @@ function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
 end
 
 "Computes the maximum DC voltage at a gmd bus "
-function calc_max_dc_voltage(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_max_dc_voltage(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return Inf
 end
 
 "Computes the maximum DC voltage at a gmd bus "
-function calc_min_dc_voltage(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_min_dc_voltage(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return -Inf
 end
 
 "Computes the minimim absolute value AC current on a branch"
-function calc_ac_mag_min(pm::GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_ac_mag_min(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return 0
 end
 

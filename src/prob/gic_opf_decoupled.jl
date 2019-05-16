@@ -75,7 +75,10 @@ function run_opf_qloss_vnom(file, model_constructor, solver; kwargs...)
 end
 
 
-""
+"""
+    run_ac_gic_opf_decoupled(file)
+Run GIC followed by AC OPF with Qloss constraints
+"""
 function run_ac_gic_opf_decoupled(file::String, solver;  setting=Dict(), kwargs...)
     data = PowerModels.parse_file(file)
     return run_ac_gic_opf_decoupled(data, solver; kwargs...)

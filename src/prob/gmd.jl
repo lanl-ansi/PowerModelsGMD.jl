@@ -1,25 +1,22 @@
 # Formulations of GMD Problems that solves for the GIC current only
-export run_gic
+export run_gmd
 
-"""
-    run_gic(file, solver)
-Run GIC current model only
-"""
-function run_gic(file, solver; kwargs...)
-    return run_generic_model(file, ACPPowerModel, solver, post_gic; solution_builder = get_gmd_solution, kwargs...)
+"Run GIC current model only"
+function run_gmd(file, solver; kwargs...)
+    return PMs.run_generic_model(file, ACPPowerModel, solver, post_gmd_gic; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "Post problem corresponding to the dc gic problem this is a linear constraint satisfaction problem"
-function post_gic(pm::GenericPowerModel; kwargs...)
+function post_gmd(pm::PMs.GenericPowerModel; kwargs...)
     variable_dc_voltage(pm)
     variable_dc_line_flow(pm)
 
     ### DC network constraints ###
-    for i in ids(pm, :gmd_bus)
+    for i in PMs.ids(pm, :gmd_bus)
         constraint_dc_kcl_shunt(pm, i)
     end
 
-    for i in ids(pm, :gmd_branch)
+    for i in PMs.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
 end
