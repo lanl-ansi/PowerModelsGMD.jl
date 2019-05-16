@@ -1,18 +1,18 @@
 # Formulations of GMD Problems
-export run_gic_opf, run_ac_gic_opf
+export run_gmd_opf, run_ac_gmd_opf
 
 "Run basic GMD with the nonlinear AC equations"
-function run_ac_gic_opf(file, solver; kwargs...)
-    return run_gic_opf(file, ACPPowerModel, solver; kwargs...)
+function run_ac_gmd_opf(file, solver; kwargs...)
+    return run_gmd_opf(file, ACPPowerModel, solver; kwargs...)
 end
 
 "Run the basic GMD model"
-function run_gic_opf(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_gic_opf; solution_builder = get_gmd_solution, kwargs...)
+function run_gmd_opf(file, model_constructor, solver; kwargs...)
+    return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "Basic GMD Model - Minimizes Generator Dispatch"
-function post_gic_opf{T}(pm::GenericPowerModel{T}; kwargs...)
+function post_gmd_opf(pm::PMs.GenericPowerModel; kwargs...)
     PMs.variable_voltage(pm)
     variable_dc_voltage(pm)
     variable_dc_current_mag(pm)
@@ -21,25 +21,26 @@ function post_gic_opf{T}(pm::GenericPowerModel{T}; kwargs...)
     PMs.variable_branch_flow(pm)
     variable_dc_line_flow(pm)
 
-    objective_gic_min_fuel(pm)
+    objective_gmd_min_fuel(pm)
 
     PMs.constraint_voltage(pm)
 
-    for i in ids(pm, :ref_buses)
+    for i in PMs.ids(pm, :ref_buses)
         PMs.constraint_theta_ref(pm, i)
     end
 
-    for i in ids(pm, :bus)
-        constraint_kcl_gic(pm, i)
+
+    for i in PMs.ids(pm, :bus)
+        constraint_kcl_gmd(pm, i)
     end
 
-    for i in ids(pm, :branch)
-        debug(LOGGER, @sprintf "Adding constraints for branch %d\n" i)
+    for i in PMs.ids(pm, :branch)
+        Memento.debug(LOGGER, @sprintf "Adding constraints for branch %d\n" i)
         constraint_dc_current_mag(pm, i)
         constraint_qloss_vnom(pm, i)
 
-        PMs.constraint_ohms_yt_from(pm, i) 
-        PMs.constraint_ohms_yt_to(pm, i) 
+        PMs.constraint_ohms_yt_from(pm, i)
+        PMs.constraint_ohms_yt_to(pm, i)
 
         #Why do we have the thermal limits turned off?
         #PMs.constraint_thermal_limit_from(pm, i)
@@ -48,11 +49,11 @@ function post_gic_opf{T}(pm::GenericPowerModel{T}; kwargs...)
     end
 
     ### DC network constraints ###
-    for i in ids(pm, :gmd_bus)
+    for i in PMs.ids(pm, :gmd_bus)
         constraint_dc_kcl_shunt(pm, i)
     end
 
-    for i in ids(pm, :gmd_branch)
+    for i in PMs.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
 end

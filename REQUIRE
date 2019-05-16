@@ -1,8 +1,10 @@
 julia 0.6
 
-PowerModels 0.8 0.9-
-InfrastructureModels 0.0.4 0.2-
-CurveFit
+JuMP 0.17 0.19-
 
-Compat 0.26.0
-Memento 0.5.0
+PowerModels 0.8.5 0.10-
+InfrastructureModels 0.0.4 0.2-
+
+Compat 0.26
+Memento 0.5
+
