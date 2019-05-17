@@ -1,21 +1,23 @@
 # Formulations of GMD Problems that solves for the GIC current only
-export run_gic_matrix
+export run_gmd
+
+using SparseArrays
 
 """
-    run_gic_matrix(file)
+    run_gmd(file)
 Run gic matrix solve on a file
 """
-function run_gic_matrix(file::String, model_constructor, solver, post_method; kwargs...)
+function run_gmd(file; kwargs...)
     data = PowerModels.parse_file(file)
-    return run_gic_matrix(data; kwargs...)
+    return run_gmd(data; kwargs...)
 end
 
 
 """
-    run_gic_matrix(net)
+    run_gmd(net)
 Run gic matrix solve on data structure
 """
-function run_gic_matrix(net::Dict{String,Any}; kwargs...)
+function run_gmd(net::Dict{String,Any}; kwargs...)
     # I assume the branchListStruct and busListStruct are snatched directly from
     # jsondecode.  First I need to make these maps for somewhat easier access.
     branchMap=net["gmd_branch"]
@@ -76,16 +78,20 @@ function run_gic_matrix(net::Dict{String,Any}; kwargs...)
 
     zmm=zeros(Int64,numBus)
     znn=zeros(Int64,numBus)
-    zmatVals=zeros(numBus)
+    zmatVals=zeros(1,numBus)
     for i in 1:numBus
         bus=busList[i]
         zmm[i]=i
         znn[i]=i
         zmatVals[i]=(1.00/max(bus["g_gnd"],1e-6))
     end
-    Z=sparse(zmm,znn,zmatVals)
+    zmm = vec(zmm)
+    znn = vec(znn)
+    zmatVals = vec(zmatVals)
 
-    I=speye(numBus,numBus)
+    Z=sparse(zmm, znn, zmatVals)
+
+    I=sparse(SparseArrays.I, numBus, numBus)
 
     MM=Y*Z
 
@@ -95,10 +101,11 @@ function run_gic_matrix(net::Dict{String,Any}; kwargs...)
     vdc=Z*gic
 
     # build the results structure
-    solution = Dict()
+    solution = Dict{String,Any}()
     solution["gmd_bus"] = Dict()
     solution["gmd_branch"] = Dict()
-    result = Dict()
+    result = Dict{String,Any}()
+    result["status"] = :LocalOptimal
     result["solution"] = solution
 
     for (i,v) in enumerate(vdc)

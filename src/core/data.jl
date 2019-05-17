@@ -219,13 +219,28 @@ function apply_func(data::Dict{String,Any}, key::String, func)
 end
 
 function adjust_gmd_qloss(case::Dict{String,Any}, data::Dict{String,Any})
-    for (i,br) in case["branch"]
-        br_soln = data["branch"][i]
+    if !("branch" in keys(data))
+        data["branch"] = Dict{String,Any}()
+    end
 
-        if br["f_bus"] == br["hi_bus"]
-            br_soln["qf"] += br_soln["gmd_qloss"]
-        else
-            br_soln["qt"] += br_soln["gmd_qloss"]
+    for (i,br) in case["branch"]
+        if !(i in keys(data["branch"]))
+            data["branch"][i] = Dict{String,Any}()
+            data["branch"][i]["pf"] = 0.0
+            data["branch"][i]["pt"] = 0.0
+            data["branch"][i]["qf"] = 0.0
+            data["branch"][i]["qt"] = 0.0
+        end
+
+        br_soln = data["branch"][i]
+            
+
+        if "gmd_qloss" in keys(br_soln) 
+            if br["f_bus"] == br["hi_bus"]
+                br_soln["qf"] += br_soln["gmd_qloss"]
+            else
+                br_soln["qt"] += br_soln["gmd_qloss"]
+            end
         end
     end
 end

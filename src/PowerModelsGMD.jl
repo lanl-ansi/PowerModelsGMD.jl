@@ -26,7 +26,7 @@ module PowerModelsGMD
     include("form/wrm.jl")
 
     #include("prob/gic.jl")
-    #include("prob/gic_matrix.jl")
+    include("prob/gmd_matrix.jl")
     #include("prob/gic_opf.jl")
     #include("prob/gic_opf_decoupled.jl")
     #include("prob/gic_pf_decoupled.jl")
