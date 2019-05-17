@@ -1,4 +1,4 @@
-@testset "test ac data" begin
+@testset "Test ac data" begin
     @testset "4-bus case ac opf" begin
         result = PowerModels.run_ac_opf("../test/data/b4gic.m", ipopt_solver)
 
@@ -35,7 +35,7 @@ end
 
 
 
-@testset "test ac gic + gmd" begin
+@testset "Test coupled GMD + AC-OPF" begin
     @testset "4-bus case solution" begin
         result = run_ac_gmd_opf("../test/data/b4gic.m", ipopt_solver)
 

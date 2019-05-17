@@ -1,4 +1,4 @@
-@testset "test ac gic ml" begin
+@testset "Test AC GMD Minimum-load-shed" begin
     @testset "IEEE 24 0" begin
         result = run_ac_gic_ml("../test/data/case24_ieee_rts_0.m", ipopt_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal
@@ -13,7 +13,7 @@
     end    
 end
 
-@testset "test qc gmd ls" begin
+@testset "test QC GMD Mimimum-load-shed" begin
     @testset "IEEE 24 0" begin
         result = run_qc_gic_ml("../test/data/case24_ieee_rts_0.m", ipopt_solver)
         @test result["status"] == :LocalOptimal || result["status"] == :Optimal

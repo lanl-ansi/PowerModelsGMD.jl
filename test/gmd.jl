@@ -1,6 +1,6 @@
-@testset "test gic" begin
+@testset "Test GMD" begin
     @testset "4-bus case solution" begin
-        result = run_gic("../test/data/b4gic.m", ipopt_solver)
+        result = run_gmd("../test/data/b4gic.m", ipopt_solver)
 
         @test result["status"] == :LocalOptimal
     end
@@ -8,7 +8,7 @@
     @testset "4-bus case" begin
         casename = "../test/data/b4gic.m"        
         case = PowerModels.parse_file(casename)
-        result = run_gic(casename, ipopt_solver; setting=setting)
+        result = run_gmd(casename, ipopt_solver; setting=setting)
 
         @test result["status"] == :LocalOptimal
 
@@ -21,7 +21,7 @@
 
     @testset "6-bus case" begin
         casename = "../test/data/b6gic_nerc.m"
-        result = run_gic(casename, ipopt_solver; setting=setting)
+        result = run_gmd(casename, ipopt_solver; setting=setting)
         case = PowerModels.parse_file(casename)
 
         @test result["status"] == :LocalOptimal
@@ -35,7 +35,7 @@
 
     @testset "19-bus case" begin
         casename = "../test/data/epri21.m"
-        result = run_gic(casename, ipopt_solver)
+        result = run_gmd(casename, ipopt_solver)
         case = PowerModels.parse_file(casename)
         @test result["status"] == :LocalOptimal
          
@@ -48,7 +48,7 @@
 
     @testset "150-bus case" begin
         casename = "../test/data/uiuc150.m"
-        result = run_gic(casename, ipopt_solver)
+        result = run_gmd(casename, ipopt_solver)
         case = PowerModels.parse_file(casename)
         @test result["status"] == :LocalOptimal
         

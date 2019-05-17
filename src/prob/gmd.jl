@@ -3,7 +3,7 @@ export run_gmd
 
 "Run GIC current model only"
 function run_gmd(file, solver; kwargs...)
-    return PMs.run_generic_model(file, ACPPowerModel, solver, post_gmd_gic; solution_builder = get_gmd_solution, kwargs...)
+    return PMs.run_generic_model(file, ACPPowerModel, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "Post problem corresponding to the dc gic problem this is a linear constraint satisfaction problem"
