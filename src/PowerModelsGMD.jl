@@ -38,7 +38,7 @@ module PowerModelsGMD
     #include("prob/gic_ots_ts.jl")
     include("prob/gmd.jl")
     include("prob/gmd_opf.jl")
-    include("prob/gmd_min_error.jl")
-    include("prob/gmd_ls.jl")
+    include("prob/gmd_msse_decoupled.jl")
+    include("prob/gmd_ml.jl")
     include("prob/gmd_ots.jl")
 end

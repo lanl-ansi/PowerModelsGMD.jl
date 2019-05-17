@@ -14,7 +14,7 @@ function get_gmd_solution(pm::PMs.GenericPowerModel, sol::Dict{String,Any})
 end
 
 ""
-function get_gmd_decoupled_solution{T}(pm::GenericPowerModel{T}, sol::Dict{String,Any})
+function get_gmd_decoupled_solution(pm::PMs.GenericPowerModel, sol::Dict{String,Any})
     PowerModels.add_bus_voltage_setpoint(sol, pm);
     PowerModels.add_generator_power_setpoint(sol, pm)
     PowerModels.add_branch_flow_setpoint(sol, pm)
