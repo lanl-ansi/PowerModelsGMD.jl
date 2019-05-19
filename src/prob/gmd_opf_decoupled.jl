@@ -1,23 +1,23 @@
 # Formulations of GMD Problems
 export run_opf_qloss, run_opf_qloss_vnom
 export run_ac_opf_qloss, run_ac_opf_qloss_vnom
-export run_ac_gic_opf_decoupled
+export run_ac_gmd_opf_decoupled
 
 
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss(pm::GenericPowerModel; kwargs...)
+function post_opf_qloss(pm::PMs.GenericPowerModel; kwargs...)
     use_vnom = false
-    post_opf_qloss(pm::GenericPowerModel, use_vnom; kwargs...)
+    post_opf_qloss(pm::PMs.GenericPowerModel, use_vnom; kwargs...)
 end
  
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss_vnom(pm::GenericPowerModel; kwargs...)
+function post_opf_qloss_vnom(pm::PMs.GenericPowerModel; kwargs...)
     use_vnom = true
-    post_opf_qloss(pm::GenericPowerModel, use_vnom; kwargs...)
+    post_opf_qloss(pm::PMs.GenericPowerModel, use_vnom; kwargs...)
 end
  
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss(pm::GenericPowerModel, vnom; kwargs...)
+function post_opf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
     PowerModels.variable_voltage(pm)
     PowerModelsGMD.variable_qloss(pm)
 
@@ -29,16 +29,16 @@ function post_opf_qloss(pm::GenericPowerModel, vnom; kwargs...)
 
     PowerModels.constraint_voltage(pm)
 
-    for k in ids(pm, :ref_buses)
+    for k in PMs.ids(pm, :ref_buses)
         PowerModels.constraint_theta_ref(pm, k)
     end
 
-    for k in ids(pm, :bus)
+    for k in PMs.ids(pm, :bus)
         # TODO: check that this constraint is correct to use
-        PowerModelsGMD.constraint_kcl_gic(pm, k)
+        PowerModelsGMD.constraint_kcl_gmd(pm, k)
     end
 
-    for k in ids(pm, :branch)
+    for k in PMs.ids(pm, :branch)
         if vnom 
             constraint_qloss_decoupled_vnom(pm, k)
         else
@@ -66,12 +66,12 @@ end
 
 "Run the basic GMD model"
 function run_opf_qloss(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_opf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
+    return PMs.run_generic_model(file, model_constructor, solver, post_opf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
 "Run the basic GMD model"
 function run_opf_qloss_vnom(file, model_constructor, solver; kwargs...)
-    return run_generic_model(file, model_constructor, solver, post_opf_qloss_vnom; solution_builder = get_gmd_decoupled_solution, kwargs...)
+    return PMs.run_generic_model(file, model_constructor, solver, post_opf_qloss_vnom; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
 
@@ -79,19 +79,19 @@ end
     run_ac_gic_opf_decoupled(file)
 Run GIC followed by AC OPF with Qloss constraints
 """
-function run_ac_gic_opf_decoupled(file::String, solver;  setting=Dict(), kwargs...)
+function run_ac_gmd_opf_decoupled(file::String, solver;  setting=Dict(), kwargs...)
     data = PowerModels.parse_file(file)
-    return run_ac_gic_opf_decoupled(data, solver; kwargs...)
+    return run_ac_gmd_opf_decoupled(data, solver; kwargs...)
 end
 
 "Run GIC followed by AC OPF with Qloss constraints"
-function run_ac_gic_opf_decoupled(dc_case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
-    branch_setting = Dict{AbstractString,Any}("output" => Dict{AbstractString,Any}("branch_flows" => true))
+function run_ac_gmd_opf_decoupled(dc_case::Dict{String,Any}, solver; setting=Dict{String,Any}(), kwargs...)
+    branch_setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
     merge!(setting, branch_setting)
 
     # add logic to read file if needed
     #dc_case = PowerModels.parse_file(file)
-    dc_result = PowerModelsGMD.run_gic(dc_case, solver)
+    dc_result = PowerModelsGMD.run_gmd(dc_case, solver)
     dc_solution = dc_result["solution"]
     make_gmd_mixed_units(dc_solution, 100.0)
     ac_case = deepcopy(dc_case)
@@ -107,8 +107,8 @@ function run_ac_gic_opf_decoupled(dc_case::Dict{String,Any}, solver; setting=Dic
     ac_result = run_ac_opf_qloss_vnom(ac_case, solver, setting=setting)
     ac_solution = ac_result["solution"]
     #TODO: check if I need to enable these
-    #make_gmd_mixed_units(ac_solution, 100.0)
-    #adjust_gmd_qloss(ac_case, ac_solution)
+    make_gmd_mixed_units(ac_solution, 100.0)
+    adjust_gmd_qloss(ac_case, ac_solution)
   
 
     data = Dict()

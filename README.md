@@ -9,7 +9,7 @@
 ### Todo: 
 * Add quasi-dynamic formulation which uses SSE with respect to the previous time step as opposed to the initial time step
 * Add time-extended GIC + AC-OTS formulation
-* Move GIC Matrix time-series formulation to overload `run_gic`
+* Move GIC Matrix time-series formulation to overload `run_gmd`
 * Add GIC + AC harmonic power flow formulation
 
 
@@ -29,19 +29,19 @@ Pkg.test("PowerModelsGMD")
 
 ## Quick Start
 <!-- check that the test datasets correspond to those used in the test cases -->
-1. GIC `run_gic("test/data/b4gic.m")`
-2. GIC -> AC-PF `run_ac_gic_pf_decoupled("test/data/b4gic.m")`
-3. GIC -> AC-OPF `run_ac_gic_opf_decoupled("test/data/b4gic.m")`
-4. GIC + AC-OPF `run_ac_gic_opf("test/data/b4gic.m")`
-5. GIC + AC-MLS `run_ac_gic_ml("test/data/b4gic.m")`
-6. GIC + AC-OTS `run_ac_gic_ots("test/data/b4gic.m")`
+1. GIC `run_gmd("test/data/b4gic.m")`
+2. GIC -> AC-PF `run_ac_gmd_pf_decoupled("test/data/b4gic.m")`
+3. GIC -> AC-OPF `run_ac_gmd_opf_decoupled("test/data/b4gic.m")`
+4. GIC + AC-OPF `run_ac_gmd_opf("test/data/b4gic.m")`
+5. GIC + AC-MLS `run_ac_gmd_ml("test/data/b4gic.m")`
+6. GIC + AC-OTS `run_ac_gmd_ots("test/data/b4gic.m")`
 7. GIC + AC-OTS `run_gmd_min_error("test/data/b4gic.m")`
 
 ## More advanced functions
 1. AC-OPF with Min. SSE objective & GIC reactive power draw`run_ac_msse_qloss(net)`
-2. GIC -> AC-OPF time-series `run_ac_gic_opf_ts_decoupled(net, ts_mods)`
+2. GIC -> AC-OPF time-series `run_ac_gmd_opf_ts_decoupled(net, ts_mods)`
 
 ## Future functions
-1. GIC + AC-OPF time-series `run_gic_opf_ts(net, ts_mods)`
-2. GIC + AC-OTS time-series `run_gic_ots_ts(net, ts_mods)`
+1. GIC + AC-OPF time-series `run_gmd_opf_ts(net, ts_mods)`
+2. GIC + AC-OTS time-series `run_gmd_ots_ts(net, ts_mods)`
 
