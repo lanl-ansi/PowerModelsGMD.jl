@@ -150,13 +150,12 @@ function constraint_qloss_vnom(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd
     j = branch["lo_bus"]
 
     bus = PMs.ref(pm, nw, :bus, i)
-    V = 1.0
     branchMVA = branch["baseMVA"]
 
     if "gmd_k" in keys(branch)
         ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
         K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
-        constraint_qloss_vnom(pm, nw, cnd, k, i, j, K, V, branchMVA)
+        constraint_qloss_vnom(pm, nw, cnd, k, i, j, K, branchMVA)
     else
        constraint_qloss_vnom(pm, nw, cnd, k, i, j)
     end
