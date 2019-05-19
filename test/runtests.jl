@@ -33,7 +33,7 @@ include("gmd.jl")
 include("gmd_matrix.jl")
 ##include("gic_pf_decoupled.jl")
 ##include("gic_opf_decoupled.jl")
-#include("gmd_opf.jl")
+include("gmd_opf.jl")
 #include("gmd_ml.jl")
 ##include("gic_ots.jl")
 

@@ -8,7 +8,7 @@ end
 
 "Run the basic GMD model"
 function run_gmd_opf(file, model_constructor, solver; kwargs...)
-    return PMs.run_generic_model(file, model_constructor, solver, post_gmd; solution_builder = get_gmd_solution, kwargs...)
+    return PMs.run_generic_model(file, model_constructor, solver, post_gmd_opf; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "Basic GMD Model - Minimizes Generator Dispatch"
@@ -43,8 +43,8 @@ function post_gmd_opf(pm::PMs.GenericPowerModel; kwargs...)
         PMs.constraint_ohms_yt_to(pm, i)
 
         #Why do we have the thermal limits turned off?
-        #PMs.constraint_thermal_limit_from(pm, i)
-        #PMs.constraint_thermal_limit_to(pm, i)
+        PMs.constraint_thermal_limit_from(pm, i)
+        PMs.constraint_thermal_limit_to(pm, i)
         PMs.constraint_voltage_angle_difference(pm, i)
     end
 
