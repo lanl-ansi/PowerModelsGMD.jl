@@ -54,6 +54,7 @@ sum(p[a] for a in bus_arcs) + sum(p_dc[a_dc] for a_dc in bus_arcs_dc) == sum(pg[
 sum(q[a] for a in bus_arcs) + sum(q_dc[a_dc] for a_dc in bus_arcs_dc) == sum(qg[g] for g in bus_gens) - qd + bs*w[i] + qd_ls - qloss
 ```
 """
+
 function constraint_kcl_shunt_gmd_ls(pm::PMs.GenericPowerModel{T}, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs) where T <: PowerModels.AbstractWRForm
     w = PMs.var(pm, n, c, :w)[i]
     pg = PMs.var(pm, n, c, :pg)

@@ -30,8 +30,11 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 @testset "PowerModelsGMD" begin
 
 include("gmd.jl")
-include("gmd_ls.jl")
-include("gmd_gic.jl")
-include("gmd_ots.jl")
+include("gmd_matrix.jl")
+##include("gic_pf_decoupled.jl")
+include("gmd_opf_decoupled.jl")
+include("gmd_opf.jl")
+#include("gmd_ml.jl")
+##include("gic_ots.jl")
 
 end

@@ -1,6 +1,6 @@
-@testset "test gic gmd" begin
+@testset "Test GMD matrix formulation" begin
     @testset "4-bus case solution" begin
-        result = run_gmd_gic("../test/data/b4gic.m", ipopt_solver)
+        result = run_gmd("../test/data/b4gic.m")
 
         @test result["status"] == :LocalOptimal
     end
@@ -8,7 +8,7 @@
     @testset "4-bus case" begin
         casename = "../test/data/b4gic.m"        
         case = PowerModels.parse_file(casename)
-        result = run_gmd_gic(casename, ipopt_solver; setting=setting)
+        result = run_gmd(casename; setting=setting)
 
         @test result["status"] == :LocalOptimal
 
@@ -21,21 +21,21 @@
 
     @testset "6-bus case" begin
         casename = "../test/data/b6gic_nerc.m"
-        result = run_gmd_gic(casename, ipopt_solver; setting=setting)
+        result = run_gmd(casename; setting=setting)
         case = PowerModels.parse_file(casename)
 
         @test result["status"] == :LocalOptimal
           
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
-        adjust_gmd_qloss(case, solution)
+        #adjust_gmd_qloss(case, solution)
 
         @test isapprox(solution["gmd_bus"]["5"]["gmd_vdc"], -23.022192, atol=1e-1)
     end
 
     @testset "19-bus case" begin
         casename = "../test/data/epri21.m"
-        result = run_gmd_gic(casename, ipopt_solver)
+        result = run_gmd(casename)
         case = PowerModels.parse_file(casename)
         @test result["status"] == :LocalOptimal
          
@@ -48,7 +48,7 @@
 
     @testset "150-bus case" begin
         casename = "../test/data/uiuc150.m"
-        result = run_gmd_gic(casename, ipopt_solver)
+        result = run_gmd(casename)
         case = PowerModels.parse_file(casename)
         @test result["status"] == :LocalOptimal
         

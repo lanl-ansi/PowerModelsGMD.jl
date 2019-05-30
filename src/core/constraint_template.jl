@@ -143,22 +143,21 @@ end
 
 
 "Constraint for computing qloss assuming DC voltage is constant"
-function constraint_qloss_constant_v(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_qloss_vnom(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = PMs.ref(pm, nw, :branch, k)
 
     i = branch["hi_bus"]
     j = branch["lo_bus"]
 
     bus = PMs.ref(pm, nw, :bus, i)
-    V = 1.0
     branchMVA = branch["baseMVA"]
 
     if "gmd_k" in keys(branch)
         ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
         K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
-        constraint_qloss_constant_v(pm, nw, cnd, k, i, j, K, V, branchMVA)
+        constraint_qloss_vnom(pm, nw, cnd, k, i, j, K, branchMVA)
     else
-       constraint_qloss_constant_v(pm, nw, cnd, k, i, j)
+       constraint_qloss_vnom(pm, nw, cnd, k, i, j)
     end
 end
 
@@ -284,6 +283,13 @@ function constraint_dc_ohms_on_off(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
 
     constraint_dc_ohms_on_off(pm, nw, cnd, i, gs, vs, f_bus, t_bus, ac_branch)
 end
+
+#"Constraint for current magnitude "
+#function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+#    branch = ref(pm, nw, :branch, k)
+#    dc_max = calc_dc_mag_max(pm, k, nw=nw)
+#    constraint_dc_current_mag(pm, nw, cnd, k, dc_max)
+#end
 
 
 "On/off constraint for current magnitude "

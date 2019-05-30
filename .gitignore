@@ -4,6 +4,7 @@
 *.jl.mem
 deps/deps.jl
 *.swp
+*.swo
 .project
 test/test-mixed-units.jl
 test/test-gmd-gic.jl

@@ -14,6 +14,16 @@ function get_gmd_solution(pm::PMs.GenericPowerModel, sol::Dict{String,Any})
 end
 
 ""
+function get_gmd_decoupled_solution(pm::PMs.GenericPowerModel, sol::Dict{String,Any})
+    PowerModels.add_bus_voltage_setpoint(sol, pm);
+    PowerModels.add_generator_power_setpoint(sol, pm)
+    PowerModels.add_branch_flow_setpoint(sol, pm)
+    PowerModelsGMD.add_bus_qloss_setpoint(sol, pm)
+end
+
+
+""
+
 function add_load_demand_setpoint(sol, pm::PMs.GenericPowerModel)
     mva_base = pm.data["baseMVA"]
     PMs.add_setpoint(sol, pm, "load", "pd", :pd; default_value = (item) -> item["pd"]*mva_base)

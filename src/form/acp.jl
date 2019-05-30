@@ -72,7 +72,7 @@ function constraint_thermal_protection(pm::PMs.GenericPowerModel{T}, n::Int, c::
 end
 
 "Constraint for computing qloss"
-function constraint_qloss(pm::PMs.GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, branchMVA) where T <: PowerModels.AbstractACPForm
+function constraint_qloss_vnom(pm::PMs.GenericPowerModel{T}, n::Int, c::Int, k, i, j, K, branchMVA) where T <: PowerModels.AbstractACPForm
     qloss = PMs.var(pm, n, c, :qloss)
     i_dc_mag = PMs.var(pm, n, c, :i_dc_mag)[k]
     vm = PMs.var(pm, n, c, :vm)[i]
@@ -87,7 +87,7 @@ function constraint_qloss(pm::PMs.GenericPowerModel{T}, n::Int, c::Int, k, i, j,
 end
 
 "Constraint for computing qloss"
-function constraint_qloss(pm::PMs.GenericPowerModel{T}, n::Int, c::Int, k, i, j) where T <: PowerModels.AbstractACPForm
+function constraint_qloss_vnom(pm::PMs.GenericPowerModel{T}, n::Int, c::Int, k, i, j) where T <: PowerModels.AbstractACPForm
     qloss = PMs.var(pm, n, c, :qloss)
     JuMP.@constraint(pm.model, qloss[(k,i,j)] == 0.0)
     JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)

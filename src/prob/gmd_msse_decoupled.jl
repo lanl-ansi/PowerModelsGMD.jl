@@ -1,21 +1,22 @@
 # Formulations of GMD Problems
-export run_gmd_min_error, run_ac_gmd_min_error
+export run_msse_qloss, run_ac_msse_qloss
+# TODO: Implement this
+export run_ac_gmd_msse_decoupled
 
 "Run GMD with the nonlinear AC equations - This model minimizes distance from a specified set point"
-function run_ac_gmd_min_error(file, solver; kwargs...)
-    return run_gmd_min_error(file, ACPPowerModel, solver; kwargs...)
+function run_ac_msse_qloss(file, solver; kwargs...)
+    return run_msse_qloss(file, ACPPowerModel, solver; kwargs...)
 end
 
 "Run the ordinary GMD model - This model minimizes distance from a specified set point"
-function run_gmd_min_error(file::String, model_constructor, solver; kwargs...)
+
+function run_msse_qloss(file::String, model_constructor, solver; kwargs...)
     return PMs.run_generic_model(file, model_constructor, solver, post_gmd_min_error; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "GMD Model - This model minimizes distance from a specified set point"
-function post_gmd_min_error(pm::PMs.GenericPowerModel; kwargs...)
+function post_msse_qloss(pm::PMs.GenericPowerModel; kwargs...)
     PMs.variable_voltage(pm)
-
-    variable_dc_voltage(pm)
 
     variable_dc_current_mag(pm)
     variable_qloss(pm)
@@ -32,11 +33,18 @@ function post_gmd_min_error(pm::PMs.GenericPowerModel; kwargs...)
     PMs.constraint_voltage(pm)
 
     for i in PMs.ids(pm, :bus)
+         # TODO: check that this constraint is correct 
          constraint_kcl_shunt_gmd_ls(pm, i)
     end
 
-    for i in PMs.ids(pm, :branch)
-        @printf "Adding constraints for branch %d\n" i
+    for i in Pms.ids(pm, :branch)
+        if vnom 
+            constraint_vnom_qloss(pm, i)
+        else
+            constraint_qloss(pm, i)
+        end
+
+
         constraint_dc_current_mag(pm, i)
         constraint_qloss_constant_v(pm, i)
 
@@ -48,16 +56,6 @@ function post_gmd_min_error(pm::PMs.GenericPowerModel; kwargs...)
         PMs.constraint_thermal_limit_to(pm, i)
         PMs.constraint_voltage_angle_difference(pm, i)
     end
-
-    ### DC network constraints ###
-    for i in PMs.ids(pm, :gmd_bus)
-        constraint_dc_kcl_shunt(pm, i)
-    end
-
-    for i in PMs.ids(pm, :gmd_branch)
-        constraint_dc_ohms(pm, i)
-    end
-
 end
 
 

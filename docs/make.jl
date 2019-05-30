@@ -1,0 +1,4 @@
+using Documenter, PowerModelsGMD
+
+
+makedocs()

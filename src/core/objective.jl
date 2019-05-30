@@ -14,6 +14,7 @@ end
 
 
 " OPF objective"
+
 function objective_gmd_min_fuel(pm::PMs.GenericPowerModel)
     #@assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 

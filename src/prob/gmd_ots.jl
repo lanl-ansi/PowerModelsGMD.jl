@@ -50,6 +50,7 @@ function post_gmd_ots(pm::PMs.GenericPowerModel; kwargs...)
         PMs.constraint_theta_ref(pm, i)
     end
 
+
     for i in PMs.ids(pm, :bus)
         constraint_kcl_shunt_gmd_ls(pm, i) # variation of 3b, 3c
     end
