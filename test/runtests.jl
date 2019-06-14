@@ -12,6 +12,10 @@ import Juniper
 import JuMP
 import Memento
 
+# for checking status codes
+import MathOptInterface
+const MOI = MathOptInferface
+
 # Suppress warnings during testing.
 Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
 Memento.setlevel!(Memento.getlogger(PowerModels), "error")
