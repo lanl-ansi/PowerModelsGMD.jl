@@ -2,7 +2,7 @@
     @testset "4-bus case ac opf" begin
         result = PowerModels.run_ac_opf("../test/data/b4gic.m", ipopt_solver)
 
-        @test result["status"] == :LocalOptimal
+        @test result["termination_status"] == LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 116914; atol = 1e2)
     end
@@ -10,7 +10,7 @@
     @testset "6-bus case ac opf" begin
         result = PowerModels.run_ac_opf("../test/data/b6gic_nerc.m", ipopt_solver)
 
-        @test result["status"] == :LocalOptimal
+        @test result["termination_status"] == LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 980; atol = 1e0)
     end
@@ -18,7 +18,7 @@
     @testset "19-bus case ac opf" begin
         result = PowerModels.run_ac_opf("../test/data/epri21.m", ipopt_solver)
 
-        @test result["status"] == :LocalOptimal
+        @test result["termination_status"] == LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 401802; atol = 1e2)
     end
@@ -26,7 +26,7 @@
     @testset "150-bus case ac opf" begin
         result = PowerModels.run_ac_opf("../test/data/uiuc150.m", ipopt_solver)
 
-        @test result["status"] == :LocalOptimal
+        @test result["termination_status"] == LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 893768; atol = 1e2)
     end
@@ -39,7 +39,7 @@ end
     @testset "4-bus case solution" begin
         result = run_ac_gmd_opf("../test/data/b4gic.m", ipopt_solver)
 
-        @test result["status"] == :LocalOptimal
+        @test result["termination_status"] == LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
     end
@@ -50,7 +50,7 @@ end
 
         result = run_ac_gmd_opf(casename, ipopt_solver; setting=setting)
 
-        @test result["status"] == :LocalOptimal
+        @test result["termination_status"] == LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 1.398e5; atol = 1e2)
 
@@ -71,7 +71,7 @@ end
 
         case = PowerModels.parse_file(casename)
 
-        @test result["status"] == :LocalOptimal
+        @test result["termination_status"] == LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 11832.5; atol = 1e3)
 
@@ -115,7 +115,7 @@ end
         result = run_ac_gmd_opf(casename, ipopt_solver)
 
         # TODO: check why this is showing as infeasible
-        @test result["status"] == :LocalOptimal
+        @test result["termination_status"] == LOCALLY_SOLVED
 
         # result before PowerModels v0.8
         println("Testing objective $(result["objective"]) within tolerance")
@@ -139,7 +139,7 @@ end
         casename = "../test/data/uiuc150.m"
         result = run_ac_gmd_opf(casename, ipopt_solver)
 
-        @test result["status"] == :LocalOptimal
+        @test result["termination_status"] == LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 9.52847e5; atol = 5e5)
 
