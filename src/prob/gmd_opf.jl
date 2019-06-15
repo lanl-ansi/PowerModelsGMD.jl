@@ -8,7 +8,7 @@ end
 
 "Run the basic GMD model"
 function run_gmd_opf(file, model_constructor, solver; kwargs...)
-    return PMs.run_generic_model(file, model_constructor, solver, post_gmd_opf; solution_builder = get_gmd_solution, kwargs...)
+    return PMs.run_model(file, model_constructor, solver, post_gmd_opf; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "Basic GMD Model - Minimizes Generator Dispatch"
@@ -23,7 +23,7 @@ function post_gmd_opf(pm::PMs.GenericPowerModel; kwargs...)
 
     objective_gmd_min_fuel(pm)
 
-    PMs.constraint_voltage(pm)
+    PMs.constraint_model_voltage(pm)
 
     for i in PMs.ids(pm, :ref_buses)
         PMs.constraint_theta_ref(pm, i)

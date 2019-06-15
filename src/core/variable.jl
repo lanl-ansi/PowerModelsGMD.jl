@@ -5,12 +5,12 @@ function variable_dc_voltage(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int
             [i in PMs.ids(pm, nw, :gmd_bus)], base_name="$(nw)_$(cnd)_v_dc",
             lower_bound = calc_min_dc_voltage(pm, i, nw=nw),
             upper_bound = calc_max_dc_voltage(pm, i, nw=nw),
-            start = PMs.getval(PMs.ref(pm, nw, :gmd_bus, i), "v_dc_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_bus, i), "v_dc_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:v_dc] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :gmd_bus)], base_name="$(nw)_$(cnd)_v_dc",
-            start = PMs.getval(PMs.ref(pm, nw, :gmd_bus, i), "v_dc_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_bus, i), "v_dc_start", cnd)
         )
     end
 end
@@ -22,12 +22,12 @@ function variable_dc_voltage_difference(pm::PMs.GenericPowerModel; nw::Int=pm.cn
             [i in PMs.ids(pm, nw, :gmd_branch)], base_name="$(nw)_$(cnd)_v_dc_diff",
             lower_bound = -calc_max_dc_voltage_difference(pm, i, nw=nw),
             upper_bound = calc_max_dc_voltage_difference(pm, i, nw=nw),
-            start = PMs.getval(PMs.ref(pm, nw, :gmd_branch, i), "v_dc_start_diff", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_branch, i), "v_dc_start_diff", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:v_dc_diff] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :gmd_branch)], base_name="$(nw)_$(cnd)_v_dc_diff",
-            start = PMs.getval(PMs.ref(pm, nw, :gmd_branch, i), "v_dc_start_diff", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_branch, i), "v_dc_start_diff", cnd)
         )
     end
 
@@ -41,7 +41,7 @@ function variable_dc_voltage_on_off(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, c
     # McCormick variable
     PMs.var(pm, nw, cnd)[:vz] = JuMP.@variable(pm.model,
           [i in PMs.ids(pm, nw, :gmd_branch)], base_name="$(nw)_$(cnd)_vz",
-          start = PMs.getval(PMs.ref(pm, nw, :gmd_branch, i), "v_vz_start", cnd)
+          start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_branch, i), "v_vz_start", cnd)
     )
 end
 
@@ -52,12 +52,12 @@ function variable_dc_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd:
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_i_dc_mag",
             lower_bound = 0,
             upper_bound = calc_dc_mag_max(pm, i, nw=nw),
-            start = PMs.getval(PMs.ref(pm, nw, :branch, i), "i_dc_mag_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "i_dc_mag_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:i_dc_mag] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_i_dc_mag",
-            start = PMs.getval(PMs.ref(pm, nw, :branch, i), "i_dc_mag_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "i_dc_mag_start", cnd)
         )
     end
 end
@@ -69,12 +69,12 @@ function variable_dc_current_mag_sqr(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, 
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_i_dc_mag_sqr",
             lower_bound = 0,
             upper_bound = calc_dc_mag_max(pm, i, nw=nw)^2,
-            start = PMs.getval(PMs.ref(pm, nw, :branch, i), "i_dc_mag_sqr_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "i_dc_mag_sqr_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:i_dc_mag_sqr] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_i_dc_mag_sqr",
-            start = PMs.getval(PMs.ref(pm, nw, :branch, i), "i_dc_mag_sqr_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "i_dc_mag_sqr_start", cnd)
         )
     end
 end
@@ -86,12 +86,12 @@ function variable_dc_line_flow(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::I
             [(l,i,j) in PMs.ref(pm, nw, :gmd_arcs)], base_name="$(nw)_$(cnd)_dc",
             lower_bound = -Inf,
             upper_bound = Inf,
-            start = PMs.getval(PMs.ref(pm, nw, :gmd_branch, l), "dc_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_branch, l), "dc_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:dc] = JuMP.@variable(pm.model,
             [(l,i,j) in PMs.ref(pm, nw, :gmd_arcs)], base_name="$(nw)_$(cnd)_dc",
-            start = PMs.getval(PMs.ref(pm, nw, :gmd_branch, l), "dc_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_branch, l), "dc_start", cnd)
         )
     end
 
@@ -116,12 +116,12 @@ function variable_qloss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.c
             [(l,i,j) in PMs.ref(pm, nw, :arcs)], base_name="$(nw)_$(cnd)_qloss",
             lower_bound = 0.0,
             upper_bound = Inf,
-            start = PMs.getval(PMs.ref(pm, nw, :branch, l), "qloss_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, l), "qloss_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:qloss] = JuMP.@variable(pm.model,
             [(l,i,j) in PMs.ref(pm, nw, :arcs)], base_name="$(nw)_$(cnd)_qloss",
-            start = PMs.getval(PMs.ref(pm, nw, :branch, l), "qloss_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, l), "qloss_start", cnd)
         )
     end
 end
@@ -130,7 +130,7 @@ end
 function variable_demand_factor(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     PMs.var(pm, nw, cnd)[:z_demand] = JuMP.@variable(pm.model,
         0 <= z_demand[i in PMs.ids(pm, nw, :bus)] <= 1,
-        start = PMs.getval(PMs.ref(pm, nw, :bus, i), "z_demand_start", 1.0, cnd)
+        start = PMs.comp_start_value(PMs.ref(pm, nw, :bus, i), "z_demand_start", 1.0, cnd)
     )
 end
 
@@ -138,7 +138,7 @@ end
 function variable_shunt_factor(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     PMs.var(pm, nw, cnd)[:z_shunt] = JuMP.@variable(pm.model,
         0 <= z_shunt[i in PMs.ids(pm, nw, :bus)] <= 1,
-        start = PMs.getval(PMs.ref(pm, nw, :bus, i), "z_shunt_nstart", 1.0, cnd)
+        start = PMs.comp_start_value(PMs.ref(pm, nw, :bus, i), "z_shunt_nstart", 1.0, cnd)
     )
 end
 
@@ -150,12 +150,12 @@ function variable_active_load(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::In
             [i in PMs.ids(pm, nw, :load)], base_name="$(nw)_$(cnd)_pd",
             lower_bound = min(0,PMs.ref(pm, nw, :load, i)["pd"][cnd]),
             upper_bound = max(0,PMs.ref(pm, nw, :load, i)["pd"][cnd]),
-            start = PMs.getval(PMs.ref(pm, nw, :load, i), "pd_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :load, i), "pd_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:pd] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :load)], base_name="$(nw)_$(cnd)_pd",
-            start = PMs.getval(PMs.ref(pm, nw, :load, i), "pd_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :load, i), "pd_start", cnd)
         )
     end
 end
@@ -167,12 +167,12 @@ function variable_reactive_load(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::
             [i in PMs.ids(pm, nw, :load)], base_name="$(nw)_$(cnd)_qd",
             lower_bound = min(0, PMs.ref(pm, nw, :load, i)["qd"][cnd]),
             upper_bound = max(0, PMs.ref(pm, nw, :load, i)["qd"][cnd]),
-            start = PMs.getval(PMs.ref(pm, nw, :load, i), "qd_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :load, i), "qd_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:qd] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :load)], base_name="$(nw)_$(cnd)_qd",
-            start = PMs.getval(PMs.ref(pm, nw, :load, i), "qd_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :load, i), "qd_start", cnd)
         )
     end
 end
@@ -190,12 +190,12 @@ function variable_ac_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd:
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_i_ac_mag",
             lower_bound = calc_ac_mag_min(pm, i, nw=nw),
             upper_bound = calc_ac_mag_max(pm, i, nw=nw),
-            start = PMs.getval(PMs.ref(pm, nw, :branch, i), "i_ac_mag_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "i_ac_mag_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:i_ac_mag] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_i_ac_mag",
-            start = PMs.getval(PMs.ref(pm, nw, :branch, i), "i_ac_mag_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "i_ac_mag_start", cnd)
         )
     end
 end
@@ -204,7 +204,7 @@ end
 function variable_iv(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     PMs.var(pm, nw, cnd)[:iv] = JuMP.@variable(pm.model,
         [(l,i,j) in PMs.ref(pm, nw, :arcs)], base_name="$(nw)_$(cnd)_iv",
-        start = PMs.getval(PMs.ref(pm, nw, :branch, l), "iv_start", cnd)
+        start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, l), "iv_start", cnd)
     )
 end
 
@@ -215,7 +215,7 @@ function variable_gen_indicator(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::
         lower_bound = 0,
         upper_bound = 1,
         integer = true,
-        start = PMs.getval(PMs.ref(pm, nw, :gen, i), "gen_z_start", cnd, 1.0)
+        start = PMs.comp_start_value(PMs.ref(pm, nw, :gen, i), "gen_z_start", cnd, 1.0)
     )
 end
 
@@ -226,12 +226,12 @@ function variable_active_generation_sqr_cost(pm::PMs.GenericPowerModel; nw::Int=
             [i in PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_pg_sqr",
             lower_bound = 0,
             upper_bound = PMs.ref(pm, nw, :gen, i)["cost"][1] * PMs.ref(pm, nw, :gen, i)["pmax"]^2,
-            start = PMs.getval(PMs.ref(pm, nw, :gen, i), "pg_sqr_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :gen, i), "pg_sqr_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:pg_sqr] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_pg_sqr",
-            start = PMs.getval(PMs.ref(pm, nw, :gen, i), "pg_sqr_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :gen, i), "pg_sqr_start", cnd)
         )
     end
 end

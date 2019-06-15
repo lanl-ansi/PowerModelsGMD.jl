@@ -17,7 +17,7 @@ end
 "Minimize load shedding and fuel costs for GMD mitigation"
 
 function run_gmd_ml(file::String, model_constructor, solver; kwargs...)
-    return PMs.run_generic_model(file, model_constructor, solver, post_gmd_ls; solution_builder = get_gmd_solution, kwargs...)
+    return PMs.run_model(file, model_constructor, solver, post_gmd_ls; solution_builder = get_gmd_solution, kwargs...)
 end
 
 "GMD Model - Minimizes Generator Dispatch and Load Shedding"

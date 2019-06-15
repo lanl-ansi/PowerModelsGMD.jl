@@ -14,7 +14,7 @@ import Memento
 
 # for checking status codes
 import MathOptInterface
-const MOI = MathOptInferface
+const MOI = MathOptInterface
 
 # Suppress warnings during testing.
 Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
@@ -33,10 +33,10 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
 @testset "PowerModelsGMD" begin
 
-include("gmd.jl")
-include("gmd_matrix.jl")
+#include("gmd.jl")
+#include("gmd_matrix.jl")
 ##include("gic_pf_decoupled.jl")
-include("gmd_opf_decoupled.jl")
+#include("gmd_opf_decoupled.jl")
 include("gmd_opf.jl")
 #include("gmd_ml.jl")
 ##include("gic_ots.jl")
