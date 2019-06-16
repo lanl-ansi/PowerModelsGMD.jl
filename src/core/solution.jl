@@ -34,13 +34,14 @@ end
 function add_bus_dc_voltage_setpoint(sol, pm::PMs.GenericPowerModel)
     # dc voltage is measured line-neutral not line-line, so divide by sqrt(3)
     # fields are: solution, power model, dict name, index name, param name, variable symbol
-    PMs.add_setpoint!(sol, pm, "gmd_bus", "gmd_vdc", :v_dc)
+    # add_setpoint!(sol, pm, "bus", "vm", :vm, status_name="bus_type", inactive_status_value = 4)
+    PMs.add_setpoint!(sol, pm, "gmd_bus", "gmd_vdc", :v_dc, status_name="status", inactive_status_value=0)
 end
 
 ""
 function add_bus_dc_current_mag_setpoint(sol, pm::PMs.GenericPowerModel)
     # PMs.add_setpoint!(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
-    PMs.add_setpoint!(sol, pm, "branch", "gmd_idc_mag", :i_dc_mag, status_name="br_status")
+    PMs.add_setpoint!(sol, pm, "branch", "gmd_idc_mag", :i_dc_mag, status_name="br_status", inactive_status_value=0)
 end
 
 ""
@@ -55,13 +56,24 @@ function current_pu_to_si(x,item,pm)
     return x*1e3*mva_base/(sqrt(3)*kv_base)
 end
 
+# function add_setpoint_branch_flow!(sol, pm::GenericPowerModel)
+#     # check the branch flows were requested
+#     if haskey(pm.setting, "output") && haskey(pm.setting["output"], "branch_flows") && pm.setting["output"]["branch_flows"] == true
+#         add_setpoint!(sol, pm, "branch", "pf", :p, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
+#         add_setpoint!(sol, pm, "branch", "qf", :q, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
+#         add_setpoint!(sol, pm, "branch", "pt", :p, status_name="br_status", var_key = (idx,item) -> (idx, item["t_bus"], item["f_bus"]))
+#         add_setpoint!(sol, pm, "branch", "qt", :q, status_name="br_status", var_key = (idx,item) -> (idx, item["t_bus"], item["f_bus"]))
+#     end
+# end
+
+
 ""
 function add_branch_dc_flow_setpoint(sol, pm::PMs.GenericPowerModel)
     # check the line flows were requested
     # mva_base = pm.data["baseMVA"]
 
    # if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-        PMs.add_setpoint!(sol, pm, "gmd_branch", "gmd_idc", :dc; extract_var = (var,idx,item) -> var[(idx, item["f_bus"], item["t_bus"])])
+        PMs.add_setpoint!(sol, pm, "gmd_branch", "gmd_idc", :dc, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
    # end
 end
 
@@ -69,5 +81,5 @@ end
 function add_bus_qloss_setpoint(sol, pm::PMs.GenericPowerModel)
     mva_base = pm.data["baseMVA"]
     # mva_base = 1.0
-    PMs.add_setpoint!(sol, pm, "branch", "gmd_qloss", :qloss; extract_var = (var,idx,item) -> var[(idx, item["hi_bus"], item["lo_bus"])], scale = (x,item,i) -> x*mva_base)
+    PMs.add_setpoint!(sol, pm, "branch", "gmd_qloss", :qloss, var_key = (var,idx,item) -> (idx, item["hi_bus"], item["lo_bus"]), scale = (x,item,i) -> x*mva_base)
 end
