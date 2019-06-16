@@ -36,7 +36,7 @@ mpc.gencost = [
 	2	0	0	3	0.11	5.0	0
 ];
 
-%column_names% status  parent_index g_gnd name
+%column_names% parent_index status g_gnd name
 mpc.gmd_bus = {
 	1	1	5	'dc_sub1'	
 	2	1	5	'dc_sub2'	

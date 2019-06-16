@@ -65,51 +65,51 @@ end
         @test isapprox(solution["branch"]["3"]["qf"], -430.0362648, atol=0.1)
     end
 
-#    @testset "6-bus case" begin
-#        casename = "../test/data/b6gic_nerc.m"
-#        result = run_ac_gmd_opf(casename, ipopt_solver; setting=setting)
-#
-#        case = PowerModels.parse_file(casename)
-#
-#        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
-#        println("Testing objective $(result["objective"]) within tolerance")
-#        @test isapprox(result["objective"], 11832.5; atol = 1e3)
-#
-#        solution = result["solution"]
-#        make_gmd_mixed_units(solution, 100.0)
-#        adjust_gmd_qloss(case, solution)
-#
-##        println(solution["bus"]["2"]["vm"])
-#
-#        @test isapprox(solution["gmd_bus"]["5"]["gmd_vdc"], -23.022192, atol=1e-1)
-#        @test isapprox(solution["bus"]["2"]["vm"], 0.92784494, atol=1e-2)
-#        # check that kcl with qloss is being done correctly
-#        # br23
-#        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
-#        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
-#        # T2 gwye-gwye auto
-#        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
-#        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
-#        # br45
-#        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
-#        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
-#        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
-#        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
-#
-#        # check that kcl with qloss is being done correctly
-#        # br23
-#        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
-#        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
-#        # T2 gwye-gwye auto
-#        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
-#        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
-#        # br45
-#        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
-#        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
-#        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
-#        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
-#    end
-#
+    @testset "6-bus case" begin
+        casename = "../test/data/b6gic_nerc.m"
+        result = run_ac_gmd_opf(casename, ipopt_solver; setting=setting)
+
+        case = PowerModels.parse_file(casename)
+
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+        println("Testing objective $(result["objective"]) within tolerance")
+        @test isapprox(result["objective"], 11832.5; atol = 1e3)
+
+        solution = result["solution"]
+        make_gmd_mixed_units(solution, 100.0)
+        adjust_gmd_qloss(case, solution)
+
+#        println(solution["bus"]["2"]["vm"])
+
+        @test isapprox(solution["gmd_bus"]["5"]["gmd_vdc"], -23.022192, atol=1e-1)
+        @test isapprox(solution["bus"]["2"]["vm"], 0.92784494, atol=1e-2)
+        # check that kcl with qloss is being done correctly
+        # br23
+        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
+        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
+        # T2 gwye-gwye auto
+        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
+        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
+        # br45
+        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
+
+        # check that kcl with qloss is being done correctly
+        # br23
+        @test isapprox(solution["branch"]["2"]["qf"], -36.478387, atol=5.0)
+        @test isapprox(solution["branch"]["2"]["qt"], 49.0899781, atol=5.0)
+        # T2 gwye-gwye auto
+        @test isapprox(solution["branch"]["4"]["qf"], -36.402340, atol=5.0)
+        @test isapprox(solution["branch"]["4"]["qt"], 36.4783871, atol=5.0)
+        # br45
+        @test isapprox(solution["branch"]["5"]["pf"], -100.40386, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["pt"], 100.648681, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["qf"], -49.089978, atol=5.0)
+        @test isapprox(solution["branch"]["5"]["qt"], 48.6800005, atol=5.0)
+    end
+
 #    @testset "19-bus case" begin
 #        casename = "../test/data/epri21.m"
 #        result = run_ac_gmd_opf(casename, ipopt_solver)

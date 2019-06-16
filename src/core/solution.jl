@@ -83,14 +83,17 @@ function add_branch_dc_flow_setpoint(sol, pm::PMs.GenericPowerModel)
     # got unsupported keyword argument "extract_var"
 
 
-   # if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
+    if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
         PMs.add_setpoint!(sol, pm, "gmd_branch", "gmd_idc", :dc, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
-   # end
+    end
 end
 
 # need to scale by base MVA
 function add_bus_qloss_setpoint(sol, pm::PMs.GenericPowerModel)
     mva_base = pm.data["baseMVA"]
     # mva_base = 1.0
-    PMs.add_setpoint!(sol, pm, "branch", "gmd_qloss", :qloss, var_key = (var,idx,item) -> (idx, item["hi_bus"], item["lo_bus"]), scale = (x,item,i) -> x*mva_base)
+    if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
+        PMs.add_setpoint!(sol, pm, "branch", "gmd_qloss", :qloss, status_name="br_status", var_key = (var,idx,item) -> (idx, item["hi_bus"], item["lo_bus"]))
+    end
 end
+

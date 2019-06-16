@@ -40,17 +40,17 @@ mpc.gencost = [
 	2	0	0	3	0.085	1.2	0
 ];
 
-%column_names% parent_index g_gnd name
+%column_names% parent_index status g_gnd name
 mpc.gmd_bus = {
-	1	5	'dc_sub1'	
-	2	5	'dc_sub2'	
-	3	5	'dc_sub3'	
-	1	0	'dc_bus1'	
-	2	0	'dc_bus2'	
-	3	0	'dc_bus3'	
-	4	0	'dc_bus4'	
-	5	0	'dc_bus5'	
-	6	0	'dc_bus6'	
+	1	1	5	'dc_sub1'	
+	2	1	5	'dc_sub2'	
+	3	1	5	'dc_sub3'	
+	1	1	0	'dc_bus1'	
+	2	1	0	'dc_bus2'	
+	3	1	0	'dc_bus3'	
+	4	1	0	'dc_bus4'	
+	5	1	0	'dc_bus5'	
+	6	0	0	'dc_bus6'	
 };
 
 %column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name
