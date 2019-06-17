@@ -69,20 +69,6 @@ end
 
 ""
 function add_branch_dc_flow_setpoint(sol, pm::PMs.GenericPowerModel)
-    # check the line flows were requested
-    # mva_base = pm.data["baseMVA"]
-
-    # No match for...
-    # add_setpoint!(::Dict{String,Any}, ::PowerModels.GenericPowerModel{PowerModels.StandardACPForm}, ::String, ::String, :Symbol; extract_var=getfield(PowerModelsGMD, Symbol("##102#104"))(), scale=getfield(PowerModelsGMD, Symbol("##103#105")){Int64}(100))
-    #               sol,                pm,                                                           "gmd_branch", "gmd_idc", :dc, 
-
-    # Closest match
-    # add_setpoint!(::Any, ::PowerModels.GenericPowerModel, ::Any, ::Any, ::Any; index_name, default_value, scale, 
-    # var_key, sol_dict, conductorless, 
-    # status_name, inactive_status_value) at /home/abarnes/.julia/packages/PowerModels/mI6yi/src/core/solution.jl:163 
-    # got unsupported keyword argument "extract_var"
-
-
     if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
         PMs.add_setpoint!(sol, pm, "gmd_branch", "gmd_idc", :dc, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
     end
@@ -92,8 +78,6 @@ end
 function add_bus_qloss_setpoint(sol, pm::PMs.GenericPowerModel)
     mva_base = pm.data["baseMVA"]
     # mva_base = 1.0
-    if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-        PMs.add_setpoint!(sol, pm, "branch", "gmd_qloss", :qloss, status_name="br_status", var_key = (var,idx,item) -> (idx, item["hi_bus"], item["lo_bus"]))
-    end
+    PMs.add_setpoint!(sol, pm, "branch", "gmd_qloss", :qloss, status_name="br_status", var_key = (idx,item) -> (idx, item["hi_bus"], item["lo_bus"]))
 end
 
