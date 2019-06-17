@@ -50,7 +50,7 @@ mpc.gmd_bus = {
 	3	1	0	'dc_bus3'	
 	4	1	0	'dc_bus4'	
 	5	1	0	'dc_bus5'	
-	6	0	0	'dc_bus6'	
+	6	1	0	'dc_bus6'	
 };
 
 %column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name
