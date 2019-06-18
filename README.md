@@ -32,22 +32,44 @@ using PowerModels; using PowerModelsGMD; using Ipopt
 network_file = joinpath(dirname(pathof(PowerModelsGMD)), "../test/data/epri21.m")
 case = PowerModels.parse_file(network_file)
 
-result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, with_optimizer(Ipopt.Optimizer))
+solver = with_optimizer(Ipopt.Optimizer)
+result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, solver)
 ```
 
 ## Function Reference
 <!-- check that the test datasets correspond to those used in the test cases -->
-1. GIC `run_gmd("test/data/b4gic.m")`
-2. GIC -> AC-PF `run_ac_gmd_pf_decoupled("test/data/b4gic.m")`
-3. GIC -> AC-OPF `run_ac_gmd_opf_decoupled("test/data/b4gic.m")`
-4. GIC + AC-OPF `run_ac_gmd_opf("test/data/b4gic.m")`
-5. GIC + AC-MLS `run_ac_gmd_ml("test/data/b4gic.m")`
-6. GIC + AC-OTS `run_ac_gmd_ots("test/data/b4gic.m")`
+### GIC
+This solves for the quasi-dc voltage and currents on a system
+`run_gmd("test/data/b4gic.m", solver)`
 
-## Future functions
-1. AC-OPF with Min. SSE objective & GIC reactive power draw`run_ac_msse_qloss(net)`
-2. GIC -> AC-OPF time-series `run_ac_gmd_opf_ts_decoupled(net, ts_mods)`
-3. GIC + AC-OPF time-series `run_gmd_opf_ts(net, ts_mods)`
-4. GIC + AC-OTS time-series `run_gmd_ots_ts(net, ts_mods)`
-5. GIC + Min error `run_gmd_min_error("test/data/b4gic.m")`
+For large systems of greater than 10,000 buses consider using the Lehtinen-Pirjola (LP) form which uses a matrix solve instead 
+of an optimizer. This is called by omitting the solver parameter
+`run_gmd("test/data/b4gic.m")`
+
+To save branch currents in addition to bus voltages
+```
+setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
+run_gmd("test/data/b4gic.m", solver, setting=setting)
+```
+### GIC -> AC-OPF 
+This solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through trasformer windings as
+inputs to a an AC-OPF to calculate the increase in transformer reactive power consumption.
+
+ `run_ac_gmd_opf_decoupled("test/data/b4gic.m")`
+
+### GIC + AC-OPF 
+This solves the quasi-dc voltages and currents and the AC-OPF concurrently. This formulation has limitations in that it
+does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages. 
+Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer
+quasi-dc winding current magnitude.
+
+`run_ac_gmd_opf("test/data/b4gic.m")`
+
+### GIC + AC-MLS
+`run_ac_gmd_ml("test/data/b4gic.m")`
+
+
+### GIC + AC-OTS 
+`run_ac_gmd_ots("test/data/b4gic.m")`
+
 
