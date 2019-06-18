@@ -72,4 +72,83 @@ quasi-dc winding current magnitude.
 ### GIC + AC-OTS 
 `run_ac_gmd_ots("test/data/b4gic.m")`
 
+## Data Reference
+PowerModelsGMD uses some extensions to the PowerModels data format. For generality, it uses a separate dc network
+defined by the `gmd_bus` and `gmd_branch` tables. To correctly calculate increased reactive power consumption
+for each transformer, it is necessary to specify its winding configuration. 
+
+
+### GMD Bus Table
+This table includes 
+* the index of the corresponding bus in the ac network 
+* whether the bus is active (1 is active, 0 is disabled)
+* the admittance to ground in Siemens
+* a descriptive name for the bus
+
+
+```
+%column_names% parent_index status g_gnd name
+mpc.gmd_bus = {
+	1	1	5	'dc_sub1'	
+	2	1	5	'dc_sub2'	
+	1	1	0	'dc_bus1'	
+	2	1	0	'dc_bus2'	
+	3	1	0	'dc_bus3'	
+	4	1	0	'dc_bus4'	
+};
+```
+
+### GMD Branch Table
+This table includes
+* the "from" bus in the gmd bus table
+* to "to" bus in the gmd bus table
+* the index of the corresponding branch in the ac network
+* whether the branch is active (1 is active, 0 is disabled)
+* the branch resistance in Ohms
+* the induced quasi-dc voltage in volts
+* the length of the branch in km (not required)
+* a description name of the branch
+
+```
+%column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name
+mpc.gmd_branch = {
+	3	1	1	1	0.1	0	0	'dc_xf1_hi'	
+	3	4	2	1	1.00073475	170.78806587354	170.78806587354	'dc_br1'	
+	4	2	3	1	0.1	0	0	'dc_xf2_hi'	
+};
+```
+
+### Branch GMD 
+This table includes information needed to correctly calculate increased reactive power consumption:
+* the index of the high-side bus (in the ac network)
+* the index of the low-side bus (in the ac network)
+* the index of the gmd branch corresponding to the high-side winding (for two-winding transformers)
+* the index of the gmd branch corresponding to the low-side winding (for two-winding transformers)
+* the scaling factor used to calculate reactive power consumption in per-unit as a function of effective winding current (in per-unit)
+* the index of the gmd branch corresponding to the series winding (for autotransformers)
+* the index of the gmd branch corresponding to the common winding (for autotransformers) 
+* the MVA base of the trasformer. For most networks this is 100 MVA
+* the winding configuration of the transformer. Currently "gwye-gwye," "gwye-delta," "delta-delta," and "gwye-gwye-auto" are supported.
+
+```
+%column_names%  hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
+mpc.branch_gmd = {
+	1	3	1	-1	1.793	-1	-1	100	'xf'	'gwye-delta'	
+	1	2	-1	-1	0	-1	-1	100	'line'	'none'	
+	2	4	3	-1	1.793	-1	-1	100	'xf'	'gwye-delta'	
+};
+```
+
+### BUS GMD
+This table includes the latitude and longitude of buses in the ac network for convenience if results are plotted spatially.
+
+```
+%column_names%  lat lon
+mpc.bus_gmd = {
+	40	-89	
+	40	-87	
+	40	-89	
+	40	-87	
+};
+```
 
