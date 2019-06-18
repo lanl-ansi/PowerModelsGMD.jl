@@ -13,14 +13,14 @@ and ac power flow problems for an electric power network subjected to geomagneti
 ## Installation
 
 First, follow the installation instructions for [PowerModels](https://github.com/lanl-ansi/PowerModels.jl).
-Install with,
+From the Julia package manager REPL type
 ```
-Pkg.clone("git@github.com:lanl-ansi/PowerModelsGMD.jl.git")
+add https://github.com/lanl-ansi/PowerModelsGMD.jl.git
 ```
 
 Test with,
 ```
-Pkg.test("PowerModelsGMD")
+test PowerModelsGMD
 ```
 
 ## Quick Start
