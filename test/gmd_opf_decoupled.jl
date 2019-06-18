@@ -2,7 +2,7 @@
     @testset "4-bus case ac opf" begin
         result = PowerModels.PowerModels.run_ac_opf("../test/data/b4gic.m", ipopt_solver)
         
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 116914; atol = 1e2)
     end
@@ -10,7 +10,7 @@
     @testset "6-bus case ac opf" begin
         result = PowerModels.run_ac_opf("../test/data/b6gic_nerc.m", ipopt_solver)
                 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 980; atol = 1e0)
     end
@@ -18,7 +18,7 @@
     @testset "19-bus case ac opf" begin
         result = PowerModels.PowerModels.run_ac_opf("../test/data/epri21.m", ipopt_solver)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 401802; atol = 1e2)
     end
@@ -26,7 +26,7 @@
     @testset "150-bus case ac opf" begin
         result = PowerModels.run_ac_opf("../test/data/uiuc150.m", ipopt_solver)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
         @test isapprox(result["objective"], 893768; atol = 1e2)
     end
@@ -38,7 +38,7 @@ end
 @testset "Test decoupled GMD -> AC-OPF" begin
     @testset "4-bus case solution" begin
         ac_result = run_ac_gmd_opf_decoupled("../test/data/b4gic.m", ipopt_solver)["ac"]["result"]
-        @test ac_result["termination_status"] == LOCALLY_SOLVED
+        @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(ac_result["objective"]) within tolerance")
         @test isapprox(ac_result["objective"], 1.398e5; atol = 1e5)
     end
@@ -57,7 +57,7 @@ end
 
         ac_result = output["ac"]["result"]
 
-        @test ac_result["termination_status"] == LOCALLY_SOLVED
+        @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(ac_result["objective"]) within tolerance")
         @test isapprox(ac_result["objective"], 1.398e5; atol = 1e5)
 
@@ -78,7 +78,7 @@ end
 
         case = PowerModels.parse_file(casename)
                 
-        @test ac_result["termination_status"] == LOCALLY_SOLVED
+        @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(ac_result["objective"], 11832.5; atol = 1e3)
           
         dc_solution = output["dc"]["result"]["solution"]
@@ -118,7 +118,7 @@ end
         output = run_ac_gmd_opf_decoupled(casename, ipopt_solver)
         ac_result = output["ac"]["result"]
 
-        @test ac_result["termination_status"] == LOCALLY_SOLVED
+        @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
 
         dc_solution = output["dc"]["result"]["solution"]
 
@@ -145,7 +145,7 @@ end
         ac_result = output["ac"]["result"]
         println("Testing objective $(ac_result["objective"]) within tolerance")
 
-        @test ac_result["termination_status"] == LOCALLY_SOLVED
+        @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(ac_result["objective"], 9.52847e5; atol = 1e5)
 
         dc_solution = output["dc"]["result"]["solution"]

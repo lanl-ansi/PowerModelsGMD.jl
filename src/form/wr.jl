@@ -32,7 +32,7 @@ function variable_ac_current(pm::PMs.GenericPowerModel{T}; kwargs...) where T <:
         [l in keys(parallel_branch)], base_name="$(nw)_$(cnd)_cm_p",
         lower_bound = cm_min[l],
         upper_bound = cm_max[l],
-        start = PMs.getval(PMs.ref(pm, nw, :branch, l), "cm_p_start", cnd)
+        start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, l), "cm_p_start", cnd)
    )
 end
 
@@ -86,7 +86,7 @@ function constraint_current(pm::PMs.GenericPowerModel{T}, n::Int, c::Int, i, f_i
 
     if buspair["branch"] == i
         # p_fr^2 + q_fr^2 <= l * w comes for free with constraint_power_magnitude_sqr of PowerModels.jl
-        l = PMs.var(pm, n, c, :cm)[(f_bus, t_bus)]
+        l = PMs.var(pm, n, c, :ccm)[(f_bus, t_bus)]
         InfrastructureModels.relaxation_sqr(pm.model, i_ac_mag, l)
     else
         l = PMs.var(pm, n, c, :cm_p)[i]

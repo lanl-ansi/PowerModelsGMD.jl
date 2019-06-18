@@ -2,7 +2,7 @@
     @testset "4-bus case solution" begin
         result = run_gmd("../test/data/b4gic.m", ipopt_solver)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
     end
 
     @testset "4-bus case" begin
@@ -10,7 +10,7 @@
         case = PowerModels.parse_file(casename)
         result = run_gmd(casename, ipopt_solver; setting=setting)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
 
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
@@ -24,7 +24,7 @@
         result = run_gmd(casename, ipopt_solver; setting=setting)
         case = PowerModels.parse_file(casename)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
           
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
@@ -37,7 +37,7 @@
         casename = "../test/data/epri21.m"
         result = run_gmd(casename, ipopt_solver)
         case = PowerModels.parse_file(casename)
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
          
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
@@ -50,7 +50,7 @@
         casename = "../test/data/uiuc150.m"
         result = run_gmd(casename, ipopt_solver)
         case = PowerModels.parse_file(casename)
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
