@@ -1,211 +1,3 @@
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: branch found with non-posative tap value of 0.0, setting a tap to 1.0
-[warn | PowerModels]: active generators found at bus 32, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 32, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 29, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 29, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 54, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 54, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 41, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 41, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 51, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 51, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 53, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 53, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 27, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 27, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 42, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 42, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 33, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 33, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 28, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 28, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 50, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 50, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 52, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 52, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 26, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 26, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 25, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 25, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 49, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 49, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 31, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 31, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 43, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 43, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 39, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 39, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 34, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 34, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 44, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 44, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 55, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 55, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 37, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 37, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 47, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 47, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 57, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 57, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 35, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 35, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 40, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 40, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 38, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 38, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 46, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 46, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 45, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 45, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 56, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 56, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 36, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 36, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 48, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 48, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 30, updating to bus type from 1 to 2
-[warn | PowerModels]: active generators found at bus 30, updating to bus type from 1 to 2
 %% MATPOWER Case Format : Version 2
 mpc.version = '2';
 
@@ -429,85 +221,85 @@ mpc.gencost = [
 	2	0	0	3	0.05267199999999999	43.6615	781.521
 ];
 
-%column_names% parent_index g_gnd name
+%column_names% parent_index status g_gnd name
 mpc.gmd_bus = {
-	1	10.0	'dc_sub1'	
-	2	10.0	'dc_sub2'	
-	3	10.0	'dc_sub3'	
-	4	10.0	'dc_sub4'	
-	5	10.0	'dc_sub5'	
-	6	10.0	'dc_sub6'	
-	7	10.0	'dc_sub7'	
-	8	10.0	'dc_sub8'	
-	9	10.0	'dc_sub9'	
-	10	10.0	'dc_sub10'	
-	11	10.0	'dc_sub11'	
-	12	10.0	'dc_sub12'	
-	13	10.0	'dc_sub13'	
-	14	10.0	'dc_sub14'	
-	15	10.0	'dc_sub15'	
-	16	10.0	'dc_sub16'	
-	17	10.0	'dc_sub17'	
-	18	10.0	'dc_sub18'	
-	19	10.0	'dc_sub19'	
-	20	10.0	'dc_sub20'	
-	1	0.0	'dc_bus1'	
-	2	0.0	'dc_bus2'	
-	3	0.0	'dc_bus3'	
-	4	0.0	'dc_bus4'	
-	5	0.0	'dc_bus5'	
-	6	0.0	'dc_bus6'	
-	7	0.0	'dc_bus7'	
-	8	0.0	'dc_bus8'	
-	9	0.0	'dc_bus9'	
-	10	0.0	'dc_bus10'	
-	11	0.0	'dc_bus11'	
-	12	0.0	'dc_bus12'	
-	13	0.0	'dc_bus13'	
-	14	0.0	'dc_bus14'	
-	15	0.0	'dc_bus15'	
-	16	0.0	'dc_bus16'	
-	17	0.0	'dc_bus17'	
-	18	0.0	'dc_bus18'	
-	19	0.0	'dc_bus19'	
-	20	0.0	'dc_bus20'	
-	21	0.0	'dc_bus21'	
-	22	0.0	'dc_bus22'	
-	23	0.0	'dc_bus23'	
-	24	0.0	'dc_bus24'	
-	25	0.0	'dc_bus25'	
-	26	0.0	'dc_bus26'	
-	27	0.0	'dc_bus27'	
-	28	0.0	'dc_bus28'	
-	29	0.0	'dc_bus29'	
-	30	0.0	'dc_bus30'	
-	31	0.0	'dc_bus31'	
-	32	0.0	'dc_bus32'	
-	33	0.0	'dc_bus33'	
-	34	0.0	'dc_bus34'	
-	35	0.0	'dc_bus35'	
-	36	0.0	'dc_bus36'	
-	37	0.0	'dc_bus37'	
-	38	0.0	'dc_bus38'	
-	39	0.0	'dc_bus39'	
-	40	0.0	'dc_bus40'	
-	41	0.0	'dc_bus41'	
-	42	0.0	'dc_bus42'	
-	43	0.0	'dc_bus43'	
-	44	0.0	'dc_bus44'	
-	45	0.0	'dc_bus45'	
-	46	0.0	'dc_bus46'	
-	47	0.0	'dc_bus47'	
-	48	0.0	'dc_bus48'	
-	49	0.0	'dc_bus49'	
-	50	0.0	'dc_bus50'	
-	51	0.0	'dc_bus51'	
-	52	0.0	'dc_bus52'	
-	53	0.0	'dc_bus53'	
-	54	0.0	'dc_bus54'	
-	55	0.0	'dc_bus55'	
-	56	0.0	'dc_bus56'	
-	57	0.0	'dc_bus57'	
+	1	1   10.0	'dc_sub1'	
+	2	1   10.0	'dc_sub2'	
+	3	1   10.0	'dc_sub3'	
+	4	1   10.0	'dc_sub4'	
+	5	1   10.0	'dc_sub5'	
+	6	1   10.0	'dc_sub6'	
+	7	1   10.0	'dc_sub7'	
+	8	1   10.0	'dc_sub8'	
+	9	1   10.0	'dc_sub9'	
+	10	1   10.0	'dc_sub10'	
+	11	1   10.0	'dc_sub11'	
+	12	1   10.0	'dc_sub12'	
+	13	1   10.0	'dc_sub13'	
+	14	1   10.0	'dc_sub14'	
+	15	1   10.0	'dc_sub15'	
+	16	1   10.0	'dc_sub16'	
+	17	1   10.0	'dc_sub17'	
+	18	1   10.0	'dc_sub18'	
+	19	1   10.0	'dc_sub19'	
+	20	1   10.0	'dc_sub20'	
+	1	1   0.0	'dc_bus1'	
+	2	1   0.0	'dc_bus2'	
+	3	1   0.0	'dc_bus3'	
+	4	1   0.0	'dc_bus4'	
+	5	1   0.0	'dc_bus5'	
+	6	1   0.0	'dc_bus6'	
+	7	1   0.0	'dc_bus7'	
+	8	1   0.0	'dc_bus8'	
+	9	1   0.0	'dc_bus9'	
+	10	1   0.0	'dc_bus10'	
+	11	1   0.0	'dc_bus11'	
+	12	1   0.0	'dc_bus12'	
+	13	1   0.0	'dc_bus13'	
+	14	1   0.0	'dc_bus14'	
+	15	1   0.0	'dc_bus15'	
+	16	1   0.0	'dc_bus16'	
+	17	1   0.0	'dc_bus17'	
+	18	1   0.0	'dc_bus18'	
+	19	1   0.0	'dc_bus19'	
+	20	1   0.0	'dc_bus20'	
+	21	1   0.0	'dc_bus21'	
+	22	1   0.0	'dc_bus22'	
+	23	1   0.0	'dc_bus23'	
+	24	1   0.0	'dc_bus24'	
+	25	1   0.0	'dc_bus25'	
+	26	1   0.0	'dc_bus26'	
+	27	1   0.0	'dc_bus27'	
+	28	1   0.0	'dc_bus28'	
+	29	1   0.0	'dc_bus29'	
+	30	1   0.0	'dc_bus30'	
+	31	1   0.0	'dc_bus31'	
+	32	1   0.0	'dc_bus32'	
+	33	1   0.0	'dc_bus33'	
+	34	1   0.0	'dc_bus34'	
+	35	1   0.0	'dc_bus35'	
+	36	1   0.0	'dc_bus36'	
+	37	1   0.0	'dc_bus37'	
+	38	1   0.0	'dc_bus38'	
+	39	1   0.0	'dc_bus39'	
+	40	1   0.0	'dc_bus40'	
+	41	1   0.0	'dc_bus41'	
+	42	1   0.0	'dc_bus42'	
+	43	1   0.0	'dc_bus43'	
+	44	1   0.0	'dc_bus44'	
+	45	1   0.0	'dc_bus45'	
+	46	1   0.0	'dc_bus46'	
+	47	1   0.0	'dc_bus47'	
+	48	1   0.0	'dc_bus48'	
+	49	1   0.0	'dc_bus49'	
+	50	1   0.0	'dc_bus50'	
+	51	1   0.0	'dc_bus51'	
+	52	1   0.0	'dc_bus52'	
+	53	1   0.0	'dc_bus53'	
+	54	1   0.0	'dc_bus54'	
+	55	1   0.0	'dc_bus55'	
+	56	1   0.0	'dc_bus56'	
+	57	1   0.0	'dc_bus57'	
 };
 
 %column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name

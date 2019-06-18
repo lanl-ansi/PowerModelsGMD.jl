@@ -173,7 +173,6 @@ function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
 
     # A hack for now....
     thermal_cap_x0 = pm.data["thermal_cap_x0"]
-    println(thermal_cap_x0)
     if isa(thermal_cap_x0, Dict)
         thermal_cap_x0 = []
         for (key, value) in sort(pm.data["thermal_cap_x0"]["1"])
@@ -185,7 +184,6 @@ function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
     end
 
     thermal_cap_y0 = pm.data["thermal_cap_y0"]
-    println(thermal_cap_y0)
     if isa(thermal_cap_y0, Dict)
         thermal_cap_y0 = []
         for (key, value) in sort(pm.data["thermal_cap_y0"]["1"])
@@ -195,9 +193,6 @@ function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
             push!(thermal_cap_y0, value)
         end
     end
-
-    println(thermal_cap_x0)
-    println(thermal_cap_y0)
 
     x0 = thermal_cap_x0./calc_branch_ibase(pm, i, nw=nw)  #branch["ibase"]
     y0 = thermal_cap_y0./100  # convert to %
