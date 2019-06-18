@@ -54,23 +54,23 @@ run_gmd("test/data/b4gic.m", solver, setting=setting)
 ### GIC -> AC-OPF 
 This solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through trasformer windings as
 inputs to a an AC-OPF to calculate the increase in transformer reactive power consumption.
-
- `run_ac_gmd_opf_decoupled("test/data/b4gic.m")`
+`run_ac_gmd_opf_decoupled("test/data/b4gic.m")`
 
 ### GIC + AC-OPF 
 This solves the quasi-dc voltages and currents and the AC-OPF concurrently. This formulation has limitations in that it
 does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages. 
 Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer
 quasi-dc winding current magnitude.
-
 `run_ac_gmd_opf("test/data/b4gic.m")`
 
 ### GIC + AC-MLS
-`run_ac_gmd_ml("test/data/b4gic.m")`
+Solve the minimum-load shedding problem for a network subjected to GIC with fixed topology.
+`run_ac_gmd_ml("test/data/case24_ieee_rts_0.m")`
 
 
 ### GIC + AC-OTS 
-`run_ac_gmd_ots("test/data/b4gic.m")`
+ Solve the minimum-load shedding problem for a network subjected to GIC where lines and transformers can be opened or closed.
+`run_ac_gmd_ots("test/data/ots_test.m")`
 
 ## Data Reference
 PowerModelsGMD uses some extensions to the PowerModels data format. For generality, it uses a separate dc network

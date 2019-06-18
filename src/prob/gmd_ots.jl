@@ -17,7 +17,7 @@ end
 
 "Minimize load shedding and fuel costs for GMD mitigation"
 function run_gmd_ots(file::String, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_gmd_ots; solution_builder = get_gmd_solution, kwargs...)
+    return PMs.run_model(file, model_constructor, solver, post_gmd_ots; ref_extensions=[ref_add_on_off_va_bounds!], solution_builder = get_gmd_solution, kwargs...)
 end
 
 "GMD Model - Minimizes Generator Dispatch and Load Shedding"
@@ -68,9 +68,6 @@ function post_gmd_ots(pm::PMs.GenericPowerModel; kwargs...)
         constraint_qloss(pm, i) # individual terms of righthand side of constraints 3x
         constraint_thermal_protection(pm, i) # constraints 3w
         constraint_current_on_off(pm, i) # constraints 3k, 3l, and 3n
-
-        #constraint_ohms_yt_from_on_off(pm, i)
-        #constraint_ohms_yt_to_on_off(pm, i)
 
         PMs.constraint_ohms_yt_from_on_off(pm, i) # constraints 3d, 3e
         PMs.constraint_ohms_yt_to_on_off(pm, i)   # constraints 3f, 3g
