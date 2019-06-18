@@ -211,9 +211,9 @@ function constraint_qloss(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int
         ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
         K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
         branchMVA = branch["baseMVA"]
-        constraint_qloss(pm, nw, cnd, k, i, j, K, branchMVA)
+        constraint_qloss_constant_v(pm, nw, cnd, k, i, j, K, 1.0, branchMVA)
     else
-        constraint_qloss(pm, nw, cnd, k, i, j)
+        constraint_qloss_constant_v(pm, nw, cnd, k, i, j)
     end
 end
 

@@ -44,7 +44,7 @@ function post_gmd_ots(pm::PMs.GenericPowerModel; kwargs...)
     # Minimize load shedding and fuel cost
     objective_gmd_min_ls_on_off(pm) # variation of equation 3a
 
-    PMs.constraint_voltage_on_off(pm)
+    PMs.constraint_model_voltage_on_off(pm)
 
     for i in PMs.ids(pm, :ref_buses)
         PMs.constraint_theta_ref(pm, i)
@@ -68,6 +68,9 @@ function post_gmd_ots(pm::PMs.GenericPowerModel; kwargs...)
         constraint_qloss(pm, i) # individual terms of righthand side of constraints 3x
         constraint_thermal_protection(pm, i) # constraints 3w
         constraint_current_on_off(pm, i) # constraints 3k, 3l, and 3n
+
+        #constraint_ohms_yt_from_on_off(pm, i)
+        #constraint_ohms_yt_to_on_off(pm, i)
 
         PMs.constraint_ohms_yt_from_on_off(pm, i) # constraints 3d, 3e
         PMs.constraint_ohms_yt_to_on_off(pm, i)   # constraints 3f, 3g

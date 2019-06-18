@@ -77,7 +77,7 @@ function constraint_qloss_constant_v(pm::PMs.GenericPowerModel, n::Int, c::Int, 
     JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
 end
 
-"Constraint for computing qloss assuming DC voltage is constant"
+"Constraint for computing qloss assuming ac primary voltage is constant"
 function constraint_qloss_constant_v(pm::PMs.GenericPowerModel, n::Int, c::Int, k, i, j)
     qloss = PMs.var(pm, n, c, :qloss)
 
