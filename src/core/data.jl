@@ -454,7 +454,7 @@ end
 # These are for a single time point and transformer...how to elegantly apply to multiples times/transformers??
 # what are the values for delta_re and ne
 ""
-function ss_top_oil_rise(branch, result; delta_rated=75)
+function ss_top_oil_rise(branch, result; base_mva=100, delta_rated=75)
     if !branch["transformer"]
         return 0
     end
@@ -462,7 +462,7 @@ function ss_top_oil_rise(branch, result; delta_rated=75)
     i = branch["index"]
     bs = result["solution"]["branch"]["$i"]
     S = sqrt(bs["pf"]^2 + bs["qf"]^2)
-    K = S/branch["rate_a"] # calculate the loading
+    K = S/(base_mva*branch["rate_a"]) #calculate the loading
 
     @printf "S: %0.3f, Smax: %0.3f\n" S branch["rate_a"]
     # this assumes that no-load transformer losses are very small
@@ -475,8 +475,8 @@ end
 
 ""
 # tau_oil = 71 mins
-function top_oil_rise(branch, result; tau_oil=4260, Delta_t=10)
-    delta_oil_ss = ss_top_oil_rise(branch, result)
+function top_oil_rise(branch, result; base_mva=100, tau_oil=4260, Delta_t=10)
+    delta_oil_ss = ss_top_oil_rise(branch, result; base_mva=base_mva)
     delta_oil = delta_oil_ss # if we are at 1st iteration then assume starts from steady-state
 
     if ("delta_oil" in keys(branch) && "delta_oil_ss" in keys(branch))
@@ -494,6 +494,15 @@ function top_oil_rise(branch, result; tau_oil=4260, Delta_t=10)
 
    branch["delta_oil_ss"] = delta_oil_ss 
    branch["delta_oil"] = delta_oil
+end
+
+""
+# FUNCTION: calculate steady-state hotspot temperature rise for the time-extension mitigation problem
+function ss_hotspot_rise(branch, result; Re=0.63)
+    delta_hs = 0
+    Ie = branch["ieff"]
+    delta_hs = Re*Ie
+    branch["delta_hs"] = delta_hs
 end
 
 

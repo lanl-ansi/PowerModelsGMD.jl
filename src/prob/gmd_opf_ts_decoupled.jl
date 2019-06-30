@@ -23,8 +23,10 @@ function run_ac_gic_opf_ts_decoupled(dc_case, solver, mods, settings; kwargs...)
     ac_case = deepcopy(dc_case)
 
     # get the number of time steps
-    N = length(mods["times"])
+    t = mods["times"]
+    N = length(t)
     ts_data = []
+    Delta_t = t[2] - t[1]
 
     for n in 1:N
         modify_gic_case(dc_case, mods, n)
@@ -44,6 +46,22 @@ function run_ac_gic_opf_ts_decoupled(dc_case, solver, mods, settings; kwargs...)
         data["time"] = mods["times"][n]
         data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
         data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
+
+
+        if n == 1
+            Delta_t = t[2] - t[1]
+        else
+            Delta_t = t[n] - t[n-1]
+        end
+
+        if "output" in settings && "transformer_temperatures" in settings["output"] && settings["output"] == true
+            top_oil_rise(br, result; Delta_t = Delta_t, base_mva = net["baseMVA"]))
+            update_top_oil_rise(br, net)
+
+            ss_hotspot_rise(br, result)
+            update_hotspot_rise(br, net)
+        end
+
 
         push!(ts_data, data) 
     end
