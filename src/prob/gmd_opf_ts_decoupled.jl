@@ -34,7 +34,7 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
         end
 
         for (k,br) in data["ac"]["case"]["branch"]
-            if !(br["transformer"] == true)
+            if !(br["type"] == "transformer" || br["type"] == "xf")
                 continue
             end
 
