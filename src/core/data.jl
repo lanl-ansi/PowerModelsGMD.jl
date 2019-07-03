@@ -455,7 +455,7 @@ end
 # what are the values for delta_re and ne
 ""
 function ss_top_oil_rise(branch, result; base_mva=100, delta_rated=75)
-    if !branch["transformer"]
+    if !(br["type"] == "transformer" || br["type"] == "xf")
         return 0
     end
         
