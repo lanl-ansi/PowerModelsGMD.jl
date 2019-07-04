@@ -1,5 +1,7 @@
 # PowerModelsGMD.jl
 
+dev: [![Build Status](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl.svg?branch=master)](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl)
+
 PowerModelsGMD provides extensions to [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) for solving for quasi-dc line flows 
 and ac power flow problems for an electric power network subjected to geomagnetic disturbances. 
 
