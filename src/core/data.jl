@@ -458,7 +458,7 @@ end
 ""
 # FUNCTION: calculate steady-state top oil temperature rise
 function ss_top_oil_rise(branch, result, base_mva; delta_rated=75)
-    if !(branch["transformer"] == true || branch["xf"] == true)
+    if !(branch["type"] == "transformer" || branch["type"] == "xf")
         return 0
     end
         
