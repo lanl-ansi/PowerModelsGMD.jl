@@ -453,48 +453,55 @@ end
 # Thermal model functions
 # These are for a single time point and transformer...how to elegantly apply to multiples times/transformers??
 # what are the values for delta_re and ne
+
+
 ""
-function ss_top_oil_rise(branch, result; base_mva=100, delta_rated=75)
-    if !(br["type"] == "transformer" || br["type"] == "xf")
+# FUNCTION: calculate steady-state top oil temperature rise
+function ss_top_oil_rise(branch, result, base_mva; delta_rated=75)
+    if !(branch["transformer"] == true || branch["xf"] == true)
         return 0
     end
         
     i = branch["index"]
     bs = result["solution"]["branch"]["$i"]
     S = sqrt(bs["pf"]^2 + bs["qf"]^2)
-    K = S/(base_mva*branch["rate_a"]) #calculate the loading
+    K = S/(branch["rate_a"] * base_mva) #calculate the loading
 
-    @printf "S: %0.3f, Smax: %0.3f\n" S branch["rate_a"]
-    # this assumes that no-load transformer losses are very small
+    println("S: $S \nSmax: $(branch["rate_a"]) \n")
+    #assumptions: no-load, transformer losses are very small 
     # 75 = top oil temp rise at rated power
-    # 30 = ambient temperature
+    # 30 = ambient temperature    
     return delta_rated*K^2
 end
 
-   
 
 ""
-# tau_oil = 71 mins
-function top_oil_rise(branch, result; base_mva=100, tau_oil=4260, Delta_t=10)
-    delta_oil_ss = ss_top_oil_rise(branch, result; base_mva=base_mva)
-    delta_oil = delta_oil_ss # if we are at 1st iteration then assume starts from steady-state
+# FUNCTION: calculate top-oil temperature rise
+function top_oil_rise(branch, result; tau_oil=4260, Delta_t=10)
+    # tau_oil = 71 mins
+    
+    delta_oil_ss = ss_top_oil_rise(branch, result, base_mva)
+    #delta_oil_ss = 1 #testing for step response
+    delta_oil = delta_oil_ss # if 1st iteration, assume it starts from steady-state value
 
     if ("delta_oil" in keys(branch) && "delta_oil_ss" in keys(branch))
         println("Updating oil temperature")
         delta_oil_prev = branch["delta_oil"]
         delta_oil_ss_prev = branch["delta_oil_ss"] 
 
-
         # trapezoidal integration
         tau = 2*tau_oil/Delta_t
         delta_oil = (delta_oil_ss + delta_oil_ss_prev)/(1 + tau) - delta_oil_prev*(1 - tau)/(1 + tau)
     else
+        delta_oil = 0
         println("Setting initial oil temperature")
     end
 
    branch["delta_oil_ss"] = delta_oil_ss 
    branch["delta_oil"] = delta_oil
+
 end
+
 
 ""
 # FUNCTION: calculate steady-state hotspot temperature rise for the time-extension mitigation problem
@@ -503,13 +510,15 @@ function ss_hotspot_rise(branch, result; Re=0.63)
     Ie = branch["ieff"]
     delta_hs = Re*Ie
     branch["delta_hs"] = delta_hs
+
 end
 
 
 ""
-# for the time-extension mitigation problem 
-# Re comes from Randy Horton's report, transformer model E on p. 52
+# FUNCTION: calculate hotspot temperature rise for the time-extension mitigation problem
 function hotspot_rise(branch, result, Ie_prev; tau_hs=150, Delta_t=10, Re=0.63)
+    # 'Re': from Randy Horton's report, transformer model E on p. 52
+    
     delta_hs = 0
     Ie = branch["ieff"]
     tau = 2*tau_hs/Delta_t
@@ -522,21 +531,26 @@ function hotspot_rise(branch, result, Ie_prev; tau_hs=150, Delta_t=10, Re=0.63)
     end
 
     branch["delta_hs"] = delta_hs
+
 end
 
+
 ""
+# FUNCTION: update top-oil temperature rise for the network
 function update_top_oil_rise(branch, net)
     k = "$(branch["index"])"
-    # update top-oil rise for the network
     net["branch"][k]["delta_oil"] = branch["delta_oil"]
     net["branch"][k]["delta_oil_ss"] = branch["delta_oil_ss"]
 end
 
+
 ""
+# FUNCTION: update hotspot temperature rise for the network
 function update_hotspot_rise(branch, net)
     k = "$(branch["index"])"
-    # update top-oil rise for the network
     net["branch"][k]["delta_hs"] = branch["delta_hs"]
 end
+
+
 
 
