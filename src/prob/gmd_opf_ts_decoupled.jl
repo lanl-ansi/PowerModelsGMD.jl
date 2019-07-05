@@ -2,36 +2,43 @@
 export run_ac_gmd_opf_ts_decoupled
 
 
+# FUNCTION: update the vs values
 function modify_gmd_case!(net, mods, time_index) 
     for (k,wf) in mods["waveforms"]
         otype = wf["parent_type"]
         field  = wf["parent_field"]
         net[otype][k][field] = wf["values"][time_index]
     end
-
-
     return net
 end
-        
 
+
+# FUNCTION: decoupled time-extended GMD+OPF formulation
 function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
-    # get the number of time steps
-    t = mods["time"]
-    N = length(t)
+    timesteps = mods["time"]
+    n = length(timesteps)
+    t = timesteps
+    Delta_t = t[2]-t[1]
+    
+    base_mva = net["baseMVA"]
+    println("")
+
     results = []
 
-    for n in 1:N
-        modify_gmd_case!(net, mods, n)
+
+
+    for i in 1:n
+        modify_gmd_case!(net, mods, i)
         data = PowerModelsGMD.run_ac_gmd_opf_decoupled(net, solver; setting=settings)
-        data["time_index"] = n
-        data["time"] = t[n]
+        data["time_index"] = i
+        data["time"] = t[i]
+        
         push!(results, data)
 
-        Delta_t = t[2] - t[1]
-
-        if n > 1
-            Delta_t = t[n] - t[n-1]
+        if i > 1
+            Delta_t = t[i] - t[i-1]
         end
+
 
         for (k,br) in data["ac"]["case"]["branch"]
             if !(br["type"] == "transformer" || br["type"] == "xf")
@@ -39,10 +46,13 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
             end
 
             result = data["ac"]["result"]
-            top_oil_rise(br, result; base_mva=net["baseMVA"], Delta_t = Delta_t)
+            
+            top_oil_rise(br, result; base_mva, Delta_t = Delta_t)
             update_top_oil_rise(br, net)
+            
             ss_hotspot_rise(br, result)
             update_hotspot_rise(br, net)
+            
         end
     end
 
