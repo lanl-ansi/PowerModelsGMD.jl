@@ -467,7 +467,7 @@ function ss_top_oil_rise(branch, result, base_mva; delta_rated=75)
     S = sqrt(bs["pf"]^2 + bs["qf"]^2)
     K = S/(branch["rate_a"] * base_mva) #calculate the loading
 
-    println("S: $S \nSmax: $(branch["rate_a"]) \n")
+    # println("S: $S \nSmax: $(branch["rate_a"]) \n")
     #assumptions: no-load, transformer losses are very small 
     # 75 = top oil temp rise at rated power
     # 30 = ambient temperature    
@@ -485,7 +485,7 @@ function top_oil_rise(branch, result, base_mva; tau_oil=4260, Delta_t=10)
     delta_oil = delta_oil_ss # if 1st iteration, assume it starts from steady-state value
 
     if ("delta_oil" in keys(branch) && "delta_oil_ss" in keys(branch))
-        println("Updating oil temperature")
+        # println("Updating oil temperature")
         delta_oil_prev = branch["delta_oil"]
         delta_oil_ss_prev = branch["delta_oil_ss"] 
 
@@ -494,7 +494,7 @@ function top_oil_rise(branch, result, base_mva; tau_oil=4260, Delta_t=10)
         delta_oil = (delta_oil_ss + delta_oil_ss_prev)/(1 + tau) - delta_oil_prev*(1 - tau)/(1 + tau)
     else
         delta_oil = 0
-        println("Setting initial oil temperature")
+        # println("Setting initial oil temperature")
     end
 
    branch["delta_oil_ss"] = delta_oil_ss 
