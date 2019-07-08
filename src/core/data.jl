@@ -477,7 +477,7 @@ end
 
 ""
 # FUNCTION: calculate top-oil temperature rise
-function top_oil_rise(branch, result; tau_oil=4260, Delta_t=10)
+function top_oil_rise(branch, result, base_mva; tau_oil=4260, Delta_t=10)
     # tau_oil = 71 mins
     
     delta_oil_ss = ss_top_oil_rise(branch, result, base_mva)
