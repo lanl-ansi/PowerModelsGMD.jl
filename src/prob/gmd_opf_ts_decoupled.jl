@@ -1,4 +1,4 @@
-# Formulations of GMD Problems
+# FORMULATIONS OF GMD PROBLEMS
 export run_ac_gmd_opf_ts_decoupled
 
 
@@ -24,8 +24,15 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
     println("")
 
     results = []
+    Ie_prev = Dict()
+    
+    for (k,br) in net["branch"]
+        Ie_prev[k] = nothing
+    end
 
+    println("Start running each time periods\n")
     for i in 1:n
+        println("########## Time: $(t[i]) ##########")
         modify_gmd_case!(net, mods, i)
         data = PowerModelsGMD.run_ac_gmd_opf_decoupled(net, solver; setting=settings)
         data["time_index"] = i
@@ -48,9 +55,11 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
             update_top_oil_rise(br, net)
 
             ss_hotspot_rise(br, result)
+            # hotspot_rise(branch, result, Ie_prev) #decieded to only use stead-state value
             update_hotspot_rise(br, net)
         end
     end
+    println("Done running\n")
 
     return results
 end
