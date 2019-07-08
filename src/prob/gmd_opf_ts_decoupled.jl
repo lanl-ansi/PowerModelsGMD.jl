@@ -25,8 +25,6 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
 
     results = []
 
-
-
     for i in 1:n
         modify_gmd_case!(net, mods, i)
         data = PowerModelsGMD.run_ac_gmd_opf_decoupled(net, solver; setting=settings)
@@ -39,7 +37,6 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
             Delta_t = t[i] - t[i-1]
         end
 
-
         for (k,br) in data["ac"]["case"]["branch"]
             if !(br["type"] == "transformer" || br["type"] == "xf")
                 continue
@@ -49,10 +46,9 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
             
             top_oil_rise(br, result; base_mva, Delta_t = Delta_t)
             update_top_oil_rise(br, net)
-            
+
             ss_hotspot_rise(br, result)
             update_hotspot_rise(br, net)
-            
         end
     end
 
