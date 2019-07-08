@@ -44,7 +44,7 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
 
             result = data["ac"]["result"]
             
-            top_oil_rise(br, result; base_mva, Delta_t = Delta_t)
+            top_oil_rise(br, result, base_mva; Delta_t = Delta_t)
             update_top_oil_rise(br, net)
 
             ss_hotspot_rise(br, result)
