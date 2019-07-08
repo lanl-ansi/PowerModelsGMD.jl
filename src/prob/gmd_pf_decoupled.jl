@@ -35,7 +35,7 @@ function post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
         PowerModels.constraint_voltage_magnitude_setpoint(pm, k)
     end
 
-    for k in PMs.ids(pm, :bus)
+    for (k,bus) in PMs.ref(pm, :bus)
         constraint_kcl_gmd(pm, k)
 
         # PV Bus Constraints
@@ -52,9 +52,9 @@ function post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
 
     for k in PMs.ids(pm, :branch)
         if vnom 
-            constraint_qloss_vnom(pm, k)
+            constraint_qloss_decoupled_vnom(pm, k)
         else
-            constraint_qloss(pm, k)
+            constraint_qloss_decoupled(pm, k)
         end
 
         PowerModels.constraint_ohms_yt_from(pm, k) 
@@ -96,7 +96,7 @@ end
 
 "Run the basic GMD model"
 function run_pf_qloss_vnom(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_pf_qloss_vnom; solution_builder = get_gmd_decoupled_solution, kwargs...)
+    return PMs.run_model(file, model_constructor, solver, post_pf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
 function run_ac_gmd_pf_decoupled(dc_case, solver; setting=Dict{String,Any}(), kwargs...)
@@ -112,6 +112,8 @@ function run_ac_gmd_pf_decoupled(dc_case, solver; setting=Dict{String,Any}(), kw
     end
 
     ac_result = run_ac_pf_qloss(ac_case, solver, setting=setting)
+    ac_solution = ac_result["solution"]
+    make_gmd_mixed_units(ac_solution, 100.0)
 
     data = Dict()
     data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
