@@ -32,7 +32,8 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
 
     println("Start running each time periods\n")
     for i in 1:n
-        println("########## Time: $(t[i]) ##########\n")
+        println("")
+        println("########## Time: $(t[i]) ##########")
         modify_gmd_case!(net, mods, i)
         data = PowerModelsGMD.run_ac_gmd_opf_decoupled(net, solver; setting=settings)
         data["time_index"] = i
