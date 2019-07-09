@@ -36,11 +36,11 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
         println("########## Time: $(t[i]) ##########")
         modify_gmd_case!(net, mods, i)
         data = PowerModelsGMD.run_ac_gmd_opf_decoupled(net, solver; setting=settings)
+        
         data["time_index"] = i
         data["time"] = t[i]
+        data["temperature"] = Dict("branch"=>[], "delta_oilrise"=>[], "delta_oilrise_ss"=>[], "delta_hotspot"=>[])
         
-        push!(results, data)
-
         if i > 1
             Delta_t = t[i] - t[i-1]
         end
@@ -58,7 +58,18 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
             ss_hotspot_rise(br, result)
             # hotspot_rise(branch, result, Ie_prev) #decieded to only use stead-state value
             update_hotspot_rise(br, net)
+            
+            #store temperature related results
+            push!(data["temperature"]["branch"], k)
+            push!(data["temperature"]["Ieff"], br["ieff"])
+            push!(data["temperature"]["delta_oilrise"], br["delta_oil"])
+            push!(data["temperature"]["delta_oilrise_ss"], br["delta_oil_ss"])
+            push!(data["temperature"]["delta_hotspot"], br["delta_hs"])
+            
         end
+        
+        push!(results, data)
+        
     end
     println("Finished running\n")
 
