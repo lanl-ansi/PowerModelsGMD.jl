@@ -39,7 +39,7 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
         
         data["time_index"] = i
         data["time"] = t[i]
-        data["temperature"] = Dict("branch"=>[], "delta_oilrise"=>[], "delta_oilrise_ss"=>[], "delta_hotspot"=>[])
+        data["temperature"] = Dict("branch"=>[], "Ieff"=>[], "delta_oilrise"=>[], "delta_oilrise_ss"=>[], "delta_hotspot"=>[])
         
         if i > 1
             Delta_t = t[i] - t[i-1]
