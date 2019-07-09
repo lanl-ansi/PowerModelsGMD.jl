@@ -39,7 +39,7 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
         
         data["time_index"] = i
         data["time"] = t[i]
-        data["temperature"] = Dict("branch"=>[], "Ieff"=>[], "delta_oilrise"=>[], "delta_oilrise_ss"=>[], "delta_hotspot"=>[])
+        data["temperatures"] = Dict("branch"=>[], "Ieff"=>[], "delta_topoilrise_ss"=>[], "delta_hotspotrise_ss"=>[], "actual_hotspot"=>[])
         
         if i > 1
             Delta_t = t[i] - t[i-1]
@@ -56,16 +56,19 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
             update_top_oil_rise(br, net)
 
             ss_hotspot_rise(br, result)
-            # hotspot_rise(branch, result, Ie_prev) #decieded to only use stead-state value
+            # hotspot_rise(branch, result, Ie_prev) #decided to only use the stead-state value
             update_hotspot_rise(br, net)
             
-            #store temperature related results
-            push!(data["temperature"]["branch"], k)
-            push!(data["temperature"]["Ieff"], br["ieff"])
-            push!(data["temperature"]["delta_oilrise"], br["delta_oil"])
-            push!(data["temperature"]["delta_oilrise_ss"], br["delta_oil_ss"])
-            push!(data["temperature"]["delta_hotspot"], br["delta_hs"])
             
+            # Store transformer temperature related results:
+            temp_ambient = 25
+            push!(data["temperatures"]["branch"], k)
+            push!(data["temperatures"]["Ieff"], br["ieff"])
+            # push!(data["temperatures"]["delta_oilrise"], br["delta_oil"]) #decided not to store value
+            push!(data["temperatures"]["delta_topoilrise_ss"], br["delta_oil_ss"])
+            push!(data["temperatures"]["delta_hotspotrise_ss"], br["delta_hs"])            
+            push!(data["temperatures"]["actual_hotspot"], (temp_ambient+br["delta_oil_ss"]+br["delta_hs"]))
+
         end
         
         push!(results, data)
@@ -75,6 +78,3 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
 
     return results
 end
-
-
-     
