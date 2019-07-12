@@ -18,7 +18,7 @@ end
 "Stub out quasi dynamic gmd"
 # FUNCTION: problem formulation
 function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
-    for (n, network) in nws(pm)
+    for (n, network) in PMs.nws(pm)
         PMs.variable_voltage(pm, nw=n)
         PowerModelsGMD.variable_dc_voltage(pm, nw=n)
         PowerModelsGMD.variable_dc_current_mag(pm, nw=n)
