@@ -266,7 +266,7 @@ function variable_delta_oil_ss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::I
     else
         PMs.var(pm, nw, cnd)[:ross] = JuMP.@variable(pm.model, 
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
-            start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
         )
     end
 end
@@ -279,14 +279,17 @@ function variable_delta_oil(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
             lower_bound = 0,
             upper_bound = 200,
-            start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_start", cnd)
         )
     else
         PMs.var(pm, nw, cnd)[:ro] = JuMP.@variable(pm.model, 
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
-            start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_start", cnd)
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_start", cnd)
         )
     end
 end
 
 
+#write a hot-spot rise tem
+#write a actual temp.
+#write a function for ieff as well

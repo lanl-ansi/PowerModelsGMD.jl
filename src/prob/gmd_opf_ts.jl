@@ -5,7 +5,7 @@ export run_gmd_opf_ts, run_ac_gmd_opf_ts
 
 "Run the basic GMD model"
 function run_gmd_opf_ts(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_gmd_opf_ts; solution_builder = get_gmd_solution, multinetwork=true, kwargs...)
+    return PMs.run_model(file, model_constructor, solver, post_gmd_opf_ts; solution_builder = get_gmd_ts_solution, multinetwork=true, kwargs...)
 end
 
 
@@ -44,7 +44,7 @@ function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
         for i in PMs.ids(pm, :bus, nw=n)
             PowerModelsGMD.constraint_kcl_gmd(pm, i, nw=n)
         end
-        @printf "Adding constraints for branch %d\n" i
+        
         for i in PMs.ids(pm, :branch, nw=n)
             PowerModelsGMD.constraint_dc_current_mag(pm, i, nw=n)
             PowerModelsGMD.constraint_qloss_vnom(pm, i, nw=n)

@@ -90,12 +90,11 @@ end
 
 ""
 function add_temperature_setpoint(sol, pm::PMs.GenericPowerModel)
-    PMs.add_setpoint!(sol, pm, "temperatures", "branch", :br_id, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
-    PMs.add_setpoint!(sol, pm, "temperatures", "Ieff", :ieff, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
-    #PMs.add_setpoint!(sol, pm, "temperatures", "delta_oilrise", :dtor, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"])) #decided not to store value
-    PMs.add_setpoint!(sol, pm, "temperatures", "delta_topoilrise_ss", :dtor_ss, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
-    PMs.add_setpoint!(sol, pm, "temperatures", "delta_hotspotrise_ss", :dhsr_ss, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
-    #PMs.add_setpoint!(sol, pm, "temperatures", "actual_hotspot", :actual, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"])) #decided not to store value
+    #PMs.add_setpoint!(sol, pm, "branch", "Ieff", :..., status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
+    #PMs.add_setpoint!(sol, pm, "branch", "delta_oilrise", :ro, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"])) #decided not to store value
+    PMs.add_setpoint!(sol, pm, "branch", "delta_topoilrise_ss", :ross, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
+    #PMs.add_setpoint!(sol, pm, "branch", "delta_hotspotrise_ss", :dhsr_ss, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
+    #PMs.add_setpoint!(sol, pm, "branch", "actual_hotspot", :actual, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"])) #decided not to store value
 end
 
 
