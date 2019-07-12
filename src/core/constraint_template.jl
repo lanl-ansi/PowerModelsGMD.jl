@@ -284,6 +284,7 @@ function constraint_dc_ohms_on_off(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
     constraint_dc_ohms_on_off(pm, nw, cnd, i, gs, vs, f_bus, t_bus, ac_branch)
 end
 
+
 #"Constraint for current magnitude "
 #function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
 #    branch = ref(pm, nw, :branch, k)
@@ -298,4 +299,45 @@ function constraint_dc_current_mag_on_off(pm::PMs.GenericPowerModel, k; nw::Int=
     dc_max = calc_dc_mag_max(pm, k, nw=nw)
     constraint_dc_current_mag_on_off(pm, nw, cnd, k, dc_max)
 end
+
+
+
+# -- Thermal Constraints -- #
+
+""
+function constraint_temperature_state_ss(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, delta_oil_rated=150)
+    #temperature = ref(pm, nw, :storage, i)
+
+    branch = ref(pm, nw, :branch, i)
+    rate_a = branch["rate_a"]
+
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    cnd = 1 # only support positive sequence for now
+
+    constraint_temperature_steady_state(pm, nw, i, f_idx, cnd, rate_a, delta_oil_rated)
+end
+
+
+""
+function constraint_temperature_state(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, tau_hs=150, Re=0.63, delta_oil_init=75)
+    #temperature = ref(pm, nw, :storage, i)
+
+    if haskey(pm.data, "time_elapsed")
+        time_elapsed = pm.data["time_elapsed"]
+    else
+        warn("network data should specify time_elapsed, using 1.0 as a default")
+        time_elapsed = 1.0
+    end
+
+    branch = ref(pm, nw, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    cnd = 1 # only support positive sequence for now
+
+    constraint_temperature_state_initial(pm, nw, i, f_idx, cnd, delta_oil_init, tau, time_elapsed)
+end
+
 
