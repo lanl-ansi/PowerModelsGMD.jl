@@ -303,14 +303,14 @@ end
 # -- Thermal Constraints -- #
 
 "steady state temperature constrain"
-function constraint_temperature_steady_state(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
+function constraint_temperature_steady_state(pm::PMs.GenericPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
     #i is index of the (transformer) branch
     #fi is index of the "from" branch terminal
     
-    p_fr = var(pm, n, c, :p, fi) # real power
-    q_fr = var(pm, n, c, :q, fi) # reactive power
-    delta_oil_ss = var(pm, n, c, :ross, i) # top-oil temperature rise
-    @constraint(pm.model, rate_a^2*delta_oil_ss/delta_oil_rated >= p_fr^2 + q_fr^2)
+    p_fr = PMs.var(pm, n, c, :p, fi) # real power
+    q_fr = PMs.var(pm, n, c, :q, fi) # reactive power
+    delta_oil_ss = PMs.var(pm, n, c, :ross, i) # top-oil temperature rise
+    JuMP.@constraint(pm.model, rate_a^2*delta_oil_ss/delta_oil_rated >= p_fr^2 + q_fr^2)
 end
 
 
