@@ -96,7 +96,10 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
 
     for bus in data["bus"]
         zb = bus["base_kv"]^2/mva_base
+
+        #println("bus: $(bus["index"]), zb: $zb, a(pu): $(bus["gmd_gs"])")
         bus["gmd_gs"] *= zb
+        #println("-> a(pu): $(bus["gmd_gs"]) \n")
     end
 end
 
@@ -109,7 +112,7 @@ function calc_ac_mag_max(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=
     t_bus = PMs.ref(pm, nw, :bus, branch["t_bus"])
     ac_max = branch["rate_a"]*branch["tap"] / min(f_bus["vmin"], t_bus["vmin"])
 
-    # println(i, " " , ac_max, " ", branch["rate_a"], " ", pm.ref[:nw][n][:bus][f_bus]["vmin"], " ", pm.ref[:nw][n][:bus][t_bus]["vmin"])
+    #println(i, " " , ac_max, " ", branch["rate_a"], " ", pm.ref[:nw][n][:bus][f_bus]["vmin"], " ", pm.ref[:nw][n][:bus][t_bus]["vmin"])
 
     return ac_max
 end

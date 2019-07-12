@@ -316,7 +316,7 @@ function constraint_temperature_state_ss(pm::PMs.GenericPowerModel, i::Int; nw::
     f_idx = (i, f_bus, t_bus)
     cnd = 1 # only support positive sequence for now
 
-    constraint_temperature_steady_state(pm, nw, i, f_idx, cnd, rate_a, delta_oil_rated)
+    PowerModelsGMD.constraint_temperature_steady_state(pm, nw, i, f_idx, cnd, rate_a, delta_oil_rated)
 end
 
 
@@ -331,13 +331,13 @@ function constraint_temperature_state(pm::PMs.GenericPowerModel, i::Int; nw::Int
         time_elapsed = 1.0
     end
 
-    branch = ref(pm, nw, i)
+    branch = PMs.ref(pm, nw, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
     f_idx = (i, f_bus, t_bus)
     cnd = 1 # only support positive sequence for now
 
-    constraint_temperature_state_initial(pm, nw, i, f_idx, cnd, delta_oil_init, tau, time_elapsed)
+    PowerModelsGMD.constraint_temperature_state_initial(pm, nw, i, f_idx, cnd, delta_oil_init, tau, time_elapsed)
 end
 
 

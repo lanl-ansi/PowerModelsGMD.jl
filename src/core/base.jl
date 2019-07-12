@@ -19,6 +19,7 @@ function check_gmd_branch_parent_status(ref, i, gmd_branch)
         status = parent_branch["br_status"] == 1 && gmd_branch["f_bus"] in keys(ref[:gmd_bus]) && gmd_branch["t_bus"] in keys(ref[:gmd_bus])
     end
 
+    #println("status is $status \n") 
     return status
 end
 

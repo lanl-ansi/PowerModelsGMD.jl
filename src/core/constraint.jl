@@ -238,7 +238,7 @@ end
 
 "Constraint for computing qloss assuming varying ac voltage"
 function constraint_qloss_decoupled(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    branch = PMs.ref(pm, nw, :branch, k)
+    branch = ref(pm, nw, :branch, k)
 
     i = branch["hi_bus"]
     j = branch["lo_bus"]
@@ -289,7 +289,7 @@ function constraint_temperature_steady_state(pm::PMs.GenericPowerModel, n::Int, 
     
     p_fr = PMs.var(pm, n, c, :p, fi) # real power
     q_fr = PMs.var(pm, n, c, :q, fi) # reactive power
-    delta_oil_ss = var(pm, n, c, :ross, i) # top-oil temperature rise
+    delta_oil_ss = PMs.var(pm, n, c, :ross, i) # top-oil temperature rise
     JuMP.@constraint(pm.model, rate_a^2*delta_oil_ss/delta_oil_rated >= p_fr^2 + q_fr^2)
 end
 
