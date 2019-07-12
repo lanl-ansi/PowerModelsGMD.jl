@@ -13,7 +13,7 @@ function post_gmd(pm::PMs.GenericPowerModel; kwargs...)
 
     ### DC network constraints ###
     for i in PMs.ids(pm, :gmd_bus)
-        debug("Adding constraits for bus $i")
+        Memento.debug(LOGGER, "Adding constraits for bus $i")
         constraint_dc_kcl_shunt(pm, i)
     end
 

@@ -305,10 +305,10 @@ end
 # -- Thermal Constraints -- #
 
 ""
-function constraint_temperature_state_ss(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, delta_oil_rated=150)
+function constraint_temperature_state_ss(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, delta_oil_rated=150)
     #temperature = ref(pm, nw, :storage, i)
 
-    branch = ref(pm, nw, :branch, i)
+    branch = PMs.ref(pm, nw, :branch, i)
     rate_a = branch["rate_a"]
 
     f_bus = branch["f_bus"]
@@ -321,7 +321,7 @@ end
 
 
 ""
-function constraint_temperature_state(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw, tau_hs=150, Re=0.63, delta_oil_init=75)
+function constraint_temperature_state(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, tau_hs=150, Re=0.63, delta_oil_init=75)
     #temperature = ref(pm, nw, :storage, i)
 
     if haskey(pm.data, "time_elapsed")

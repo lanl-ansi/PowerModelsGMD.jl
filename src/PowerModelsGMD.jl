@@ -4,7 +4,7 @@ module PowerModelsGMD
     import InfrastructureModels
     import PowerModels
 
-    # import Memento
+    import Memento
 
     using Printf: @printf, @sprintf
 
