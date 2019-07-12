@@ -5,7 +5,7 @@ export run_gmd_opf_ts, run_ac_gmd_opf_ts
 
 "Run the basic GMD model"
 function run_gmd_opf_ts(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_gmd_quasic_dynamic_pf; solution_builder = get_gmd_solution, kwargs...)
+    return PMs.run_model(file, model_constructor, solver, post_gmd_opf_ts; solution_builder = get_gmd_solution, kwargs...)
 end
 
 
@@ -18,8 +18,6 @@ end
 "Stub out quasi dynamic gmd"
 # FUNCTION: problem formulation
 function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
-#function post_gmd_opf_ts(pm::PMs.ACPPowerModel; kwargs...)
-    
     for (n, network) in nws(pm)
         PMs.variable_voltage(pm, nw=n)
         PowerModelsGMD.variable_dc_voltage(pm, nw=n)
