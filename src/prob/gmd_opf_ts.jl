@@ -5,7 +5,7 @@ export run_gmd_opf_ts, run_ac_gmd_opf_ts
 
 "Run the basic GMD model"
 function run_gmd_opf_ts(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_gmd_opf_ts; solution_builder = get_gmd_solution, kwargs...)
+    return PMs.run_model(file, model_constructor, solver, post_gmd_opf_ts; solution_builder = get_gmd_solution, multinetwork=true, kwargs...)
 end
 
 
