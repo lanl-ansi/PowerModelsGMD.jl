@@ -255,16 +255,16 @@ end
 # -- Thermal Variables -- #
 
 "add in realistic bounds for top-oil steady-state temperature rise"
-function variable_delta_oil_ss(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+function variable_delta_oil_ss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
     if bounded
-        var(pm, nw, cnd)[:ross] = JuMP.@variable(pm.model, 
+        PMs.var(pm, nw, cnd)[:ross] = JuMP.@variable(pm.model, 
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
             lower_bound = 0,
             upper_bound = 200,
             start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
         )
     else
-        var(pm, nw, cnd)[:ross] = JuMP.@variable(pm.model, 
+        PMs.var(pm, nw, cnd)[:ross] = JuMP.@variable(pm.model, 
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
             start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
         )
@@ -273,16 +273,16 @@ end
 
 
 "add in realistic bounds for top-oil temperature rise"
-function variable_delta_oil(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+function variable_delta_oil(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
     if bounded
-        var(pm, nw, cnd)[:ro] = JuMP.@variable(pm.model, 
+        PMs.var(pm, nw, cnd)[:ro] = JuMP.@variable(pm.model, 
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
             lower_bound = 0,
             upper_bound = 200,
             start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_start", cnd)
         )
     else
-        var(pm, nw, cnd)[:ro] = JuMP.@variable(pm.model, 
+        PMs.var(pm, nw, cnd)[:ro] = JuMP.@variable(pm.model, 
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
             start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_start", cnd)
         )
