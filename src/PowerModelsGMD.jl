@@ -4,7 +4,7 @@ module PowerModelsGMD
     import InfrastructureModels
     import PowerModels
 
-    import Memento
+    # import Memento
 
     using Printf: @printf, @sprintf
 
@@ -33,8 +33,7 @@ module PowerModelsGMD
     include("prob/gmd_ls.jl")
     include("prob/gmd_ots.jl")
     include("prob/gmd_msse_decoupled.jl")
-    #include("prob/gic_opf_ts.jl")
+    include("prob/gmd_opf_ts.jl")
     include("prob/gmd_opf_ts_decoupled.jl")
     #include("prob/gic_msse_decoupled.jl")
-    #include("prob/gic_ots_ts.jl")
 end

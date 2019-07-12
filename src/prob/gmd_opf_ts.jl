@@ -27,7 +27,7 @@ function post_gmd_opf_ts(pm::PMs.ACPPowerModel; kwargs...)
     PMs.constraint_voltage(pm)
 
     for i in ids(pm, :branch)
-        @printf "Adding constraints for branch %d\n" i
+        debug("Adding constraints for branch $i")
         constraint_dc_current_mag(pm, i)
         constraint_qloss_constant_v(pm, i)
 

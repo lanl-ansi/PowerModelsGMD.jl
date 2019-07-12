@@ -96,9 +96,7 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
 
     for bus in data["bus"]
         zb = bus["base_kv"]^2/mva_base
-        #@printf "bus [%d] zb: %f a(pu): %f\n" bus["index"] zb bus["gmd_gs"]
         bus["gmd_gs"] *= zb
-        # @printf " -> a(pu): %f\n" bus["gmd_gs"]
     end
 end
 
