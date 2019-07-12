@@ -15,6 +15,7 @@ function variable_dc_voltage(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int
     end
 end
 
+
 "variable: `v_dc[j]` for `j` in `gmd_branch`"
 function variable_dc_voltage_difference(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
     if bounded
@@ -33,6 +34,7 @@ function variable_dc_voltage_difference(pm::PMs.GenericPowerModel; nw::Int=pm.cn
 
 end
 
+
 "variable: `v_dc[j]` for `j` in `gmd_bus`"
 function variable_dc_voltage_on_off(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
     variable_dc_voltage(pm; nw=nw, cnd=cnd, bounded=bounded)
@@ -44,6 +46,7 @@ function variable_dc_voltage_on_off(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, c
           start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_branch, i), "v_vz_start", cnd)
     )
 end
+
 
 "variable: `i_dc_mag[j]` for `j` in `branch`"
 function variable_dc_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
@@ -62,6 +65,7 @@ function variable_dc_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd:
     end
 end
 
+
 "variable: `i_dc_mag_sqr[j]` for `j` in `branch`"
 function variable_dc_current_mag_sqr(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
     if bounded
@@ -78,6 +82,7 @@ function variable_dc_current_mag_sqr(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, 
         )
     end
 end
+
 
 "variable: `dc[j]` for `j` in `gmd_branch`"
 function variable_dc_line_flow(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
@@ -109,6 +114,7 @@ function variable_dc_line_flow(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::I
     pm.model.ext[:nw][nw][:dc_expr] = dc_expr
 end
 
+
 "variable: `qloss[j]` for `j` in `arcs`"
 function variable_qloss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
     if bounded
@@ -126,6 +132,7 @@ function variable_qloss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.c
     end
 end
 
+
 ""
 function variable_demand_factor(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     PMs.var(pm, nw, cnd)[:z_demand] = JuMP.@variable(pm.model,
@@ -133,6 +140,7 @@ function variable_demand_factor(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::
         start = PMs.comp_start_value(PMs.ref(pm, nw, :bus, i), "z_demand_start", 1.0, cnd)
     )
 end
+
 
 ""
 function variable_shunt_factor(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
@@ -160,6 +168,7 @@ function variable_active_load(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::In
     end
 end
 
+
 "variable: `qd[j]` for `j` in `bus`"
 function variable_reactive_load(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
     if bounded
@@ -177,11 +186,13 @@ function variable_reactive_load(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::
     end
 end
 
+
 "generates variables for both `active` and `reactive` load"
 function variable_load(pm::PMs.GenericPowerModel; kwargs...)
     variable_active_load(pm; kwargs...)
     variable_reactive_load(pm; kwargs...)
 end
+
 
 "variable: `i_ac_mag[j]` for `j` in `branch'"
 function variable_ac_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
@@ -200,6 +211,7 @@ function variable_ac_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd:
     end
 end
 
+
 "variable: `iv[j]` for `j` in `arcs`"
 function variable_iv(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     PMs.var(pm, nw, cnd)[:iv] = JuMP.@variable(pm.model,
@@ -207,6 +219,7 @@ function variable_iv(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd
         start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, l), "iv_start", cnd)
     )
 end
+
 
 "variable: `0 <= gen_z[i] <= 1` for `i` in `generator`s"
 function variable_gen_indicator(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
@@ -218,6 +231,7 @@ function variable_gen_indicator(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::
         start = PMs.comp_start_value(PMs.ref(pm, nw, :gen, i), "gen_z_start", cnd, 1.0)
     )
 end
+
 
 "variable: `pg[j]^2` for `j` in `gen`"
 function variable_active_generation_sqr_cost(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
@@ -235,3 +249,44 @@ function variable_active_generation_sqr_cost(pm::PMs.GenericPowerModel; nw::Int=
         )
     end
 end
+
+
+
+# -- Thermal Variables -- #
+
+"add in realistic bounds for top-oil steady-state temperature rise"
+function variable_delta_oil_ss(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+    if bounded
+        var(pm, nw, cnd)[:ross] = @variable(pm.model, 
+            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
+            lower_bound = 0,
+            upper_bound = 200,
+            start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
+        )
+    else
+        var(pm, nw, cnd)[:ross] = @variable(pm.model, 
+            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
+            start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
+        )
+    end
+end
+
+
+"add in realistic bounds for top-oil temperature rise"
+function variable_delta_oil(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+    if bounded
+        var(pm, nw, cnd)[:ro] = @variable(pm.model, 
+            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
+            lower_bound = 0,
+            upper_bound = 200,
+            start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_start", cnd)
+        )
+    else
+        var(pm, nw, cnd)[:ro] = @variable(pm.model, 
+            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
+            start = PMs.comp_start_value(ref(pm, nw, :branch, i), "delta_oil_start", cnd)
+        )
+    end
+end
+
+
