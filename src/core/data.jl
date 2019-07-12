@@ -450,13 +450,10 @@ function adjust_gmd_phasing(dc_result)
 end
 
 
-# Thermal model functions
-# These are for a single time point and transformer...how to elegantly apply to multiples times/transformers??
-# what are the values for delta_re and ne
 
+# -- Thermal Model Functions -- #
 
-""
-# FUNCTION: calculate steady-state top oil temperature rise
+"calculate steady-state top oil temperature rise"
 function ss_top_oil_rise(branch, result, base_mva; delta_rated=75)
     if !(branch["type"] == "transformer" || branch["type"] == "xf")
         return 0
@@ -475,8 +472,7 @@ function ss_top_oil_rise(branch, result, base_mva; delta_rated=75)
 end
 
 
-""
-# FUNCTION: calculate top-oil temperature rise
+"calculate top-oil temperature rise"
 function top_oil_rise(branch, result, base_mva; tau_oil=4260, Delta_t=10)
     # tau_oil = 71 mins
     
@@ -503,8 +499,7 @@ function top_oil_rise(branch, result, base_mva; tau_oil=4260, Delta_t=10)
 end
 
 
-""
-# FUNCTION: calculate steady-state hotspot temperature rise for the time-extension mitigation problem
+"calculate steady-state hotspot temperature rise for the time-extension mitigation problem"
 function ss_hotspot_rise(branch, result; Re=0.63)
     delta_hs = 0
     Ie = branch["ieff"]
@@ -514,8 +509,7 @@ function ss_hotspot_rise(branch, result; Re=0.63)
 end
 
 
-""
-# FUNCTION: calculate hotspot temperature rise for the time-extension mitigation problem
+"calculate hotspot temperature rise for the time-extension mitigation problem"
 function hotspot_rise(branch, result, Ie_prev; tau_hs=150, Delta_t=10, Re=0.63)
     # 'Re': from Randy Horton's report, transformer model E on p. 52
     
@@ -535,8 +529,7 @@ function hotspot_rise(branch, result, Ie_prev; tau_hs=150, Delta_t=10, Re=0.63)
 end
 
 
-""
-# FUNCTION: update top-oil temperature rise for the network
+"update top-oil temperature rise for the network"
 function update_top_oil_rise(branch, net)
     k = "$(branch["index"])"
     net["branch"][k]["delta_oil"] = branch["delta_oil"]
@@ -544,13 +537,10 @@ function update_top_oil_rise(branch, net)
 end
 
 
-""
-# FUNCTION: update hotspot temperature rise for the network
+"update hotspot temperature rise for the network"
 function update_hotspot_rise(branch, net)
     k = "$(branch["index"])"
     net["branch"][k]["delta_hs"] = branch["delta_hs"]
 end
-
-
 
 
