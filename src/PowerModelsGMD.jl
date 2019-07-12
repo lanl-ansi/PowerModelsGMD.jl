@@ -1,15 +1,17 @@
 module PowerModelsGMD
+    
+    import PowerModels
+    import Ipopt
     import JuMP
 
     import InfrastructureModels
-    import PowerModels
-
     import Memento
 
     using Printf: @printf, @sprintf
 
     const LOGGER = Memento.getlogger(PowerModels)
     const PMs = PowerModels
+    const PMgmd = PowerModelsGMD
 
     include("core/base.jl")
     include("core/data.jl")
@@ -33,8 +35,9 @@ module PowerModelsGMD
     include("prob/gmd_ots.jl")
     include("prob/gmd_msse_decoupled.jl")
     #include("prob/gic_pf_decoupled.jl")
-    #include("prob/gic_opf_ts.jl")
+    include("prob/gic_opf_ts.jl")
     include("prob/gmd_opf_ts_decoupled.jl")
     #include("prob/gic_msse_decoupled.jl")
     #include("prob/gic_ots_ts.jl")
+
 end
