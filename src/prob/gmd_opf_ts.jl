@@ -17,7 +17,7 @@ end
 
 "Stub out quasi dynamic gmd"
 # FUNCTION: problem formulation
-function post_gmd_opf_ts(pm::GenericPowerModel)
+function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
 #function post_gmd_opf_ts(pm::PMs.ACPPowerModel; kwargs...)
     
     for (n, network) in nws(pm)
