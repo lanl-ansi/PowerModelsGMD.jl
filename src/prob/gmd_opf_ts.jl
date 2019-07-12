@@ -4,7 +4,7 @@ export run_gmd_opf_ts, run_ac_gmd_opf_ts
 
 
 "Run the basic GMD model"
-function run_gmd_opf_ts(file::String, model_constructor, solver; kwargs...)
+function run_gmd_opf_ts(file, model_constructor, solver; kwargs...)
     return PMs.run_model(file, model_constructor, solver, post_gmd_quasic_dynamic_pf; solution_builder = get_gmd_solution, kwargs...)
 end
 
