@@ -79,7 +79,7 @@ end
         case = PowerModels.parse_file(casename)
                 
         @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
-        @test isapprox(ac_result["objective"], 980; atol = 1e0)
+        @test isapprox(ac_result["objective"], 980; atol = 10)
           
         dc_solution = output["dc"]["result"]["solution"]
         ac_solution = output["ac"]["result"]["solution"]
@@ -140,13 +140,13 @@ end
     end
 
     @testset "150-bus case" begin
-        casename = "../test/data/uiuc150.m"
+        casename = "../test/data/uiuc150_95pct_loading.m"
         output = run_ac_gmd_opf_decoupled(casename, ipopt_solver)
         ac_result = output["ac"]["result"]
-        println("Testing objective $(ac_result["objective"]) within tolerance")
+        println("Testing objective $(ac_result["objective"]) within tolerance for $casename")
 
         @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
-        @test isapprox(ac_result["objective"], 9.52847e5; atol = 1e5)
+        @test isapprox(ac_result["objective"], 8.66977e5; atol = 1e5)
 
         dc_solution = output["dc"]["result"]["solution"]
         # make_gmd_mixed_units(dc_solution, 100.0)
