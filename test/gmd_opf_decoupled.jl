@@ -79,7 +79,7 @@ end
         case = PowerModels.parse_file(casename)
                 
         @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
-        @test isapprox(ac_result["objective"], 11832.5; atol = 1e3)
+        @test isapprox(ac_result["objective"], 980; atol = 1e0)
           
         dc_solution = output["dc"]["result"]["solution"]
         ac_solution = output["ac"]["result"]["solution"]
@@ -131,7 +131,7 @@ end
         # after computing a diff on the generated JuMP models from v0.7 and v0.8
         # only coeffents in constraint_ohms_yt_from and constraint_ohms_yt_to changed slightly
         # most likely ipopt was getting stuck in a local min previously
-        @test isapprox(ac_result["objective"], 4.99564e5; atol = 1e4)
+        @test isapprox(ac_result["objective"], 4.01802e5; atol = 1e4)
 
         # make_gmd_mixed_units(dc_solution, 100.0)
         # adjust_gmd_qloss(case, solution)
