@@ -24,11 +24,12 @@
     end
 
     @testset "150-bus case ac opf" begin
-        result = PowerModels.run_ac_opf("../test/data/uiuc150.m", ipopt_solver)
+        casename = "../test/data/uiuc150_95pct_loading.m"
+        result = PowerModels.run_ac_opf(casename, ipopt_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
-        println("Testing objective $(result["objective"]) within tolerance")
-        @test isapprox(result["objective"], 893768; atol = 1e2)
+        println("Testing objective $(result["objective"]) within tolerance for $casename")
+        @test isapprox(result["objective"], 8.0361e5; atol = 1e5)
     end
 end
 
@@ -79,7 +80,7 @@ end
         case = PowerModels.parse_file(casename)
                 
         @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
-        @test isapprox(ac_result["objective"], 11832.5; atol = 1e3)
+        @test isapprox(ac_result["objective"], 980; atol = 10)
           
         dc_solution = output["dc"]["result"]["solution"]
         ac_solution = output["ac"]["result"]["solution"]
@@ -131,7 +132,7 @@ end
         # after computing a diff on the generated JuMP models from v0.7 and v0.8
         # only coeffents in constraint_ohms_yt_from and constraint_ohms_yt_to changed slightly
         # most likely ipopt was getting stuck in a local min previously
-        @test isapprox(ac_result["objective"], 4.99564e5; atol = 1e4)
+        @test isapprox(ac_result["objective"], 4.01802e5; atol = 1e4)
 
         # make_gmd_mixed_units(dc_solution, 100.0)
         # adjust_gmd_qloss(case, solution)
@@ -140,13 +141,13 @@ end
     end
 
     @testset "150-bus case" begin
-        casename = "../test/data/uiuc150.m"
+        casename = "../test/data/uiuc150_95pct_loading.m"
         output = run_ac_gmd_opf_decoupled(casename, ipopt_solver)
         ac_result = output["ac"]["result"]
-        println("Testing objective $(ac_result["objective"]) within tolerance")
+        println("Testing objective $(ac_result["objective"]) within tolerance for $casename")
 
         @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
-        @test isapprox(ac_result["objective"], 9.52847e5; atol = 1e5)
+        @test isapprox(ac_result["objective"], 8.16591e5; atol = 1e5)
 
         dc_solution = output["dc"]["result"]["solution"]
         # make_gmd_mixed_units(dc_solution, 100.0)
