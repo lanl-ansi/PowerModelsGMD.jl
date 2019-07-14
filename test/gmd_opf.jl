@@ -24,11 +24,12 @@
     end
 
     @testset "150-bus case ac opf" begin
-        result = PowerModels.run_ac_opf("../test/data/uiuc150.m", ipopt_solver)
+        casename = "../test/data/uiuc150_95pct_loading.m"
+        result = PowerModels.run_ac_opf(casename, ipopt_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
-        println("Testing objective $(result["objective"]) within tolerance")
-        @test isapprox(result["objective"], 893768; atol = 1e2)
+        println("Testing objective $(result["objective"]) within tolerance for $casename")
+        @test isapprox(result["objective"], 8.0361e5; atol = 1e5)
     end
 end
 
@@ -141,7 +142,7 @@ end
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")
-        @test isapprox(result["objective"], 8.66977e5; atol = 1e5)
+        @test isapprox(result["objective"], 8.16591e5; atol = 1e5)
 
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
