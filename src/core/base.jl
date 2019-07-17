@@ -1,16 +1,22 @@
-
 export GenericGMDPowerModel
 
-# override the default generic constructor for Power Models that have GMD modeling
+
+"FUNCTION: override generic constructor for Power Models"
 function GenericGMDPowerModel(data::Dict{String,<:Any}, T::DataType; kwargs...)
+
+    # override the default generic constructor for Power Models that have GMD modeling
+
     PowerModels.standardize_cost_terms!(data, order=2)
     pm = PMs.GenericPowerModel(data,T; kwargs...)
     build_gmd_ref(pm)
     return pm
+
 end
 
-""
+
+"FUNCTION: check GMD branch parent status"
 function check_gmd_branch_parent_status(ref, i, gmd_branch)
+
     parent_id = gmd_branch["parent_index"]
     status = false
 
@@ -21,10 +27,13 @@ function check_gmd_branch_parent_status(ref, i, gmd_branch)
 
     #println("status is $status \n") 
     return status
+
 end
 
-"Adds the data structures that are specific for GMD modeling"
+
+"FUNCTION: add the data structures that are specific for GMD modeling"
 function build_gmd_ref(pm::PMs.GenericPowerModel)
+
     nws = pm.ref[:nw]
     data = pm.data
 
@@ -51,6 +60,8 @@ function build_gmd_ref(pm::PMs.GenericPowerModel)
         end
         ref[:gmd_bus_arcs] = gmd_bus_arcs
    end
+
 end
+
 
 

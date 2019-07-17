@@ -302,10 +302,12 @@ end
 
 
 
-# -- Thermal Constraints -- #
+
+# --- Thermal Constraints --- #
+
 
 ""
-function constraint_temperature_state_ss(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, delta_oil_rated=150)
+function constraint_delta_topoilrise_ss(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, delta_oil_rated=150)
     #temperature = ref(pm, nw, :storage, i)
 
     branch = PMs.ref(pm, nw, :branch, i)
@@ -321,7 +323,7 @@ end
 
 
 ""
-function constraint_temperature_state(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, tau_hs=150, Re=0.63, delta_oil_init=75)
+function constraint_delta_topoilrise(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, tau_hs=150, Re=0.63, delta_oil_init=75)
     #temperature = ref(pm, nw, :storage, i)
 
     if haskey(pm.data, "time_elapsed")
@@ -337,7 +339,39 @@ function constraint_temperature_state(pm::PMs.GenericPowerModel, i::Int; nw::Int
     f_idx = (i, f_bus, t_bus)
     cnd = 1 # only support positive sequence for now
 
-    PowerModelsGMD.constraint_temperature_state_initial(pm, nw, i, f_idx, cnd, delta_oil_init, tau, time_elapsed)
+    # ToDO: CALL 
+    PowerModelsGMD.constraint_temperature_state_initial(pm, nw, i, f_idx, cnd, tau)
 end
+
+
+
+
+# function constraint_storage_state(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw)
+#     storage = ref(pm, nw, :storage, i)
+
+#     if haskey(ref(pm, nw), :time_elapsed)
+#         time_elapsed = ref(pm, nw, :time_elapsed)
+#     else
+#         Memento.warn(_LOGGER, "network data should specify time_elapsed, using 1.0 as a default")
+#         time_elapsed = 1.0
+#     end
+
+#     constraint_storage_state_initial(pm, nw, i, storage["energy"], storage["charge_efficiency"], storage["discharge_efficiency"], time_elapsed)
+# end
+
+# ""
+# function constraint_storage_state(pm::GenericPowerModel, i::Int, nw_1::Int, nw_2::Int)
+#     storage = ref(pm, nw_2, :storage, i)
+
+#     if haskey(pm.data, "time_elapsed")
+#         time_elapsed = pm.data["time_elapsed"]
+#     else
+#         Memento.warn(_LOGGER, "network data should specify time_elapsed, using 1.0 as a default")
+#         time_elapsed = 1.0
+#     end
+
+#     constraint_storage_state(pm, nw_1, nw_2, i, storage["charge_efficiency"], storage["discharge_efficiency"], time_elapsed)
+# end
+
 
 

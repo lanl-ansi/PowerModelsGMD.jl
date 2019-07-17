@@ -2,7 +2,7 @@
 export run_ac_gmd_opf_ts_decoupled
 
 
-# FUNCTION: update the vs values
+"FUNCTION: update the vs values"
 function modify_gmd_case!(net, mods, time_index) 
     for (k,wf) in mods["waveforms"]
         otype = wf["parent_type"]
@@ -13,14 +13,20 @@ function modify_gmd_case!(net, mods, time_index)
 end
 
 
-# FUNCTION: decoupled time-extended GMD+OPF formulation
+"FUNCTION: decoupled time-extended GMD+OPF formulation"
 function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
     timesteps = mods["time"]
     n = length(timesteps)
     t = timesteps
-    Delta_t = t[2]-t[1]
-    
+
+    # Define input values for temperature calculations
     base_mva = net["baseMVA"]
+    tau_oil = 4260 #which is 71 mins in seconds
+    Delta_t = t[2]-t[1]
+    delta_oil_rated = 75
+    tau_hs = 150
+    Re = 0.63 #'Re': from Randy Horton's report, transformer model E on p. 52
+    
     println("")
 
     results = []
@@ -51,23 +57,24 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
             end
 
             result = data["ac"]["result"]
-            
-            top_oil_rise(br, result, base_mva; Delta_t = Delta_t)
-            update_top_oil_rise(br, net)
 
-            ss_hotspot_rise(br, result)
-            # hotspot_rise(branch, result, Ie_prev) #decided to only use the stead-state value
-            update_hotspot_rise(br, net)
-            
+            delta_topoilrise(br, result, base_mva, tau_oil, Delta_t, delta_oil_rated) #decided not to calculate value separately
+            delta_topoilrise_ss(br, result, base_mva, delta_oil_rated) 
+            update_topoilrise(br, net)
+
+            #delta_hotspotrise(br, result, Ie_prev, tau_hs, Delta_t, Re)  #decieded to only use stead-state value
+            delta_hotspotrise_ss(br, result, Re)
+            update_hotspotrise(br, net)
             
             # Store transformer temperature related results:
             temp_ambient = 25
             push!(data["temperatures"]["branch"], k)
             push!(data["temperatures"]["Ieff"], br["ieff"])
-            # push!(data["temperatures"]["delta_oilrise"], br["delta_oil"]) #decided not to store value
-            push!(data["temperatures"]["delta_topoilrise_ss"], br["delta_oil_ss"])
-            push!(data["temperatures"]["delta_hotspotrise_ss"], br["delta_hs"])            
-            push!(data["temperatures"]["actual_hotspot"], (temp_ambient+br["delta_oil_ss"]+br["delta_hs"]))
+            #push!(data["temperatures"]["delta_topoilrise"], br["delta_topoilrise"]) #decided not to store value
+            push!(data["temperatures"]["delta_topoilrise_ss"], br["delta_topoilrise_ss"])
+            #push!(data["temperatures"]["delta_hotspotrise"], br["delta_hotspotrise"]) #decided not to store value
+            push!(data["temperatures"]["delta_hotspotrise_ss"], br["delta_hotspotrise_ss"])            
+            push!(data["temperatures"]["actual_hotspot"], (temp_ambient+br["delta_topoilrise_ss"]+br["delta_hotspotrise_ss"]))
 
         end
         
@@ -78,3 +85,4 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
 
     return results
 end
+

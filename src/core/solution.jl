@@ -91,10 +91,11 @@ end
 
 ""
 function add_setpoint_temperature!(sol, pm::PMs.GenericPowerModel)
-    PMs.add_setpoint!(sol, pm, "branch", "delta_oil_ss", :ross, status_name="br_status")
-    # PMs.add_setpoint!(sol, pm, "branch", "p", :p, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
-    #PMs.add_setpoint!(sol, pm, "branch", "delta_hotspotrise_ss", :dhsr_ss, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
-    #PMs.add_setpoint!(sol, pm, "branch", "actual_hotspot", :actual, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"])) #decided not to store value
+    PMs.add_setpoint!(sol, pm, "branch", "Ieff", :i_dc_mag, status_name="br_status")
+    #PMs.add_setpoint!(sol, pm, "branch", "delta_topoilrise", :tor, status_name="br_status") #decided not to store value
+    PMs.add_setpoint!(sol, pm, "branch", "delta_topoilrise_ss", :torss, status_name="br_status")
+    PMs.add_setpoint!(sol, pm, "branch", "delta_hotspotrise_ss", :hsss, status_name="br_status")
+    PMs.add_setpoint!(sol, pm, "branch", "actual_hotspot", :actual, status_name="br_status")
 end
 
 
