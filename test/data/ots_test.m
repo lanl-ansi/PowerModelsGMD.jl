@@ -1,4 +1,5 @@
 %% MATPOWER Case Format : Version 2
+function mpc = ots_test
 mpc.version = '2';
 
 %%-----  Power Flow Data  -----%%

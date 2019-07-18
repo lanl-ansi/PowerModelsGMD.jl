@@ -1,4 +1,5 @@
 %% MATPOWER Case Format : Version 2
+function mpc = case24_ieee_rts_40
 mpc.version = '2';
 
 %%-----  Power Flow Data  -----%%

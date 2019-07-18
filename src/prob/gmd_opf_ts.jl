@@ -19,16 +19,15 @@ function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
     for (n, network) in PMs.nws(pm)
         
         # -- Variables -- #
-        
+        PMs.variable_voltage(pm, nw=n)      
         PMs.variable_generation(pm, nw=n)
-        PMs.variable_voltage(pm, nw=n)
         PMs.variable_branch_flow(pm, nw=n)
         PMs.variable_dcline_flow(pm, nw=n)
         
-        PowerModelsGMD.variable_dc_line_flow(pm, nw=n)
         PowerModelsGMD.variable_dc_voltage(pm, nw=n)
         PowerModelsGMD.variable_dc_current_mag(pm, nw=n)
         PowerModelsGMD.variable_qloss(pm, nw=n)
+        PowerModelsGMD.variable_dc_line_flow(pm, nw=n)
         
         #PowerModelsGMD.variable_delta_topoilrise(pm, nw=n) #decided not to store value
         PowerModelsGMD.variable_delta_topoilrise_ss(pm, nw=n)
@@ -63,7 +62,12 @@ function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
             PMs.constraint_thermal_limit_to(pm, i, nw=n)
 
             PowerModelsGMD.constraint_temperature_state_ss(pm, i, nw=n)
-            
+            # - Thermal - # 
+    
+            # PowerModelsGMD.constraint_delta_topoilrise(pm, nw=n)
+            # PowerModelsGMD.constraint_delta_topoilrise_ss(pm, nw=n)
+            # PowerModelsGMD.constraint_delta_hotspotrise(pm, nw=n)
+            # PowerModelsGMD.constraint_delta_hotspotrise_ss(pm, nw=n)
         end
 
         # - DC network - #
@@ -80,12 +84,7 @@ function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
             PMs.constraint_dcline(pm, i, nw=n)
         end
 
-        # - Thermal - # 
-    
-        PowerModelsGMD.constraint_delta_topoilrise(pm, nw=n)
-        PowerModelsGMD.constraint_delta_topoilrise_ss(pm, nw=n)
-        PowerModelsGMD.constraint_delta_hotspotrise(pm, nw=n)
-        PowerModelsGMD.constraint_delta_hotspotrise_ss(pm, nw=n)
+
 
 
         # -- Future improvements -- # 

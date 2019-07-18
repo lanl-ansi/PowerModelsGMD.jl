@@ -330,24 +330,6 @@ end
 
 
 # --- Thermal Constraints --- #
-
-
-"CONSTRAINT: top-oil temperature rise"
-# Todo: break up into init & regular
-function constraint_delta_topoilrise(pm::PMs.GenericPowerModel, n::Int, c::Int; tau_oil, Delta_t, delta_topoilrise_prev, delta_topoilrise_ss_prev)
-
-    tau = 2*tau_oil/Delta_t
-
-    # Variables:
-    delta_topoilrise =  PMs.var(pm, n, c, :tor)
-    delta_topoilrise_ss = PMs.var(pm, n, c, :torss)
-    
-    # Constraint:
-    JuMP.@constraint(pm.model, (delta_topoilrise <= ((delta_topoilrise_ss + delta_topoilrise_ss_prev)/(1 + tau) - delta_topoilrise_prev*(1 - tau)/(1 + tau))))
-
-end
-
-
 "CONSTRAINT: steady-state top-oil temperature rise"
 function constraint_delta_topoilrise_ss(pm::PMs.GenericPowerModel, n::Int, c::Int; base_mva, delta_oil_rated, f_idx, t_idx, rate_a)
 
@@ -372,6 +354,21 @@ function constraint_delta_topoilrise_ss(pm::PMs.GenericPowerModel, n::Int, c::In
 
     JuMP.@constraint(pm.model, (delta_topoilrise_ss >= (delta_oil_rated * K_from^2)))
     JuMP.@constraint(pm.model, (delta_topoilrise_ss >= (delta_oil_rated * K_to^2)))
+
+end
+
+"CONSTRAINT: top-oil temperature rise"
+# Todo: break up into init & regular
+function constraint_delta_topoilrise(pm::PMs.GenericPowerModel, n::Int, c::Int; tau_oil, Delta_t, delta_topoilrise_prev, delta_topoilrise_ss_prev)
+
+    tau = 2*tau_oil/Delta_t
+
+    # Variables:
+    delta_topoilrise =  PMs.var(pm, n, c, :tor)
+    delta_topoilrise_ss = PMs.var(pm, n, c, :torss)
+    
+    # Constraint:
+    JuMP.@constraint(pm.model, (delta_topoilrise <= ((delta_topoilrise_ss + delta_topoilrise_ss_prev)/(1 + tau) - delta_topoilrise_prev*(1 - tau)/(1 + tau))))
 
 end
 

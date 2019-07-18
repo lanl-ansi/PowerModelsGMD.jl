@@ -1,4 +1,5 @@
 %% MATPOWER Case Format : Version 2
+function mpc = uiuc150_95pct_loading
 mpc.version = '2';
 
 %%-----  Power Flow Data  -----%%

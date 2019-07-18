@@ -302,6 +302,25 @@ end
 
 
 # --- Thermal Variables --- #
+"VARIABLE: steady-state top-oil temperature rise"
+#TODO: add in realistic bounds
+function variable_delta_topoilrise_ss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    if bounded
+        PMs.var(pm, nw, cnd)[:torss] = JuMP.@variable(pm.model, 
+            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_topoilrise_ss",
+            lower_bound = 0,
+            upper_bound = 200,
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_topoilrise_ss_start", cnd)
+        )
+    else
+        PMs.var(pm, nw, cnd)[:torss] = JuMP.@variable(pm.model, 
+            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_topoilrise_ss",
+            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_topoilrise_ss_start", cnd)
+        )
+    end
+
+end
 
 
 "VARIABLE: top-oil temperature rise"
@@ -319,27 +338,6 @@ function variable_delta_topoilrise(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cn
         PMs.var(pm, nw, cnd)[:tor] = JuMP.@variable(pm.model, 
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_topoilrise",
             start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_topoilrise_start", cnd)
-        )
-    end
-
-end
-
-
-"VARIABLE: steady-state top-oil temperature rise"
-#TODO: add in realistic bounds
-function variable_delta_topoilrise_ss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
-
-    if bounded
-        PMs.var(pm, nw, cnd)[:torss] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_topoilrise_ss",
-            lower_bound = 0,
-            upper_bound = 200,
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_topoilrise_ss_start", cnd)
-        )
-    else
-        PMs.var(pm, nw, cnd)[:torss] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_topoilrise_ss",
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_topoilrise_ss_start", cnd)
         )
     end
 
