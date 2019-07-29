@@ -4,10 +4,12 @@ export run_ac_gmd_opf_ts_decoupled
 
 "FUNCTION: update the vs values"
 function modify_gmd_case!(net, mods, time_index) 
-    for (k,wf) in mods["waveforms"]
-        otype = wf["parent_type"]
-        field  = wf["parent_field"]
-        net[otype][k][field] = wf["values"][time_index]
+    if mods !== nothing && mods["waveforms"] !== nothing
+        for (k,wf) in mods["waveforms"]
+            otype = wf["parent_type"]
+            field  = wf["parent_field"]
+            net[otype][k][field] = wf["values"][time_index]
+        end
     end
     return net
 end
