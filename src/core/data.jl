@@ -521,7 +521,7 @@ end
 
 
 "FUNCTION: calculate top-oil temperature rise"
-function delta_topoilrise(branch, result, base_mva, tau_oil, Delta_t, delta_oil_rated)
+function delta_topoilrise(branch, result, base_mva, tau_oil, delta_t, delta_oil_rated)
 
     delta_topoilrise_ss = PowerModelsGMD.delta_topoilrise_ss(branch, result, base_mva, delta_oil_rated)
     #delta_topoilrise_ss = 1 #testing for step response
@@ -533,7 +533,7 @@ function delta_topoilrise(branch, result, base_mva, tau_oil, Delta_t, delta_oil_
         delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"] 
 
         # trapezoidal integration
-        tau = 2*tau_oil/Delta_t
+        tau = 2*tau_oil/delta_t
         delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev)/(1 + tau) - delta_topoilrise_prev*(1 - tau)/(1 + tau)
     else
         delta_topoilrise = 0
@@ -580,12 +580,12 @@ end
 
 
 "FUNCTION: calculate hotspot temperature rise"
-function delta_hotspotrise(branch, result, Ie_prev, tau_hs, Delta_t, Re)
-    #determined for the time-extension mitigation problem
+function delta_hotspotrise(branch, result, Ie_prev, tau_hs, delta_t, Re)
+    #determined for the time-extended mitigation problem
     
     delta_hotspotrise = 0
     Ie = branch["ieff"]
-    tau = 2*tau_hs/Delta_t
+    tau = 2*tau_hs/delta_t
 
     if Ie_prev === nothing
         delta_hotspotrise = Re*Ie
@@ -601,7 +601,7 @@ end
 
 "FUNCTION: calculate steady-state hotspot temperature rise"
 function delta_hotspotrise_ss(branch, result, Re)
-    #determined for the time-extension mitigation problem
+    #determined for the time-extended  mitigation problem
     
     delta_hotspotrise_ss = 0
     Ie = branch["ieff"]
@@ -615,9 +615,9 @@ end
 function update_hotspotrise(branch, net)
 
     k = "$(branch["index"])"
-    #net["branch"][k]["delta_hotspotrise"] = branch["delta_hotspotrise"]
+    net["branch"][k]["delta_hotspotrise"] = branch["delta_hotspotrise"]
     net["branch"][k]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
-
+    
 end
 
 
