@@ -63,8 +63,8 @@
         make_gmd_mixed_units(solution, 100.0)
         #adjust_gmd_qloss(case, solution)
 
-        @test isapprox(solution["gmd_bus"]["14"]["gmd_vdc"], 44.31, atol=1e-1) # PowerModels: gmd_vdc = 44.26301987818914
-        @test isapprox(solution["gmd_bus"]["23"]["gmd_vdc"],  -41.01, atol=1e-1) # PowerModels: gmd_vdc = -40.95101258160489
+        @test isapprox(solution["gmd_bus"]["14"]["gmd_vdc"], 44.31, atol=1e-1)
+        @test isapprox(solution["gmd_bus"]["23"]["gmd_vdc"],  -41.01, atol=1e-1)
 
     end
 
@@ -105,35 +105,15 @@
         make_gmd_mixed_units(solution, 100.0)
         #adjust_gmd_qloss(case, solution)
 
-        # Bus 312 => ID "121"
-        @test isapprox(solution["gmd_bus"]["121"]["gmd_vdc"], -9.66, atol=0.1) 
-            # PowerModelsGMD: -9.645        # PowerWorld: -9.66
-
-        # Bus 211 => ID "96"
-        @test isapprox(solution["gmd_bus"]["96"]["gmd_vdc"], 13.59, atol=0.1)
-            # PowerModelsGMD: 13.5894       # PowerWorld: 13.59
-
-        # Bus 123 => ID "84"
-        @test isapprox(solution["gmd_bus"]["84"]["gmd_vdc"], -6.63, atol=0.1) 
-            # PowerModelsGMD: -6.63508      # PowerWorld: -6.63
-
-        # Bus 313 => ID "122"
-        @test isapprox(solution["gmd_bus"]["122"]["gmd_vdc"], -7.99, atol=0.1)
-            # PowerModelsGMD: -7.97061      # PowerWorld: -7.99
-
-        # Bus 107 => ID "68"
-        @test isapprox(solution["gmd_bus"]["68"]["gmd_vdc"], 16.96, atol=0.1)
-            # PowerModelsGMD: 16.9618       # PowerWorld: 16.96
-         
+        @test isapprox(solution["gmd_bus"]["121"]["gmd_vdc"], -9.66, atol=0.1) # Bus312=>ID"121" - PWvalue
+        @test isapprox(solution["gmd_bus"]["96"]["gmd_vdc"], 13.59, atol=0.1) # Bus211=>ID"96" - PWvalue
+        @test isapprox(solution["gmd_bus"]["84"]["gmd_vdc"], -6.63, atol=0.1) # Bus123=>ID"84" - PWvalue
+        @test isapprox(solution["gmd_bus"]["122"]["gmd_vdc"], -7.99, atol=0.1) # Bus313=>ID"122" - PWvalue
+        @test isapprox(solution["gmd_bus"]["68"]["gmd_vdc"], 16.96, atol=0.1) # Bus107=>ID"68" - PWvalue
+    
         # - NOTE: At the moment PowerModelsGMD always gives gmd_vdc=0 on the delta side of generator transformers! - #
-
-        # Gen Bus 121 => ID "155"
-        @test isapprox(solution["gmd_bus"]["155"]["gmd_vdc"], 0, atol=0.1)
-            # PowerModelsGMD: 0             # PowerWorld: -13.09
-
-        # Gen Bus 218 => ID "186"
-        @test isapprox(solution["gmd_bus"]["186"]["gmd_vdc"], 0, atol=0.1)
-            # PowerModelsGMD: 0             # PowerWorld: -4.88
+        @test isapprox(solution["gmd_bus"]["155"]["gmd_vdc"], 0, atol=0.1) # GenBus121=>ID"155" - PMGMDvalue
+        @test isapprox(solution["gmd_bus"]["186"]["gmd_vdc"], 0, atol=0.1) # GenBus218=>ID"186" - PMGMDvalue
 
     end
 
