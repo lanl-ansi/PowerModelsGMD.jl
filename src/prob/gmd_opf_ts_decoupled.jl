@@ -65,11 +65,11 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
 
             result = data["ac"]["result"]
 
-            PowerModelsGMD.delta_topoilrise(br, result, base_mva, tau_oil, delta_t, delta_oil_rated) #decided to only calculate stead-state value
-            PowerModelsGMD.delta_topoilrise_ss(br, result, base_mva, delta_oil_rated) 
+            PowerModelsGMD.delta_topoilrise(br, result, base_mva, tau_oil, delta_t, delta_oil_rated) 
+            # PowerModelsGMD.delta_topoilrise_ss(br, result, base_mva, delta_oil_rated) 
             PowerModelsGMD.update_topoilrise(br, net)
             
-            PowerModelsGMD.delta_hotspotrise(br, result, Ie_prev[k], tau_hs, delta_t, Re) #decided to only calculate stead-state value
+            # PowerModelsGMD.delta_hotspotrise(br, result, Ie_prev[k], tau_hs, delta_t, Re) #decided to only calculate stead-state value
             PowerModelsGMD.delta_hotspotrise_ss(br, result, Re)
             PowerModelsGMD.update_hotspotrise(br, net)
             

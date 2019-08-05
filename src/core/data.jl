@@ -555,10 +555,12 @@ function delta_topoilrise_ss(branch, result, base_mva, delta_oil_rated)
         
     i = branch["index"]
     bs = result["solution"]["branch"]["$i"]
-    S = sqrt(bs["pf"]^2 + bs["qf"]^2)
+    p = bs["pf"]
+    q = bs["qf"]
+    S = sqrt(p^2 + q^2)
     K = S/(branch["rate_a"] * base_mva) #calculate the loading
 
-    # println("S: $S \nSmax: $(branch["rate_a"]) \n")
+    println("Branch $i: P=$p, Q=$q S=$S, Smax=$(branch["rate_a"]), MVA max=$(branch["rate_a"]*base_mva), TO rated=$delta_oil_rated")
 
     # Assumptions: no-load, transformer losses are very small 
     # 75 = top oil temp rise at rated power
