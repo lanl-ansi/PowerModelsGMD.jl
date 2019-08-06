@@ -238,7 +238,7 @@ end
         
         ac_result = output["ac"]["result"]
         @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
-        println("Testing objective $(result["objective"]) within tolerance for $casename")
+        println("Testing objective $(ac_result["objective"]) within tolerance for $casename")
         @test isapprox(ac_result["objective"], 87361.0; atol = 1e5)
         
         dc_solution = output["dc"]["result"]["solution"]
@@ -283,39 +283,39 @@ end
 
         # Branch107-108=>ID"100"
         @test isapprox(ac_solution["branch"]["100"]["pf"], (173.373), atol=1)
-        @test isapprox(ac_solution["branch"]["100"]["qf"], (23.8099), atol=0.1)
-        @test isapprox(ac_solution["branch"]["100"]["pt"], (-168.586), atol=0.1)
-        @test isapprox(ac_solution["branch"]["100"]["qt"], (-7.24075), atol=0.1)
+        @test isapprox(ac_solution["branch"]["100"]["qf"], (23.8099), atol=1)
+        @test isapprox(ac_solution["branch"]["100"]["pt"], (-168.586), atol=1)
+        @test isapprox(ac_solution["branch"]["100"]["qt"], (-7.24075), atol=1)
         # Branch306-310=>ID"165"
-        @test isapprox(ac_solution["branch"]["165"]["pt"], (100.765), atol=0.1)
-        @test isapprox(ac_solution["branch"]["165"]["qt"], (-143.079), atol=0.1)
+        @test isapprox(ac_solution["branch"]["165"]["pt"], (100.765), atol=1)
+        @test isapprox(ac_solution["branch"]["165"]["qt"], (-143.079), atol=1)
         # Branch106-110=>ID"24"
-        @test isapprox(ac_solution["branch"]["24"]["pt"], (88.3524), atol=0.1)
-        @test isapprox(ac_solution["branch"]["24"]["pf"], (-87.2082), atol=0.1)
+        @test isapprox(ac_solution["branch"]["24"]["pt"], (88.3524), atol=1)
+        @test isapprox(ac_solution["branch"]["24"]["pf"], (-87.2082), atol=1)
         # Branch206-210=>ID"198"
-        @test isapprox(ac_solution["branch"]["198"]["pf"], (-87.5146), atol=0.1)
-        @test isapprox(ac_solution["branch"]["198"]["qf"], (-93.1864), atol=0.1)      
+        @test isapprox(ac_solution["branch"]["198"]["pf"], (-87.5146), atol=1)
+        @test isapprox(ac_solution["branch"]["198"]["qf"], (-93.1864), atol=1)      
         # Branch213-1042=>ID"150"
         @test isapprox(ac_solution["branch"]["150"]["gmd_qloss"], 0.592658, atol=0.5)
-        @test isapprox(ac_solution["branch"]["150"]["pf"], (-353.741), atol=0.1)
-        @test isapprox(ac_solution["branch"]["150"]["qf"], (-111.628), atol=0.1)   
+        @test isapprox(ac_solution["branch"]["150"]["pf"], (-353.741), atol=1)
+        @test isapprox(ac_solution["branch"]["150"]["qf"], (-111.628), atol=1)   
         # Branch309-312=>ID"97"
         @test isapprox(ac_solution["branch"]["97"]["gmd_qloss"], 1.29929, atol=0.5)
-        @test isapprox(ac_solution["branch"]["97"]["pt"], (166.114), atol=0.1)
-        @test isapprox(ac_solution["branch"]["97"]["qt"], (68.9342), atol=0.1)   
+        @test isapprox(ac_solution["branch"]["97"]["pt"], (166.114), atol=1)
+        @test isapprox(ac_solution["branch"]["97"]["qt"], (68.9342), atol=5)   
         # Branch210-211=>ID"44"
         @test isapprox(ac_solution["branch"]["44"]["gmd_qloss"], 1.56684, atol=0.5)
-        @test isapprox(ac_solution["branch"]["44"]["qt"], (30.9704), atol=0.1)
-        @test isapprox(ac_solution["branch"]["44"]["qf"], (-4.95743), atol=0.1)
+        @test isapprox(ac_solution["branch"]["44"]["qt"], (30.9704), atol=1)
+        @test isapprox(ac_solution["branch"]["44"]["qf"], (-4.95743), atol=1)
 
         # GenBus-313-Bus1076=>ID"88"
-        @test isapprox(ac_solution["gen"]["88"]["pg"], (355.0), atol=0.1)
-        @test isapprox(ac_solution["gen"]["88"]["qg"], (150.0), atol=0.1)
+        @test isapprox(ac_solution["gen"]["88"]["pg"], (355.0), atol=1)
+        @test isapprox(ac_solution["gen"]["88"]["qg"], (150.0), atol=1)
         # GenBus-221-Bus1053=>ID"92"
-        @test isapprox(ac_solution["gen"]["92"]["pg"], (355.0), atol=0.1)
-        @test isapprox(ac_solution["gen"]["92"]["qg"], (92.8283), atol=)
+        @test isapprox(ac_solution["gen"]["92"]["pg"], (355.0), atol=1)
+        @test isapprox(ac_solution["gen"]["92"]["qg"], (92.8283), atol=2.5)
         # GenBus-107-Bus1009=>ID"11"
-        @test isapprox(ac_solution["gen"]["11"]["pg"], (352.566), atol=5)
+        @test isapprox(ac_solution["gen"]["11"]["pg"], (352.566), atol=2.5)
         @test isapprox(ac_solution["gen"]["11"]["qg"], (100.007), atol=1)
 
     end

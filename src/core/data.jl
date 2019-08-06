@@ -205,8 +205,11 @@ function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
         return NaN
     end
 
-    # A hack for now....
+    # A hack for now.... FIX LATER!
     thermal_cap_x0 = pm.data["thermal_cap_x0"]
+    # since provided values are in [per unit]...
+    thermal_cap_x0 = thermal_cap_x0 * 1e3
+
     if isa(thermal_cap_x0, Dict)
         thermal_cap_x0 = []
         for (key, value) in sort(pm.data["thermal_cap_x0"]["1"])
