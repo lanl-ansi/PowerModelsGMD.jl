@@ -257,6 +257,6 @@ mpc.thermal_cap_y0 = [
 ];
 
 
-% NOTE: valus are from https://arxiv.org/pdf/1701.01469.pdf Fig.2.
+% NOTE: values are from https://arxiv.org/pdf/1701.01469.pdf Fig.2.
 
 

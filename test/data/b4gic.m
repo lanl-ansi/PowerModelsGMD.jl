@@ -47,11 +47,11 @@ mpc.gmd_bus = {
 	4	1	0	'dc_bus4'	
 };
 
-%column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name
+%column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name time_cont_topoil
 mpc.gmd_branch = {
-	3	1	1	1	0.1	0	0	'dc_xf1_hi'	
-	3	4	2	1	1.00073475	170.78806587354	170.78806587354	'dc_br1'	
-	4	2	3	1	0.1	0	0	'dc_xf2_hi'	
+	3	1	1	1	0.1	0	0	'dc_xf1_hi'	150
+	3	4	2	1	1.00073475	170.78806587354	170.78806587354	'dc_br1'	150
+	4	2	3	1	0.1	0	0	'dc_xf2_hi'	150
 };
 
 %column_names%  hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config

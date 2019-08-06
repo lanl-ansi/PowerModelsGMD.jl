@@ -21,9 +21,10 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; deco
         if br["type"] == "line"
             k = "$(br["gmd_br"])"
             br["gmd_idc"] = solution["gmd_branch"][k]["gmd_idc"]/3.0
+        
         else # branch is transformer
             if decoupled
-                # get he high-side gmd branch
+                # get the high-side gmd branch
                 k = br["dc_brid_hi"]
                 # TODO: add calculations from constraint_dc_current_mag
                 br["gmd_idc"] = 0.0
@@ -560,12 +561,7 @@ function delta_topoilrise_ss(branch, result, base_mva, delta_oil_rated)
     S = sqrt(p^2 + q^2)
     K = S/(branch["rate_a"] * base_mva) #calculate the loading
 
-    println("Branch $i: P=$p, Q=$q S=$S, Smax=$(branch["rate_a"]), MVA max=$(branch["rate_a"]*base_mva), TO rated=$delta_oil_rated")
-
-    # Assumptions: no-load, transformer losses are very small 
-    # 75 = top oil temp rise at rated power
-    # 25 = ambient temperature
-
+    # println("Branch $i: P=$p, Q=$q S=$S, Smax=$(branch["rate_a"]), MVA max=$(branch["rate_a"]*base_mva), TO rated=$delta_oil_rated")
     return delta_oil_rated*K^2
 
 end
@@ -582,6 +578,7 @@ end
 
 
 "FUNCTION: calculate hotspot temperature rise"
+#TODO: FIX function - even though it is written correctly, it errors out when enabled in gmd_opf_ts_decoupled.jl
 function delta_hotspotrise(branch, result, Ie_prev, tau_hs, delta_t, Re)
     #determined for the time-extended mitigation problem
     
@@ -617,7 +614,7 @@ end
 function update_hotspotrise(branch, net)
 
     k = "$(branch["index"])"
-    net["branch"][k]["delta_hotspotrise"] = branch["delta_hotspotrise"]
+    #net["branch"][k]["delta_hotspotrise"] = branch["delta_hotspotrise"]
     net["branch"][k]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
     
 end

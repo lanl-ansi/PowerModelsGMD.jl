@@ -62,13 +62,16 @@ function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
             PMs.constraint_thermal_limit_to(pm, i, nw=n)
 
             PowerModelsGMD.constraint_temperature_state_ss(pm, i, nw=n)
-            # - Thermal - # 
-    
-            # PowerModelsGMD.constraint_delta_topoilrise(pm, nw=n)
-            # PowerModelsGMD.constraint_delta_topoilrise_ss(pm, nw=n)
-            # PowerModelsGMD.constraint_delta_hotspotrise(pm, nw=n)
-            # PowerModelsGMD.constraint_delta_hotspotrise_ss(pm, nw=n)
-        end
+        end    
+            
+        # - Thermal - # 
+
+        # for i in PMs.ids(pm, :branch, nw=n)
+        #     PowerModelsGMD.constraint_delta_topoilrise(pm, nw=n)
+        #     PowerModelsGMD.constraint_delta_topoilrise_ss(pm, nw=n)
+        #     PowerModelsGMD.constraint_delta_hotspotrise(pm, nw=n)
+        #     PowerModelsGMD.constraint_delta_hotspotrise_ss(pm, nw=n)
+        # end
 
         # - DC network - #
 
@@ -85,14 +88,11 @@ function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
         end
 
 
-
-
         # -- Future improvements -- # 
 
         #variable_demand_factor(pm) #TODO: add new function
         #objective_min_error(pm) #TODO: add new function
         #constraint_quasi_dynamic_kcl_shunt(pm, bus, load_shed=true) #TODO add new function
-
 
     end
 
