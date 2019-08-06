@@ -1,6 +1,6 @@
 %% MATPOWER Case Format : Version 2
-function mpc = ots_test
 % ots_test.m is based on epri21.m
+function mpc = ots_test
 mpc.version = '2';
 
 
@@ -103,7 +103,7 @@ mpc.gencost = [
 
 
 %% gmd_bus data
-%column_names% parent_index status g_gnd name
+%    parent_index    status    g_gnd    name
 mpc.gmd_bus = {
 	1	1	5.0	'dc_sub1'	
 	2	1	5.0	'dc_sub2'	
@@ -136,7 +136,7 @@ mpc.gmd_bus = {
 
 
 %% gmd_branch data
-%column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name
+%    f_bus    t_bus    parent_index    br_status    br_r    br_v    len_km    name
 mpc.gmd_branch ={
 	10	11	1	1	1.1704125	120.60003474069319	120.81939273462899	'dc_br1'	
 	12	13	2	1	0.7833333333333333	131.6938150979946	161.49436872495582	'dc_br2'	
@@ -179,7 +179,7 @@ mpc.gmd_branch ={
 
 
 %% branch_gmd data
-%column_names%  hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
+%    hi_bus    lo_bus    gmd_br_hi    gmd_br_lo    gmd_k    gmd_br_series    gmd_br_common    baseMVA    type    config
 mpc.branch_gmd = {
 	2	3	-1	-1	0	-1	-1	100.0	'line'	'none'	
 	4	5	-1	-1	0	-1	-1	100.0	'line'	'none'	
@@ -216,7 +216,7 @@ mpc.branch_gmd = {
 
 
 %% bus_gmd data
-%column_names%  lat lon
+%    lat    lon
 mpc.bus_gmd = {
 	33.6135	-87.37367	
 	33.6135	-87.37367	
@@ -244,18 +244,19 @@ mpc.bus_gmd = {
 
 
 % thermal cap x0
-%column_names%  A B C D E F G H I J K
+%    A    B    C    D    E    F    G    H    I    J    K
 mpc.thermal_cap_x0 = [
 	230.33 250.0 264.38 279.6 300.0 319.67 339.42 361.53 384.44 400.0 438.94 
 ];
+% 1/10th of a percent per unit
 
 
 % thermal cap y0
-%column_names%  A B C D E F G H I J K
+%    A    B    C    D    E    F    G    H    I    J    K
 mpc.thermal_cap_y0 = [
 	100.0 93.94 90.0 85.42 80.0 74.73 70.0 64.94 59.97 56.92 50.0 
 ];
-
+% percent per unit
 
 % NOTE: values are from https://arxiv.org/pdf/1701.01469.pdf Fig.2.
 
