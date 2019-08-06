@@ -238,7 +238,7 @@ end
         
         ac_result = output["ac"]["result"]
         @test ac_result["termination_status"] == PowerModels.LOCALLY_SOLVED
-        println("Testing objective $(result["objective"]) within tolerance for $casename")
+        println("Testing objective $(ac_result["objective"]) within tolerance for $casename")
         @test isapprox(ac_result["objective"], 87361.0; atol = 1e5)
         
         dc_solution = output["dc"]["result"]["solution"]
