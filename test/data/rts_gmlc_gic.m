@@ -2,9 +2,13 @@
 function mpc = rts_gmlc_gic
 mpc.version = '2';
 
+
 %%-----  Power Flow Data  -----%%
+
 %% system MVA base
 mpc.baseMVA = 100.0;
+
+
 %% bus data
 %    bus_i    type    Pd    Qd    Gs    Bs    area    Vm    Va    baseKV    zone    Vmax    Vmin
 mpc.bus = [
@@ -179,6 +183,7 @@ mpc.bus = [
 	1096	2	0.0	0.0	0.0	0.0	1	1.0	0.0	22.0	1	1.2	0.8				
 ];
 
+
 %% generator data
 %    bus    Pg    Qg    Qmax    Qmin    Vg    mBase    status    Pmax    Pmin    Pc1    Pc2    Qc1min    Qc1max    Qc2min    Qc2max    ramp_agc    ramp_10    ramp_30    ramp_q    apf
 mpc.gen = [
@@ -279,6 +284,7 @@ mpc.gen = [
 	1050	50.0	16.0	16.0	-10.0	1.1	100.0	1	50.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0.0	-1000.0	0.0				
 	1008	75.999999	-2.31	30.000000999999997	-25.0	1.1	100.0	1	75.999999	30.000000999999997	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0.0	-1000.0	0.0				
 ];
+
 
 %% branch data
 %    fbus    tbus    r    x    b    rateA    rateB    rateC    ratio    angle    status    angmin    angmax
@@ -501,8 +507,10 @@ mpc.branch = [
 	218	221	0.003	0.026	0.055	500.0	0.0	0.0	0	0	1	-29.999999999999996	29.999999999999996								
 ];
 
+
 %%-----  OPF Data  -----%%
-%% cost data
+
+%% generator cost data
 %    1    startup    shutdown    n    x1    y1    ...    xn    yn
 %    2    startup    shutdown    n    c(n-1)    ...    c0
 mpc.gencost = [
@@ -603,6 +611,7 @@ mpc.gencost = [
 	2	0.0	0.0	2	10.0	0.01
 	2	0.0	0.0	2	10.0	0.01
 ];
+
 
 %% bus names
 mpc.bus_name = {
@@ -777,7 +786,11 @@ mpc.bus_name = {
 	'COMTE_323_Gen2'
 };
 
-%column_names% lat lon 
+
+%%-----  GMD Data  -----%%
+
+%% bus_gmd data
+%column_names%  lat lon
 mpc.bus_gmd = {
 	42.396103	-117.83564
 	42.357677	-117.825935
@@ -950,6 +963,8 @@ mpc.bus_gmd = {
 	43.253002	-121.11322
 };
 
+
+%% gen_id data
 %column_names% gen_id 
 mpc.gen_id = {
 	'1'
@@ -1050,7 +1065,9 @@ mpc.gen_id = {
 	'4'
 };
 
-%column_names% gmd_br_series gmd_k lo_bus ckt gmd_br_hi baseMVA hi_bus config gmd_br_common gmd_br_lo type 
+
+%% branch_gmd data
+%column_names% gmd_br_series gmd_k lo_bus ckt gmd_br_hi baseMVA hi_bus config gmd_br_common gmd_br_lo type
 mpc.branch_gmd = {
 	-1	-1	305	'1'	-1	100.0	301	'none'	-1	-1	'line'
 	2	1.5	109	'1'	-1	100.0	112	'gwye-gwye-auto'	3	-1	'xf'
@@ -1270,6 +1287,8 @@ mpc.branch_gmd = {
 	-1	-1	221	'1'	-1	100.0	218	'none'	-1	-1	'line'
 };
 
+
+%% gmd_branch data
 %column_names% br_r f_bus br_status parent_index br_v t_bus type 
 mpc.gmd_branch = {
 	1.39656	110	1	1	24.9822945412359	114	'line'
@@ -1505,6 +1524,8 @@ mpc.gmd_branch = {
 	0.529	103	1	216	-9.595034289471874	106	'line'
 };
 
+
+%% gmd_bus data
 %column_names% g_gnd name status parent_index parent_type bus_i 
 mpc.gmd_bus = {
 	2.2093442003610066	'dc_sub1'	1	1	'sub'	1
@@ -1738,4 +1759,5 @@ mpc.gmd_bus = {
 	0.0	'dc_COMTE_323_Gen1'	1	1095	'bus'	229
 	0.0	'dc_COMTE_323_Gen2'	1	1096	'bus'	230
 };
+
 

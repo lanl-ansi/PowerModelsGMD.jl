@@ -1,6 +1,6 @@
 @testset "Test AC GMD OTS" begin
 
-    @testset "EPRI21 case OTS" begin
+    @testset "EPRI21 case" begin
         
         #result = run_qc_gmd_ots("../test/data/ots_test.m", cplex_solver)
         result = run_ac_gmd_ots("../test/data/ots_test.m", juniper_solver)

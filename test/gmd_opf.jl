@@ -3,7 +3,7 @@
     # -- B4GIC -- #
     # B4GIC - 4-bus case
 
-    @testset "B4GIC case AC-OPF" begin
+    @testset "B4GIC case" begin
 
         casename = "../test/data/b4gic.m"
         case = PowerModels.parse_file(casename)
@@ -19,7 +19,7 @@
     # -- B6GIC -- #
     # NERC B6GIC - 6-bus case
 
-    @testset "NERC B6GIC case AC-OPF" begin
+    @testset "NERC B6GIC case" begin
 
         casename = "../test/data/b6gic_nerc.m"
         case = PowerModels.parse_file(casename)
@@ -35,7 +35,7 @@
     # --EPRI21 -- #
     # EPRI21 - 19-bus case
 
-    @testset "EPRI21 case AC-OPF" begin
+    @testset "EPRI21 case" begin
 
         casename = "../test/data/epri21.m"
         case = PowerModels.parse_file(casename)
@@ -51,7 +51,7 @@
     # -- UIUC150 -- #
     # UIUC150 - 150-bus case
 
-    @testset "UIUC150 case AC-OPF" begin
+    @testset "UIUC150 case" begin
 
         casename = "../test/data/uiuc150_95pct_loading.m"
         case = PowerModels.parse_file(casename)
@@ -67,7 +67,7 @@
     # -- RTS-GMLC-GIC -- #
     # RTS-GMLC-GIC - 169-bus case
 
-    @testset "RTS-GMLC-GIC case AC-OPF" begin
+    @testset "RTS-GMLC-GIC case" begin
 
         casename = "../test/data/rts_gmlc_gic.m"
         case = PowerModels.parse_file(casename)
@@ -90,7 +90,7 @@ end
     # -- B4GIC -- #
     # B4GIC - 4-bus case
 
-    @testset "B4GIC case GMD+AC-OPF solution" begin
+    @testset "B4GIC case solution" begin
 
         result = run_ac_gmd_opf("../test/data/b4gic.m", ipopt_solver)
 
@@ -100,7 +100,7 @@ end
 
     end
 
-    @testset "B4GIC case GMD+AC-OPF" begin
+    @testset "B4GIC case" begin
 
         casename = "../test/data/b4gic.m"
         case = PowerModels.parse_file(casename)
@@ -125,7 +125,7 @@ end
     # -- B6GIC -- #
     # NERC B6GIC - 6-bus case
 
-    @testset "NERC B6GIC case GMD+AC-OPF" begin
+    @testset "NERC B6GIC case" begin
 
         casename = "../test/data/b6gic_nerc.m"
         case = PowerModels.parse_file(casename)
@@ -160,7 +160,7 @@ end
     # --EPRI21 -- #
     # EPRI21 - 19-bus case
 
-    @testset "EPRI21 case GMD+AC-OPF" begin
+    @testset "EPRI21 case" begin
 
         casename = "../test/data/epri21.m"
         case = PowerModels.parse_file(casename)
@@ -193,7 +193,7 @@ end
     # -- UIUC150 -- #
     # UIUC150 - 150-bus case
 
-    @testset "UIUC150 case GMD+AC-OPF" begin
+    @testset "UIUC150 case" begin
 
         casename = "../test/data/uiuc150_95pct_loading.m"
         case = PowerModels.parse_file(casename)
@@ -216,9 +216,9 @@ end
     # -- RTS-GMLC-GIC -- #
     # RTS-GMLC-GIC - 169-bus case
 
-    @testset "RTS-GMLC-GIC case GMD+AC-OPF" begin
+    @testset "RTS-GMLC-GIC case" begin
 
-        casename = "../test/data/rts_gmlc_gic.m"        
+        casename = "../test/data/rts_gmlc_gic.m"
         case = PowerModels.parse_file(casename)
         result = run_ac_gmd_opf(casename, ipopt_solver; setting=setting)
 

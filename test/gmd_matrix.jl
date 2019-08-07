@@ -13,7 +13,7 @@
     
     @testset "B4GIC case" begin
 
-        casename = "../test/data/b4gic.m"        
+        casename = "../test/data/b4gic.m"
         case = PowerModels.parse_file(casename)
         result = run_gmd(casename; setting=setting)
 
