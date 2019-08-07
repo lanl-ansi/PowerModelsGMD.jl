@@ -2,12 +2,9 @@
 function mpc = b6gic_nerc
 mpc.version = '2';
 
-
 %%-----  Power Flow Data  -----%%
-
 %% system MVA base
 mpc.baseMVA = 100;
-
 
 %% bus data
 %    bus_i    type    Pd    Qd    Gs    Bs    area    Vm    Va    baseKV    zone    Vmax    Vmin
@@ -20,13 +17,11 @@ mpc.bus = [
 	6	3	0	0	0	0	1	1.100000	0.000000	20	1	1	0.7
 ];
 
-
 %% generator data
 %    bus    Pg    Qg    Qmax    Qmin    Vg    mBase    status    Pmax    Pmin    Pc1    Pc2    Qc1min    Qc1max    Qc2min    Qc2max    ramp_agc    ramp_10    ramp_30    ramp_q    apf
 mpc.gen = [
 	6	170.0	0.0	2000.0	-2000.0	1.1	100	1	2000.0	0.0	0	0	0	0	0	0	0	0	0	-1000	0
 ];
-
 
 %% branch data
 %    fbus    tbus    r    x    b    rateA    rateB    rateC    ratio    angle    status    angmin    angmax
@@ -38,9 +33,7 @@ mpc.branch = [
 	4	5	0.00187	0.07	0.1	9000.0	0.0	0.0	1	0.0	1	-30.0	30.0
 ];
 
-
 %%-----  OPF Data  -----%%
-
 %% generator cost data
 %    1    startup    shutdown    n    x1    y1    ...    xn    yn
 %    2    startup    shutdown    n    c(n-1)    ...    c0
@@ -48,9 +41,7 @@ mpc.gencost = [
 	2	0	0	3	0.085	1.2	0
 ];
 
-
-%% gmd_bus data
-%    parent_index    status    g_gnd    name
+%column_names% parent_index status g_gnd name
 mpc.gmd_bus = {
 	1	1	5	'dc_sub1'	
 	2	1	5	'dc_sub2'	
@@ -63,9 +54,7 @@ mpc.gmd_bus = {
 	6	1	0	'dc_bus6'	
 };
 
-
-%% gmd_branch data
-%    f_bus    t_bus    parent_index    br_status    br_r    br_v    len_km    name
+%column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name
 mpc.gmd_branch = {
 	5	1	1	1	0.16666666666667	0	0	'dc_T1_hi'	
 	6	7	2	1	0.066666666666667	0	0	'dc_T2_series'	
@@ -75,9 +64,7 @@ mpc.gmd_branch = {
 	7	8	5	1	1.5583333333333	155.55621025547	160.4734287131	'dc_br45'	
 };
 
-
-%% branch_gmd data
-%    hi_bus    lo_bus    gmd_br_hi    gmd_br_lo    gmd_k    gmd_br_series    gmd_br_common    baseMVA    type    config
+%column_names%  hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
 mpc.branch_gmd = {
 	2	1	1	-1	1.8	-1	-1	100	'xf'	'gwye-delta'	
 	4	3	-1	-1	1.8	2	3	100	'xf'	'gwye-gwye-auto'	
@@ -86,9 +73,7 @@ mpc.branch_gmd = {
 	4	5	-1	-1	0	-1	-1	100	'line'	'none'	
 };
 
-
-%% bus_gmd data
-%    lat    lon
+%column_names%  lat lon
 mpc.bus_gmd = {
 	33.613499	-87.373673	
 	33.613499	-87.373673	
@@ -97,5 +82,4 @@ mpc.bus_gmd = {
 	33.955058	-84.679354	
 	33.955058	-84.679354	
 };
-
 

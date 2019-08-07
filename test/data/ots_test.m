@@ -242,21 +242,19 @@ mpc.bus_gmd = {
 
 %%-----  Thermal Data  -----%%
 
+% Values are from Fig.2. of https://arxiv.org/pdf/1701.01469.pdf paper
 
-% thermal cap x0
-%column_names%  A B C D E F G H I J K
+%% thermal cap x0 ([per unit])
+%    A    B    C    D    E    F    G    H    I    J    K
 mpc.thermal_cap_x0 = [
-	230.33 250.0 264.38 279.6 300.0 319.67 339.42 361.53 384.44 400.0 438.94 
+	0.23033	0.25000	0.26438	0.27960	0.30000	0.31967	0.33942	0.36153	0.38444	0.40000	0.43894	
 ];
 
 
-% thermal cap y0
-%column_names%  A B C D E F G H I J K
+%% thermal cap y0 ([percent per unit])
+%    A    B    C    D    E    F    G    H    I    J    K
 mpc.thermal_cap_y0 = [
-	100.0 93.94 90.0 85.42 80.0 74.73 70.0 64.94 59.97 56.92 50.0 
+	100.0	93.94	90.0	85.42	80.0	73.73	70.0	64.94	59.97	56.92	50.0	
 ];
-
-
-% NOTE: valus are from https://arxiv.org/pdf/1701.01469.pdf Fig.2.
 
 
