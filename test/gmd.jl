@@ -74,7 +74,7 @@
 
     @testset "UIUC150 case" begin
 
-        casename = "../test/data/uiuc150.m"        
+        casename = "../test/data/uiuc150.m"
         case = PowerModels.parse_file(casename)
         result = run_gmd(casename, ipopt_solver; setting=setting)
 
@@ -95,7 +95,7 @@
 
     @testset "RTS-GMLC-GIC case" begin
 
-        casename = "../test/data/rts_gmlc_gic.m"        
+        casename = "../test/data/rts_gmlc_gic.m"
         case = PowerModels.parse_file(casename)
         result = run_gmd(casename, ipopt_solver; setting=setting)
 

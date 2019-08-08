@@ -102,6 +102,8 @@ mpc.gencost = [
 ];
 
 
+%%-----  GMD Data  -----%%
+
 %% gmd_bus data
 %    parent_index    status    g_gnd    name
 mpc.gmd_bus = {
