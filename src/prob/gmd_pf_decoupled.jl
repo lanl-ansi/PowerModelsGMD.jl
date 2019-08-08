@@ -1,21 +1,23 @@
-# Formulations of GMD Problems
 export run_pf_qloss, run_pf_qloss_vnom
 export run_ac_pf_qloss, run_ac_pf_qloss_vnom
 export run_ac_gmd_pf_decoupled
 
-"Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
+
+"FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
 function post_pf_qloss(pm::PMs.GenericPowerModel; kwargs...)
     vnom = false
     post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
 end
- 
-"Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
+
+
+"FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
 function post_pf_qloss_vnom(pm::PMs.GenericPowerModel; kwargs...)
     vnom = true
     post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
 end
- 
-"Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
+
+
+"FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
 function post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
     # Todo: abbreviate PowerModels
     PowerModels.variable_voltage(pm, bounded = false)
@@ -79,26 +81,32 @@ function post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
 
 end
 
-"Run basic GMD with the nonlinear AC equations"
+
+"FUNCTION: Run basic GMD with the nonlinear AC equations"
 function run_ac_pf_qloss(file, solver; kwargs...)
     return run_pf_qloss(file, ACPPowerModel, solver; kwargs...)
 end
 
-"Run basic GMD with the nonlinear AC equations"
+
+"FUNCTION: Run basic GMD with the nonlinear AC equations"
 function run_ac_pf_qloss_vnom(file, solver; kwargs...)
     return run_pf_qloss_vnom(file, ACPPowerModel, solver; kwargs...)
 end
 
-"Run the basic GMD model"
+
+"FUNCTION: Run the basic GMD model"
 function run_pf_qloss(file, model_constructor, solver; kwargs...)
     return PMs.run_model(file, model_constructor, solver, post_pf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
-"Run the basic GMD model"
+
+"FUNCTION: Run the basic GMD model"
 function run_pf_qloss_vnom(file, model_constructor, solver; kwargs...)
     return PMs.run_model(file, model_constructor, solver, post_pf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
+
+"FUNCTION: Run AC GMD PF Decoupled"
 function run_ac_gmd_pf_decoupled(dc_case, solver; setting=Dict{String,Any}(), kwargs...)
     # add logic to read file if needed
     #dc_case = PowerModels.parse_file(file)
@@ -124,4 +132,3 @@ function run_ac_gmd_pf_decoupled(dc_case, solver; setting=Dict{String,Any}(), kw
 end
 
 
-     

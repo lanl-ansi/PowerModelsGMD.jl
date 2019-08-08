@@ -39,7 +39,7 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
     include("gmd_opf_decoupled.jl")
     include("gmd_opf.jl")
     include("gmd_ls.jl")
-    #include("gmd_ots.jl")
+    include("gmd_ots.jl")
 
 end
 

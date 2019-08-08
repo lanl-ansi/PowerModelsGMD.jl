@@ -230,7 +230,8 @@ function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
         end
     end
 
-    x0 = 1e3*thermal_cap_x0./calc_branch_ibase(pm, i, nw=nw)  #branch["ibase"]
+    #x0 = 1e3*thermal_cap_x0./calc_branch_ibase(pm, i, nw=nw)  #branch["ibase"]
+    x0 = thermal_cap_x0./calc_branch_ibase(pm, i, nw=nw)  #branch["ibase"]
     y0 = thermal_cap_y0./100  # convert to %
 
     y = calc_ac_mag_max(pm, i, nw=nw) .* y0 # branch["ac_mag_max"] .* y0

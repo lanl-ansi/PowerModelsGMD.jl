@@ -19,6 +19,7 @@ function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
     for (n, network) in PMs.nws(pm)
         
         # -- Variables -- #
+        
         PMs.variable_voltage(pm, nw=n)      
         PMs.variable_generation(pm, nw=n)
         PMs.variable_branch_flow(pm, nw=n)
@@ -102,4 +103,5 @@ function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
     PowerModelsGMD.objective_gmd_min_fuel(pm)
 
 end
+
 

@@ -97,6 +97,12 @@ git-tree-sha1 = "a37fdb14ee3a04b4df44c20a73da89c57035bdf2"
 uuid = "4076af6c-e467-56ae-b986-b466b2749572"
 version = "0.19.2"
 
+[[Juniper]]
+deps = ["Distributed", "JSON", "JuMP", "LinearAlgebra", "MathOptInterface", "Random", "Statistics"]
+git-tree-sha1 = "e26bd40ede7b7fe77097cc11704941b01e44efe4"
+uuid = "2ddba703-00a4-53a7-87a5-e8b9971dde84"
+version = "0.4.2"
+
 [[LibGit2]]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 
