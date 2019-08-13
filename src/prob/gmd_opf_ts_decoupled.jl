@@ -23,6 +23,7 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
     t = timesteps
 
     # Define input values for temperature calculations
+        #these need to be changed...
     base_mva = net["baseMVA"]
     tau_oil = 4260 #which is 71 mins in seconds
     delta_t = t[2]-t[1]
