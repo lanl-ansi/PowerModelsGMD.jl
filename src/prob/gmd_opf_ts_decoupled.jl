@@ -22,15 +22,9 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
     n = length(timesteps)
     t = timesteps
 
-    # Define input values for temperature calculations
-        #these need to be changed...
+    # Input values for temperature calculations
     base_mva = net["baseMVA"]
-    tau_oil = 4260 #which is 71 mins in seconds
     delta_t = t[2]-t[1]
-    delta_oil_rated = 75 #oil temp rise at rated power
-    tau_hs = 150
-    Re = 0.63 #from Randy Horton's report, transformer model E on p. 52
-    temp_ambient = 25 #ambient temperature
 
     println("")
 
@@ -63,17 +57,18 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
         for (k,br) in data["ac"]["case"]["branch"]
 
             if !(br["type"] == "transformer" || br["type"] == "xf")
+           #if !(br["xfmr"] == 1)
                 continue
             end
 
             result = data["ac"]["result"]
             
-            PowerModelsGMD.delta_topoilrise(br, result, base_mva, tau_oil, delta_t, delta_oil_rated) 
-            # PowerModelsGMD.delta_topoilrise_ss(br, result, base_mva, delta_oil_rated) #included in delta_topoilrise
+            PowerModelsGMD.delta_topoilrise(br, result, base_mva, delta_t) 
+            # PowerModelsGMD.delta_topoilrise_ss(br, result, base_mva) #included in delta_topoilrise
             PowerModelsGMD.update_topoilrise(br, net)
             
-            # PowerModelsGMD.delta_hotspotrise(br, result, Ie_prev[k], tau_hs, delta_t, Re) #decided to only calculate stead-state value
-            PowerModelsGMD.delta_hotspotrise_ss(br, result, Re)
+            # PowerModelsGMD.delta_hotspotrise(br, result, Ie_prev[k], delta_t) #decided to only calculate stead-state value
+            PowerModelsGMD.delta_hotspotrise_ss(br, result)
             PowerModelsGMD.update_hotspotrise(br, net)
             
             # Store calculated transformer temperature related results:
@@ -82,7 +77,7 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
             trf_temp["delta_topoilrise_ss"] = br["delta_topoilrise_ss"]
             #trf_temp["delta_hotspotrise"] =  br["delta_hotspotrise"] #decided not to store value
             trf_temp["delta_hotspotrise_ss"] = br["delta_hotspotrise_ss"]
-            trf_temp["actual_hotspot"] = (temp_ambient+br["delta_topoilrise_ss"]+br["delta_hotspotrise_ss"])
+            trf_temp["actual_hotspot"] = (br["temperature_ambient"]+br["delta_topoilrise_ss"]+br["delta_hotspotrise_ss"])
             
             merge!(result["solution"]["branch"][k], trf_temp)
 

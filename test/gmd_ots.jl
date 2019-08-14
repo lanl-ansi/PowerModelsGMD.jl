@@ -20,7 +20,8 @@ end
 
     @testset "OTS-Test case" begin
         
-        casename = "../test/data/ots_test.m"
+        #casename = "../test/data/ots_test.m"
+        casename = "../test/data/epri21_ots.m"
         case = PowerModels.parse_file(casename)
         result = run_ac_gmd_ots(casename, juniper_solver)
 

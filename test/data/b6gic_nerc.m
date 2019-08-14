@@ -49,7 +49,7 @@ mpc.gencost = [
 ];
 
 
-%%-----  GMD Data  -----%%
+%%-----  GMD - Thermal Data  -----%%
 
 %% gmd_bus data
 %column_names% parent_index status g_gnd name
@@ -67,7 +67,7 @@ mpc.gmd_bus = {
 
 
 %% gmd_branch data
-%column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name
+%column_names% f_bus t_bus parent_index br_status br_r br_v len_km name
 mpc.gmd_branch = {
 	5	1	1	1	0.16666666666667	0	0	'dc_T1_hi'
 	6	7	2	1	0.066666666666667	0	0	'dc_T2_series'
@@ -79,7 +79,7 @@ mpc.gmd_branch = {
 
 
 %% branch_gmd data
-%column_names%  hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
+%column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
 mpc.branch_gmd = {
 	2	1	1	-1	1.8	-1	-1	100	'xf'	'gwye-delta'
 	4	3	-1	-1	1.8	2	3	100	'xf'	'gwye-gwye-auto'
@@ -89,8 +89,19 @@ mpc.branch_gmd = {
 };
 
 
+%% branch_thermal data
+%column_names% xfmr temperature_ambient hotspot_instant_limit hotspot_avg_limit hotspot_rated topoil_time_const topoil_rated topoil_init topoil_initialized hotspot_coeff
+mpc.branch_thermal = {
+	1	25	280	240	150	71	75	0	1	0.63
+	1	25	280	240	150	71	75	0	1	0.63
+	1	25	280	240	150	71	75	0	1	0.63
+	0	25	-1	-1	-1	-1	-1	-1	-1	-1
+	0	25	-1	-1	-1	-1	-1	-1	-1	-1
+};
+
+
 %% bus_gmd data
-%column_names%  lat lon
+%column_names% lat lon
 mpc.bus_gmd = {
 	33.613499	-87.373673
 	33.613499	-87.373673
@@ -99,5 +110,42 @@ mpc.bus_gmd = {
 	33.955058	-84.679354
 	33.955058	-84.679354
 };
+
+
+%% time_elapsed
+%column_names% seconds
+mpc.time_elapsed = 10.0;
+
+
+%%-----  SourceID Data  -----%%
+
+%% bus_sourceid data
+%column_names% bus_sid
+mpc.bus_sourceid = [
+	'1 ';
+	'2 ';
+	'3 ';
+	'4 ';
+	'5 ';
+	'6 ';
+];
+
+
+%% gen_sourceid data
+%column_names% bus_i gen_sid
+mpc.gen_sourceid = [
+	6 '1 ';
+];
+
+
+%% branch_sourceid data
+%column_names% fbus tbus branch_sid
+mpc.branch_sourceid = [
+	2 1 '1 ';
+	3 4 '2 ';
+	5 6 '3 ';
+	2 3 '4 ';
+	4 5 '5 ';
+];
 
 

@@ -525,9 +525,9 @@ end
 
 
 "FUNCTION: calculate top-oil temperature rise"
-function delta_topoilrise(branch, result, base_mva, tau_oil, delta_t, delta_oil_rated)
+function delta_topoilrise(branch, result, base_mva, delta_t)
 
-    delta_topoilrise_ss = PowerModelsGMD.delta_topoilrise_ss(branch, result, base_mva, delta_oil_rated)
+    delta_topoilrise_ss = PowerModelsGMD.delta_topoilrise_ss(branch, result, base_mva)
     #delta_topoilrise_ss = 1 #testing for step response
     delta_topoilrise = delta_topoilrise_ss # if 1st iteration, assume it starts from steady-state value
 
@@ -537,7 +537,7 @@ function delta_topoilrise(branch, result, base_mva, tau_oil, delta_t, delta_oil_
         delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"] 
 
         # trapezoidal integration
-        tau = 2*tau_oil/delta_t
+        tau = 2*(branch["topoil_time_const"]*60)/delta_t
         delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev)/(1 + tau) - delta_topoilrise_prev*(1 - tau)/(1 + tau)
     else
         delta_topoilrise = 0
@@ -551,7 +551,7 @@ end
 
 
 "FUNCTION: calculate steady-state top-oil temperature rise"
-function delta_topoilrise_ss(branch, result, base_mva, delta_oil_rated)
+function delta_topoilrise_ss(branch, result, base_mva)
     
     if !(branch["type"] == "transformer" || branch["type"] == "xf")
         return 0
@@ -564,8 +564,7 @@ function delta_topoilrise_ss(branch, result, base_mva, delta_oil_rated)
     S = sqrt(p^2 + q^2)
     K = S/(branch["rate_a"] * base_mva) #calculate the loading
 
-    # println("Branch $i: P=$p, Q=$q S=$S, Smax=$(branch["rate_a"]), MVA max=$(branch["rate_a"]*base_mva), TO rated=$delta_oil_rated")
-    return delta_oil_rated*K^2
+    return branch["topoil_rated"]*K^2
 
 end
 
@@ -582,18 +581,18 @@ end
 
 "FUNCTION: calculate hotspot temperature rise"
 #TODO: FIX function - even though it is written correctly, it errors out when enabled in gmd_opf_ts_decoupled.jl
-function delta_hotspotrise(branch, result, Ie_prev, tau_hs, delta_t, Re)
+function delta_hotspotrise(branch, result, Ie_prev, delta_t)
     #determined for the time-extended mitigation problem
     
     delta_hotspotrise = 0
     Ie = branch["ieff"]
-    tau = 2*tau_hs/delta_t
+    tau = 2*branch["hotspot_rated"]/delta_t
 
     if Ie_prev === nothing
-        delta_hotspotrise = Re*Ie
+        delta_hotspotrise = branch["hotspot_coeff"]*Ie
     else
         delta_hotspotrise_prev = branch["delta_hotspotrise"]
-        delta_hotspotrise = Re*(Ie + Ie_prev)/(1 + tau) - delta_hotspotrise_prev*(1 - tau)/(1 + tau)
+        delta_hotspotrise = branch["hotspot_coeff"]*(Ie + Ie_prev)/(1 + tau) - delta_hotspotrise_prev*(1 - tau)/(1 + tau)
     end
 
     branch["delta_hotspotrise"] = delta_hotspotrise
@@ -602,12 +601,12 @@ end
 
 
 "FUNCTION: calculate steady-state hotspot temperature rise"
-function delta_hotspotrise_ss(branch, result, Re)
+function delta_hotspotrise_ss(branch, result)
     #determined for the time-extended  mitigation problem
     
     delta_hotspotrise_ss = 0
     Ie = branch["ieff"]
-    delta_hotspotrise_ss = Re*Ie
+    delta_hotspotrise_ss = branch["hotspot_coeff"]*Ie
     branch["delta_hotspotrise_ss"] = delta_hotspotrise_ss
 
 end
@@ -621,6 +620,5 @@ function update_hotspotrise(branch, net)
     net["branch"][k]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
     
 end
-
 
 

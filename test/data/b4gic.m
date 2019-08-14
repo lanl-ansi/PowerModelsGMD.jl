@@ -29,9 +29,9 @@ mpc.gen = [
 %% branch data
 %    fbus    tbus    r    x    b    rateA    rateB    rateC    ratio    angle    status    angmin    angmax
 mpc.branch = [
-	1	3	0.0001	0.004	0	9000.0	0.0	0.0	1	0.0	1	-30.0	30.0
-	1	2	0.000513	0.01	0	9000.0	0.0	0.0	1	0.0	1	-30.0	30.0
-	2	4	0.0001	0.004	0	9000.0	0.0	0.0	1	0.0	1	-30.0	30.0
+	1	3	0.0001	0.004	0	2000.0	0.0	0.0	1	0.0	1	-30.0	30.0
+	1	2	0.000513	0.01	0	2000.0	0.0	0.0	1	0.0	1	-30.0	30.0
+	2	4	0.0001	0.004	0	2000.0	0.0	0.0	1	0.0	1	-30.0	30.0
 ];
 
 
@@ -45,7 +45,7 @@ mpc.gencost = [
 ];
 
 
-%%-----  GMD Data  -----%%
+%%-----  GMD - Thermal Data  -----%%
 
 %% gmd_bus data
 %column_names% parent_index status g_gnd name
@@ -60,7 +60,7 @@ mpc.gmd_bus = {
 
 
 %% gmd_branch data
-%column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name
+%column_names% f_bus t_bus parent_index br_status br_r br_v len_km name
 mpc.gmd_branch = {
 	3	1	1	1	0.1	0	0	'dc_xf1_hi'
 	3	4	2	1	1.00073475	170.78806587354	170.78806587354	'dc_br1'
@@ -69,7 +69,7 @@ mpc.gmd_branch = {
 
 
 %% branch_gmd data
-%column_names%  hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
+%column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
 mpc.branch_gmd = {
 	1	3	1	-1	1.793	-1	-1	100	'xf'	'gwye-delta'
 	1	2	-1	-1	0	-1	-1	100	'line'	'none'
@@ -77,13 +77,55 @@ mpc.branch_gmd = {
 };
 
 
+%% branch_thermal data
+%column_names% xfmr temperature_ambient hotspot_instant_limit hotspot_avg_limit hotspot_rated topoil_time_const topoil_rated topoil_init topoil_initialized hotspot_coeff
+mpc.branch_thermal = {
+	1	25	280	240	150	71	75	0	1	0.63
+	0	25	-1	-1	-1	-1	-1	-1	-1	-1
+	1	25	280	240	150	71	75	0	1	0.63
+};
+
+
 %% bus_gmd data
-%column_names%  lat lon
+%column_names% lat lon
 mpc.bus_gmd = {
 	40	-89
 	40	-87
 	40	-89
 	40	-87
 };
+
+
+%% time_elapsed
+%column_names% seconds
+mpc.time_elapsed = 10.0;
+
+
+%%-----  SourceID Data  -----%%
+
+%% bus_sourceid data
+%column_names% bus_sid
+mpc.bus_sourceid = [
+	'1 ';
+	'2 ';
+	'3 ';
+	'4 ';
+];
+
+
+%% gen_sourceid data
+%column_names% bus_i gen_sid
+mpc.gen_sourceid = [
+	4 '1 ';
+];
+
+
+%% branch_sourceid data
+%column_names% fbus tbus branch_sid
+mpc.branch_sourceid = [
+	1 3 '1 ';
+	1 2 '2 ';
+	2 4 '3 ';
+];
 
 
