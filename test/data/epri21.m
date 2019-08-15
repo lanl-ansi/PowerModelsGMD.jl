@@ -282,6 +282,20 @@ mpc.bus_gmd = {
 mpc.time_elapsed = 10.0;
 
 
+%% thermal caps
+% thermal_cap_x0 ([per unit])
+%column_names% A B C D E F G H I J K
+mpc.thermal_cap_x0 = [
+	0.23033 0.25000 0.26438 0.27960 0.30000 0.31967 0.33942 0.36153 0.38444 0.40000 0.43894
+];
+% thermal_cap_y0 ([percent per unit])
+%column_names% A B C D E F G H I J K
+mpc.thermal_cap_y0 = [
+	100.0 93.94 90.0 85.42 80.0 74.73 70.0 64.94 59.97 56.92 50.0 
+];
+% Values are from Fig.2. of https://arxiv.org/pdf/1701.01469.pdf paper
+
+
 %%-----  SourceID Data  -----%%
 
 %% bus_sourceid data
