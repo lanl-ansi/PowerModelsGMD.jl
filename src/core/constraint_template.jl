@@ -307,7 +307,7 @@ end
 
 
 ""
-function constraint_delta_topoilrise_ss(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, delta_oil_rated=150)
+function constraint_delta_topoilrise_ss(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw)
     #temperature = ref(pm, nw, :storage, i)
 
     branch = PMs.ref(pm, nw, :branch, i)
@@ -323,7 +323,7 @@ end
 
 
 ""
-function constraint_delta_topoilrise(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, tau_hs=150, Re=0.63, delta_oil_init=75)
+function constraint_delta_topoilrise(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw)
     #temperature = ref(pm, nw, :storage, i)
 
     if haskey(pm.data, "time_elapsed")

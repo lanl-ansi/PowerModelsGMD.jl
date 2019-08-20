@@ -359,9 +359,9 @@ end
 
 "CONSTRAINT: top-oil temperature rise"
 # Todo: break up into init & regular
-function constraint_delta_topoilrise(pm::PMs.GenericPowerModel, n::Int, c::Int; tau_oil, Delta_t, delta_topoilrise_prev, delta_topoilrise_ss_prev)
+function constraint_delta_topoilrise(pm::PMs.GenericPowerModel, n::Int, c::Int; tau_oil, delta_t, delta_topoilrise_prev, delta_topoilrise_ss_prev)
 
-    tau = 2*tau_oil/Delta_t
+    tau = 2*tau_oil/delta_t
 
     # Variables:
     delta_topoilrise =  PMs.var(pm, n, c, :tor)
@@ -385,7 +385,7 @@ end
 
 function constraint_delta_hotspotrise(pm::PMs.GenericPowerModel, n::Int, c::Int; tau_hs, Delta_t, Re, delta_hotspotrise_prev)
 
-    tau = 2*tau_hs/Delta_t
+    tau = 2*tau_hs/delta_t
 
     # Variables:
     Ie = PMs.var(pm, n, c, :i_dc_mag)
