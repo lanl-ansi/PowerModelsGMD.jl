@@ -117,8 +117,8 @@ If the results are plotted spatially, for convinience, `bus_gmd` table includes 
 
 This table includes
 * `parent_index` - the index of the corresponding bus in the ac network 
-* `status` - binary value that sets the status of the bus (1 is enabled, 0 is disabled)
-* `g_gnd` - the admittance to ground in unit of Siemens
+* `status` - binary value that sets the status of the bus (1: enabled, 0: disabled)
+* `g_gnd` - the admittance to ground (in unit of Siemens)
 * `name` - a descriptive name for the bus
 
 ```
@@ -140,9 +140,9 @@ This table includes
 * `f_bus` - the "from" bus in the gmd bus table
 * `t_bus` - to "to" bus in the gmd bus table
 * `parent_index` - the index of the corresponding branch in the ac network
-* `br_status` - binary value that sets the statusof the branch (1 is enabled, 0 is disabled)
+* `br_status` - binary value that sets the statusof the branch (1: enabled, 0: disabled)
 * `br_r` - the branch resistance (in unit of Ohms)
-* `br_v` - the induced quasi-dc voltage in volts
+* `br_v` - the induced quasi-dc voltage (in unit of Volts)
 * `len_km` - the length of the branch (in unit of km) -- not required
 * `name` - a descriptive name for the branch
 
@@ -183,19 +183,20 @@ mpc.branch_gmd = {
 ### Branch Thermal Data Table 
 
 This table includes
-* `xfmr` - binary value that defines if the branch is a transformer (1 is transformer, 0 is not a transformer)
+* `xfmr` - binary value that defines if the branch is a transformer (1: transformer, 0: not a transformer)
 * `temperature_ambient` - ambient temperature of the transformer (in unit of Celsius)
 * `hotspot_instant_limit` - 1-hour hotspot temperature limit of the transformer (in unit of Celsius)
 * `hotspot_avg_limit` - 8-hour hotspot temperature limit of the transformer (in unit of Celsius)
 * `hotspot_rated` - ...
-* `topoil_time_const` - top-oil temperature-rise time-constant (in unit of minutes)
+* `topoil_time_const` - top-oil temperature-rise time-constant of the transformer (in unit of minutes)
 * `topoil_rated` - top-oil temperature-rise of the transformer at rated power (in unit of Celsius)
 * `topoil_init` - initial top-oil temperature of the transformer (in unit of Celsius)
-* `topoil_initialized` - binary value that defines the initial top-oil temperature of the transformer (1 is initial top-oil temperature starts with `topoil_init` value, 0 is initial top-oil temperature starts with steady-state value)
+* `topoil_initialized` - binary value that defines the initial top-oil temperature of the transformer (1: initial top-oil temperature starts with `topoil_init` value, 0: initial top-oil temperature starts with steady-state value)
 * `hotspot_coeff` - relationship of hotspot temperature rise to Ieff (in unit of Celsius/amp)
 
 ```
-%column_names% xfmr temperature_ambient hotspot_instant_limit hotspot_avg_limit hotspot_rated topoil_time_const topoil_rated topoil_init topoil_initialized hotspot_coeff
+%column_names% xfmr temperature_ambient hotspot_instant_limit hotspot_avg_limit hotspot_rated
+topoil_time_const topoil_rated topoil_init topoil_initialized hotspot_coeff
 mpc.branch_thermal = {
 	1	25	280	240	150	71	75	0	1	0.63
 	0	25	-1	-1	-1	-1	-1	-1	-1	-1
