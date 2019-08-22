@@ -104,7 +104,7 @@ function constraint_current_on_off(pm::PMs.GenericPowerModel{T}, n::Int, c::Int,
     ac_lb    = 0 # this implementation of the on/off relaxation is only valid for lower bounds of 0
 
     i_ac_mag = PMs.var(pm, n, c, :i_ac_mag)[i]
-    l        = PMs.var(pm, n, c, :cm)[i]
+    l        = PMs.var(pm, n, c, :ccm)[i]
     z        = PMs.var(pm, n, c, :branch_z)[i]
 
     # p_fr^2 + q_fr^2 <= l * w comes for free with constraint_power_magnitude_sqr of PowerModels.jl

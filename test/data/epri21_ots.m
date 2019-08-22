@@ -105,40 +105,40 @@ mpc.gencost = [
 	2	0	0	3	0.11	5.0	0.0
 	2	0	0	3	0.11	5.0	0.0
 ];
-
-
-%%-----  GMD - Thermal Data  -----%%
-
+[]
+[]
+%%----- [] GMD - Thermal Data  -----%%
+[]
 %% gmd_bus data
-%column_names% parent_index status g_gnd name
+%column_names% parent_index parent_type status g_gnd name
 mpc.gmd_bus = {
-	1	1	5.0	'dc_sub1'
-	2	1	5.0	'dc_sub2'
-	3	1	5.0	'dc_sub3'
-	4	1	1.0	'dc_sub4'
-	5	1	10.0	'dc_sub5'
-	6	1	10.0	'dc_sub6'
-	7	1	4.621712806766188	'dc_sub7'
-	8	1	10.0	'dc_sub8'
-	1	1	0.0	'dc_bus1'
-	2	1	0.0	'dc_bus2'
-	3	1	0.0	'dc_bus3'
-	4	1	0.0	'dc_bus4'
-	5	1	0.0	'dc_bus5'
-	6	1	0.0	'dc_bus6'
-	7	1	0.0	'dc_bus7'
-	8	1	0.0	'dc_bus8'
-	11	1	0.0	'dc_bus11'
-	12	1	0.0	'dc_bus12'
-	13	1	0.0	'dc_bus13'
-	14	1	0.0	'dc_bus14'
-	15	1	0.0	'dc_bus15'
-	16	1	0.0	'dc_bus16'
-	17	1	0.0	'dc_bus17'
-	18	1	0.0	'dc_bus18'
-	19	1	0.0	'dc_bus19'
-	20	1	0.0	'dc_bus20'
-	21	1	0.0	'dc_bus21'
+	1	'sub'	1	5.0	'dc_sub1'
+	2	'sub'	1	5.0	'dc_sub2'
+	3	'sub'	1	5.0	'dc_sub3'
+	4	'sub'	1	1.0	'dc_sub4'
+	5	'sub'	1	10.0	'dc_sub5'
+	6	'sub'	1	10.0	'dc_sub6'
+	7	'sub'	1	4.621712806766188	'dc_sub7'
+	8	'sub'	1	10.0	'dc_sub8'
+	1	'bus'	1	0.0	'dc_bus1'
+	2	'bus'	1	0.0	'dc_bus2'
+	3	'bus'	1	0.0	'dc_bus3'
+	4	'bus'	1	0.0	'dc_bus4'
+	5	'bus'	1	0.0	'dc_bus5'
+	6	'bus'	1	0.0	'dc_bus6'
+	7	'bus'	1	0.0	'dc_bus7'
+	8	'bus'	1	0.0	'dc_bus8'
+	11	'bus'	1	0.0	'dc_bus11'
+	12	'bus'	1	0.0	'dc_bus12'
+	13	'bus'	1	0.0	'dc_bus13'
+	14	'bus'	1	0.0	'dc_bus14'
+	15	'bus'	1	0.0	'dc_bus15'
+	16	'bus'	1	0.0	'dc_bus16'
+	17	'bus'	1	0.0	'dc_bus17'
+	18	'bus'	1	0.0	'dc_bus18'
+	19	'bus'	1	0.0	'dc_bus19'
+	20	'bus'	1	0.0	'dc_bus20'
+	21	'bus'	1	0.0	'dc_bus21'
 };
 
 
