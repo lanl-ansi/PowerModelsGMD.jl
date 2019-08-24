@@ -221,7 +221,16 @@ mpc.bus_gmd = {
 };
 ```
 
+## Contributors
 
+In alphabetical order:
+* Art Barnes: Decoupled model
+* Russell Bent: ML and OTS implementation
+* Carleton Coffrin: Architecture
+* Adam Mate: Decoupled time-extended model, RTS-GMLC test case
+
+Acknowledgements:
+The authors are grateful for Mowen Lu for developing the ML and OTS problem specifications and to Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
 
 <!-- 
 ## Development

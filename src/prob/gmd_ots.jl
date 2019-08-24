@@ -1,4 +1,4 @@
-export run_gmd_ots, run_ac_gmd_ots, run_qc_gmd_ots
+export run_gmd_ots, run_ac_gmd_ots, run_qc_gmd_ots, run_soc_gmd_ots
 
 # -- Description -- #
 # Formulations of GMD Mitigation Problems that allow load shedding and generation dispatch and optimal transmission switching
