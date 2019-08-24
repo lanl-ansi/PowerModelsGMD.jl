@@ -23,8 +23,7 @@ header = '''
 %% gmd_bus data
 %column_names% parent_index status g_gnd name
 %column_names% parent_index parent_type status g_gnd name
-mpc.gmd_bus = {
-'''
+mpc.gmd_bus = {'''
 
 print(header)
 
@@ -34,6 +33,6 @@ for i in gids:
     tp = gb['parent_type']
     ip = gb['parent_index'] 
     name = gb['name']
-    print(f"\t{i}\t{ip}\t'{tp}'\t1\t{g}\t'{name}'")
+    print(f"\t{ip}\t'{tp}'\t1\t{g}\t'{name}'")
     
 print('};')

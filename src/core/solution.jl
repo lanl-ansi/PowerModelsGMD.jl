@@ -74,7 +74,7 @@ end
 "FUNCTION: add setpoint branch dc flow"
 function add_setpoint_branch_dc_flow!(sol, pm::PMs.GenericPowerModel)
     #if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-    PMs.add_setpoint!(sol, pm, "gmd_branch", "gmd_idc", :dc, status_name="br_status", var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
+    PMs.add_setpoint!(sol, pm, "gmd_branch", "gmd_idc", :dc, status_name="br_status", inactive_status_value=0, var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
     #end
 end
 

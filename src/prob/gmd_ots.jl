@@ -25,7 +25,7 @@ end
 
 
 "FUNCTION: Minimize load shedding and fuel costs for GMD mitigation"
-function run_gmd_ots(file::String, model_constructor, solver; kwargs...)
+function run_gmd_ots(file, model_constructor, solver; kwargs...)
     return PMs.run_model(file, model_constructor, solver, post_gmd_ots; ref_extensions=[PMs.ref_add_on_off_va_bounds!], solution_builder = get_gmd_solution, kwargs...)
 end
 

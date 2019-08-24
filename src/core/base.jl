@@ -47,8 +47,9 @@ function build_gmd_ref(pm::PMs.GenericPowerModel)
         nw_id = parse(Int, n)
         ref = nws[nw_id]
 
-        ref[:gmd_branch] = Dict(x for x in ref[:gmd_branch] if check_gmd_branch_parent_status(ref, x.first, x.second))
-
+        # add something like pm_component_status_inactive["bus"] here instead of hardcoding
+        ref[:gmd_bus] = Dict(x for x in ref[:gmd_bus] if x.second["status"] != 0)
+        ref[:gmd_branch] = Dict(x for x in ref[:gmd_branch] if x.second["br_status"] != 0)
 
         ref[:gmd_arcs_from] = [(i,branch["f_bus"],branch["t_bus"]) for (i,branch) in ref[:gmd_branch]]
         ref[:gmd_arcs_to]   = [(i,branch["t_bus"],branch["f_bus"]) for (i,branch) in ref[:gmd_branch]]
