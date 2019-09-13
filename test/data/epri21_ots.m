@@ -289,7 +289,7 @@ mpc.bus_gmd = {
 
 %% time_elapsed
 %column_names% seconds
-mpc.time_elapsed = 10.0;
+mpc.time_elapsed = 60.0;
 
 
 %% thermal caps
