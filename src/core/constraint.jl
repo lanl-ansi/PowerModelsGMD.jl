@@ -1,23 +1,6 @@
 # --- Templated Constraints --- #
 
 
-"CONSTRAINT: kcl with shunts"
-function constraint_kcl_gmd(pm::PMs.GenericPowerModel, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
-
-    p = PMs.var(pm, n, c, :p)
-    q = PMs.var(pm, n, c, :q)
-    pg = PMs.var(pm, n, c, :pg)
-    qg = PMs.var(pm, n, c, :qg)
-    qloss = PMs.var(pm, n, c, :qloss)
-
-    # Bus Shunts for gs and bs are missing.  If you add it, you'll have to bifurcate one form of this constraint
-    # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
-    JuMP.@constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd))
-    JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd for (i, qd) in bus_qd))
-
-end
-
-
 "CONSTRAINT: DC current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::PMs.GenericPowerModel, n::Int, c::Int, k, kh, ih, jh)
 

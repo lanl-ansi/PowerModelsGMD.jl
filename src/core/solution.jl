@@ -30,7 +30,7 @@ function get_gmd_ts_solution(pm::PMs.GenericPowerModel, sol::Dict{String,Any})
     PMs.add_setpoint_bus_voltage!(sol, pm)
     PMs.add_setpoint_generator_power!(sol, pm)
     PMs.add_setpoint_branch_flow!(sol, pm)
-    PMs.add_setpoint_branch_status!(sol, pm)
+    # PMs.add_setpoint_branch_status!(sol, pm)
 
     add_setpoint_load_demand!(sol, pm)
     add_setpoint_bus_dc_voltage!(sol, pm)

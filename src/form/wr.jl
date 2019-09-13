@@ -76,6 +76,21 @@ function constraint_kcl_shunt_gmd_ls(pm::PMs.GenericPowerModel{T}, n::Int, c::In
 
 end
 
+"CONSTRAINT: kcl with shunts"
+function constraint_kcl_gmd(pm::PMs.GenericPowerModel, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)  where T <: PowerModels.AbstractWRForm
+
+    p = PMs.var(pm, n, c, :p)
+    q = PMs.var(pm, n, c, :q)
+    pg = PMs.var(pm, n, c, :pg)
+    qg = PMs.var(pm, n, c, :qg)
+    qloss = PMs.var(pm, n, c, :qloss)
+
+    # Bus Shunts for gs and bs are missing.  If you add it, you'll have to bifurcate one form of this constraint
+    # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
+    JuMP.@constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd))
+    JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd for (i, qd) in bus_qd))
+end
+
 "Constraint for relating current to power flow"
 function constraint_current(pm::PMs.GenericPowerModel{T}, n::Int, c::Int, i, f_idx, f_bus, t_bus, tm) where T <: PowerModels.AbstractWRForm
     pair = (f_bus, t_bus)
