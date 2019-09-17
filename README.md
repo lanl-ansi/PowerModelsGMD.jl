@@ -13,7 +13,7 @@ Dev:
 </p>
 -->
 
-PowerModelsGMD.jl provides extensions to [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) to evaluate the risks posed by solar storms, to analyze and mitigate the potential effects of Geomagnetic Disturbances (GMDs) on the power grid.
+PowerModelsGMD.jl (abbr. PMsGMD) provides extensions to [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) (abbr. PMs) to evaluate the risks, to analyze and mitigate the impact of Geomagnetic Disturbances (GMDs) and E3 High-altitude Electromagnetic Pulse (E3~HEMP) events on the power grid.
 This open-source toolbox is a greatly accessible, high-performance and easy-to-handle alternative to other commercially available software solutions.
 
 
@@ -116,9 +116,9 @@ If the results are plotted spatially, for convinience, `bus_gmd` table includes 
 ### GMD Bus Data Table
 
 This table includes
-* `parent_index` - the index of the corresponding bus in the ac network 
-* `status` - binary value that sets the status of the bus (1: enabled, 0: disabled)
-* `g_gnd` - the admittance to ground (in unit of Siemens)
+* `parent_index` - index of corresponding bus (in the ac network) 
+* `status` - binary value that defines the status of bus (1: enabled, 0: disabled)
+* `g_gnd` - admittance to ground (in unit of Siemens)
 * `name` - a descriptive name for the bus
 
 ```
@@ -137,20 +137,20 @@ mpc.gmd_bus = {
 ### GMD Branch Data Table
 
 This table includes
-* `f_bus` - the "from" bus in the gmd bus table
-* `t_bus` - to "to" bus in the gmd bus table
-* `parent_index` - the index of the corresponding branch in the ac network
-* `br_status` - binary value that sets the statusof the branch (1: enabled, 0: disabled)
-* `br_r` - the branch resistance (in unit of Ohms)
-* `br_v` - the induced quasi-dc voltage (in unit of Volts)
-* `len_km` - the length of the branch (in unit of km) -- not required
+* `f_bus` - "from" bus in the gmd bus table
+* `t_bus` - "to" bus in the gmd bus table
+* `parent_index` - index of corresponding branch (in the ac network)
+* `br_status` - binary value that defines the status of branch (1: enabled, 0: disabled)
+* `br_r` - branch resistance (in unit of Ohms)
+* `br_v` - induced quasi-dc voltage (in unit of Volts)
+* `len_km` - length of branch (in unit of km) -- not required
 * `name` - a descriptive name for the branch
 
 ```
 %column_names% f_bus t_bus parent_index br_status br_r br_v len_km name
 mpc.gmd_branch = {
 	3	1	1	1	0.1	0	0	'dc_xf1_hi'
-	3	4	2	1	1.00073475	170.78806587354	170.78806587354	'dc_br1'
+	3	4	2	1	1.001	170.788	170.788	'dc_br1'
 	4	2	3	1	0.1	0	0	'dc_xf2_hi'
 };
 ```
@@ -159,23 +159,24 @@ mpc.gmd_branch = {
 ### Branch GMD Data Table
 
 This table includes
-* `hi_bus` - the index of the high-side bus (in the ac network)
-* `lo_bus` - the index of the low-side bus (in the ac network)
-* `gmd_br_hi` - the index of the gmd branch corresponding to the high-side winding (for two-winding transformers)
-* `gmd_br_lo` - the index of the gmd branch corresponding to the low-side winding (for two-winding transformers)
-* `gmd_k` - the scaling factor used to calculate reactive power consumption in per-unit as a function of effective winding current (in per-unit)
-* `gmd_br_series` - the index of the gmd branch corresponding to the series winding (for autotransformers)
-* `gmd_br_common` - the index of the gmd branch corresponding to the common winding (for autotransformers) 
-* `baseMVA` - the MVA base of the trasformer
-* `type` - type of the branch -- "xf" / "transformer, or "line" 
-* `config` - the winding configuration of the transformer -- currently "gwye-gwye", "gwye-delta", "delta-delta", and "gwye-gwye-auto" are supported
+* `hi_bus` - index of high-side bus (in the ac network)
+* `lo_bus` - index of low-side bus (in the ac network)
+* `gmd_br_hi` - index of gmd branch corresponding to the high-side winding (for two-winding transformers)
+* `gmd_br_lo` - index of gmd branch corresponding to the low-side winding (for two-winding transformers)
+* `gmd_k` - scaling factor to calculate reactive power consumption as a function of effective winding current (in per-unit)
+* `gmd_br_series` - index of gmd branch corresponding to the series winding (for autotransformers)
+* `gmd_br_common` - index of gmd branch corresponding to the common winding (for autotransformers) 
+* `baseMVA` - MVA base of transformer
+* `dispatchable` - binary value that defines if branch is dispatchable (1: dispatchable, 0: not dispatchable)
+* `type` - type of branch -- "xf" / "transformer, or "line" 
+* `config` - winding configuration of transformer -- currently "gwye-gwye", "gwye-delta", "delta-delta", and "gwye-gwye-auto" are supported
 
 ```
 %column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
 mpc.branch_gmd = {
-	1	3	1	-1	1.793	-1	-1	100	'xf'	'gwye-delta'
-	1	2	-1	-1	0	-1	-1	100	'line'	'none'
-	2	4	3	-1	1.793	-1	-1	100	'xf'	'gwye-delta'
+	1	3	1	-1	1.793	-1	-1	100	1	'xf'	'gwye-delta'
+	1	2	-1	-1	-1	-1	-1	-1	1	'line'	'none'
+	2	4	3	-1	1.793	-1	-1	100	1	'xf'	'gwye-delta'
 };
 ```
 
@@ -184,14 +185,14 @@ mpc.branch_gmd = {
 
 This table includes
 * `xfmr` - binary value that defines if the branch is a transformer (1: transformer, 0: not a transformer)
-* `temperature_ambient` - ambient temperature of the transformer (in unit of Celsius)
-* `hotspot_instant_limit` - 1-hour hotspot temperature limit of the transformer (in unit of Celsius)
-* `hotspot_avg_limit` - 8-hour hotspot temperature limit of the transformer (in unit of Celsius)
-* `hotspot_rated` - ...
-* `topoil_time_const` - top-oil temperature-rise time-constant of the transformer (in unit of minutes)
-* `topoil_rated` - top-oil temperature-rise of the transformer at rated power (in unit of Celsius)
-* `topoil_init` - initial top-oil temperature of the transformer (in unit of Celsius)
-* `topoil_initialized` - binary value that defines the initial top-oil temperature of the transformer (1: initial top-oil temperature starts with `topoil_init` value, 0: initial top-oil temperature starts with steady-state value)
+* `temperature_ambient` - ambient temperature of  transformer (in unit of Celsius)
+* `hotspot_instant_limit` - 1-hour hotspot temperature limit of transformer (in unit of Celsius)
+* `hotspot_avg_limit` - 8-hour hotspot temperature limit of transformer (in unit of Celsius)
+* `hotspot_rated` - hotspot temperature-rise of transformer at rated power (in unit of Celsius)
+* `topoil_time_const` - top-oil temperature-rise time-constant of transformer (in unit of minutes)
+* `topoil_rated` - top-oil temperature-rise of transformer at rated power (in unit of Celsius)
+* `topoil_init` - initial top-oil temperature of transformer (in unit of Celsius)
+* `topoil_initialized` - binary value that defines the initial top-oil temperature of transformer (1: initial top-oil temperature starts with `topoil_init` value, 0: initial top-oil temperature starts with steady-state value)
 * `hotspot_coeff` - relationship of hotspot temperature rise to Ieff (in unit of Celsius/amp)
 
 ```
@@ -199,7 +200,7 @@ This table includes
 topoil_time_const topoil_rated topoil_init topoil_initialized hotspot_coeff
 mpc.branch_thermal = {
 	1	25	280	240	150	71	75	0	1	0.63
-	0	25	-1	-1	-1	-1	-1	-1	-1	-1
+	0	-1	-1	-1	-1	-1	-1	-1	-1	-1
 	1	25	280	240	150	71	75	0	1	0.63
 };
 ```
@@ -221,27 +222,27 @@ mpc.bus_gmd = {
 };
 ```
 
+
+
 ## Contributors
 
 In alphabetical order:
 * Art Barnes: Decoupled model
 * Russell Bent: ML and OTS implementation
 * Carleton Coffrin: Architecture
-* Adam Mate: Decoupled time-extended model, RTS-GMLC test case
+* Adam Mate: Decoupled time-extended model, [RTS-GMLC](https://github.com/GridMod/RTS-GMLC) integration
 
-Acknowledgements:
+
+Acknowledgments:
 The authors are grateful for Mowen Lu for developing the ML and OTS problem specifications and to Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
 
-<!-- 
-## Development
-
-
-
-## Acknowledgments
 
 This code has been developed as part of the Advanced Network Science Initiative at Los Alamos National Laboratory.
 
 
+
+<!-- 
+## Development
 
 ## Citing PowerModelsGMD.jl
 
