@@ -232,10 +232,13 @@ In alphabetical order:
 * Carleton Coffrin: Architecture
 * Adam Mate: Decoupled time-extended model, [RTS-GMLC](https://github.com/GridMod/RTS-GMLC) integration
 
+This code has been developed as part of the Advanced Network Science Initiative at Los Alamos National Laboratory.
 
 Acknowledgments:
 The authors are grateful for Mowen Lu for developing the ML and OTS problem specifications and to Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
 
+## Acknowledgments
+The authors are grateful for Mowen Lu for developing the ML and OTS problem specifications and to Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
 
 This code has been developed as part of the Advanced Network Science Initiative at Los Alamos National Laboratory.
 
