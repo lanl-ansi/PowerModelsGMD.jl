@@ -1,5 +1,14 @@
+export run_gmd_ots_ts, run_ac_gmd_ots_ts
+
+# FIX THIS ...
+
+"FUNCTION: ..."
+
+
+
+
 # Formulations of GMD Problems
-export run_gic_ots_ts, run_ac_gic_ots_ts
+
 
 "Run basic GMD with the nonlinear AC equations"
 function run_ac_gic_ots_ts(file, solver; kwargs...)

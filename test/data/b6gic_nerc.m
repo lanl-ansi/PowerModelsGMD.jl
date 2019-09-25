@@ -79,13 +79,13 @@ mpc.gmd_branch = {
 
 
 %% branch_gmd data
-%column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
+%column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA dispatchable type config
 mpc.branch_gmd = {
-	2	1	1	-1	1.8	-1	-1	100	'xf'	'gwye-delta'
-	4	3	-1	-1	1.8	2	3	100	'xf'	'gwye-gwye-auto'
-	5	6	4	-1	1.8	-1	-1	100	'xf'	'gwye-delta'
-	2	3	-1	-1	0	-1	-1	100	'line'	'none'
-	4	5	-1	-1	0	-1	-1	100	'line'	'none'
+	2	1	1	-1	1.8	-1	-1	100	0	 'xf'	'gwye-delta'
+	4	3	-1	-1	1.8	2	3	100	0	'xf'	'gwye-gwye-auto'
+	5	6	4	-1	1.8	-1	-1	100	0	'xf'	'gwye-delta'
+	2	3	-1	-1	0	-1	-1	100	0	'line'	'none'
+	4	5	-1	-1	0	-1	-1	100	0	'line'	'none'
 };
 
 

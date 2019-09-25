@@ -300,90 +300,142 @@ end
 
 
 
-
 # --- Thermal Variables --- #
+
+tmax = 1000
+
 "VARIABLE: steady-state top-oil temperature rise"
-#TODO: add in realistic bounds
-function variable_delta_topoilrise_ss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+function variable_delta_oil_ss(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
 
     if bounded
-        PMs.var(pm, nw, cnd)[:torss] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_topoilrise_ss",
+    
+        #hsl = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit")
+        #println("hotspot limit for $i: $hsl")
+        PMs.var(pm, nw, cnd)[:ross] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
             lower_bound = 0,
-            upper_bound = 200,
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_topoilrise_ss_start", cnd)
+            upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            #upper_bound = tmax,
+            #upper_bound = 280,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
         )
     else
-        PMs.var(pm, nw, cnd)[:torss] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_topoilrise_ss",
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_topoilrise_ss_start", cnd)
+
+        PMs.var(pm, nw, cnd)[:ross] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
         )
     end
 
 end
+
+
+# "VARIABLE: absolute steady-state top-oil temperature"
+# function variable_absolute_oil_ss(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+#
+#    if bounded
+#        PMs.var(pm, nw, cnd)[:rossa] = JuMP.@variable(pm.model, 
+#            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_oil_ss",
+#            lower_bound = 0,
+#            upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+#            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "oil_ss_start", cnd)
+#        )
+#    else
+#
+#        PMs.var(pm, nw, cnd)[:rossa] = JuMP.@variable(pm.model, 
+#            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_oil_ss",
+#            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "oil_ss_start", cnd)
+#        )
+#    end
+#
+# end
 
 
 "VARIABLE: top-oil temperature rise"
-#TODO: add in realistic bounds
-function variable_delta_topoilrise(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+function variable_delta_oil(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
 
     if bounded
-        PMs.var(pm, nw, cnd)[:tor] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_topoilrise",
+        PMs.var(pm, nw, cnd)[:ro] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
             lower_bound = 0,
-            upper_bound = 200,
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_topoilrise_start", cnd)
+            upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            #upper_bound = tmax,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_start", cnd)
         )
     else
-        PMs.var(pm, nw, cnd)[:tor] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_topoilrise",
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_topoilrise_start", cnd)
+
+        PMs.var(pm, nw, cnd)[:ro] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_start", cnd)
         )
     end
 
 end
 
 
-"VARIABLE: steady-state hotspot temperature rise"
-##TODO: add in realistic bounds
-function variable_delta_hotspotrise_ss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: steady-state hot-spot temperature rise"
+function variable_delta_hotspot_ss(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
 
     if bounded
         PMs.var(pm, nw, cnd)[:hsss] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspotrise_ss",
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspot_ss",
             lower_bound = 0,
-            upper_bound = 200,
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_hotspotrise_ss_start", cnd)
+            #upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            upper_bound = tmax,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_hotspot_ss_start", cnd)
         )
     else
+
         PMs.var(pm, nw, cnd)[:hsss] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspotrise_ss",
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_hotspotrise_ss_start", cnd)
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspot_ss",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_hotspot_start", cnd)
         )
     end
 
 end
 
 
-"VARIABLE: actual hotspot temperature rise"
-#TODO: add in realistic bounds
-function variable_actual_hotspot(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: hot-spot temperature rise"
+function variable_delta_hotspot(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
 
     if bounded
-        PMs.var(pm, nw, cnd)[:actual] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_actual_hotspot",
+        PMs.var(pm, nw, cnd)[:hs] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspot",
             lower_bound = 0,
-            upper_bound = 300,
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "actual_hotspot_start", cnd)
+            #upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            upper_bound = tmax,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_hotspot_start", cnd)
         )
     else
-        PMs.var(pm, nw, cnd)[:actual] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_actual_hotspot",
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "actual_hotspot_start", cnd)
+
+        PMs.var(pm, nw, cnd)[:hs] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspot",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_hotspot_start", cnd)
         )
     end
 
 end
 
+
+"VARIABLE: hot-spot temperature"
+function variable_hotspot(pm::GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    if bounded
+        PMs.var(pm, nw, cnd)[:hsa] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_hotspot",
+            lower_bound = 0,
+            upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            #upper_bound = tmax,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "hotspot_start", cnd)
+        )
+    else
+
+        PMs.var(pm, nw, cnd)[:hsa] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_hotspot",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "hotspot_start", cnd)
+        )
+    end
+
+end
 
 

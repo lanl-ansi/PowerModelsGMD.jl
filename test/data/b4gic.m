@@ -69,11 +69,11 @@ mpc.gmd_branch = {
 
 
 %% branch_gmd data
-%column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
+%column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA dispatchable type config
 mpc.branch_gmd = {
-	1	3	1	-1	1.793	-1	-1	100	'xf'	'gwye-delta'
-	1	2	-1	-1	0	-1	-1	100	'line'	'none'
-	2	4	3	-1	1.793	-1	-1	100	'xf'	'gwye-delta'
+	1	3	1	-1	1.793	-1	-1	100	1	'xf'	'gwye-delta'
+	1	2	-1	-1	0	-1	-1	100	1	'line'	'none'
+	2	4	3	-1	1.793	-1	-1	100	1	'xf'	'gwye-delta'
 };
 
 
@@ -81,7 +81,7 @@ mpc.branch_gmd = {
 %column_names% xfmr temperature_ambient hotspot_instant_limit hotspot_avg_limit hotspot_rated topoil_time_const topoil_rated topoil_init topoil_initialized hotspot_coeff
 mpc.branch_thermal = {
 	1	25	280	240	150	71	75	0	1	0.63
-	0	25	-1	-1	-1	-1	-1	-1	-1	-1
+	0	-1	-1	-1	-1	-1	-1	-1	-1	-1
 	1	25	280	240	150	71	75	0	1	0.63
 };
 

@@ -1,5 +1,9 @@
-"KCL Constraint without load shedding and no shunts"
+# --- Constraint Templates --- #
+
+
+"CONSTRAINT: KCL without load shedding and no shunts"
 function constraint_kcl_gmd(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     bus = PMs.ref(pm, nw, :bus, i)
     bus_arcs = PMs.ref(pm, nw, :bus_arcs, i)
     bus_arcs_dc = PMs.ref(pm, nw, :bus_arcs_dc, i)
@@ -10,11 +14,13 @@ function constraint_kcl_gmd(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, c
     bus_qd = Dict(k => PMs.ref(pm, nw, :load, k, "qd", cnd) for k in bus_loads)
 
     constraint_kcl_gmd(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
+
 end
 
 
-"KCL Constraint with load shedding"
+"CONSTRAINT: KCL with load shedding"
 function constraint_kcl_shunt_gmd_ls(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     bus = PMs.ref(pm, nw, :bus, i)
     bus_arcs = PMs.ref(pm, nw, :bus_arcs, i)
     bus_arcs_dc = PMs.ref(pm, nw, :bus_arcs_dc, i)
@@ -29,11 +35,13 @@ function constraint_kcl_shunt_gmd_ls(pm::PMs.GenericPowerModel, i::Int; nw::Int=
     bus_bs = Dict(k => PMs.ref(pm, nw, :shunt, k, "bs", cnd) for k in bus_shunts)
 
     constraint_kcl_shunt_gmd_ls(pm, nw, cnd, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+
 end
 
 
-"DC current on ungrounded gwye-delta transformers"
+"CONSTRAINT: DC current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, k)
 
     kh = branch["gmd_br_hi"]
@@ -43,11 +51,13 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::PMs.GenericPowerModel, k; n
     jh = br_hi["t_bus"]
 
     constraint_dc_current_mag_gwye_delta_xf(pm, nw, cnd, k, kh, ih, jh)
+
 end
 
 
-"DC current on ungrounded gwye-gwye transformers"
+"CONSTRAINT: DC current on ungrounded gwye-gwye transformers"
 function constraint_dc_current_mag_gwye_gwye_xf(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, k)
 
     kh = branch["gmd_br_hi"]
@@ -70,11 +80,13 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::PMs.GenericPowerModel, k; nw
     a = vhi/vlo
 
     constraint_dc_current_mag_gwye_gwye_xf(pm, nw, cnd, k, kh, ih, jh, kl, il, jl, a)
+
 end
 
 
-"DC current on ungrounded gwye-gwye auto transformers"
+"CONSTRAINT: DC current on ungrounded gwye-gwye auto transformers"
 function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, k)
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
@@ -102,11 +114,13 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::PMs.GenericPowerModel, 
     a = vhi/vlo
 
     constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, cnd, k, ks, is, js, kc, ic, jc, a)
+
 end
 
 
-"The KCL constraint for DC (GIC) circuits"
+"CONSTRAINT: KCL constraint for DC (GIC) circuits"
 function constraint_dc_kcl_shunt(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     dcbus = PMs.ref(pm, nw, :gmd_bus, i)
     gmd_bus_arcs = pm.ref[:nw][nw][:gmd_bus_arcs][i]
 
@@ -115,11 +129,13 @@ function constraint_dc_kcl_shunt(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, c
     gs = dcbus["g_gnd"]
 
     constraint_dc_kcl_shunt(pm, nw, cnd, i, dc_expr, gs, gmd_bus_arcs)
+
 end
 
 
-"The DC ohms constraint for GIC"
+"CONSTRAINT: DC ohms constraint for GIC"
 function constraint_dc_ohms(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :gmd_branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -139,11 +155,13 @@ function constraint_dc_ohms(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::I
     Memento.debug(LOGGER, @sprintf "branch %d: (%d,%d): vs = %0.3f, gs = %0.3f\n" i f_bus t_bus vs gs)
 
     constraint_dc_ohms(pm, nw, cnd, i, f_bus, t_bus, vs, gs)
+
 end
 
 
-"Constraint for computing qloss assuming DC voltage is constant"
+"CONSTRAINT: computing qloss assuming DC voltage is constant"
 function constraint_qloss_vnom(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, k)
 
     i = branch["hi_bus"]
@@ -159,11 +177,13 @@ function constraint_qloss_vnom(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd
     else
        constraint_qloss_vnom(pm, nw, cnd, k, i, j)
     end
+
 end
 
 
-"Constraint for computing thermal protection of transformers"
+"CONSTRAINT: computing thermal protection of transformers"
 function constraint_thermal_protection(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, i)
     if branch["type"] != "xf"
         return
@@ -173,11 +193,13 @@ function constraint_thermal_protection(pm::PMs.GenericPowerModel, i; nw::Int=pm.
     ibase = calc_branch_ibase(pm, i, nw=nw, cnd=cnd)
 
     constraint_thermal_protection(pm, nw, cnd, i, coeff, ibase)
+
 end
 
 
-"Constraint for relating current to power flow"
+"CONSTRAINT: relating current to power flow"
 function constraint_current(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -185,21 +207,25 @@ function constraint_current(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::I
     tm = branch["tap"]^2
 
     constraint_current(pm, nw, cnd, i, f_idx, f_bus, t_bus, tm)
+
 end
 
 
-"Constraint for relating current to power flow on/off"
+"CONSTRAINT: relating current to power flow on/off"
 function constraint_current_on_off(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, i)
     ac_max = calc_ac_mag_max(pm, i, nw=nw)
 
-#    constraint_current(pm,n,i)
+    # constraint_current(pm,n,i)
     constraint_current_on_off(pm, nw, cnd, i, ac_max)
+
 end
 
 
-"Constraint for computing qloss"
+"CONSTRAINT: computing qloss"
 function constraint_qloss(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, k)
 
     i = branch["hi_bus"]
@@ -213,13 +239,16 @@ function constraint_qloss(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int
         branchMVA = branch["baseMVA"]
         constraint_qloss_constant_v(pm, nw, cnd, k, i, j, K, 1.0, branchMVA)
     else
+
         constraint_qloss_constant_v(pm, nw, cnd, k, i, j)
     end
+
 end
 
 
-"Constraint for turning generators on and off"
+"CONSTRAINT: turning generators on and off"
 function constraint_gen_on_off(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     gen = PMs.ref(pm, nw, :gen, i)
     pmin = gen["pmin"]
     pmax = gen["pmax"]
@@ -227,11 +256,13 @@ function constraint_gen_on_off(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd
     qmax = gen["qmax"]
 
     constraint_gen_on_off(pm, nw, cnd, i, pmin, pmax, qmin, qmax)
+
 end
 
 
-"Constraint for tieing ots variables to gen variables"
+"CONSTRAINT: tieing ots variables to gen variables"
 function constraint_gen_ots_on_off(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     gen = PMs.ref(pm, nw, :gen, i)
     bus = PMs.ref(pm, nw, :bus, gen["gen_bus"])
     bus_loads = PMs.ref(pm, nw, :bus_loads, bus["index"])
@@ -250,19 +281,23 @@ function constraint_gen_ots_on_off(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
     bus_arcs = PMs.ref(pm, nw, :bus_arcs, i)
 
     constraint_gen_ots_on_off(pm, nw, cnd, i, bus_arcs)
+
 end
 
 
-"Perspective Constraint for generation cost"
+"CONSTRAINT: generation cost"
 function constraint_gen_perspective(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     gen  = PMs.ref(pm, nw, :gen, i)
     cost = gen["cost"]
     constraint_gen_perspective(pm, nw, cnd, i, cost)
+
 end
 
 
-"Ohms Constraint for DC circuits"
+"CONSTRAINT: Ohms constraint for DC circuits"
 function constraint_dc_ohms_on_off(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :gmd_branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -282,96 +317,170 @@ function constraint_dc_ohms_on_off(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
     end
 
     constraint_dc_ohms_on_off(pm, nw, cnd, i, gs, vs, f_bus, t_bus, ac_branch)
+
 end
 
 
-#"Constraint for current magnitude "
-#function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-#    branch = ref(pm, nw, :branch, k)
-#    dc_max = calc_dc_mag_max(pm, k, nw=nw)
-#    constraint_dc_current_mag(pm, nw, cnd, k, dc_max)
-#end
+# "CONSTRAINT: current magnitude "
+# function constraint_dc_current_mag{T}(pm::GenericPowerModel{T}, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
+#     branch = ref(pm, nw, :branch, k)
+#     dc_max = calc_dc_mag_max(pm, k, nw=nw)
+#     constraint_dc_current_mag(pm, nw, cnd, k, dc_max)
+
+# end
 
 
-"On/off constraint for current magnitude "
+"CONSTRAINT: On/off constraint for current magnitude "
 function constraint_dc_current_mag_on_off(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, k)
     dc_max = calc_dc_mag_max(pm, k, nw=nw)
     constraint_dc_current_mag_on_off(pm, nw, cnd, k, dc_max)
-end
 
+end
 
 
 
 # --- Thermal Constraints --- #
 
 
-""
-function constraint_delta_topoilrise_ss(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw)
+"CONSTRAINT: steady-state temperature state"
+function constraint_temperature_state_ss(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw)
+
     #temperature = ref(pm, nw, :storage, i)
 
     branch = PMs.ref(pm, nw, :branch, i)
-    rate_a = branch["rate_a"]
 
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    f_idx = (i, f_bus, t_bus)
-    cnd = 1 # only support positive sequence for now
+    if branch["topoil_time_const"] >= 0
+        rate_a = branch["rate_a"]
 
-    PowerModelsGMD.constraint_temperature_steady_state(pm, nw, i, f_idx, cnd, rate_a, delta_oil_rated)
-end
+        f_bus = branch["f_bus"]
+        t_bus = branch["t_bus"]
+        f_idx = (i, f_bus, t_bus)
+        cnd = 1 # only support positive sequence for now
 
-
-""
-function constraint_delta_topoilrise(pm::PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw)
-    #temperature = ref(pm, nw, :storage, i)
-
-    if haskey(pm.data, "time_elapsed")
-        time_elapsed = pm.data["time_elapsed"]
-    else
-        warn("network data should specify time_elapsed, using 1.0 as a default")
-        time_elapsed = 1.0
+        constraint_temperature_steady_state(pm, nw, i, f_idx, cnd, rate_a, branch["topoil_rated"])
     end
 
-    branch = PMs.ref(pm, nw, i)
+end
+
+
+"CONSTRAINT: temperature state"
+function constraint_temperature_state(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw)
+
+    branch = ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
     f_idx = (i, f_bus, t_bus)
     cnd = 1 # only support positive sequence for now
 
-    # ToDO: CALL 
-    PowerModelsGMD.constraint_temperature_state_initial(pm, nw, i, f_idx, cnd, tau)
+    if branch["topoil_time_const"] >= 0
+        if branch["topoil_initialized"] > 0
+            constraint_temperature_state_initial(pm, nw, i, f_idx, cnd, branch["topoil_init"])
+        else
+            constraint_temperature_state_initial(pm, nw, i, f_idx, cnd)
+        end
+    end
+
 end
 
 
+"CONSTRAINT: temperature state"
+function constraint_temperature_state(pm::GenericPowerModel, i::Int, nw_1::Int, nw_2::Int)
+
+    branch = ref(pm, nw_1, :branch, i)
+
+    if branch["topoil_time_const"] >= 0
+        tau_oil = branch["topoil_time_const"]
+        delta_t = 5
+
+        if haskey(ref(pm, nw_1), :time_elapsed)
+            delta_t = ref(pm, nw_1, :time_elapsed)
+        else
+            Memento.warn(_LOGGER, "network data should specify time_elapsed, using $delta_t as a default")
+        end
+        
+        cnd = 1
+
+        tau = 2*tau_oil/delta_t
+        println("Oil Tau: $tau_oil, DT: $delta_t, tau: $tau")
+        constraint_temperature_state(pm, nw_1, nw_2, i, cnd, tau)
+
+    end
+
+end
 
 
-# function constraint_storage_state(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw)
-#     storage = ref(pm, nw, :storage, i)
+"CONSTRAINT: steady-state hot-spot temperature state"
+function constraint_hotspot_temperature_state_ss(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw)
 
-#     if haskey(ref(pm, nw), :time_elapsed)
-#         time_elapsed = ref(pm, nw, :time_elapsed)
-#     else
-#         Memento.warn(_LOGGER, "network data should specify time_elapsed, using 1.0 as a default")
-#         time_elapsed = 1.0
-#     end
+    branch = PMs.ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    cnd = 1 # only support positive sequence for now
+    rate_a = branch["rate_a"]
 
-#     constraint_storage_state_initial(pm, nw, i, storage["energy"], storage["charge_efficiency"], storage["discharge_efficiency"], time_elapsed)
-# end
+    if branch["topoil_time_const"] >= 0
+        Re = 0.63
 
-# ""
-# function constraint_storage_state(pm::GenericPowerModel, i::Int, nw_1::Int, nw_2::Int)
-#     storage = ref(pm, nw_2, :storage, i)
+        if "hotspot_coeff" in keys(branch)
+            Re = branch["hotspot_coeff"]
+        end
 
-#     if haskey(pm.data, "time_elapsed")
-#         time_elapsed = pm.data["time_elapsed"]
-#     else
-#         Memento.warn(_LOGGER, "network data should specify time_elapsed, using 1.0 as a default")
-#         time_elapsed = 1.0
-#     end
+        constraint_hotspot_temperature_steady_state(pm, nw, i, f_idx, cnd, rate_a, Re)
 
-#     constraint_storage_state(pm, nw_1, nw_2, i, storage["charge_efficiency"], storage["discharge_efficiency"], time_elapsed)
-# end
+    end
 
+end
+
+
+"CONSTRAINT: hot-spot temperature state"
+function constraint_hotspot_temperature_state(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw)
+
+    branch = ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    cnd = 1 # only support positive sequence for now
+
+    if branch["topoil_time_const"] >= 0
+        constraint_hotspot_temperature(pm, nw, i, f_idx, cnd)
+    end
+
+end
+
+
+"CONSTRAINT: absolute hot-spot temperature state"
+function constraint_absolute_hotspot_temperature_state(pm::GenericPowerModel, i::Int; nw::Int=pm.cnw)
+
+    branch = ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    cnd = 1 # only support positive sequence for now
+
+    if branch["topoil_time_const"] >= 0
+        constraint_absolute_hotspot_temperature(pm, nw, i, f_idx, cnd, branch["temperature_ambient"])
+    end
+
+end
+
+
+"CONSTRAINT: average absolute hot-spot temperature state"
+function constraint_avg_absolute_hotspot_temperature_state(pm::GenericPowerModel, i::Int)
+
+    branch = ref(pm, 1, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    cnd = 1 # only support positive sequence for now
+
+    if branch["topoil_time_const"] >= 0
+        constraint_avg_absolute_hotspot_temperature(pm, i, f_idx, cnd, branch["hotspot_avg_limit"])
+    end
+
+end
 
 

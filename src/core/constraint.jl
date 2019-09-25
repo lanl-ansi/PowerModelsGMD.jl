@@ -42,7 +42,7 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::PMs.GenericPowerModel, 
 end
 
 
-"CONSTRAINT: the KCL constraint for DC (GIC) circuits"
+"CONSTRAINT: KCL for DC (GIC) circuits"
 function constraint_dc_kcl_shunt(pm::PMs.GenericPowerModel, n::Int, c::Int, i, dc_expr, gs, gmd_bus_arcs)
 
     v_dc = PMs.var(pm, n, c, :v_dc)[i]
@@ -57,7 +57,7 @@ function constraint_dc_kcl_shunt(pm::PMs.GenericPowerModel, n::Int, c::Int, i, d
 end
 
 
-"CONSTRAINT: the DC ohms constraint for GIC"
+"CONSTRAINT: DC ohms for GIC"
 function constraint_dc_ohms(pm::PMs.GenericPowerModel, n::Int, c::Int, i, f_bus, t_bus, vs, gs)
 
     vf = PMs.var(pm, n, c, :v_dc)[f_bus] # from dc voltage
@@ -157,29 +157,32 @@ end
 
 
 
-
 # --- Non-Templated Constraints --- #
 
 
 "CONSTRAINT: DC current on normal lines"
 function constraint_dc_current_mag_line(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
+
     ieff = PMs.var(pm, n, c, :i_dc_mag)
     JuMP.@constraint(pm.model, ieff[k] >= 0.0)
+
 end
 constraint_dc_current_mag_line(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag_line(pm, nw, cnd, k)
 
 
 "CONSTRAINT: DC current on grounded transformers"
 function constraint_dc_current_mag_grounded_xf(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
+
     ieff = PMs.var(pm, n, c, :i_dc_mag)
     JuMP.@constraint(pm.model, ieff[k] >= 0.0)
+
 end
 constraint_dc_current_mag_grounded_xf(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag_grounded_xf(pm, nw, cnd, k)
 
 
 "CONSTRAINT: computing the DC current magnitude"
 function constraint_dc_current_mag(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
-    
+
     # correct equation is ieff = |a*ihi + ilo|/a
     # just use ihi for now
     
@@ -203,7 +206,6 @@ function constraint_dc_current_mag(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
 
 end
 constraint_dc_current_mag(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag(pm, nw, cnd, k)
-
 
 
 
@@ -311,87 +313,126 @@ end
 
 
 
-
 # --- Thermal Constraints --- #
-"CONSTRAINT: steady-state top-oil temperature rise"
-function constraint_delta_topoilrise_ss(pm::PMs.GenericPowerModel, n::Int, c::Int; base_mva, delta_oil_rated, f_idx, t_idx, rate_a)
 
-    # FROM end
-    p_from = PMs.var(pm, n, c, :p, f_idx)
-    q_from = PMs.var(pm, n, c, :p, f_idx)
-    S_from = sqrt(p_from^2 + q_from^2)
-    K_from = S_from / (rate_a * base_mva)
-    
-    # TO end
-    p_to = PMs.var(pm, n, c, :p, t_idx)
-    q_to = PMs.var(pm, n, c, :p, t_idx)
-    S_to = sqrt(p_to^2 + q_to^2)
-    K_to = S_to / (rate_a * base_mva)
 
-    # Variables:
-    delta_topoilrise_ss = PMs.var(pm, n, c, :torss)
+"CONSTRAINT: steady-state temperature"
+#TODO: check if types are correct
+function constraint_temperature_steady_state(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)   where T <: PowerModels.AbstractACPForm
+    # i is index of the (transformer) branch
+    # fi is index of the "from" branch terminal
 
-    # Constraints:
-    JuMP.@constraint(pm.model, ((S_from^2) <= (rate_a^2)))
-    JuMP.@constraint(pm.model, ((S_to^2) <= (rate_a^2)))
+    # return delta_oil_rated*K^2
+    println("Branch $i rating: $rate_a, TO rise: $delta_oil_rated")
 
-    JuMP.@constraint(pm.model, (delta_topoilrise_ss >= (delta_oil_rated * K_from^2)))
-    JuMP.@constraint(pm.model, (delta_topoilrise_ss >= (delta_oil_rated * K_to^2)))
-
-end
-
-"CONSTRAINT: top-oil temperature rise"
-# Todo: break up into init & regular
-function constraint_delta_topoilrise(pm::PMs.GenericPowerModel, n::Int, c::Int; tau_oil, delta_t, delta_topoilrise_prev, delta_topoilrise_ss_prev)
-
-    tau = 2*tau_oil/delta_t
-
-    # Variables:
-    delta_topoilrise =  PMs.var(pm, n, c, :tor)
-    delta_topoilrise_ss = PMs.var(pm, n, c, :torss)
-    
-    # Constraint:
-    JuMP.@constraint(pm.model, (delta_topoilrise <= ((delta_topoilrise_ss + delta_topoilrise_ss_prev)/(1 + tau) - delta_topoilrise_prev*(1 - tau)/(1 + tau))))
+    p_fr = PMs.var(pm, n, c, :p, fi) # real power
+    q_fr = PMs.var(pm, n, c, :q, fi) # reactive power
+    delta_oil_ss = PMs.var(pm, n, c, :ross, i) # top-oil temperature rise
+    JuMP.@constraint(pm.model, rate_a^2*delta_oil_ss/delta_oil_rated >= p_fr^2 + q_fr^2)
+    # println("Branch $i[$n] delta_hotspot_ss = 100")
+    # JuMP.@constraint(pm.model, delta_oil_ss == 150)
 
 end
 
 
-"CONSTRAINT: hotspot temperature rise"
-function constraint_delta_hotspotrise_initital(pm::PMs.GenericPowerModel, n::Int, c::Int; Re)
+"CONSTRAINT: steady-state temperature"
+#TODO: check if types are correct
+function constraint_temperature_steady_state(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)   where T <: PowerModels.AbstractDCPForm
+    # i is index of the (transformer) branch
+    # fi is index of the "from" branch terminal
 
-    # Variables:
-    Ie = PMs.var(pm, n, c, :i_dc_mag)
+    # return delta_oil_rated*K^2
+    println("Branch $i rating: $rate_a, TO rise: $delta_oil_rated")
 
-    # Constraints:
-    JuMP.@constraint(pm.model, (delta_hotspotrise <= (Re*Ie)))
-end
-
-function constraint_delta_hotspotrise(pm::PMs.GenericPowerModel, n::Int, c::Int; tau_hs, Delta_t, Re, delta_hotspotrise_prev)
-
-    tau = 2*tau_hs/delta_t
-
-    # Variables:
-    Ie = PMs.var(pm, n, c, :i_dc_mag)
-
-    # Constraints:
-
-    JuMP.@constraint(pm.model, (delta_hotspotrise <= (Re*(Ie + Ie_prev)/(1 + tau) - delta_hotspotrise_prev*(1 - tau)/(1 + tau))))
+    p_fr = PMs.var(pm, n, c, :p, fi) # real power
+    delta_oil_ss = PMs.var(pm, n, c, :ross, i) # top-oil temperature rise
+    JuMP.@constraint(pm.model, sqrt(rate_a)*delta_oil_ss/sqrt(delta_oil_rated) >= p_fr)
+    # println("Branch $i[$n] delta_hotspot_ss = 100")
+    # JuMP.@constraint(pm.model, delta_oil_ss == 150)
 
 end
 
 
-"CONSTRAINT: steady-state hotspot temperature rise"
-function constraint_delta_hotspotrise_ss(pm::PMs.GenericPowerModel, n::Int, c::Int; Re)
+"CONSTRAINT: initial temperature state"
+function constraint_temperature_state_initial(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int)
+    # i is index of the (transformer) branch
+    # fi is index of the "from" branch terminal
 
-    # Variables:
-    Ie = PMs.var(pm, n, c, :i_dc_mag)
-
-    # Constraints:
-    JuMP.@constraint(pm.model, (delta_hotspotrise_ss <= (Re*Ie)))
+    # assume that transformer starts at equilibrium 
+    delta_oil = var(pm, n, c, :ro, i) 
+    delta_oil_ss = var(pm, n, c, :ross, i) 
+    @constraint(pm.model, delta_oil == delta_oil_ss)
 
 end
 
 
+"CONSTRAINT: initial temperature state"
+function constraint_temperature_state_initial(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, delta_oil_init)
+    # i is index of the (transformer) branch
+    # fi is index of the "from" branch terminal
 
+    delta_oil = var(pm, n, c, :ro, i) 
+    @constraint(pm.model, delta_oil == delta_oil_init)
+
+end
+
+
+"CONSTRAINT: temperature state"
+function constraint_temperature_state(pm::GenericPowerModel, n_1::Int, n_2::Int, i::Int, c::Int, tau)
+
+    delta_oil_ss = var(pm, n_2, c, :ross, i) 
+    delta_oil_ss_prev = var(pm, n_1, c, :ross, i)
+    delta_oil = var(pm, n_2, c, :ro, i) 
+    delta_oil_prev = var(pm, n_1, c, :ro, i)
+
+    @constraint(pm.model, (1 + tau)*delta_oil == delta_oil_ss + delta_oil_ss_prev - (1 - tau)*delta_oil_prev)
+    # @constraint(pm.model, delta_oil == delta_oil_ss)
+
+end
+
+
+"CONSTRAINT: steady-state hot-spot temperature"
+function constraint_hotspot_temperature_steady_state(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, rate_a, Re)
+    # return delta_oil_rated*K^2
+    # println("Branch $i rating: $rate_a, TO rise: $delta_oil_rated")
+
+    ieff = PMs.var(pm, n, c, :i_dc_mag)[i]
+    delta_hotspot_ss = PMs.var(pm, n, c, :hsss, i) # top-oil temperature rise
+    JuMP.@constraint(pm.model, delta_hotspot_ss == Re*ieff)
+    # JuMP.@constraint(pm.model, delta_hotspot_ss == 100)
+
+end
+
+
+"CONSTRAINT: hot-spot temperature"
+function constraint_hotspot_temperature(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int)
+
+    delta_hotspot_ss = PMs.var(pm, n, c, :hsss, i) 
+    delta_hotspot = PMs.var(pm, n, c, :hs, i) 
+    oil_temp = PMs.var(pm, n, c, :ro, i)
+    JuMP.@constraint(pm.model, delta_hotspot == delta_hotspot_ss)
+ 
+end
+
+
+"CONSTRAINT: absolute hot-spot temperature"
+function constraint_absolute_hotspot_temperature(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, temp_ambient)
+
+    delta_hotspot = PMs.var(pm, n, c, :hs, i) 
+    #delta_hotspot = PMs.var(pm, n, c, :hsss, i) 
+    hotspot = PMs.var(pm, n, c, :hsa, i)     
+    oil_temp = PMs.var(pm, n, c, :ro, i)
+    JuMP.@constraint(pm.model, hotspot == delta_hotspot + oil_temp + temp_ambient) 
+
+end
+
+
+"CONSTRAINT: average absolute hot-spot temperature"
+function constraint_avg_absolute_hotspot_temperature(pm::GenericPowerModel, i::Int, fi, c::Int, max_temp)
+
+    N = length(PMs.nws(pm))
+    JuMP.@constraint(pm.model, sum(PMs.var(pm, n, c, :hsa, i) for (n, nw_ref) in PMs.nws(pm)) <= N*max_temp)
+
+end
 
 
