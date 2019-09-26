@@ -3,38 +3,42 @@ export run_ac_pf_qloss, run_ac_pf_qloss_vnom
 export run_ac_gmd_pf_decoupled
 
 
-"FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
+"FUNCTION: basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
 function post_pf_qloss(pm::PMs.GenericPowerModel; kwargs...)
     vnom = false
     post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
 end
 
 
-"FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
+"FUNCTION: basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
 function post_pf_qloss_vnom(pm::PMs.GenericPowerModel; kwargs...)
     vnom = true
     post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
 end
 
 
-"FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
+"FUNCTION: basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
 function post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
-    # Todo: abbreviate PowerModels
-    PowerModels.variable_voltage(pm, bounded = false)
+
+    # -- Variables -- #
+
+    PMs.variable_voltage(pm, bounded = false)
     variable_qloss(pm)
 
-    PowerModels.variable_generation(pm, bounded = false)
-    PowerModels.variable_branch_flow(pm, bounded = false)
-    # TODO: add dc line flow
-    # Powermodels.variable_dcline_flow(pm, bounded = false):w
+    PMs.variable_generation(pm, bounded = false)
+    PMs.variable_branch_flow(pm, bounded = false)
 
-    # What exactly does this do?
-    PowerModels.constraint_model_voltage(pm)
+    # TODO: add dc line flow
+    # PMs.variable_dcline_flow(pm, bounded = false):w
+
+    # -- Constraints -- #
+
+    PMs.constraint_model_voltage(pm)
 
     for (k,bus) in PMs.ref(pm, :ref_buses)
         @assert bus["bus_type"] == 3
-        PowerModels.constraint_theta_ref(pm, k)
-        PowerModels.constraint_voltage_magnitude_setpoint(pm, k)
+        PMs.constraint_theta_ref(pm, k)
+        PMs.constraint_voltage_magnitude_setpoint(pm, k)
     end
 
     for (k,bus) in PMs.ref(pm, :bus)
@@ -45,9 +49,9 @@ function post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
             # this assumes inactive generators are filtered out of bus_gens
             @assert bus["bus_type"] == 2
 
-            PowerModels.constraint_voltage_magnitude_setpoint(pm, k)
+            PMs.constraint_voltage_magnitude_setpoint(pm, k)
             for j in PMs.ref(pm, :bus_gens, k)
-                PowerModels.constraint_active_gen_setpoint(pm, j)
+                PMs.constraint_active_gen_setpoint(pm, j)
             end
         end
     end
@@ -59,8 +63,8 @@ function post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
             constraint_qloss_decoupled(pm, k)
         end
 
-        PowerModels.constraint_ohms_yt_from(pm, k) 
-        PowerModels.constraint_ohms_yt_to(pm, k) 
+        PMs.constraint_ohms_yt_from(pm, k) 
+        PMs.constraint_ohms_yt_to(pm, k) 
     end
 
     # Todo: add dclines
@@ -82,35 +86,36 @@ function post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
 end
 
 
-"FUNCTION: Run basic GMD with the nonlinear AC equations"
+"FUNCTION: run basic GMD with the nonlinear AC equations"
 function run_ac_pf_qloss(file, solver; kwargs...)
     return run_pf_qloss(file, ACPPowerModel, solver; kwargs...)
 end
 
 
-"FUNCTION: Run basic GMD with the nonlinear AC equations"
+"FUNCTION: run basic GMD with the nonlinear AC equations"
 function run_ac_pf_qloss_vnom(file, solver; kwargs...)
     return run_pf_qloss_vnom(file, ACPPowerModel, solver; kwargs...)
 end
 
 
-"FUNCTION: Run the basic GMD model"
+"FUNCTION: run the basic GMD model"
 function run_pf_qloss(file, model_constructor, solver; kwargs...)
     return PMs.run_model(file, model_constructor, solver, post_pf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
 
-"FUNCTION: Run the basic GMD model"
+"FUNCTION: run the basic GMD model"
 function run_pf_qloss_vnom(file, model_constructor, solver; kwargs...)
     return PMs.run_model(file, model_constructor, solver, post_pf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
 
-"FUNCTION: Run AC GMD PF Decoupled"
+"FUNCTION: run AC GMD PF Decoupled"
 function run_ac_gmd_pf_decoupled(dc_case, solver; setting=Dict{String,Any}(), kwargs...)
+
     # add logic to read file if needed
     #dc_case = PowerModels.parse_file(file)
-    dc_result = PowerModelsGMD.run_gmd(dc_case, solver; setting=setting)
+    dc_result = run_gmd(dc_case, solver; setting=setting)
     dc_solution = dc_result["solution"]
     make_gmd_mixed_units(dc_solution, 100.0)
     ac_case = deepcopy(dc_case)
@@ -129,6 +134,7 @@ function run_ac_gmd_pf_decoupled(dc_case, solver; setting=Dict{String,Any}(), kw
 
     adjust_gmd_phasing(dc_result)
     return data
+
 end
 
 

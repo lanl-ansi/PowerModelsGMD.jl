@@ -1,20 +1,15 @@
 export run_gmd_opf_ts, run_ac_gmd_opf_ts
 
 
-"FUNCTION: run basic GMD model"
+"FUNCTION: convinience function"
 function run_gmd_opf_ts(file, model_constructor, solver; kwargs...)
     return PMs.run_model(file, model_constructor, solver, post_gmd_opf_ts; solution_builder = get_gmd_ts_solution, multinetwork=true, kwargs...)
 end
 
 
-"FUNCTION: run basic GMD with the nonlinear AC equations"
-# function run_ac_gmd_opf_ts(file, solver; kwargs...)
-#     return run_gmd_opf_ts(file, PMs.ACPPowerModel, solver; kwargs...)
-# end
-
-
 "FUNCTION: GMD OPF TS problem formulation"
 function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
+
     for (n, network) in PMs.nws(pm)
 
         # -- Variables -- #
@@ -101,7 +96,6 @@ function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
         end
         n_1 = n_2
     end
-
 
     # -- Objective -- #
 

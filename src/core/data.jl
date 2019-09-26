@@ -527,7 +527,7 @@ end
 "FUNCTION: calculate top-oil temperature rise"
 function delta_topoilrise(branch, result, base_mva, delta_t)
 
-    delta_topoilrise_ss = PowerModelsGMD.delta_topoilrise_ss(branch, result, base_mva)
+    delta_topoilrise_ss = delta_topoilrise_ss(branch, result, base_mva)
     #delta_topoilrise_ss = 1 #testing for step response
     delta_topoilrise = delta_topoilrise_ss # if 1st iteration, assume it starts from steady-state value
 

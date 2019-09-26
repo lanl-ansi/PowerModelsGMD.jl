@@ -259,10 +259,8 @@ This code has been developed as part of the Advanced Network Science Initiative 
 ## Citing PMsGMD
 
 If you find PMsGMD useful in your work, we kindly request that you cite the following publication:
-```
-Adam Mate, Arthur K. Barnes, and Russel W. Bent, "Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD," 2020 Power Systems Computation Conference (PSCC). [under review]
-```
 
+Adam Mate, Arthur K. Barnes, and Russel W. Bent, "Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD," 2020 Power Systems Computation Conference (PSCC). [under review]
 
 <!-- 
 If you find PMsGMD useful in your work, we kindly request that you cite the following [publication](https://ieeexplore.ieee.org/document/...):

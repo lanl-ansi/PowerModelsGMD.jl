@@ -2,7 +2,8 @@ export run_ac_gmd_opf_ts_decoupled
 
 
 "FUNCTION: update the vs values"
-function modify_gmd_case!(net, mods, time_index) 
+function modify_gmd_case!(net, mods, time_index)
+
     if mods !== nothing && mods["waveforms"] !== nothing
         for (k,wf) in mods["waveforms"]
             otype = wf["parent_type"]
@@ -57,7 +58,6 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
         for (k,br) in data["ac"]["case"]["branch"]
 
             if !(br["type"] == "transformer" || br["type"] == "xf")
-           #if !(br["xfmr"] == 1)
                 continue
             end
 
