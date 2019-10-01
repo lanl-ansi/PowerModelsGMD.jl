@@ -201,7 +201,7 @@ function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
     branch = PMs.ref(pm, nw, :branch, i)
     buses = PMs.ref(pm, nw, :bus)
 
-    if !(branch["type"] == "xf")
+    if !(branch["type"] == "xfmr")
         return NaN
     end
 
@@ -486,7 +486,7 @@ function dc_current_mag(branch, case, solution)
 
     branch["ieff"] = 0.0
 
-    if branch["type"] != "xf"
+    if branch["type"] != "xfmr"
         dc_current_mag_line(branch, case, solution)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
         println("  Ungrounded config, ieff constrained to zero")
@@ -495,7 +495,7 @@ function dc_current_mag(branch, case, solution)
         dc_current_mag_gwye_delta_xf(branch, case, solution)
     elseif branch["config"] == "gwye-gwye"
         dc_current_mag_gwye_gwye_xf(branch, case, solution)
-    elseif branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto"
+    elseif branch["type"] == "xfmr" && branch["config"] == "gwye-gwye-auto"
         dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
     end
 
@@ -553,7 +553,7 @@ end
 "FUNCTION: calculate steady-state top-oil temperature rise"
 function delta_topoilrise_ss(branch, result, base_mva)
     
-    if !(branch["type"] == "transformer" || branch["type"] == "xf")
+    if !(branch["type"] == "transformer" || branch["type"] == "xfmr")
         return 0
     end
         

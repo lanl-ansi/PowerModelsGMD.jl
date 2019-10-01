@@ -45,7 +45,7 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
         modify_gmd_case!(net, mods, i)
 
         #println("Run AC-OPF using calculated quasi-dc currents")
-        data = PowerModelsGMD.run_ac_gmd_opf_decoupled(net, solver; setting=settings)
+        data = run_ac_gmd_opf_decoupled(net, solver; setting=settings)
         
         data["time_index"] = i
         data["time"] = t[i]
@@ -63,13 +63,13 @@ function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
 
             result = data["ac"]["result"]
             
-            PowerModelsGMD.delta_topoilrise(br, result, base_mva, delta_t) 
-            # PowerModelsGMD.delta_topoilrise_ss(br, result, base_mva) #included in delta_topoilrise
-            PowerModelsGMD.update_topoilrise(br, net)
+            delta_topoilrise(br, result, base_mva, delta_t) 
+            # delta_topoilrise_ss(br, result, base_mva) #included in delta_topoilrise
+            update_topoilrise(br, net)
             
-            # PowerModelsGMD.delta_hotspotrise(br, result, Ie_prev[k], delta_t) #decided to only calculate stead-state value
-            PowerModelsGMD.delta_hotspotrise_ss(br, result)
-            PowerModelsGMD.update_hotspotrise(br, net)
+            # delta_hotspotrise(br, result, Ie_prev[k], delta_t) #decided to only calculate stead-state value
+            delta_hotspotrise_ss(br, result)
+            update_hotspotrise(br, net)
             
             # Store calculated transformer temperature related results:
             trf_temp["Ieff"] = br["ieff"]

@@ -133,7 +133,7 @@ The description of B4GIC, an included four-bus test case is presented below to d
 ### GMD Bus Data Table
 
 This table includes
-* `parent_index` - index of corresponding bus (in the ac network)
+* `parent_index` - index of corresponding ac network bus
 * `status` - binary value that defines the status of bus (1: enabled, 0: disabled)
 * `g_gnd` - admittance to ground (in unit of Siemens)
 * `name` - a descriptive name for the bus
@@ -156,7 +156,7 @@ mpc.gmd_bus = {
 This table includes
 * `f_bus` - "from" bus in the gmd bus table
 * `t_bus` - "to" bus in the gmd bus table
-* `parent_index` - index of corresponding branch (in the ac network)
+* `parent_index` - index of corresponding ac network branch
 * `br_status` - binary value that defines the status of branch (1: enabled, 0: disabled)
 * `br_r` - branch resistance (in unit of Ohms)
 * `br_v` - induced quasi-dc voltage (in unit of Volts)
@@ -176,16 +176,16 @@ mpc.gmd_branch = {
 ### Branch GMD Data Table
 
 This table includes
-* `hi_bus` - index of high-side bus (in the ac network)
-* `lo_bus` - index of low-side bus (in the ac network)
-* `gmd_br_hi` - index of gmd branch corresponding to the high-side winding (for two-winding transformers)
-* `gmd_br_lo` - index of gmd branch corresponding to the low-side winding (for two-winding transformers)
+* `hi_bus` - index of high-side ac network bus
+* `lo_bus` - index of low-side ac network bus
+* `gmd_br_hi` - index of gmd branch corresponding to high-side winding (for two-winding transformers)
+* `gmd_br_lo` - index of gmd branch corresponding to low-side winding (for two-winding transformers)
 * `gmd_k` - scaling factor to calculate reactive power consumption as a function of effective winding current (in per-unit)
-* `gmd_br_series` - index of gmd branch corresponding to the series winding (for autotransformers)
-* `gmd_br_common` - index of gmd branch corresponding to the common winding (for autotransformers)
+* `gmd_br_series` - index of gmd branch corresponding to series winding (for auto-transformers)
+* `gmd_br_common` - index of gmd branch corresponding to common winding (for auto-transformers)
 * `baseMVA` - MVA base of transformer
 * `dispatchable` - binary value that defines if branch is dispatchable (1: dispatchable, 0: not dispatchable)
-* `type` - type of branch -- "xf" / "transformer, "line", or "series_cap"
+* `type` - type of branch -- "xfmr" / "transformer, "line", or "series_cap"
 * `config` - winding configuration of transformer -- currently "gwye-gwye", "gwye-delta", "delta-delta", and "gwye-gwye-auto" are supported
 
 ```
@@ -209,7 +209,7 @@ This table includes
 * `topoil_time_const` - top-oil temperature-rise time-constant of transformer (in unit of minutes)
 * `topoil_rated` - top-oil temperature-rise of transformer at rated power (in unit of Celsius)
 * `topoil_init` - initial top-oil temperature of transformer (in unit of Celsius)
-* `topoil_initialized` - binary value that defines the initial top-oil temperature of transformer (1: initial top-oil temperature starts with `topoil_init` value, 0: initial top-oil temperature starts with steady-state value)
+* `topoil_initialized` - binary value that defines the initial top-oil temperature of transformer (1: temperature starts with `topoil_init` value, 0: temperature starts with steady-state value)
 * `hotspot_coeff` - relationship of hot-spot temperature rise to Ieff (in unit of Celsius/amp)
 
 ```
@@ -260,10 +260,11 @@ This code has been developed as part of the Advanced Network Science Initiative 
 
 If you find PMsGMD useful in your work, we kindly request that you cite the following publication:
 
-Adam Mate, Arthur K. Barnes, and Russel W. Bent, "Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD," 2020 Power Systems Computation Conference (PSCC). [under review]
-
 <!-- 
 If you find PMsGMD useful in your work, we kindly request that you cite the following [publication](https://ieeexplore.ieee.org/document/...):
+
+Adam Mate, Arthur K. Barnes, and Russel W. Bent, "Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD," 2020 Power Systems Computation Conference (PSCC). [under review]
+
 ```
 @inproceedings{..., 
   author = {Adam Mate and Arthur Barnes and Russell Bent}, 

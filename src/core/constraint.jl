@@ -188,7 +188,7 @@ function constraint_dc_current_mag(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
     
     branch = PMs.ref(pm, n, :branch, k)
 
-    if branch["type"] != "xf"
+    if branch["type"] != "xfmr"
         constraint_dc_current_mag_line(pm, k, nw=n, cnd=c)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
         Memento.debug(LOGGER, "  Ungrounded config, ieff constrained to zero")
@@ -197,7 +197,7 @@ function constraint_dc_current_mag(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
         constraint_dc_current_mag_gwye_delta_xf(pm, k, nw=n, cnd=c)
     elseif branch["config"] == "gwye-gwye"
         constraint_dc_current_mag_gwye_gwye_xf(pm, k, nw=n, cnd=c)
-    elseif branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto"
+    elseif branch["type"] == "xfmr" && branch["config"] == "gwye-gwye-auto"
         constraint_dc_current_mag_gwye_gwye_auto_xf(pm, k, nw=n, cnd=c)
     else
         ieff = PMs.var(pm, n, c, :i_dc_mag)
