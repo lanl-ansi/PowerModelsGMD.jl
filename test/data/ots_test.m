@@ -2,9 +2,12 @@
 function mpc = ots_test
 mpc.version = '2';
 
+
 %%-----  Power Flow Data  -----%%
+
 %% system MVA base
 mpc.baseMVA = 100;
+
 
 %% bus data
 %    bus_i    type    Pd    Qd    Gs    Bs    area    Vm    Va    baseKV    zone    Vmax    Vmin
@@ -68,6 +71,7 @@ mpc.bus = [
 	57	2	0	0	0	0	1	1.100000	-0.000000	230	1	1.05	0.95
 ];
 
+
 %% generator data
 %    bus    Pg    Qg    Qmax    Qmin    Vg    mBase    status    Pmax    Pmin    Pc1    Pc2    Qc1min    Qc1max    Qc2min    Qc2max    ramp_agc    ramp_10    ramp_30    ramp_q    apf
 mpc.gen = [
@@ -105,6 +109,7 @@ mpc.gen = [
 	32	76.0	0.0	300.0	-250.0	1.1	100.0	1	760.0	15.2	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0.0	-1000.0	0.0
 	33	80.0	0.0	600.0	0.0	1.1	100.0	1	1000.0	25.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0.0	-1000.0	0.0
 ];
+
 
 %% branch data
 %    fbus    tbus    r    x    b    rateA    rateB    rateC    ratio    angle    status    angmin    angmax
@@ -182,7 +187,9 @@ mpc.branch = [
 	1	28	0.0023	0.0839	0.0	82.0	0.0	0.0	1.0	0.0	1	-30.0	30.0
 ];
 
+
 %%-----  OPF Data  -----%%
+
 %% generator cost data
 %    1    startup    shutdown    n    x1    y1    ...    xn    yn
 %    2    startup    shutdown    n    c(n-1)    ...    c0
@@ -222,6 +229,10 @@ mpc.gencost = [
 	2	0	0	3	0.05267199999999999	43.6615	781.521
 ];
 
+
+%%-----  GMD - Thermal Data  -----%%
+
+%% gmd_bus data
 %column_names% parent_index status g_gnd name
 mpc.gmd_bus = {
 	1	1   10.0	'dc_sub1'	
@@ -303,6 +314,8 @@ mpc.gmd_bus = {
 	57	1   0.0	'dc_bus57'	
 };
 
+
+%% gmd_branch data
 %column_names%  f_bus t_bus parent_index br_status br_r br_v len_km name
 mpc.gmd_branch = {
 	21	22	1	0	0.21913296000000002	3.934502219563054e-15	6.425529748336267	'dc_br1'	
@@ -383,41 +396,43 @@ mpc.gmd_branch = {
 	21	1	71	1	0.03333333333333333	0.0	0.0	'dc_xf9_hi'	
 };
 
+
+%% branch_gmd data
 %column_names%  hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
 mpc.branch_gmd = {
-	1	2	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	6	10	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	7	8	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	8	9	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	8	10	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	11	13	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	11	14	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	1	3	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	12	13	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	12	23	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	13	23	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	14	16	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	15	16	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	15	21	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	15	21	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	15	24	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	16	17	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	16	19	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	1	5	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	17	18	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	17	22	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	18	21	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	18	21	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	19	20	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	19	20	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	20	23	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	20	23	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	21	22	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	2	4	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	2	6	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	3	9	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	4	9	-1	-1	0	-1	-1	100.0	'line'	'none'	
-	5	10	-1	-1	0	-1	-1	100.0	'line'	'none'	
+	1	2	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	6	10	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	7	8	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	8	9	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	8	10	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	11	13	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	11	14	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	1	3	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	12	13	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	12	23	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	13	23	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	14	16	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	15	16	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	15	21	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	15	21	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	15	24	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	16	17	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	16	19	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	1	5	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	17	18	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	17	22	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	18	21	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	18	21	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	19	20	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	19	20	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	20	23	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	20	23	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	21	22	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	2	4	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	2	6	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	3	9	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	4	9	-1	-1	-1	-1	-1	-1	'line'	'none'	
+	5	10	-1	-1	-1	-1	-1	-1	'line'	'none'	
 	24	3	-1	-1	1.8	34	35	100.0	'xfmr'	'gwye-gwye-auto'	
 	2	29	36	-1	1.8	-1	-1	100.0	'xfmr'	'gwye-delta'	
 	2	30	37	-1	1.8	-1	-1	100.0	'xfmr'	'gwye-delta'	
@@ -458,6 +473,11 @@ mpc.branch_gmd = {
 	1	28	76	-1	1.8	-1	-1	100.0	'xfmr'	'gwye-delta'	
 };
 
+
+%% branch_thermal data
+
+
+%% bus_gmd data
 %column_names%  lat lon
 mpc.bus_gmd = {
 	40.4397	-78.8025284705882	
@@ -519,13 +539,20 @@ mpc.bus_gmd = {
 	42.0215327927928	-78.65106117647059	
 };
 
+
+%% thermal caps
+% thermal_cap_x0 ([per unit])
 %column_names%  A B C D E F G H I J K
 mpc.thermal_cap_x0 = [
 	230.33 250.0 264.38 279.6 300.0 319.67 339.42 361.53 384.44 400.0 438.94 
 ];
-
+% thermal_cap_y0 ([percent per unit])
 %column_names%  A B C D E F G H I J K
 mpc.thermal_cap_y0 = [
 	100.0 93.94 90.0 85.42 80.0 74.73 70.0 64.94 59.97 56.92 50.0 
 ];
+
+
+%%-----  SourceID Data  -----%%
+
 
