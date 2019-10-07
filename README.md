@@ -1,9 +1,8 @@
 # PowerModelsGMD.jl
 
-<!--
+
 Release: 
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/stable/)
--->
 
 Dev:
 [![Build Status](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl.svg?branch=master)](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl)
@@ -15,9 +14,8 @@ Dev:
 
 PowerModelsGMD.jl (abbr. PMsGMD) is an open-source framework that provides extensions to [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) (abbr. PMs) for power system simulation, to evaluate the risks and mitigate the potential effects of Geomagnetic Disturbances (GMDs) and E3 High-altitude Electromagnetic Pulse (E3~HEMP) events on the power grid.
 
-PMsGMD solves for quasi-dc line flow and ac power flow problems in a network subjected to Geomagnetically Induced Currents (GICs), and provides mitigation strategies by treating the transformer overheating problem as an optimal transmission switching formulation.
-Due to its open-source nature, it is easy to study, verify and customize its operation to best fit the application environment.
-Due to its speed and reliability, it is suitable to be a key component of frameworks that real-time monitor GMD manifestations and predict GICs on the power grid, that assess risk and enhance reliability by providing aid to system-operators and suggesting modifications in the network configuration.
+PMsGMD solves for quasi-dc line flow and ac power flow on a network subjected to Geomagnetically Induced Currents (GICs). It solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
+Since it is open-source, it is easy to study, verify and customize its operation to best fit an application environment. Due to its speed and reliability, it is suitable to be a key component of frameworks that monitor GMD manifestations in real-time, that predict GICs on the power grid, that assess risk, that enhance reliability by providing aid to system-operators, and that recommend modifications in the network configuration.
 Thus, PMsGMD is equally useful for research and industry application.
 
 
@@ -226,8 +224,8 @@ mpc.branch_thermal = {
 ### Bus GMD Data Table
 
 This table includes 
-* `lat` - latitude coordinate of bus (in the ac network)
-* `lon` - longitude coordinate of bus (in the ac network)
+* `lat` - latitude coordinate of ac network bus and corresponding dc network bus
+* `lon` - longitude coordinate of ac network bus and corresponding dc network bus
 
 ```
 %column_names% lat lon
@@ -260,10 +258,11 @@ This code has been developed as part of the Advanced Network Science Initiative 
 
 If you find PMsGMD useful in your work, we kindly request that you cite the following publication:
 
+Adam Mate, Arthur Barnes, Russel Bent, and Eduardo Cotilla-Sanchez, "Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD," 2020 Power Systems Computation Conference (PSCC). [under review]
+
+
 <!-- 
 If you find PMsGMD useful in your work, we kindly request that you cite the following [publication](https://ieeexplore.ieee.org/document/...):
-
-Adam Mate, Arthur K. Barnes, and Russel W. Bent, "Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD," 2020 Power Systems Computation Conference (PSCC). [under review]
 
 ```
 @inproceedings{..., 
