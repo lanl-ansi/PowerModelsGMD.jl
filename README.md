@@ -1,8 +1,9 @@
 # PowerModelsGMD.jl
 
-
+<!--
 Release: 
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/stable/)
+-->
 
 Dev:
 [![Build Status](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl.svg?branch=master)](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl)
@@ -182,16 +183,15 @@ This table includes
 * `gmd_br_series` - index of gmd branch corresponding to series winding (for auto-transformers)
 * `gmd_br_common` - index of gmd branch corresponding to common winding (for auto-transformers)
 * `baseMVA` - MVA base of transformer
-* `dispatchable` - binary value that defines if branch is dispatchable (1: dispatchable, 0: not dispatchable)
 * `type` - type of branch -- "xfmr" / "transformer, "line", or "series_cap"
 * `config` - winding configuration of transformer -- currently "gwye-gwye", "gwye-delta", "delta-delta", and "gwye-gwye-auto" are supported
 
 ```
-%column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA dispatchable type config
+%column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
 mpc.branch_gmd = {
-	1	3	1	-1	1.793	-1	-1	100	1	'xf'	'gwye-delta'
-	1	2	-1	-1	-1	-1	-1	-1	1	'line'	'none'
-	2	4	3	-1	1.793	-1	-1	100	1	'xf'	'gwye-delta'
+	1	3	1	-1	1.793	-1	-1	100	'xf'	'gwye-delta'
+	1	2	-1	-1	-1	-1	-1	-1	'line'	'none'
+	2	4	3	-1	1.793	-1	-1	100	'xf'	'gwye-delta'
 };
 ```
 
