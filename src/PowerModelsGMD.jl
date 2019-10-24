@@ -6,8 +6,6 @@ module PowerModelsGMD
     import Memento
     import PowerModels
 
-    using Printf: @printf, @sprintf
-
     const LOGGER = Memento.getlogger(PowerModels)
     const PMs = PowerModels
 

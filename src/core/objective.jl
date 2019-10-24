@@ -55,17 +55,6 @@ function objective_gmd_min_error(pm::PMs.GenericPowerModel)
 
     M_p = Dict(n => max([gen["pmax"] for (i,gen) in nw_ref[:gen]]) for (n, nw_ref) in PMs.nws(pm))
 
-    #=
-    for n in nws
-        for (i,gen) in pm.ref[:nw][n][:gen]
-            @printf "sg[%d] = %f + j%f\n" i gen["pg"] gen["qg"]
-            if gen["pmax"] > pmax
-                pmax = gen["pmax"]
-            end
-        end
-    end
-    =#
-
     # return JuMP.@objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return JuMP.@objective(pm.model, Min, sum(get(gen["cost"], 1, 0.0)*pg[i]^2 + get(gen["cost"], 2, 0.0)*pg[i] + get(gen["cost"], 3, 0.0) for (i,gen) in pm.ref[:gen]) )
     return JuMP.@objective(pm.model, Min,
