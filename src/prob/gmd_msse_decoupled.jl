@@ -15,7 +15,7 @@ function run_msse_qloss(file::String, model_constructor, solver; kwargs...)
 end
 
 "GMD Model - This model minimizes distance from a specified set point"
-function post_msse_qloss(pm::PMs.GenericPowerModel; kwargs...)
+function post_msse_qloss(pm::PMs.AbstractPowerModel; kwargs...)
     PMs.variable_voltage(pm)
 
     variable_dc_current_mag(pm)

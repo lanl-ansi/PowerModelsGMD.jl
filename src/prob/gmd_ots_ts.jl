@@ -8,7 +8,7 @@ end
 
 
 "FUNCTION: GMD OTS TS problem formulation"
-function post_gmd_ots_ts(pm::GenericPowerModel)
+function post_gmd_ots_ts(pm::PMs.AbstractPowerModel)
 
     for (n, network) in nws(pm)
 

@@ -21,7 +21,7 @@ function run_gmd_ls(file::String, model_constructor, solver; kwargs...)
 end
 
 "GMD Model - Minimizes Generator Dispatch and Load Shedding"
-function post_gmd_ls(pm::PMs.GenericPowerModel; kwargs...)
+function post_gmd_ls(pm::PMs.AbstractPowerModel; kwargs...)
 
     # AC modeling
     PMs.variable_voltage(pm) # theta_i and V_i, includes constraint 3o

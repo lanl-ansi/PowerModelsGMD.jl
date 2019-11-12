@@ -129,7 +129,7 @@ end
 
 
 "FUNCTION: compute maximum AC current on a branch"
-function calc_ac_mag_max(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_ac_mag_max(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     
     # ac_mag_max
     branch = PMs.ref(pm, nw, :branch, i)
@@ -145,7 +145,7 @@ end
 
 
 "FUNCTION: compute the maximum DC current on a branch"
-function calc_dc_mag_max(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_dc_mag_max(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     
     branch = PMs.ref(pm, nw, :branch, i)
 
@@ -162,7 +162,7 @@ end
 
 
 "FUNCTION: computes the ibase for a branch"
-function calc_branch_ibase(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_branch_ibase(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
 
     branch = PMs.ref(pm, nw, :branch, i)
     bus = PMs.ref(pm, nw, :bus, branch["hi_bus"])
@@ -196,7 +196,7 @@ end
 
 
 "FUNCTION: compute the thermal coeffieicents for a branch"
-function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_branch_thermal_coeff(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
 
     branch = PMs.ref(pm, nw, :branch, i)
     buses = PMs.ref(pm, nw, :bus)
@@ -245,7 +245,7 @@ end
 
 
 "FUNCTION: computes the maximum dc voltage difference between buses"
-function calc_max_dc_voltage_difference(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_max_dc_voltage_difference(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return 1e6 # TODO, actually formally calculate
 end
 
@@ -388,19 +388,19 @@ end
 
 
 "FUNCTION: compute the maximum DC voltage at a gmd bus "
-function calc_max_dc_voltage(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_max_dc_voltage(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return Inf
 end
 
 
 "FUNCTION: compute the maximum DC voltage at a gmd bus "
-function calc_min_dc_voltage(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_min_dc_voltage(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return -Inf
 end
 
 
 "FUNCTION: compute the minimum absolute value AC current on a branch"
-function calc_ac_mag_min(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_ac_mag_min(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return 0
 end
 

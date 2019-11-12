@@ -2,7 +2,7 @@
 
 
 "OBJECTIVE: computes a load shed cost"
-function calc_load_shed_cost(pm::PMs.GenericPowerModel)
+function calc_load_shed_cost(pm::PMs.AbstractPowerModel)
 
     max_cost = 0
     for (n, nw_ref) in PMs.nws(pm)
@@ -20,7 +20,7 @@ end
 
 
 "OBJECTIVE: OPF objective"
-function objective_gmd_min_fuel(pm::PMs.GenericPowerModel)
+function objective_gmd_min_fuel(pm::PMs.AbstractPowerModel)
 
     #@assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 
@@ -44,7 +44,7 @@ end
 
 
 "OBJECTIVE: SSE -- keep generators as close as possible to original setpoint"
-function objective_gmd_min_error(pm::PMs.GenericPowerModel)
+function objective_gmd_min_error(pm::PMs.AbstractPowerModel)
 
     @assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 
@@ -75,7 +75,7 @@ end
 
 
 "OBJECTIVE: minimizes load shedding and fuel cost"
-function objective_gmd_min_ls(pm::PMs.GenericPowerModel)
+function objective_gmd_min_ls(pm::PMs.AbstractPowerModel)
 
     @assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 
@@ -102,7 +102,7 @@ end
 
 
 "OBJECTIVE: minimizes load shedding and fuel cost"
-function objective_gmd_min_ls_on_off(pm::PMs.GenericPowerModel)
+function objective_gmd_min_ls_on_off(pm::PMs.AbstractPowerModel)
 
     @assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 
@@ -131,7 +131,7 @@ end
 
 
 "OBJECTIVE: minimizes transfomer heating caused by GMD"
-function objective_gmd_min_transformer_heating(pm::PMs.GenericPowerModel)
+function objective_gmd_min_transformer_heating(pm::PMs.AbstractPowerModel)
 
     #@assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 

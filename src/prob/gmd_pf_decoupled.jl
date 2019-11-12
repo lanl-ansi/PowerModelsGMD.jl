@@ -4,21 +4,21 @@ export run_ac_gmd_pf_decoupled
 
 
 "FUNCTION: basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_pf_qloss(pm::PMs.GenericPowerModel; kwargs...)
+function post_pf_qloss(pm::PMs.AbstractPowerModel; kwargs...)
     vnom = false
-    post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
+    post_pf_qloss(pm::PMs.AbstractPowerModel, vnom; kwargs...)
 end
 
 
 "FUNCTION: basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_pf_qloss_vnom(pm::PMs.GenericPowerModel; kwargs...)
+function post_pf_qloss_vnom(pm::PMs.AbstractPowerModel; kwargs...)
     vnom = true
-    post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
+    post_pf_qloss(pm::PMs.AbstractPowerModel, vnom; kwargs...)
 end
 
 
 "FUNCTION: basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_pf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
+function post_pf_qloss(pm::PMs.AbstractPowerModel, vnom; kwargs...)
 
     # -- Variables -- #
 

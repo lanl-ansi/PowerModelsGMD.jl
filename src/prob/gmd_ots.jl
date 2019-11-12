@@ -31,7 +31,7 @@ end
 
 
 "FUNCTION: GMD Model - Minimizes Generator Dispatch and Load Shedding"
-function post_gmd_ots(pm::PMs.GenericPowerModel; kwargs...)
+function post_gmd_ots(pm::PMs.AbstractPowerModel; kwargs...)
 
     # -- AC modeling -- #
 

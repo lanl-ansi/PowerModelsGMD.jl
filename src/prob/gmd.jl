@@ -8,7 +8,7 @@ end
 
 
 "FUNCTION: post problem corresponding to the dc gic problem this is a linear constraint satisfaction problem"
-function post_gmd(pm::PMs.GenericPowerModel; kwargs...)
+function post_gmd(pm::PMs.AbstractPowerModel; kwargs...)
 
     # -- Variables -- #
 

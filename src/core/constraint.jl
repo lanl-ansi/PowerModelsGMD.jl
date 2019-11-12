@@ -2,7 +2,7 @@
 
 
 "CONSTRAINT: DC current on ungrounded gwye-delta transformers"
-function constraint_dc_current_mag_gwye_delta_xf(pm::PMs.GenericPowerModel, n::Int, c::Int, k, kh, ih, jh)
+function constraint_dc_current_mag_gwye_delta_xf(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, kh, ih, jh)
 
     ieff = PMs.var(pm, n, c, :i_dc_mag)[k]
     ihi = PMs.var(pm, n, c, :dc)[(kh,ih,jh)]
@@ -14,7 +14,7 @@ end
 
 
 "CONSTRAINT: DC current on ungrounded gwye-gwye transformers"
-function constraint_dc_current_mag_gwye_gwye_xf(pm::PMs.GenericPowerModel, n::Int, c::Int, k, kh, ih, jh, kl, il, jl, a)
+function constraint_dc_current_mag_gwye_gwye_xf(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, kh, ih, jh, kl, il, jl, a)
 
     Memento.debug(LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
 
@@ -29,7 +29,7 @@ end
 
 
 "CONSTRAINT: DC current on ungrounded gwye-gwye auto transformers"
-function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::PMs.GenericPowerModel, n::Int, c::Int, k, ks, is, js, kc, ic, jc, a)
+function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, ks, is, js, kc, ic, jc, a)
 
     ieff = PMs.var(pm, n, c, :i_dc_mag)[k]
     is = PMs.var(pm, n, c, :dc)[(ks,is,js)]
@@ -43,7 +43,7 @@ end
 
 
 "CONSTRAINT: KCL for DC (GIC) circuits"
-function constraint_dc_kcl_shunt(pm::PMs.GenericPowerModel, n::Int, c::Int, i, dc_expr, gs, gmd_bus_arcs)
+function constraint_dc_kcl_shunt(pm::PMs.AbstractPowerModel, n::Int, c::Int, i, dc_expr, gs, gmd_bus_arcs)
 
     v_dc = PMs.var(pm, n, c, :v_dc)[i]
     if length(gmd_bus_arcs) > 0
@@ -58,7 +58,7 @@ end
 
 
 "CONSTRAINT: DC ohms for GIC"
-function constraint_dc_ohms(pm::PMs.GenericPowerModel, n::Int, c::Int, i, f_bus, t_bus, vs, gs)
+function constraint_dc_ohms(pm::PMs.AbstractPowerModel, n::Int, c::Int, i, f_bus, t_bus, vs, gs)
 
     vf = PMs.var(pm, n, c, :v_dc)[f_bus] # from dc voltage
     vt = PMs.var(pm, n, c, :v_dc)[t_bus] # to dc voltage
@@ -70,7 +70,7 @@ end
 
 
 "CONSTRAINT: computing qloss assuming ac primary voltage is constant"
-function constraint_qloss_constant_v(pm::PMs.GenericPowerModel, n::Int, c::Int, k, i, j, K, V, branchMVA)
+function constraint_qloss_constant_v(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, i, j, K, V, branchMVA)
 
     i_dc_mag = PMs.var(pm, n, c, :i_dc_mag)[k]
     qloss = PMs.var(pm, n, c, :qloss)
@@ -83,7 +83,7 @@ end
 
 
 "CONSTRAINT: computing qloss assuming ac primary voltage is constant"
-function constraint_qloss_constant_v(pm::PMs.GenericPowerModel, n::Int, c::Int, k, i, j)
+function constraint_qloss_constant_v(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, i, j)
 
     qloss = PMs.var(pm, n, c, :qloss)
 
@@ -94,7 +94,7 @@ end
 
 
 "CONSTRAINT: turning generators on and off"
-function constraint_gen_on_off(pm::PMs.GenericPowerModel, n::Int, c::Int, i, pmin, pmax, qmin, qmax)
+function constraint_gen_on_off(pm::PMs.AbstractPowerModel, n::Int, c::Int, i, pmin, pmax, qmin, qmax)
 
     z   = PMs.var(pm, n, c, :gen_z)[i]
     pg  = PMs.var(pm, n, c, :pg)[i]
@@ -109,7 +109,7 @@ end
 
 
 "CONSTRAINT: tieing ots variables to gen variables"
-function constraint_gen_ots_on_off(pm::PMs.GenericPowerModel, n::Int, c::Int, i, bus_arcs)
+function constraint_gen_ots_on_off(pm::PMs.AbstractPowerModel, n::Int, c::Int, i, bus_arcs)
 
     z   = PMs.var(pm, n, c, :gen_z)[i]
     zb  = PMs.var(pm, n, c, :branch_z)
@@ -119,7 +119,7 @@ end
 
 
 "CONSTRAINT: perspective constraint for generation cost"
-function constraint_gen_perspective(pm::PMs.GenericPowerModel, n::Int, c::Int, i, cost)
+function constraint_gen_perspective(pm::PMs.AbstractPowerModel, n::Int, c::Int, i, cost)
 
     z        = PMs.var(pm, n, c, :gen_z)[i]
     pg_sqr   = PMs.var(pm, n, c, :pg_sqr)[i]
@@ -130,7 +130,7 @@ end
 
 
 "CONSTRAINT: DC Ohms constraint for GIC"
-function constraint_dc_ohms_on_off(pm::PMs.GenericPowerModel, n::Int, c::Int, i, gs, vs, f_bus, t_bus, ac_branch)
+function constraint_dc_ohms_on_off(pm::PMs.AbstractPowerModel, n::Int, c::Int, i, gs, vs, f_bus, t_bus, ac_branch)
 
     vf        = PMs.var(pm, n, c, :v_dc)[f_bus] # from dc voltage
     vt        = PMs.var(pm, n, c, :v_dc)[t_bus] # to dc voltage
@@ -147,7 +147,7 @@ end
 
 
 "CONSTRAINT: on/off DC current on the AC lines"
-function constraint_dc_current_mag_on_off(pm::PMs.GenericPowerModel, n::Int, c::Int, k, dc_max)
+function constraint_dc_current_mag_on_off(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, dc_max)
 
     ieff = PMs.var(pm, n, c, :i_dc_mag)[k]
     z    = PMs.var(pm, n, c, :branch_z)[k]
@@ -161,27 +161,27 @@ end
 
 
 "CONSTRAINT: DC current on normal lines"
-function constraint_dc_current_mag_line(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
+function constraint_dc_current_mag_line(pm::PMs.AbstractPowerModel, n::Int, c::Int, k)
 
     ieff = PMs.var(pm, n, c, :i_dc_mag)
     JuMP.@constraint(pm.model, ieff[k] >= 0.0)
 
 end
-constraint_dc_current_mag_line(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag_line(pm, nw, cnd, k)
+constraint_dc_current_mag_line(pm::PMs.AbstractPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag_line(pm, nw, cnd, k)
 
 
 "CONSTRAINT: DC current on grounded transformers"
-function constraint_dc_current_mag_grounded_xf(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
+function constraint_dc_current_mag_grounded_xf(pm::PMs.AbstractPowerModel, n::Int, c::Int, k)
 
     ieff = PMs.var(pm, n, c, :i_dc_mag)
     JuMP.@constraint(pm.model, ieff[k] >= 0.0)
 
 end
-constraint_dc_current_mag_grounded_xf(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag_grounded_xf(pm, nw, cnd, k)
+constraint_dc_current_mag_grounded_xf(pm::PMs.AbstractPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag_grounded_xf(pm, nw, cnd, k)
 
 
 "CONSTRAINT: computing the DC current magnitude"
-function constraint_dc_current_mag(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
+function constraint_dc_current_mag(pm::PMs.AbstractPowerModel, n::Int, c::Int, k)
 
     # correct equation is ieff = |a*ihi + ilo|/a
     # just use ihi for now
@@ -205,7 +205,7 @@ function constraint_dc_current_mag(pm::PMs.GenericPowerModel, n::Int, c::Int, k)
     end
 
 end
-constraint_dc_current_mag(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag(pm, nw, cnd, k)
+constraint_dc_current_mag(pm::PMs.AbstractPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd) = constraint_dc_current_mag(pm, nw, cnd, k)
 
 
 
@@ -213,7 +213,7 @@ constraint_dc_current_mag(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int
 
 
 "CONSTRAINT: computing qloss accounting for ac voltage"
-function constraint_qloss_decoupled(pm::PMs.GenericPowerModel, n::Int, c::Int, k, i, j, ih, K, ieff, branchMVA)
+function constraint_qloss_decoupled(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, i, j, ih, K, ieff, branchMVA)
 
     # This is what is called for each branch
     # constraint_qloss(pm, n, c, k, i, j, K, ieff, branchMVA)
@@ -229,7 +229,7 @@ end
 
 
 "CONSTRAINT: computing qloss assuming 1.0 pu ac voltage"
-function constraint_qloss_decoupled_vnom(pm::PMs.GenericPowerModel, n::Int, c::Int, k, i, j, K, ieff, branchMVA)
+function constraint_qloss_decoupled_vnom(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, i, j, K, ieff, branchMVA)
 
     qloss = PMs.var(pm, n, c, :qloss)
 
@@ -241,7 +241,7 @@ end
 
 
 "CONSTRAINT: computing qloss"
-function constraint_zero_qloss(pm::PMs.GenericPowerModel, n::Int, c::Int, k, i, j)
+function constraint_zero_qloss(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, i, j)
 
     qloss = PMs.var(pm, n, c, :qloss)
 
@@ -252,7 +252,7 @@ end
 
 
 "CONSTRAINT: computing qloss assuming ac primary voltage is 1.0 pu"
-function constraint_qloss_vnom(pm::PMs.GenericPowerModel, n::Int, c::Int, k, i, j, K, branchMVA)
+function constraint_qloss_vnom(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, i, j, K, branchMVA)
 
     i_dc_mag = PMs.var(pm, n, c, :i_dc_mag)[k]
     qloss = PMs.var(pm, n, c, :qloss)
@@ -266,7 +266,7 @@ end
 
 
 "CONSTRAINT: computing qloss assuming varying ac voltage"
-function constraint_qloss_decoupled(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_qloss_decoupled(pm::PMs.AbstractPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
 
     branch = ref(pm, nw, :branch, k)
 
@@ -290,7 +290,7 @@ end
 
 
 "CONSTRAINT:  computing qloss assuming ac voltage is 1.0 pu"
-function constraint_qloss_decoupled_vnom(pm::PMs.GenericPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_qloss_decoupled_vnom(pm::PMs.AbstractPowerModel, k; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
 
     branch = PMs.ref(pm, nw, :branch, k)
 
@@ -318,7 +318,7 @@ end
 
 "CONSTRAINT: steady-state temperature"
 #TODO: check if types are correct
-function constraint_temperature_steady_state(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)   where T <: PowerModels.AbstractACPForm
+function constraint_temperature_steady_state(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
@@ -337,7 +337,7 @@ end
 
 "CONSTRAINT: steady-state temperature"
 #TODO: check if types are correct
-function constraint_temperature_steady_state(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)   where T <: PowerModels.AbstractDCPForm
+function constraint_temperature_steady_state(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
@@ -354,45 +354,45 @@ end
 
 
 "CONSTRAINT: initial temperature state"
-function constraint_temperature_state_initial(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int)
+function constraint_temperature_state_initial(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
     # assume that transformer starts at equilibrium 
     delta_oil = var(pm, n, c, :ro, i) 
     delta_oil_ss = var(pm, n, c, :ross, i) 
-    @constraint(pm.model, delta_oil == delta_oil_ss)
+    JuMP.@constraint(pm.model, delta_oil == delta_oil_ss)
 
 end
 
 
 "CONSTRAINT: initial temperature state"
-function constraint_temperature_state_initial(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, delta_oil_init)
+function constraint_temperature_state_initial(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int, delta_oil_init)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
     delta_oil = var(pm, n, c, :ro, i) 
-    @constraint(pm.model, delta_oil == delta_oil_init)
+    JuMP.@constraint(pm.model, delta_oil == delta_oil_init)
 
 end
 
 
 "CONSTRAINT: temperature state"
-function constraint_temperature_state(pm::GenericPowerModel, n_1::Int, n_2::Int, i::Int, c::Int, tau)
+function constraint_temperature_state(pm::PMs.AbstractPowerModel, n_1::Int, n_2::Int, i::Int, c::Int, tau)
 
     delta_oil_ss = var(pm, n_2, c, :ross, i) 
     delta_oil_ss_prev = var(pm, n_1, c, :ross, i)
     delta_oil = var(pm, n_2, c, :ro, i) 
     delta_oil_prev = var(pm, n_1, c, :ro, i)
 
-    @constraint(pm.model, (1 + tau)*delta_oil == delta_oil_ss + delta_oil_ss_prev - (1 - tau)*delta_oil_prev)
+    JuMP.@constraint(pm.model, (1 + tau)*delta_oil == delta_oil_ss + delta_oil_ss_prev - (1 - tau)*delta_oil_prev)
     # @constraint(pm.model, delta_oil == delta_oil_ss)
 
 end
 
 
 "CONSTRAINT: steady-state hot-spot temperature"
-function constraint_hotspot_temperature_steady_state(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, rate_a, Re)
+function constraint_hotspot_temperature_steady_state(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int, rate_a, Re)
     # return delta_oil_rated*K^2
     # println("Branch $i rating: $rate_a, TO rise: $delta_oil_rated")
 
@@ -405,7 +405,7 @@ end
 
 
 "CONSTRAINT: hot-spot temperature"
-function constraint_hotspot_temperature(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int)
+function constraint_hotspot_temperature(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int)
 
     delta_hotspot_ss = PMs.var(pm, n, c, :hsss, i) 
     delta_hotspot = PMs.var(pm, n, c, :hs, i) 
@@ -416,7 +416,7 @@ end
 
 
 "CONSTRAINT: absolute hot-spot temperature"
-function constraint_absolute_hotspot_temperature(pm::GenericPowerModel, n::Int, i::Int, fi, c::Int, temp_ambient)
+function constraint_absolute_hotspot_temperature(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int, temp_ambient)
 
     delta_hotspot = PMs.var(pm, n, c, :hs, i) 
     #delta_hotspot = PMs.var(pm, n, c, :hsss, i) 
@@ -428,7 +428,7 @@ end
 
 
 "CONSTRAINT: average absolute hot-spot temperature"
-function constraint_avg_absolute_hotspot_temperature(pm::GenericPowerModel, i::Int, fi, c::Int, max_temp)
+function constraint_avg_absolute_hotspot_temperature(pm::PMs.AbstractPowerModel, i::Int, fi, c::Int, max_temp)
 
     N = length(PMs.nws(pm))
     JuMP.@constraint(pm.model, sum(PMs.var(pm, n, c, :hsa, i) for (n, nw_ref) in PMs.nws(pm)) <= N*max_temp)

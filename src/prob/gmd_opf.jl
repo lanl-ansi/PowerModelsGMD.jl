@@ -14,7 +14,7 @@ end
 
 
 "FUNCTION: Basic GMD Model - Minimizes Generator Dispatch"
-function post_gmd_opf(pm::PMs.GenericPowerModel; kwargs...)
+function post_gmd_opf(pm::PMs.AbstractPowerModel; kwargs...)
 
     PMs.variable_voltage(pm)
     variable_dc_voltage(pm)
@@ -38,7 +38,7 @@ function post_gmd_opf(pm::PMs.GenericPowerModel; kwargs...)
     end
 
     for i in PMs.ids(pm, :branch)
-        Memento.debug(LOGGER, @sprintf "Adding constraints for branch %d\n" i)
+        Memento.debug(LOGGER, println("Adding constraints for branch $i \n"))
         constraint_dc_current_mag(pm, i)
         constraint_qloss_vnom(pm, i)
 

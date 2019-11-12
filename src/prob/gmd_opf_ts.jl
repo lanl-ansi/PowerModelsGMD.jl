@@ -8,7 +8,7 @@ end
 
 
 "FUNCTION: GMD OPF TS problem formulation"
-function post_gmd_opf_ts(pm::PMs.GenericPowerModel)
+function post_gmd_opf_ts(pm::PMs.AbstractPowerModel)
 
     for (n, network) in PMs.nws(pm)
 

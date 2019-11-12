@@ -7,7 +7,7 @@ function GenericGMDPowerModel(data::Dict{String,<:Any}, T::DataType; kwargs...)
     # override the default generic constructor for Power Models that have GMD modeling
 
     PowerModels.standardize_cost_terms!(data, order=2)
-    pm = PMs.GenericPowerModel(data,T; kwargs...)
+    pm = PMs.AbstractPowerModel(data,T; kwargs...)
     build_gmd_ref(pm)
     return pm
 
@@ -32,7 +32,7 @@ end
 
 
 "FUNCTION: add the data structures that are specific for GMD modeling"
-function build_gmd_ref(pm::PMs.GenericPowerModel)
+function build_gmd_ref(pm::PMs.AbstractPowerModel)
 
     nws = pm.ref[:nw]
     data = pm.data
