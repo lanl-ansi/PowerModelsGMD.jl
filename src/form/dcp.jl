@@ -5,20 +5,20 @@ DCPPowerModel(data::Dict{String,<:Any}; kwargs...) =
 
 
 ""
-function variable_ac_current(pm::PMs.AbstractPowerModel{T}; kwargs...) where T <: PMs.AbstractDCPModel
+function variable_ac_current(pm::PMs.AbstractDCPModel; kwargs...)
 end
 
 ""
-function variable_ac_current_on_off(pm::PMs.AbstractPowerModel{T}; kwargs...) where T <: PMs.AbstractDCPModel
+function variable_ac_current_on_off(pm::PMs.AbstractDCPModel; kwargs...)
 end
 
 ""
-function variable_dc_current(pm::PMs.AbstractPowerModel{T}; kwargs...) where T <: PMs.AbstractDCPModel
+function variable_dc_current(pm::PMs.AbstractDCPModel; kwargs...)
     variable_dc_current_mag(pm; kwargs...)
 end
 
 ""
-function variable_reactive_loss(pm::PMs.AbstractPowerModel{T}; kwargs...) where T <: PMs.AbstractDCPModel
+function variable_reactive_loss(pm::PMs.AbstractDCPModel; kwargs...)
 end
 
 """
@@ -27,7 +27,7 @@ sum(p[a] for a in bus_arcs)  == sum(pg[g] for g in bus_gens) - pd - gs*v^2 + pd_
 sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_ls - qloss
 ```
 """
-function constraint_kcl_shunt_gmd_ls(pm::PMs.AbstractPowerModel{T}, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs) where T <: PMs.AbstractDCPModel
+function constraint_kcl_shunt_gmd_ls(pm::PMs.AbstractDCPModel, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
     vm = PMs.var(pm, n, c, :vm)[i]
     p = PMs.var(pm, n, c, :p)
     pg = PMs.var(pm, n, c, :pg)
@@ -42,7 +42,7 @@ sum(p[a] for a in bus_arcs)  == sum(pg[g] for g in bus_gens) - pd - gs*v^2 + pd_
 sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_ls - qloss
 ```
 """
-function constraint_kcl_shunt_gmd(pm::PMs.AbstractPowerModel{T}, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs) where T <: PMs.AbstractDCPModel
+function constraint_kcl_shunt_gmd(pm::PMs.AbstractDCPModel, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
     vm = PMs.var(pm, n, c, :vm)[i]
     p = PMs.var(pm, n, c, :p)
     pg = PMs.var(pm, n, c, :pg)
@@ -56,7 +56,7 @@ sum(p[a] for a in bus_arcs)  == sum(pg[g] for g in bus_gens) - pd - gs*v^2 + pd_
 sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_ls - qloss
 ```
 """
-function constraint_kcl_gmd(pm::PMs.AbstractPowerModel{T}, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd) where T <: PMs.AbstractDCPModel
+function constraint_kcl_gmd(pm::PMs.AbstractDCPModel, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
     p = PMs.var(pm, n, c, :p)
     pg = PMs.var(pm, n, c, :pg)
 
@@ -64,7 +64,7 @@ function constraint_kcl_gmd(pm::PMs.AbstractPowerModel{T}, n::Int, c::Int, i::In
 end
 
 "Constraint for relating current to power flow on/off"
-function constraint_current_on_off(pm::PMs.AbstractPowerModel{T}, n::Int, c::Int, i, ac_max) where T <: PMs.AbstractDCPModel
+function constraint_current_on_off(pm::PMs.AbstractDCPModel, n::Int, c::Int, i, ac_max)
     z  = PMs.var(pm, n, c, :branch_z)[i]
     i_ac = PMs.var(pm, n, c, :i_ac_mag)[i]
     JuMP.@constraint(pm.model, i_ac <= z * ac_max)
@@ -72,7 +72,7 @@ function constraint_current_on_off(pm::PMs.AbstractPowerModel{T}, n::Int, c::Int
 end
 
 "Constraint for computing thermal protection of transformers"
-function constraint_thermal_protection(pm::PMs.AbstractPowerModel{T}, n::Int, c::Int, i, coeff, ibase) where T <: PMs.AbstractDCPModel
+function constraint_thermal_protection(pm::PMs.AbstractDCPModel, n::Int, c::Int, i, coeff, ibase)
     i_ac_mag = PMs.var(pm, n, c, :i_ac_mag)[i]
     ieff = PMs.var(pm, n, c, :i_dc_mag)[i]
 
@@ -80,10 +80,10 @@ function constraint_thermal_protection(pm::PMs.AbstractPowerModel{T}, n::Int, c:
 end
 
     "Constraint for computing qloss"
-    function constraint_qloss_vnom(pm::PMs.AbstractPowerModel{T}, n::Int, c::Int, k, i, j, K, branchMVA) where T <: PMs.AbstractDCPModel
+    function constraint_qloss_vnom(pm::PMs.AbstractDCPModel, n::Int, c::Int, k, i, j, K, branchMVA)
     end
 
     "Constraint for computing qloss"
-    function constraint_qloss_vnom(pm::PMs.AbstractPowerModel{T}, n::Int, c::Int, k, i, j) where T <: PMs.AbstractDCPModel
+    function constraint_qloss_vnom(pm::PMs.AbstractDCPModel, n::Int, c::Int, k, i, j)
     end
 

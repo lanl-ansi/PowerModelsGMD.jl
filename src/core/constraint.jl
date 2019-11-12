@@ -318,7 +318,7 @@ end
 
 "CONSTRAINT: steady-state temperature"
 #TODO: check if types are correct
-function constraint_temperature_steady_state(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
+function constraint_temperature_steady_state(pm::PMs.AbstractACPModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
@@ -337,7 +337,7 @@ end
 
 "CONSTRAINT: steady-state temperature"
 #TODO: check if types are correct
-function constraint_temperature_steady_state(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
+function constraint_temperature_steady_state(pm::PMs.AbstractDCPModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
