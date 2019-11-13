@@ -1,5 +1,5 @@
 @testset "Test GMD" begin
-    
+
     # -- B4GIC -- #
     # B4GIC - 4-bus case
 

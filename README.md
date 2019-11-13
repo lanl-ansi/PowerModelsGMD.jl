@@ -1,9 +1,12 @@
 # PowerModelsGMD.jl
 
 <!--
+<img src="https://..." align="left" width="200" alt="PowerModelsGMD logo">
+-->
+
 Release: 
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/stable/)
--->
+
 
 Dev:
 [![Build Status](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl.svg?branch=master)](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl)
@@ -13,7 +16,7 @@ Dev:
 </p>
 -->
 
-PowerModelsGMD.jl (abbr. PMsGMD) is an open-source framework that provides extensions to [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) (abbr. PMs) for power system simulation, to evaluate the risks and mitigate the potential effects of Geomagnetic Disturbances (GMDs) and E3 High-altitude Electromagnetic Pulse (E3~HEMP) events on the power grid.
+PowerModelsGMD.jl (abbr. PMsGMD) is an open-source framework that provides extensions to [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) (abbr. PMs) for power system simulation, to evaluate the risks and mitigate the potential effects of Geomagnetic Disturbances (GMDs) and E3 High-altitude Electromagnetic Pulse (E3 HEMP) events on the power grid.
 
 PMsGMD solves for quasi-dc line flow and ac power flow on a network subjected to Geomagnetically Induced Currents (GICs). It solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
 Since it is open-source, it is easy to study, verify and customize its operation to best fit an application environment. Due to its speed and reliability, it is suitable to be a key component of frameworks that monitor GMD manifestations in real-time, that predict GICs on the power grid, that assess risk, that enhance reliability by providing aid to system-operators, and that recommend modifications in the network configuration.
@@ -242,13 +245,13 @@ mpc.bus_gmd = {
 ## Contributors
 
 In alphabetical order:
-* Art Barnes: Decoupled model
-* Russell Bent: ML and OTS implementation
-* Carleton Coffrin: Architecture
-* Adam Mate: Decoupled time-extended model, [RTS-GMLC](https://github.com/GridMod/RTS-GMLC) integration
+* Art Barnes (@bluejuniper): Decoupled model
+* Russell Bent (@rb004f): ML and OTS implementation
+* Carleton Coffrin (@ccoffrin): Architecture
+* Adam Mate (@adammate): Decoupled time-extended model, [RTS-GMLC](https://github.com/GridMod/RTS-GMLC) integration
 
 Acknowledgments:
-The authors are grateful for Mowen Lu for developing the ML and OTS problem specifications and to Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
+The authors are grateful for Mowen Lu for developing the ML and OTS problem specifications, and for Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
 
 This code has been developed as part of the Advanced Network Science Initiative at Los Alamos National Laboratory.
 
@@ -256,19 +259,26 @@ This code has been developed as part of the Advanced Network Science Initiative 
 
 ## Citing PMsGMD
 
-If you find PMsGMD useful in your work, we kindly request that you cite the following publication:
-
-Adam Mate, Arthur Barnes, Russel Bent, and Eduardo Cotilla-Sanchez, "Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD," 2020 Power Systems Computation Conference (PSCC). [under review]
-
-
-<!-- 
-If you find PMsGMD useful in your work, we kindly request that you cite the following [publication](https://ieeexplore.ieee.org/document/...):
-
+If you find PMsGMD useful in your work, we kindly request that you cite the following publication [under review]: <!-- [publication](https://ieeexplore.ieee.org/document/...): -->
 ```
 @inproceedings{..., 
-  author = {Adam Mate and Arthur Barnes and Russell Bent}, 
+  author = {Adam Mate and Arthur Barnes and Russell Bent and Eduardo Cotilla-Sanchez}, 
   title = {Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD}, 
   booktitle = {2020 Power Systems Computation Conference (PSCC)}, 
+  year = {2020},
+  month = {...},
+  pages = {...}, 
+  doi = {...}
+}
+```
+
+<!--
+Citation of the following publication is also encouraged when publishing works that rely on and utilize the time-extended mitigation capabilities of PMsGMD:
+```
+@inproceedings{..., 
+  author = {Adam Mate and Arthur Barnes and Russell Bent and Eduardo Cotilla-Sanchez}, 
+  title = {Time-Extended GMD Mitigation with PMsGMD}, 
+  booktitle = {...}, 
   year = {...},
   month = {...},
   pages = {...}, 
