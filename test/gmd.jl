@@ -5,7 +5,7 @@
 
     @testset "B4GIC case solution" begin
 
-        result = run_gmd("../test/data/b4gic.m", ipopt_solver)
+        result = run_gmd("../test/data/b4gic.m", ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
 
@@ -15,7 +15,7 @@
 
         casename = "../test/data/b4gic.m"
         case = PowerModels.parse_file(casename)
-        result = run_gmd(casename, ipopt_solver; setting=setting)
+        result = run_gmd(casename, ipopt_optimizer; setting=setting)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
 
@@ -35,7 +35,7 @@
 
         casename = "../test/data/b6gic_nerc.m"
         case = PowerModels.parse_file(casename)
-        result = run_gmd(casename, ipopt_solver; setting=setting)
+        result = run_gmd(casename, ipopt_optimizer; setting=setting)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
 
@@ -55,7 +55,7 @@
 
         casename = "../test/data/epri21.m"
         case = PowerModels.parse_file(casename)
-        result = run_gmd(casename, ipopt_solver; setting=setting)
+        result = run_gmd(casename, ipopt_optimizer; setting=setting)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
 
@@ -76,7 +76,7 @@
 
         casename = "../test/data/uiuc150.m"
         case = PowerModels.parse_file(casename)
-        result = run_gmd(casename, ipopt_solver; setting=setting)
+        result = run_gmd(casename, ipopt_optimizer; setting=setting)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         
@@ -97,7 +97,7 @@
 
         casename = "../test/data/rts_gmlc_gic.m"
         case = PowerModels.parse_file(casename)
-        result = run_gmd(casename, ipopt_solver; setting=setting)
+        result = run_gmd(casename, ipopt_optimizer; setting=setting)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
 

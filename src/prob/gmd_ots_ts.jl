@@ -2,13 +2,13 @@ export run_gmd_ots_ts, run_ac_gmd_ots_ts
 
 
 "FUNCTION: convinience function"
-function run_gmd_ots_ts(file, model_constructor, solver; kwargs...)
-    return run_model(file, model_constructor, solver, post_gmd_ots_ts; ref_extensions=[PMs.ref_add_on_off_va_bounds!], solution_builder = get_gmd_ts_solution, multinetwork=true, kwargs...)
+function run_gmd_ots_ts(file, model_type::Type, optimizer; kwargs...)
+    return run_model(file, model_type, optimizer, post_gmd_ots_ts; ref_extensions=[PMs.ref_add_on_off_va_bounds!], solution_builder = solution_gmd_ts!, multinetwork=true, kwargs...)
 end
 
 
 "FUNCTION: GMD OTS TS problem formulation"
-function post_gmd_ots_ts(pm::PMs.AbstractPowerModel)
+function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
 
     for (n, network) in nws(pm)
 

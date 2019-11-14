@@ -87,35 +87,35 @@ end
 
 
 "FUNCTION: run basic GMD with the nonlinear AC equations"
-function run_ac_pf_qloss(file, solver; kwargs...)
-    return run_pf_qloss(file, ACPPowerModel, solver; kwargs...)
+function run_ac_pf_qloss(file, optimizer; kwargs...)
+    return run_pf_qloss(file, ACPPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: run basic GMD with the nonlinear AC equations"
-function run_ac_pf_qloss_vnom(file, solver; kwargs...)
-    return run_pf_qloss_vnom(file, ACPPowerModel, solver; kwargs...)
+function run_ac_pf_qloss_vnom(file, optimizer; kwargs...)
+    return run_pf_qloss_vnom(file, ACPPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: run the basic GMD model"
-function run_pf_qloss(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_pf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
+function run_pf_qloss(file, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(file, model_type, optimizer, post_pf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
 
 "FUNCTION: run the basic GMD model"
-function run_pf_qloss_vnom(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_pf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
+function run_pf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(file, model_type, optimizer, post_pf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
 end
 
 
 "FUNCTION: run AC GMD PF Decoupled"
-function run_ac_gmd_pf_decoupled(dc_case, solver; setting=Dict{String,Any}(), kwargs...)
+function run_ac_gmd_pf_decoupled(dc_case, optimizer; setting=Dict{String,Any}(), kwargs...)
 
     # add logic to read file if needed
     #dc_case = PowerModels.parse_file(file)
-    dc_result = run_gmd(dc_case, solver; setting=setting)
+    dc_result = run_gmd(dc_case, optimizer; setting=setting)
     dc_solution = dc_result["solution"]
     make_gmd_mixed_units(dc_solution, 100.0)
     ac_case = deepcopy(dc_case)
@@ -124,7 +124,7 @@ function run_ac_gmd_pf_decoupled(dc_case, solver; setting=Dict{String,Any}(), kw
         dc_current_mag(br, ac_case, dc_solution)
     end
 
-    ac_result = run_ac_pf_qloss(ac_case, solver, setting=setting)
+    ac_result = run_ac_pf_qloss(ac_case, optimizer, setting=setting)
     ac_solution = ac_result["solution"]
     make_gmd_mixed_units(ac_solution, 100.0)
 

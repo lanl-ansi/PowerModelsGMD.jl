@@ -2,7 +2,7 @@
 
 "default AC constructor for GMD type problems"
 ACPPowerModel(data::Dict{String,<:Any}; kwargs...) =
-    GenericGMDPowerModel(data, PowerModels.StandardACPForm; kwargs...)
+    InitializeGMDPowerModel(PMs.StandardACPForm, data; kwargs...)
 
 ""
 function variable_ac_current(pm::PMs.AbstractACPModel; kwargs...)

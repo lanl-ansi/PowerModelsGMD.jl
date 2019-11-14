@@ -5,19 +5,19 @@
 export run_gmd_ls, run_ac_gmd_ls, run_qc_gmd_ls
 
 "Run the GMD mitigation with the nonlinear AC equations"
-function run_ac_gmd_ls(file, solver; kwargs...)
-    return run_gmd_ls(file, ACPPowerModel, solver; kwargs...)
+function run_ac_gmd_ls(file, optimizer; kwargs...)
+    return run_gmd_ls(file, ACPPowerModel, optimizer; kwargs...)
 end
 
 "Run the GMD mitigation with the QC AC equations"
-function run_qc_gmd_ls(file, solver; kwargs...)
-    return run_gmd_ls(file, QCWRTriPowerModel, solver; kwargs...)
+function run_qc_gmd_ls(file, optimizer; kwargs...)
+    return run_gmd_ls(file, QCWRTriPowerModel, optimizer; kwargs...)
 end
 
 "Minimize load shedding and fuel costs for GMD mitigation"
 
-function run_gmd_ls(file::String, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_gmd_ls; solution_builder = get_gmd_solution, kwargs...)
+function run_gmd_ls(file::String, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(file, model_type, optimizer, post_gmd_ls; solution_builder = solution_gmd!, kwargs...)
 end
 
 "GMD Model - Minimizes Generator Dispatch and Load Shedding"
@@ -74,3 +74,5 @@ function post_gmd_ls(pm::PMs.AbstractPowerModel; kwargs...)
         constraint_dc_ohms(pm, i) # variation of constraint 3t
     end
 end
+
+

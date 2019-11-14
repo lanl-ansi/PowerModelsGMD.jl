@@ -2,7 +2,7 @@
 
 
 "SOLUTION: get gmd solution"
-function get_gmd_solution(pm::PMs.AbstractPowerModel, sol::Dict{String,Any})
+function solution_gmd!(pm::PMs.AbstractPowerModel, sol::Dict{String,Any})
 
     PMs.add_setpoint_bus_voltage!(sol, pm)
     PMs.add_setpoint_generator_power!(sol, pm)
@@ -20,7 +20,7 @@ end
 
 
 "SOLUTION: get gmd decoupled solution"
-function get_gmd_decoupled_solution(pm::PMs.AbstractPowerModel, sol::Dict{String,Any})
+function solution_gmd_decoupled!(pm::PMs.AbstractPowerModel, sol::Dict{String,Any})
 
     PMs.add_setpoint_bus_voltage!(sol, pm)
     PMs.add_setpoint_generator_power!(sol, pm)
@@ -32,7 +32,7 @@ end
 
 
 "SOLUTION: get gmd ts solution"
-function get_gmd_ts_solution(pm::PMs.AbstractPowerModel, sol::Dict{String,Any})
+function solution_gmd_ts!(pm::PMs.AbstractPowerModel, sol::Dict{String,Any})
 
     PMs.add_setpoint_bus_voltage!(sol, pm)
     PMs.add_setpoint_generator_power!(sol, pm)

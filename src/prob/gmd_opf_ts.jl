@@ -2,13 +2,13 @@ export run_gmd_opf_ts, run_ac_gmd_opf_ts
 
 
 "FUNCTION: convinience function"
-function run_gmd_opf_ts(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_gmd_opf_ts; solution_builder = get_gmd_ts_solution, multinetwork=true, kwargs...)
+function run_gmd_opf_ts(file, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(file, model_type, optimizer, post_gmd_opf_ts; solution_builder = solution_gmd_ts!, multinetwork=true, kwargs...)
 end
 
 
 "FUNCTION: GMD OPF TS problem formulation"
-function post_gmd_opf_ts(pm::PMs.AbstractPowerModel)
+function post_gmd_opf_ts(pm::PMs.AbstractPowerModel; kwargs...)
 
     for (n, network) in PMs.nws(pm)
 

@@ -62,8 +62,8 @@ using PowerModels; using PowerModelsGMD; using Ipopt
 network_file = joinpath(dirname(pathof(PowerModelsGMD)), "../test/data/epri21.m")
 case = PowerModels.parse_file(network_file)
 
-solver = with_optimizer(Ipopt.Optimizer)
-result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, solver)
+optimizer = with_optimizer(Ipopt.Optimizer)
+result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, optimizer)
 ```
 
 
@@ -77,16 +77,16 @@ result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, solver)
 ### GIC DC
 
 Solves for steady-state dc currents on lines resulting from induced dc voltages on lines.
-`run_gmd("test/data/b4gic.m", solver)`
+`run_gmd("test/data/b4gic.m", optimizer)`
 
 For large systems (greater than 10,000 buses), the Lehtinen-Pirjola (LP) method may be used that relies on a matrix solve instead of an optimizer.
-This may called by omitting the solver parameter
+This may called by omitting the optimizer parameter
 `run_gmd("test/data/b4gic.m")`
 
 To save branch currents in addition to bus voltages
 ```
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
-run_gmd("test/data/b4gic.m", solver, setting=setting)
+run_gmd("test/data/b4gic.m", optimizer, setting=setting)
 ```
 
 
@@ -259,9 +259,9 @@ This code has been developed as part of the Advanced Network Science Initiative 
 
 ## Citing PMsGMD
 
-If you find PMsGMD useful in your work, we kindly request that you cite the following publication [under review]: <!-- [publication](https://ieeexplore.ieee.org/document/...): -->
+If you find PMsGMD useful in your work, we kindly request that you cite the following publication: <!-- [publication](https://ieeexplore.ieee.org/document/...): -->
 ```
-@inproceedings{..., 
+@inproceedings{[under review], 
   author = {Adam Mate and Arthur Barnes and Russell Bent and Eduardo Cotilla-Sanchez}, 
   title = {Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD}, 
   booktitle = {2020 Power Systems Computation Conference (PSCC)}, 

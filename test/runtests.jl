@@ -1,33 +1,25 @@
 using PowerModelsGMD
 
 import InfrastructureModels
+import JuMP
+import MathOptInterface
+import Memento
 import PowerModels
 
-#using Gurobi
-#using CPLEX
-import Ipopt
 import Cbc
+import Ipopt
 import Juniper
 
-import JuMP
-import Memento
-
-# for checking status codes
-import MathOptInterface
-const MOI = MathOptInterface
-
-# Suppress warnings during testing.
+# Suppress warnings during testing:
 Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
 Memento.setlevel!(Memento.getlogger(PowerModels), "error")
 
 using Test
 
-# default setup for solvers
-ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-6, print_level=0)
-cbc_solver = JuMP.with_optimizer(Cbc.Optimizer, logLevel=0)
-juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=ipopt_solver, mip_solver=cbc_solver, log_levels=[])
-#gurobi_solver = GurobiSolver(OutputFlag=0) # change to Pajarito
-#cplex_solver = CplexSolver()
+# Default setup for optimizers:
+ipopt_optimizer = JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-6, print_level=0)
+cbc_optimizer = JuMP.with_optimizer(Cbc.Optimizer, logLevel=0)
+juniper_optimizer = JuMP.with_optimizer(Juniper.Optimizer, nl_optimizer=ipopt_optimizer, mip_optimizer=cbc_optimizer, log_levels=[])
 
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
@@ -35,7 +27,7 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
     include("gmd.jl")
     include("gmd_matrix.jl")
-    # include("gic_pf_decoupled.jl") #TODO: write test
+    # include("gic_pf_decoupled.jl") #TODO: write tests for gic_pf_decoupled.jl
     include("gmd_opf_decoupled.jl")
     include("gmd_opf.jl")
     include("gmd_ls.jl")

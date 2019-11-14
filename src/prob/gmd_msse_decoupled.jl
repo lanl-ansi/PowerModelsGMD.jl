@@ -1,17 +1,16 @@
 # Formulations of GMD Problems
 export run_msse_qloss, run_ac_msse_qloss
-# TODO: Implement this
 export run_ac_gmd_msse_decoupled
 
 "Run GMD with the nonlinear AC equations - This model minimizes distance from a specified set point"
-function run_ac_msse_qloss(file, solver; kwargs...)
-    return run_msse_qloss(file, ACPPowerModel, solver; kwargs...)
+function run_ac_msse_qloss(file, optimizer; kwargs...)
+    return run_msse_qloss(file, ACPPowerModel, optimizer; kwargs...)
 end
 
 "Run the ordinary GMD model - This model minimizes distance from a specified set point"
 
-function run_msse_qloss(file::String, model_constructor, solver; kwargs...)
-    return PMs.run_generic_model(file, model_constructor, solver, post_gmd_min_error; solution_builder = get_gmd_solution, kwargs...)
+function run_msse_qloss(file::String, model_type::Type, optimizer; kwargs...)
+    return PMs.run_generic_model(file, model_type, optimizer, post_gmd_min_error; solution_builder = solution_gmd!, kwargs...)
 end
 
 "GMD Model - This model minimizes distance from a specified set point"
@@ -57,9 +56,5 @@ function post_msse_qloss(pm::PMs.AbstractPowerModel; kwargs...)
         PMs.constraint_voltage_angle_difference(pm, i)
     end
 end
-
-
-
-
 
 

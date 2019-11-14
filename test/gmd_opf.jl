@@ -7,7 +7,7 @@
 
         casename = "../test/data/b4gic.m"
         case = PowerModels.parse_file(casename)
-        result = PowerModels.run_ac_opf(casename, ipopt_solver)
+        result = PowerModels.run_ac_opf(casename, ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -23,7 +23,7 @@
 
         casename = "../test/data/b6gic_nerc.m"
         case = PowerModels.parse_file(casename)
-        result = PowerModels.run_ac_opf(casename, ipopt_solver)
+        result = PowerModels.run_ac_opf(casename, ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -39,7 +39,7 @@
 
         casename = "../test/data/epri21.m"
         case = PowerModels.parse_file(casename)
-        result = PowerModels.run_ac_opf(casename, ipopt_solver)
+        result = PowerModels.run_ac_opf(casename, ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -55,7 +55,7 @@
 
         casename = "../test/data/uiuc150_95pct_loading.m"
         case = PowerModels.parse_file(casename)
-        result = PowerModels.run_ac_opf(casename, ipopt_solver)
+        result = PowerModels.run_ac_opf(casename, ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -71,7 +71,7 @@
 
         casename = "../test/data/rts_gmlc_gic.m"
         case = PowerModels.parse_file(casename)
-        result = PowerModels.run_ac_opf(casename, ipopt_solver)
+        result = PowerModels.run_ac_opf(casename, ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -92,7 +92,7 @@ end
 
     @testset "B4GIC case solution" begin
 
-        result = run_ac_gmd_opf("../test/data/b4gic.m", ipopt_solver)
+        result = run_ac_gmd_opf("../test/data/b4gic.m", ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance")
@@ -104,7 +104,7 @@ end
 
         casename = "../test/data/b4gic.m"
         case = PowerModels.parse_file(casename)
-        result = run_ac_gmd_opf(casename, ipopt_solver; setting=setting)
+        result = run_ac_gmd_opf(casename, ipopt_optimizer; setting=setting)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -129,7 +129,7 @@ end
 
         casename = "../test/data/b6gic_nerc.m"
         case = PowerModels.parse_file(casename)
-        result = run_ac_gmd_opf(casename, ipopt_solver; setting=setting)
+        result = run_ac_gmd_opf(casename, ipopt_optimizer; setting=setting)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -164,7 +164,7 @@ end
 
         casename = "../test/data/epri21.m"
         case = PowerModels.parse_file(casename)
-        result = run_ac_gmd_opf(casename, ipopt_solver; setting=setting)
+        result = run_ac_gmd_opf(casename, ipopt_optimizer; setting=setting)
 
         # TODO: check why this is showing as infeasible
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -197,7 +197,7 @@ end
 
         casename = "../test/data/uiuc150_95pct_loading.m"
         case = PowerModels.parse_file(casename)
-        result = run_ac_gmd_opf(casename, ipopt_solver; setting=setting)
+        result = run_ac_gmd_opf(casename, ipopt_optimizer; setting=setting)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -220,7 +220,7 @@ end
 
         casename = "../test/data/rts_gmlc_gic.m"
         case = PowerModels.parse_file(casename)
-        result = run_ac_gmd_opf(casename, ipopt_solver; setting=setting)
+        result = run_ac_gmd_opf(casename, ipopt_optimizer; setting=setting)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         println("Testing objective $(result["objective"]) within tolerance for $casename")

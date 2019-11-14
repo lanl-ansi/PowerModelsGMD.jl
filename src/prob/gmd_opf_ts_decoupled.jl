@@ -17,7 +17,7 @@ end
 
 
 "FUNCTION: decoupled time-extended GMD+OPF formulation"
-function run_ac_gmd_opf_ts_decoupled(net, solver, mods, settings; kwargs...)
+function run_ac_gmd_opf_ts_decoupled(net, optimizer, mods, settings; kwargs...)
 
     timesteps = mods["time"]
     n = length(timesteps)

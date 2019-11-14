@@ -1,4 +1,4 @@
 ""
 SDPWRMPowerModel(data::Dict{String,<:Any}; kwargs...) =
-    GenericGMDPowerModel(data, PMs.SDPWRMForm; kwargs...)
+    InitializeGMDPowerModel(PMs.SDPWRMForm, data; kwargs...)
 

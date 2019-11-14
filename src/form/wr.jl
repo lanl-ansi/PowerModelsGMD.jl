@@ -1,15 +1,15 @@
 
 "default SOC constructor"
-SOCWRPowerModel(data::Dict{String,Any}; kwargs...) = GenericGMDPowerModel(data, PMs.SOCWRForm; kwargs...)
+SOCWRPowerModel(data::Dict{String,Any}; kwargs...) = InitializeGMDPowerModel(PMs.SOCWRForm, data; kwargs...)
 
 "default QC constructor"
 function QCWRPowerModel(data::Dict{String,Any}; kwargs...)
-    return GenericGMDPowerModel(data, PMs.QCWRForm; kwargs...)
+    return InitializeGMDPowerModel(PMs.QCWRForm, data; kwargs...)
 end
 
 "default QC trilinear model constructor"
 function QCWRTriPowerModel(data::Dict{String,Any}; kwargs...)
-    return GenericGMDPowerModel(data, PMs.QCWRTriForm; kwargs...)
+    return InitializeGMDPowerModel(PMs.QCWRTriForm, data; kwargs...)
 end
 
 ""

@@ -7,7 +7,7 @@
 
         casename = "../test/data/case24_ieee_rts_0.m"
         case = PowerModels.parse_file(casename)
-        result = run_ac_gmd_ls(casename, ipopt_solver)
+        result = run_ac_gmd_ls(casename, ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED || result["termination_status"] == PowerModels.OPTIMAL
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -23,7 +23,7 @@
 
         casename = "../test/data/ots_test.m"
         case = PowerModels.parse_file(casename)
-        result = run_ac_gmd_ls(casename, ipopt_solver)
+        result = run_ac_gmd_ls(casename, ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED || result["termination_status"] == PowerModels.OPTIMAL
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -46,7 +46,7 @@ end
 
         casename = "../test/data/case24_ieee_rts_0.m"
         case = PowerModels.parse_file(casename)
-        result = run_qc_gmd_ls(casename, ipopt_solver)
+        result = run_qc_gmd_ls(casename, ipopt_optimizer)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED || result["termination_status"] == PowerModels.OPTIMAL
         println("Testing objective $(result["objective"]) within tolerance for $casename")
@@ -62,7 +62,7 @@ end
 
         casename = "../test/data/ots_test.m"
         case = PowerModels.parse_file(casename)
-        result = run_qc_gmd_ls(casename, ipopt_solver)
+        result = run_qc_gmd_ls(casename, ipopt_optimizer)
     
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED || result["termination_status"] == PowerModels.OPTIMAL
         println("Testing objective $(result["objective"]) within tolerance for $casename")
