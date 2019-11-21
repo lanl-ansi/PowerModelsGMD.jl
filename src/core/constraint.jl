@@ -112,7 +112,7 @@ end
 function constraint_gen_ots_on_off(pm::PMs.AbstractPowerModel, n::Int, c::Int, i, bus_arcs)
 
     z   = PMs.var(pm, n, c, :gen_z)[i]
-    zb  = PMs.var(pm, n, c, :branch_z)
+    zb  = PMs.var(pm, n, :z_branch)
     JuMP.@constraint(pm.model, z <= sum(zb[a[1]] for a in bus_arcs))
 
 end
@@ -137,7 +137,7 @@ function constraint_dc_ohms_on_off(pm::PMs.AbstractPowerModel, n::Int, c::Int, i
     v_dc_diff = PMs.var(pm, n, c, :v_dc_diff)[i] # voltage diff
     vz        = PMs.var(pm, n, c, :vz)[i] # voltage diff
     dc        = PMs.var(pm, n, c, :dc)[(i,f_bus,t_bus)]
-    z         = PMs.var(pm, n, c, :branch_z)[ac_branch]
+    z         = PMs.var(pm, n, :z_branch)[ac_branch]
 
     JuMP.@constraint(pm.model, v_dc_diff == vf - vt)
     InfrastructureModels.relaxation_product(pm.model, z, v_dc_diff, vz)
@@ -150,7 +150,7 @@ end
 function constraint_dc_current_mag_on_off(pm::PMs.AbstractPowerModel, n::Int, c::Int, k, dc_max)
 
     ieff = PMs.var(pm, n, c, :i_dc_mag)[k]
-    z    = PMs.var(pm, n, c, :branch_z)[k]
+    z    = PMs.var(pm, n, :z_branch)[k]
     JuMP.@constraint(pm.model, ieff <= z*dc_max)
 
 end
@@ -318,7 +318,7 @@ end
 
 "CONSTRAINT: steady-state temperature"
 #TODO: check if types are correct
-function constraint_temperature_steady_state(pm::PMs.AbstractACPModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
+function constraint_temperature_steady_state(pm::PMs.AbstractPowerModel, n::Int, i::Int, fi, c::Int, rate_a, delta_oil_rated)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 

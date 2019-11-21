@@ -6,27 +6,21 @@ export run_gmd_ots, run_ac_gmd_ots, run_qc_gmd_ots, run_soc_gmd_ots
 # No longer treating generator transformers as resistance-less edges anymore
 
 
-"FUNCTION: Run the GMD mitigation with the nonlinear AC equations"
-function run_ac_gmd_ots(file, model_type::Type, optimizer; kwargs...)
-    return run_gmd_ots(file, ACPPowerModel, optimizer; kwargs...)
+"FUNCTION: run the GMD mitigation with the nonlinear AC equations"
+function run_ac_gmd_ots(data, optimizer; kwargs...)
+    return run_gmd_ots(data, PMs.ACPPowerModel, optimizer; kwargs...)
 end
 
 
-"FUNCTION: Run the GMD mitigation with the QC AC equations"
-function run_qc_gmd_ots(file, model_type::Type, optimizer; kwargs...)
-    return run_gmd_ots(file, QCWRTriPowerModel, optimizer; kwargs...)
+"FUNCTION: run the GMD mitigation with the QC AC equations"
+function run_qc_gmd_ots(data, optimizer; kwargs...)
+    return run_gmd_ots(data, PMs.QCLSPowerModel, optimizer; kwargs...)
 end
 
 
-"FUNCTION: Run the GMD mitigation with the QC AC equations"
-function run_soc_gmd_ots(file, model_type::Type, optimzier; kwargs...)
-    return run_gmd_ots(file, SOCWRPowerModel, optimizer; kwargs...)
-end
-
-
-"FUNCTION: Minimize load shedding and fuel costs for GMD mitigation"
-function run_gmd_ots(file, model_type::Type, optimizer; kwargs...)
-    return PMs.run_model(file, model_type, optimzier, post_gmd_ots; ref_extensions=[PMs.ref_add_on_off_va_bounds!], solution_builder = solution_gmd!, kwargs...)
+"FUNCTION: minimize load shedding and fuel costs for GMD mitigation"
+function run_gmd_ots(data::String, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(data, model_type, optimizer, post_gmd_ots; ref_extensions=[ref_add_core!,PMs.ref_add_on_off_va_bounds!], solution_builder = solution_gmd!, kwargs...)
 end
 
 

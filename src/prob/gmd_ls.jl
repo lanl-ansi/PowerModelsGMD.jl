@@ -4,23 +4,25 @@
 
 export run_gmd_ls, run_ac_gmd_ls, run_qc_gmd_ls
 
-"Run the GMD mitigation with the nonlinear AC equations"
-function run_ac_gmd_ls(file, optimizer; kwargs...)
-    return run_gmd_ls(file, ACPPowerModel, optimizer; kwargs...)
+"FUNCTION: run the GMD mitigation with the nonlinear AC equations"
+function run_ac_gmd_ls(data, optimizer; kwargs...)
+    return run_gmd_ls(data, PMs.ACPPowerModel, optimizer; kwargs...)
 end
 
-"Run the GMD mitigation with the QC AC equations"
-function run_qc_gmd_ls(file, optimizer; kwargs...)
-    return run_gmd_ls(file, QCWRTriPowerModel, optimizer; kwargs...)
+
+"FUNCTION: run the GMD mitigation with the QC AC equations"
+function run_qc_gmd_ls(data, optimizer; kwargs...)
+    return run_gmd_ls(data, PMs.QCLSPowerModel, optimizer; kwargs...)
 end
 
-"Minimize load shedding and fuel costs for GMD mitigation"
 
-function run_gmd_ls(file::String, model_type::Type, optimizer; kwargs...)
-    return PMs.run_model(file, model_type, optimizer, post_gmd_ls; solution_builder = solution_gmd!, kwargs...)
+"FUNCTION: minimize load shedding and fuel costs for GMD mitigation"
+function run_gmd_ls(data::String, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(data, model_type, optimizer, post_gmd_ls; ref_extensions=[ref_add_core!], solution_builder = solution_gmd!, kwargs...)
 end
 
-"GMD Model - Minimizes Generator Dispatch and Load Shedding"
+
+"FUNCTION: GMD Model - Minimizes Generator Dispatch and Load Shedding"
 function post_gmd_ls(pm::PMs.AbstractPowerModel; kwargs...)
 
     # AC modeling

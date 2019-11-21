@@ -3,13 +3,14 @@ export run_gmd
 
 using SparseArrays
 
+
 """
     run_gmd(file)
 Run gic matrix solve on a file
 """
-function run_gmd(file; kwargs...)
-    data = PowerModels.parse_file(file)
-    return run_gmd(data; kwargs...)
+function run_gmd(data; kwargs...)
+    file = PMs.parse_file(data)
+    return run_gmd(file; kwargs...)
 end
 
 
@@ -127,4 +128,5 @@ function run_gmd(net::Dict{String,Any}; kwargs...)
 
     return result
 end
+
 

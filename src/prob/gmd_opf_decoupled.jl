@@ -4,39 +4,37 @@ export run_ac_gmd_opf_decoupled
 
 
 "FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss(pm::PMs.AbstractPowerModel; kwargs...)
+function post_opf_qloss(pm::PMs.AbstractACPModel; kwargs...)
     use_vnom = false
-    post_opf_qloss(pm::PMs.AbstractPowerModel, use_vnom; kwargs...)
+    post_opf_qloss(pm::PMs.AbstractACPModel, use_vnom; kwargs...)
 end
 
 
 "FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss_vnom(pm::PMs.AbstractPowerModel; kwargs...)
+function post_opf_qloss_vnom(pm::PMs.AbstractACPModel; kwargs...)
     use_vnom = true
-    post_opf_qloss(pm::PMs.AbstractPowerModel, use_vnom; kwargs...)
+    post_opf_qloss(pm::PMs.AbstractACPModel, use_vnom; kwargs...)
 end
 
 
 "FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss(pm::PMs.AbstractPowerModel, vnom; kwargs...)
-    PowerModels.variable_voltage(pm)
-    PowerModelsGMD.variable_qloss(pm)
+function post_opf_qloss(pm::PMs.AbstractACPModel, vnom; kwargs...)
+    PMs.variable_voltage(pm)
+    variable_qloss(pm)
 
-    PowerModels.variable_generation(pm)
-    PowerModels.variable_branch_flow(pm)
+    PMs.variable_generation(pm)
+    PMs.variable_branch_flow(pm)
 
-    # TODO: Why does this use a different objective function than regular acopf?
-    PowerModels.objective_min_fuel_cost(pm)
+    PMs.objective_min_fuel_cost(pm)
 
-    PowerModels.constraint_model_voltage(pm)
+    PMs.constraint_model_voltage(pm)
 
     for k in PMs.ids(pm, :ref_buses)
-        PowerModels.constraint_theta_ref(pm, k)
+        PMs.constraint_theta_ref(pm, k)
     end
 
     for k in PMs.ids(pm, :bus)
-        # TODO: check that this constraint is correct to use
-        PowerModelsGMD.constraint_kcl_gmd(pm, k)
+        constraint_kcl_gmd(pm, k)
     end
 
     for k in PMs.ids(pm, :branch)
@@ -46,44 +44,44 @@ function post_opf_qloss(pm::PMs.AbstractPowerModel, vnom; kwargs...)
             constraint_qloss_decoupled(pm, k)
         end
 
-        PowerModels.constraint_ohms_yt_from(pm, k) 
-        PowerModels.constraint_ohms_yt_to(pm, k) 
+        PMs.constraint_ohms_yt_from(pm, k) 
+        PMs.constraint_ohms_yt_to(pm, k) 
 
-        PowerModels.constraint_thermal_limit_from(pm, k)
-        PowerModels.constraint_thermal_limit_to(pm, k)
-        PowerModels.constraint_voltage_angle_difference(pm, k)
+        PMs.constraint_thermal_limit_from(pm, k)
+        PMs.constraint_thermal_limit_to(pm, k)
+        PMs.constraint_voltage_angle_difference(pm, k)
     end
 end
 
 
 "FUNCTION: Run basic GMD with the nonlinear AC equations"
-function run_ac_opf_qloss(file, optimizer; kwargs...)
-    return run_opf_qloss(file, ACPPowerModel, optimizer; kwargs...)
+function run_ac_opf_qloss(data, optimizer; kwargs...)
+    return run_opf_qloss(data, PMs.ACPPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: Run basic GMD with the nonlinear AC equations"
-function run_ac_opf_qloss_vnom(file, optimizer; kwargs...)
-    return run_opf_qloss_vnom(file, ACPPowerModel, optimizer; kwargs...)
+function run_ac_opf_qloss_vnom(data, optimizer; kwargs...)
+    return run_opf_qloss_vnom(data, PMs.ACPPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: Run the basic GMD model"
-function run_opf_qloss(file, model_type::Type, optimizer; kwargs...)
-    return PMs.run_model(file, model_type, optimizer, post_opf_qloss; solution_builder = solution_gmd_decoupled!, kwargs...)
+function run_opf_qloss(data, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(data, model_type, optimizer, post_opf_qloss; ref_extensions=[ref_add_core!], solution_builder = solution_gmd_decoupled!, kwargs...)
 end
 
 
 "FUNCTION: Run the basic GMD model"
-function run_opf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
-    return PMs.run_model(file, model_type, optimizer, post_opf_qloss_vnom; solution_builder = solution_gmd_decoupled!, kwargs...)
+function run_opf_qloss_vnom(data, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(data, model_type, optimizer, post_opf_qloss_vnom; ref_extensions=[ref_add_core!], solution_builder = solution_gmd_decoupled!, kwargs...)
 end
 
 
 "FUNCTION: Run GIC followed by AC OPF with Qloss constraints"
-function run_ac_gmd_opf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
-    data = PowerModels.parse_file(file)
-    return run_ac_gmd_opf_decoupled(data, optimizer; kwargs...)
+function run_ac_gmd_opf_decoupled(data::String, optimizer; setting=Dict(), kwargs...)
+    file = PMs.parse_file(data)
+    return run_ac_gmd_opf_decoupled(file, optimizer; kwargs...)
 end
 
 
@@ -92,9 +90,7 @@ function run_ac_gmd_opf_decoupled(dc_case::Dict{String,Any}, optimizer; setting=
     branch_setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
     merge!(setting, branch_setting)
 
-    # add logic to read file if needed
-    #dc_case = PowerModels.parse_file(file)
-    dc_result = PowerModelsGMD.run_gmd(dc_case, optimizer)
+    dc_result = run_gmd(dc_case, optimizer)
     dc_solution = dc_result["solution"]
     make_gmd_mixed_units(dc_solution, 100.0)
     ac_case = deepcopy(dc_case)

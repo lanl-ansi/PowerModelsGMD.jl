@@ -1,20 +1,23 @@
-# Formulations of GMD Problems
 export run_msse_qloss, run_ac_msse_qloss
 export run_ac_gmd_msse_decoupled
 
-"Run GMD with the nonlinear AC equations - This model minimizes distance from a specified set point"
-function run_ac_msse_qloss(file, optimizer; kwargs...)
-    return run_msse_qloss(file, ACPPowerModel, optimizer; kwargs...)
+# This model minimizes distance from a specified set point.
+
+"FUNCTION: run GMD with the nonlinear AC equations"
+function run_ac_msse_qloss(data, optimizer; kwargs...)
+    return run_msse_qloss(data, PMs.ACPPowerModel, optimizer; kwargs...)
 end
 
-"Run the ordinary GMD model - This model minimizes distance from a specified set point"
 
-function run_msse_qloss(file::String, model_type::Type, optimizer; kwargs...)
-    return PMs.run_generic_model(file, model_type, optimizer, post_gmd_min_error; solution_builder = solution_gmd!, kwargs...)
+"FUNCTION: run the ordinary GMD model"
+function run_msse_qloss(data::String, model_type::Type, optimizer; kwargs...)
+    return PMs.run_generic_model(data, model_type, optimizer, post_gmd_min_error; ref_extensions=[ref_add_core!], solution_builder = solution_gmd!, kwargs...)
 end
 
-"GMD Model - This model minimizes distance from a specified set point"
+
+"FUNCTION: GMD Model"
 function post_msse_qloss(pm::PMs.AbstractPowerModel; kwargs...)
+
     PMs.variable_voltage(pm)
 
     variable_dc_current_mag(pm)
@@ -37,6 +40,7 @@ function post_msse_qloss(pm::PMs.AbstractPowerModel; kwargs...)
     end
 
     for i in Pms.ids(pm, :branch)
+
         if vnom 
             constraint_vnom_qloss(pm, i)
         else
@@ -54,7 +58,9 @@ function post_msse_qloss(pm::PMs.AbstractPowerModel; kwargs...)
         PMs.constraint_thermal_limit_from(pm, i)
         PMs.constraint_thermal_limit_to(pm, i)
         PMs.constraint_voltage_angle_difference(pm, i)
+
     end
+
 end
 
 

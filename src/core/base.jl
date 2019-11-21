@@ -1,50 +1,9 @@
-export InitializeGMDPowerModel
 
+"FUNCTION: add data structures that are specific for GMD modeling"
+function ref_add_core!(pm::PMs.AbstractPowerModel)
+    nw_refs = pm.ref[:nw]
 
-"FUNCTION: override generic constructor for Power Models"
-function InitializeGMDPowerModel(GMDPowerModel::Type, data::Dict{String,<:Any}; kwargs...)
-
-    PMs.standardize_cost_terms!(data, order=2)
-
-    pm = PMs.AbstractPowerModel(model_type, data; kwargs...)
-    build_gmd_ref(pm)
-    return pm
-
-end
-
-
-"FUNCTION: check GMD branch parent status"
-function check_gmd_branch_parent_status(ref, i, gmd_branch)
-
-    parent_id = gmd_branch["parent_index"]
-    status = false
-
-    if parent_id in keys(ref[:branch])
-        parent_branch = ref[:branch][parent_id]
-        status = parent_branch["br_status"] == 1 && gmd_branch["f_bus"] in keys(ref[:gmd_bus]) && gmd_branch["t_bus"] in keys(ref[:gmd_bus])
-    end
-
-    #println("status is $status \n") 
-    return status
-
-end
-
-
-"FUNCTION: add the data structures that are specific for GMD modeling"
-function build_gmd_ref(pm::PMs.AbstractPowerModel)
-
-    nws = pm.ref[:nw]
-    data = pm.data
-
-    if InfrastructureModels.ismultinetwork(data)
-        nws_data = data["nw"]
-    else
-        nws_data = Dict{String,Any}("0" => data)
-    end
-
-    for (n,nw_data) in nws_data
-        nw_id = parse(Int, n)
-        ref = nws[nw_id]
+    for (nw, ref) in nw_refs
 
         # add something like pm_component_status_inactive["bus"] here instead of hardcoding
         ref[:gmd_bus] = Dict(x for x in ref[:gmd_bus] if x.second["status"] != 0)
@@ -59,9 +18,24 @@ function build_gmd_ref(pm::PMs.AbstractPowerModel)
            push!(gmd_bus_arcs[i], (l,i,j))
         end
         ref[:gmd_bus_arcs] = gmd_bus_arcs
-   end
 
+    end
 end
 
+
+"FUNCTION: check GMD branch parent status"
+function check_gmd_branch_parent_status(ref, i, gmd_branch)
+
+    parent_id = gmd_branch["parent_index"]
+    status = false
+
+    if parent_id in keys(ref[:branch])
+        parent_branch = ref[:branch][parent_id]
+        status = parent_branch["br_status"] == 1 && gmd_branch["f_bus"] in keys(ref[:gmd_bus]) && gmd_branch["t_bus"] in keys(ref[:gmd_bus])
+    end
+
+    return status
+
+end
 
 

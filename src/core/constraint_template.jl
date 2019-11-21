@@ -91,7 +91,7 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::PMs.AbstractPowerModel,
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
 
-    Memento.debug(LOGGER, println("Series GMD branch: $ks, Common GMD branch: $kc \n"))
+    Memento.debug(LOGGER, "Series GMD branch: $ks, Common GMD branch: $kc \n")
 
     br_ser = PMs.ref(pm, nw, :gmd_branch, ks)
     br_com = PMs.ref(pm, nw, :gmd_branch, kc)
@@ -152,7 +152,7 @@ function constraint_dc_ohms(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::
         gs = 1.0/branch["br_r"]   # line dc series resistance
     end
 
-    Memento.debug(LOGGER, println("branch $i: ($f_bus,$t_bus), $vs, $gs \n"))
+    Memento.debug(LOGGER, "branch $i: ($f_bus,$t_bus), $vs, $gs \n")
 
     constraint_dc_ohms(pm, nw, cnd, i, f_bus, t_bus, vs, gs)
 

@@ -2,8 +2,8 @@ export run_gmd_ots_ts, run_ac_gmd_ots_ts
 
 
 "FUNCTION: convinience function"
-function run_gmd_ots_ts(file, model_type::Type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, post_gmd_ots_ts; ref_extensions=[PMs.ref_add_on_off_va_bounds!], solution_builder = solution_gmd_ts!, multinetwork=true, kwargs...)
+function run_gmd_ots_ts(data, model_type::Type, optimizer; kwargs...)
+    return run_model(data, PMs.ACPPowerModel, optimizer, post_gmd_ots_ts; ref_extensions=[ref_add_core!,PMs.ref_add_on_off_va_bounds!], solution_builder = solution_gmd_ts!, multinetwork=true, kwargs...)
 end
 
 
@@ -64,7 +64,7 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
 	    # end
 
         for i in PMs.ids(pm, :branch, nw=n)
-            Pconstraint_dc_current_mag_on_off(pm, i, nw=n)
+            constraint_dc_current_mag_on_off(pm, i, nw=n)
             # OTS formulation is using constraint_qloss
             constraint_qloss_vnom(pm, i, nw=n)
 

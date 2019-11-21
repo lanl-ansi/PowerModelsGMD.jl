@@ -2,8 +2,8 @@ export run_gmd_opf_ts, run_ac_gmd_opf_ts
 
 
 "FUNCTION: convinience function"
-function run_gmd_opf_ts(file, model_type::Type, optimizer; kwargs...)
-    return PMs.run_model(file, model_type, optimizer, post_gmd_opf_ts; solution_builder = solution_gmd_ts!, multinetwork=true, kwargs...)
+function run_gmd_opf_ts(data, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(data, model_type, optimizer, post_gmd_opf_ts; ref_extensions=[ref_add_core!], solution_builder = solution_gmd_ts!, multinetwork=true, kwargs...)
 end
 
 

@@ -2,8 +2,8 @@ export run_gmd
 
 
 "FUNCTION: run GIC current model only"
-function run_gmd(file, optimizer; kwargs...)
-    return PMs.run_model(file, ACPPowerModel, optimizer, post_gmd; solution_builder = solution_gmd!, kwargs...)
+function run_gmd(data, optimizer; kwargs...)
+    return PMs.run_model(data, PMs.ACPPowerModel, optimizer, post_gmd; ref_extensions=[ref_add_core!], solution_builder = solution_gmd!, kwargs...)
 end
 
 

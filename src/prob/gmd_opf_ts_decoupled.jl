@@ -5,11 +5,13 @@ export run_ac_gmd_opf_ts_decoupled
 function modify_gmd_case!(net, mods, time_index)
 
     if mods !== nothing && mods["waveforms"] !== nothing
+
         for (k,wf) in mods["waveforms"]
             otype = wf["parent_type"]
             field  = wf["parent_field"]
             net[otype][k][field] = wf["values"][time_index]
         end
+
     end
     return net
 
@@ -45,7 +47,7 @@ function run_ac_gmd_opf_ts_decoupled(net, optimizer, mods, settings; kwargs...)
         modify_gmd_case!(net, mods, i)
 
         #println("Run AC-OPF using calculated quasi-dc currents")
-        data = run_ac_gmd_opf_decoupled(net, solver; setting=settings)
+        data = run_ac_gmd_opf_decoupled(net, optimizer; setting=settings)
         
         data["time_index"] = i
         data["time"] = t[i]

@@ -1,24 +1,14 @@
 
-"default SOC constructor"
-SOCWRPowerModel(data::Dict{String,Any}; kwargs...) = InitializeGMDPowerModel(PMs.SOCWRForm, data; kwargs...)
-
-"default QC constructor"
-function QCWRPowerModel(data::Dict{String,Any}; kwargs...)
-    return InitializeGMDPowerModel(PMs.QCWRForm, data; kwargs...)
-end
-
-"default QC trilinear model constructor"
-function QCWRTriPowerModel(data::Dict{String,Any}; kwargs...)
-    return InitializeGMDPowerModel(PMs.QCWRTriForm, data; kwargs...)
-end
-
-""
+"FUNCTION: ac current on/off"
 function variable_ac_current_on_off(pm::PMs.AbstractWRModel; kwargs...)
-   variable_ac_current_mag(pm; bounded=false, kwargs...) # needs to be false since this is an on/off variable
+   variable_ac_current_mag(pm; bounded=false, kwargs...)
+   # needs to be false since this is an on/off variable
 end
 
-""
+
+"FUNCTION: ac current"
 function variable_ac_current(pm::PMs.AbstractWRModel; kwargs...)
+
    variable_ac_current_mag(pm; kwargs...)
 
    nw = pm.cnw
@@ -34,19 +24,23 @@ function variable_ac_current(pm::PMs.AbstractWRModel; kwargs...)
         upper_bound = cm_max[l],
         start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, l), "cm_p_start", cnd)
    )
+
 end
 
-""
+
+"FUNCTION: dc current"
 function variable_dc_current(pm::PMs.AbstractWRModel; kwargs...)
     variable_dc_current_mag(pm; kwargs...)
     variable_dc_current_mag_sqr(pm; kwargs...)
 end
 
-""
+
+"FUNCTION: reactive loss"
 function variable_reactive_loss(pm::PMs.AbstractWRModel; kwargs...)
     variable_qloss(pm; kwargs...)
     variable_iv(pm; kwargs...)
 end
+
 
 """
 ```
@@ -55,7 +49,10 @@ sum(q[a] for a in bus_arcs) + sum(q_dc[a_dc] for a_dc in bus_arcs_dc) == sum(qg[
 ```
 """
 
+
+"CONSTRAINT: kcl with shunts for load shedding"
 function constraint_kcl_shunt_gmd_ls(pm::PMs.AbstractWRModel, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+
     w = PMs.var(pm, n, c, :w)[i]
     pg = PMs.var(pm, n, c, :pg)
     qg = PMs.var(pm, n, c, :qg)
@@ -76,8 +73,9 @@ function constraint_kcl_shunt_gmd_ls(pm::PMs.AbstractWRModel, n::Int, c::Int, i,
 
 end
 
+
 "CONSTRAINT: kcl with shunts"
-function constraint_kcl_gmd(pm::PMs.AbstractPowerModel, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
+function constraint_kcl_gmd(pm::PMs.AbstractWRModel, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
 
     p = PMs.var(pm, n, c, :p)
     q = PMs.var(pm, n, c, :q)
@@ -89,10 +87,13 @@ function constraint_kcl_gmd(pm::PMs.AbstractPowerModel, n::Int, c::Int, i, bus_a
     # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
     JuMP.@constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd))
     JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd for (i, qd) in bus_qd))
+
 end
 
-"Constraint for relating current to power flow"
+
+"CONSTRAINT: relating current to power flow"
 function constraint_current(pm::PMs.AbstractWRModel, n::Int, c::Int, i, f_idx, f_bus, t_bus, tm)
+
     pair = (f_bus, t_bus)
     buspair = PMs.ref(pm, n, :buspairs, pair)
     arc_from = (i, f_bus, t_bus)
@@ -112,15 +113,18 @@ function constraint_current(pm::PMs.AbstractWRModel, n::Int, c::Int, i, f_idx, f
         JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= l * w)
         InfrastructureModels.relaxation_sqr(pm.model, i_ac_mag, l)
     end
+
 end
 
-"Constraint for relating current to power flow on_off"
+
+"CONSTRAINT: relating current to power flow on_off"
 function constraint_current_on_off(pm::PMs.AbstractWRModel, n::Int, c::Int, i, ac_ub)
+
     ac_lb    = 0 # this implementation of the on/off relaxation is only valid for lower bounds of 0
 
     i_ac_mag = PMs.var(pm, n, c, :i_ac_mag)[i]
     l        = PMs.var(pm, n, c, :ccm)[i]
-    z        = PMs.var(pm, n, c, :branch_z)[i]
+    z        = PMs.var(pm, n, :z_branch)[i]
 
     # p_fr^2 + q_fr^2 <= l * w comes for free with constraint_power_magnitude_sqr of PowerModels.jl
     JuMP.@constraint(pm.model, l >= i_ac_mag^2)
@@ -128,20 +132,26 @@ function constraint_current_on_off(pm::PMs.AbstractWRModel, n::Int, c::Int, i, a
 
     JuMP.@constraint(pm.model, i_ac_mag <= z * ac_ub)
     JuMP.@constraint(pm.model, i_ac_mag >= z * ac_lb)
+
 end
 
-"Constraint for computing thermal protection of transformers"
+
+"CONSTRAINT: computing thermal protection of transformers"
 function constraint_thermal_protection(pm::PMs.AbstractWRModel, n::Int, c::Int, i, coeff, ibase)
+
     i_ac_mag = PMs.var(pm, n, c, :i_ac_mag)[i]
     ieff = PMs.var(pm, n, c, :i_dc_mag)[i]
     ieff_sqr = PMs.var(pm, n, c, :i_dc_mag_sqr)[i]
 
     JuMP.@constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff_sqr/(ibase^2))
     InfrastructureModels.relaxation_sqr(pm.model, ieff, ieff_sqr)
+
 end
 
-"Constraint for computing qloss"
+
+"CONSTRAINT: computing qloss"
 function constraint_qloss(pm::PMs.AbstractWRModel, n::Int, c::Int, k, i, j)
+
     i_dc_mag = PMs.var(pm, n, c, :i_dc_mag)[k]
     qloss = PMs.var(pm, n, c, :qloss)
     iv = PMs.var(pm, n, c, :iv)[(k,i,j)]
@@ -150,10 +160,13 @@ function constraint_qloss(pm::PMs.AbstractWRModel, n::Int, c::Int, k, i, j)
     JuMP.@constraint(pm.model, qloss[(k,i,j)] == 0.0)
     JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
     InfrastructureModels.relaxation_product(pm.model, i_dc_mag, vm, iv)
+
 end
 
-"Constraint for computing qloss"
+
+"CONSTRAINT: computing qloss"
 function constraint_qloss(pm::PMs.AbstractWRModel, n::Int, c::Int, k, i, j, K, branchMVA)
+
     i_dc_mag = PMs.var(pm, n, c, :i_dc_mag)[k]
     qloss = PMs.var(pm, n, c, :qloss)
     iv = PMs.var(pm, n, c, :iv)[(k,i,j)]
@@ -163,8 +176,10 @@ function constraint_qloss(pm::PMs.AbstractWRModel, n::Int, c::Int, k, i, j, K, b
         println("Warning: DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results")
     end
 
-    # K is per phase
-    JuMP.@constraint(pm.model, qloss[(k,i,j)] == K*iv/(3.0*branchMVA))
+    JuMP.@constraint(pm.model, qloss[(k,i,j)] == K*iv/(3.0*branchMVA)) #K is per phase
     JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
     InfrastructureModels.relaxation_product(pm.model, i_dc_mag, vm, iv)
+
 end
+
+
