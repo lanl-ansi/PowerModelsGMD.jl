@@ -31,7 +31,7 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
     include("gmd_opf_decoupled.jl")
     include("gmd_opf.jl")
     include("gmd_ls.jl")
-    # include("gmd_ots.jl") #TODO: EPRI21 test system need to be checked => 'branch_z' error
+    include("gmd_ots.jl")
 
 end
 
