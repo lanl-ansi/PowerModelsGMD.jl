@@ -1,45 +1,35 @@
-# Formulations of GMD Problems that solves for the GIC current only
 export run_gmd
-
 using SparseArrays
 
 
-"""
-    run_gmd(file)
-Run gic matrix solve on a file
-"""
+"FUNCTION: run gic matrix solve on a file"
 function run_gmd(data; kwargs...)
     file = PMs.parse_file(data)
     return run_gmd(file; kwargs...)
 end
 
 
-"""
-    run_gmd(net)
-Run gic matrix solve on data structure
-"""
+"FUNCTION: run gic matrix solve on data structure"
 function run_gmd(net::Dict{String,Any}; kwargs...)
-    # I assume the branchListStruct and busListStruct are snatched directly from
-    # jsondecode.  First I need to make these maps for somewhat easier access.
+
+    # Assumed that the branchListStruct and busListStruct are snatched directly from JSON.
+    # First, maps access need to be made somewhat easier.
     branchMap=net["gmd_branch"]
     busMap=net["gmd_bus"]
 
-    # We will be solving for bus to ground currents.  We have two matrices to 
-    # worry about, Y and Z.  Both are nxn where n is the number of busses.  Y
-    # is symettric and, for now, Z is diagonal.
+    # Solving for bus to ground currents. Two matrces to worry about: Y and Z.
+    # Both are nxn where n is the number of busses. Y is symettric and, for now, Z is diagonal.
 
     numBranch=length(branchMap)
     numBus=length(busMap)
-
 
     branchList=collect(values(branchMap))
     busList=collect(values(busMap))
     busKeys=collect(keys(busMap))
     busIdx=Dict([(b["index"],i) for (i,b) in enumerate(busList)])
 
-    # First we need JJ, which is the perfect earth grounding current at each
-    # bus location.  It is the sum of the emf on each line going into a
-    # substation time the y for that line
+    # JJ: the perfect earth grounding current at each bus location
+    # It is the sum of the emf on each line going into a substation time the y for that line.
 
     J=zeros(numBus)
 

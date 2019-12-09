@@ -1,5 +1,6 @@
 name = "PowerModelsGMD"
 uuid = "c92a0612-66bb-11e9-0491-518d0d864356"
+authors = ["Arthur Barnes, Adam Mate"]
 repo = "https://github.com/lanl-ansi/PowerModels.jl"
 keywords = ["GMD", "E3 HEMP", "simulation", "evaluation", "mitigation"]
 version = "0.3.0"

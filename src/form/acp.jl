@@ -103,6 +103,16 @@ end
 
 
 "FUNCTION: computing qloss"
+function constraint_qloss_vnom(pm::PMs.AbstractACPModel, n::Int, c::Int, k, i, j)
+
+    qloss = PMs.var(pm, n, c, :qloss)
+    JuMP.@constraint(pm.model, qloss[(k,i,j)] == 0.0)
+    JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
+
+end
+
+
+"FUNCTION: computing qloss"
 function constraint_qloss_vnom(pm::PMs.AbstractACPModel, n::Int, c::Int, k, i, j, K, branchMVA)
 
     qloss = PMs.var(pm, n, c, :qloss)
@@ -114,16 +124,6 @@ function constraint_qloss_vnom(pm::PMs.AbstractACPModel, n::Int, c::Int, k, i, j
     end
 
     JuMP.@constraint(pm.model, qloss[(k,i,j)] == K*vm*i_dc_mag/(3.0*branchMVA)) #K is per phase
-    JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
-
-end
-
-
-"FUNCTION: computing qloss"
-function constraint_qloss_vnom(pm::PMs.AbstractACPModel, n::Int, c::Int, k, i, j)
-
-    qloss = PMs.var(pm, n, c, :qloss)
-    JuMP.@constraint(pm.model, qloss[(k,i,j)] == 0.0)
     JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
 
 end

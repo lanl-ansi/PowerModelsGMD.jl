@@ -99,10 +99,10 @@ function run_ac_gmd_opf_decoupled(dc_case::Dict{String,Any}, optimizer; setting=
         dc_current_mag(br, ac_case, dc_solution)
     end
 
-    #println("Running ac opf with voltage-dependent qloss")
+    # println("Running ac opf with voltage-dependent qloss")
     #ac_result = run_ac_opf_qloss(ac_case, optimizer, setting=setting)
 
-    println("Running ac opf with voltage-independent qloss")
+    # println("Running ac opf with voltage-independent qloss")
     ac_result = run_ac_opf_qloss_vnom(ac_case, optimizer, setting=setting)
     ac_solution = ac_result["solution"]
 

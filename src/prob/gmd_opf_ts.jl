@@ -79,10 +79,6 @@ function post_gmd_opf_ts(pm::PMs.AbstractPowerModel; kwargs...)
 
     end
 
-    # for i in PMs.ids(pm, :branch, nw=1)
-    # 	constraint_avg_absolute_hotspot_temperature_state(pm, i)
-    # end
-
     network_ids = sort(collect(nw_ids(pm)))
 
     n_1 = network_ids[1]
@@ -100,7 +96,6 @@ function post_gmd_opf_ts(pm::PMs.AbstractPowerModel; kwargs...)
     # -- Objective -- #
 
     objective_gmd_min_transformer_heating(pm)
-    # objective_gmd_min_fuel(pm)
 
 end
 

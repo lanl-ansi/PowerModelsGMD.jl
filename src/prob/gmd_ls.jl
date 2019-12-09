@@ -1,7 +1,3 @@
-# Formulations of GMD Mitigation Problems that allow load shedding and generation dispatch
-# Reference - "Optimal Transmission Line Switching under Geomagnetic Disturbances", IEEE Transactions on Power Systems
-# This corresponds to model C4
-
 export run_gmd_ls, run_ac_gmd_ls, run_qc_gmd_ls
 
 "FUNCTION: run the GMD mitigation with the nonlinear AC equations"
@@ -24,6 +20,9 @@ end
 
 "FUNCTION: GMD Model - Minimizes Generator Dispatch and Load Shedding"
 function post_gmd_ls(pm::PMs.AbstractPowerModel; kwargs...)
+
+    # Reference - "Optimal Transmission Line Switching under Geomagnetic Disturbances"
+    # this corresponds to model C4
 
     # AC modeling
     PMs.variable_voltage(pm) # theta_i and V_i, includes constraint 3o

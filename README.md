@@ -192,9 +192,9 @@ This table includes
 ```
 %column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
 mpc.branch_gmd = {
-	1	3	1	-1	1.793	-1	-1	100	'xf'	'gwye-delta'
+	1	3	1	-1	1.793	-1	-1	100	'xfmr'	'gwye-delta'
 	1	2	-1	-1	-1	-1	-1	-1	'line'	'none'
-	2	4	3	-1	1.793	-1	-1	100	'xf'	'gwye-delta'
+	2	4	3	-1	1.793	-1	-1	100	'xfmr'	'gwye-delta'
 };
 ```
 
@@ -248,6 +248,7 @@ In alphabetical order:
 * Art Barnes (@bluejuniper): Decoupled model
 * Russell Bent (@rb004f): ML and OTS implementation
 * Carleton Coffrin (@ccoffrin): Architecture
+* David Fobes (@pseudocubic): Architecture
 * Adam Mate (@adammate): Decoupled time-extended model, [RTS-GMLC](https://github.com/GridMod/RTS-GMLC) integration
 
 Acknowledgments:
@@ -268,19 +269,20 @@ If you find PMsGMD useful in your work, we kindly request that you cite the foll
   year = {2020},
   month = {...},
   pages = {...}, 
-  doi = {...}
 }
 ```
 
 <!--
 Citation of the following publication is also encouraged when publishing works that rely on and utilize the time-extended mitigation capabilities of PMsGMD:
 ```
-@inproceedings{..., 
+@article{..., 
   author = {Adam Mate and Arthur Barnes and Russell Bent and Eduardo Cotilla-Sanchez}, 
   title = {Time-Extended GMD Mitigation with PMsGMD}, 
-  booktitle = {...}, 
+  journal = {...}, 
   year = {...},
   month = {...},
+  volume = {...},
+  number = {...}, 
   pages = {...}, 
   doi = {...}
 }

@@ -29,8 +29,6 @@ function run_ac_gmd_opf_ts_decoupled(net, optimizer, mods, settings; kwargs...)
     base_mva = net["baseMVA"]
     delta_t = t[2]-t[1]
 
-    println("")
-
     results = []
     Ie_prev = Dict()
     
@@ -38,15 +36,15 @@ function run_ac_gmd_opf_ts_decoupled(net, optimizer, mods, settings; kwargs...)
         Ie_prev[k] = nothing
     end
 
-    println("Start running each time periods\n")
+    # println("Start running each time periods\n")
     for i in 1:n
 
-        println("")
-        println("########## Time: $(t[i]) ##########")
+        # println("")
+        # println("########## Time: $(t[i]) ##########")
 
         modify_gmd_case!(net, mods, i)
 
-        #println("Run AC-OPF using calculated quasi-dc currents")
+        # println("Run AC-OPF using calculated quasi-dc currents")
         data = run_ac_gmd_opf_decoupled(net, optimizer; setting=settings)
         
         data["time_index"] = i
@@ -88,7 +86,7 @@ function run_ac_gmd_opf_ts_decoupled(net, optimizer, mods, settings; kwargs...)
         push!(results, data)
         
     end
-    println("Finished running\n")
+    # println("Finished running\n")
 
     return results
 end
