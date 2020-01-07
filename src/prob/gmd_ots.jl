@@ -30,8 +30,7 @@ function post_gmd_ots(pm::PMs.AbstractPowerModel; kwargs...)
     # -- AC modeling -- #
 
     PMs.variable_voltage_on_off(pm) # theta_i and V_i, includes constraint 3o
-    PMs.variable_active_branch_flow(pm) # p_ij
-    PMs.variable_reactive_branch_flow(pm) # q_ij
+    PMs.variable_branch_flow(pm) # p_ij, q_ij
     # no bounds because of the on/off constraints
     PMs.variable_generation(pm, bounded=false) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r
     variable_active_generation_sqr_cost(pm)

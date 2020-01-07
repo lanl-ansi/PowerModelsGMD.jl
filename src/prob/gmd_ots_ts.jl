@@ -13,16 +13,21 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
     for (n, network) in nws(pm)
 
         # -- Variables -- #
-
-        PMs.variable_voltage_on_off(pm, nw=n) # theta_i and V_i, includes constraint 3o
-        PMs.variable_generation(pm, nw=n) 
-        PMs.variable_branch_flow(pm, nw=n) 
+        PMs.variable_branch_flow(pm, nw=n) # p_ij, q_ij
+        PMs.variable_generation(pm, nw=n) # OTS uses bounded=false, why? 
+        variable_load(pm, nw=n) # l_i^p, l_i^qPG.
+        #variable_ac_current_on_off(pm) # \tilde I^a_e and l_e
         PMs.variable_dcline_flow(pm, nw=n) 
+        #variable_active_generation_sqr_cost(pm)
 
-        # AC switching variables
+        # -- AC switching variables -- #
+        PMs.variable_voltage_on_off(pm, nw=n) # theta_i and V_i, includes constraint 3o
         PMs.variable_branch_indicator(pm, nw=n) # z_e variable
+        variable_gen_indicator(pm) # z variables for the generators
 
+        # -- DC modeling -- #
         variable_dc_current_mag(pm, nw=n)
+        #variable_reactive_loss(pm) # Q_e^loss for each edge (used to compute  Q_i^loss for each node)
         variable_dc_current(pm, nw=n)
         variable_dc_line_flow(pm; bounded=false, nw=n)
         variable_dc_voltage_on_off(pm, nw=n)
@@ -30,9 +35,6 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
         variable_qloss(pm, nw=n) # Q_e^loss for each edge (used to compute  Q_i^loss for each node)
 
         # GMD switching-related variables
-		# variable_active_generation_sqr_cost(pm, nw=n)
-        # variable_load(pm, nw=n) # l_i^p, l_i^qPG.
-        # variable_gen_indicator(pm, nw=n)  # z variables for the generators
 
         # Thermal variables
         b = true
@@ -53,17 +55,18 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
         end
 
         for i in PMs.ids(pm, :bus, nw=n)
-            constraint_kcl_gmd(pm, i, nw=n)
+            constraint_kcl_shunt_gmd_ls(pm, i, nw=n)
             # constraint_power_balance_shunt(pm, i, nw=n)
         end
 
-	    # for i in PMs.ids(pm, :gen)
-	    #    constraint_gen_on_off(pm, i, nw=n) # variation of 3q, 3r
-	    #    constraint_gen_ots_on_off(pm, i, nw=n)
-	    #    constraint_gen_perspective(pm, i, nw=n)
-	    # end
+	    for i in PMs.ids(pm, :gen)
+	       constraint_gen_on_off(pm, i, nw=n) # variation of 3q, 3r
+	       constraint_gen_ots_on_off(pm, i, nw=n)
+	       constraint_gen_perspective(pm, i, nw=n) # TODO: How does this work?
+	    end
 
         for i in PMs.ids(pm, :branch, nw=n)
+            constraint_dc_current_mag(pm, i) # constraints 3u
             constraint_dc_current_mag_on_off(pm, i, nw=n)
             # OTS formulation is using constraint_qloss
             constraint_qloss_vnom(pm, i, nw=n)
