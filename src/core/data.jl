@@ -383,6 +383,25 @@ function dc_current_mag_gwye_gwye_xf(branch, case, solution)
     branch["ieff"] = abs((a*ihi + ilo)/a)
 end
 
+"DC current on three-winding gwye-gwye-gwye transformers"
+function dc_current_mag_3w_xf(branch, case, solution)
+    # find the corresponding gmd branch
+    k = branch["index"]
+    khi = branch["gmd_br_hi"]
+    klo = branch["gmd_br_lo"]
+    println("branch[$k]: hi_branch[$khi], lo_branch[$klo]")
+    ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+
+    jfr = branch["f_bus"]
+    jto = branch["t_bus"]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    a = vhi/vlo
+
+    branch["ieff"] = abs((a*ihi + ilo)/a)
+end
+
 "DC current on gwye-gwye auto transformers"
 function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
     # find the corresponding gmd branch:
