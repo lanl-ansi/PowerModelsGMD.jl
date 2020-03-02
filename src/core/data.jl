@@ -389,17 +389,25 @@ function dc_current_mag_3w_xf(branch, case, solution)
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
-    println("branch[$k]: hi_branch[$khi], lo_branch[$klo]")
+    kmed = branch["gmd_br_med"]
+    println("branch[$k]: hi_branch[$khi], lo_branch[$klo], med_branch[$kmed]")
     ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
     ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+    imed = solution["gmd_branch"]["$kmed"]["gmd_idc"]
 
-    jfr = branch["f_bus"]
-    jto = branch["t_bus"]
+    jfr = branch["source_id"][1]
+    jto = branch["source_id"][2]
+    jmed = branch["source_id"][3]
     vhi = case["bus"]["$jfr"]["base_kv"]
     vlo = case["bus"]["$jto"]["base_kv"]
-    a = vhi/vlo
+    vmed = case["bus"]["$jmed"]["base_kv"]
 
-    branch["ieff"] = abs((a*ihi + ilo)/a)
+    a = vhi/vlo
+    b = vhi/vmed
+
+    # From Boteler '16 eq. 51
+    # need to check if we are on the high-side branch
+    branch["ieff"] = abs(I1 + Ilo/a + Imed/b)
 end
 
 "DC current on gwye-gwye auto transformers"
@@ -450,8 +458,10 @@ function dc_current_mag(branch, case, solution)
         dc_current_mag_gwye_delta_xf(branch, case, solution)
     elseif branch["config"] == "gwye-gwye"
         dc_current_mag_gwye_gwye_xf(branch, case, solution)
-    elseif branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto"
+    elseif branch["config"] == "gwye-gwye-auto"
         dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
+    elseif branch["config"] == "three-winding" && branch["winding"] == "high"
+        dc_current_mag_3w_xf(branch, case, solution)
     end
 end
 
