@@ -24,23 +24,24 @@ end
 
 
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss(pm::PMs.GenericPowerModel; kwargs...)
+function post_opf_qloss(pm::PMs.AbstractPowerModel; kwargs...)
     use_vnom = false
     post_opf_qloss(pm::PMs.AbstractACPModel, use_vnom; kwargs...)
 end
  
 
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss_vnom(pm::PMs.GenericPowerModel; kwargs...)
+function post_opf_qloss_vnom(pm::PMs.AbstractPowerModel; kwargs...)
     use_vnom = true
     post_opf_qloss(pm::PMs.AbstractACPModel, use_vnom; kwargs...)
 end
 
 
 "Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss(pm::PMs.GenericPowerModel, vnom; kwargs...)
+function post_opf_qloss(pm::PMs.AbstractPowerModel, vnom; kwargs...)
     PowerModels.variable_voltage(pm)
     PowerModelsGMD.variable_qloss(pm)
+end
 
 
 "FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
