@@ -14,12 +14,12 @@ end
 
 "Run the basic GMD model"
 function run_opf_qloss(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_opf_qloss; solution_builder = get_gmd_decoupled_solution, kwargs...)
+    return PMs.run_model(file, model_constructor, solver, post_opf_qloss; solution_builder = solution_gmd_decoupled!, kwargs...)
 end
 
 "Run the basic GMD model"
 function run_opf_qloss_vnom(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_opf_qloss_vnom; solution_builder = get_gmd_decoupled_solution, kwargs...)
+    return PMs.run_model(file, model_constructor, solver, post_opf_qloss_vnom; solution_builder = solution_gmd_decoupled!, kwargs...)
 end
 
 

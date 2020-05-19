@@ -298,10 +298,10 @@ function constraint_qloss_decoupled_vnom(pm::PMs.AbstractPowerModel, k; nw::Int=
     j = branch["lo_bus"]
 
     bus = PMs.ref(pm, nw, :bus, i)
-    branchMVA = branch["baseMVA"]
 
-    if "gmd_k" in keys(branch)
-        ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+    if ("gmd_k" in keys(branch)) && ("baseMVA" in keys(branch))
+        branchMVA = branch["baseMVA"]
+        ibase = branchMVA*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
         K = branch["gmd_k"]*pm.data["baseMVA"]/ibase
         ieff = branch["ieff"]
         constraint_qloss_decoupled_vnom(pm, nw, cnd, k, i, j, K, ieff, branchMVA)
