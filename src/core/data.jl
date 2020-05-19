@@ -448,25 +448,25 @@ function dc_current_mag_3w_xf(branch, case, solution)
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
-    kmed = branch["gmd_br_med"]
-    println("branch[$k]: hi_branch[$khi], lo_branch[$klo], med_branch[$kmed]")
+    kter = branch["gmd_br_ter"]
+    println("branch[$k]: hi_branch[$khi], lo_branch[$klo], ter_branch[$kter]")
     ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
     ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
-    imed = solution["gmd_branch"]["$kmed"]["gmd_idc"]
+    iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
 
     jfr = branch["source_id"][1]
     jto = branch["source_id"][2]
-    jmed = branch["source_id"][3]
+    jter = branch["source_id"][3]
     vhi = case["bus"]["$jfr"]["base_kv"]
     vlo = case["bus"]["$jto"]["base_kv"]
-    vmed = case["bus"]["$jmed"]["base_kv"]
+    vter = case["bus"]["$jter"]["base_kv"]
 
     a = vhi/vlo
-    b = vhi/vmed
+    b = vhi/vter
 
     # From Boteler '16 eq. 51
     # need to check if we are on the high-side branch
-    branch["ieff"] = abs(I1 + Ilo/a + Imed/b)
+    branch["ieff"] = abs(ihi + ilo/a + iter/b)
 end
 
 "DC current on gwye-gwye auto transformers"

@@ -94,6 +94,14 @@ end
     run_ac_gic_opf_decoupled(file)
 Run GIC followed by AC OPF with Qloss constraints
 """
+function run_ac_gmd_opf_decoupled(case::Dict{String,Any}, solver;  setting=Dict(), kwargs...)
+    return run_gmd_opf_decoupled(case, PMs.ACPPowerModel, solver; kwargs...)
+end
+
+"""
+    run_ac_gic_opf_decoupled(file)
+Run GIC followed by AC OPF with Qloss constraints
+"""
 function run_gmd_opf_decoupled(file::String, model_form, solver;  setting=Dict(), kwargs...)
     data = PowerModels.parse_file(file)
     return run_gmd_opf_decoupled(data, model_form, solver; kwargs...)
@@ -104,7 +112,7 @@ function run_gmd_opf_decoupled(dc_case::Dict{String,Any}, model_form, solver; se
     branch_setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
     merge!(setting, branch_setting)
 
-    dc_result = run_gmd(dc_case, optimizer)
+    dc_result = run_gmd(dc_case, solver)
     dc_solution = dc_result["solution"]
     make_gmd_mixed_units(dc_solution, 100.0)
     ac_case = deepcopy(dc_case)
