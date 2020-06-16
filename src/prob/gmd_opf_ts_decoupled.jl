@@ -37,7 +37,8 @@ function run_ac_gmd_opf_ts_decoupled(net, optimizer, mods, settings; kwargs...)
     end
 
     # println("Start running each time periods\n")
-    for i in 1:n
+    # for i in 1:n
+    for i in 21:23
 
         # println("")
         # println("########## Time: $(t[i]) ##########")
@@ -62,24 +63,27 @@ function run_ac_gmd_opf_ts_decoupled(net, optimizer, mods, settings; kwargs...)
             end
 
             result = data["ac"]["result"]
-            
-            delta_topoilrise(br, result, base_mva, delta_t) 
-            # delta_topoilrise_ss(br, result, base_mva) #included in delta_topoilrise
-            update_topoilrise(br, net)
-            
-            # delta_hotspotrise(br, result, Ie_prev[k], delta_t) #decided to only calculate stead-state value
-            delta_hotspotrise_ss(br, result)
-            update_hotspotrise(br, net)
-            
-            # Store calculated transformer temperature related results:
-            trf_temp["Ieff"] = br["ieff"]
-            #trf_temp["delta_topoilrise"] = br["delta_topoilrise"] #decided not to store value
-            trf_temp["delta_topoilrise_ss"] = br["delta_topoilrise_ss"]
-            #trf_temp["delta_hotspotrise"] =  br["delta_hotspotrise"] #decided not to store value
-            trf_temp["delta_hotspotrise_ss"] = br["delta_hotspotrise_ss"]
-            trf_temp["actual_hotspot"] = (br["temperature_ambient"]+br["delta_topoilrise_ss"]+br["delta_hotspotrise_ss"])
-            
+           
+            if false  
+                delta_topoilrise(br, result, base_mva, delta_t) 
+                # delta_topoilrise_ss(br, result, base_mva) #included in delta_topoilrise
+                update_topoilrise(br, net)
+                
+                # delta_hotspotrise(br, result, Ie_prev[k], delta_t) #decided to only calculate stead-state value
+                delta_hotspotrise_ss(br, result)
+                update_hotspotrise(br, net)
+                
+                # Store calculated transformer temperature related results:
+                trf_temp["Ieff"] = br["ieff"]
+                #trf_temp["delta_topoilrise"] = br["delta_topoilrise"] #decided not to store value
+                trf_temp["delta_topoilrise_ss"] = br["delta_topoilrise_ss"]
+                #trf_temp["delta_hotspotrise"] =  br["delta_hotspotrise"] #decided not to store value
+                trf_temp["delta_hotspotrise_ss"] = br["delta_hotspotrise_ss"]
+                trf_temp["actual_hotspot"] = (br["temperature_ambient"]+br["delta_topoilrise_ss"]+br["delta_hotspotrise_ss"])
+            end
+                
             merge!(result["solution"]["branch"][k], trf_temp)
+
 
         end
         
