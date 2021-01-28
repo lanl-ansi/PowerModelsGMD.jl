@@ -1,5 +1,10 @@
-"variable: `v_dc[j]` for `j` in `gmd_bus`"
-function variable_dc_voltage(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+# --- General Variables --- #
+
+
+"VARIABLE: dc voltage"
+function variable_dc_voltage(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    # `v_dc[j]` for `j` in `gmd_bus`
     if bounded
         PMs.var(pm, nw, cnd)[:v_dc] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :gmd_bus)], base_name="$(nw)_$(cnd)_v_dc",
@@ -13,11 +18,14 @@ function variable_dc_voltage(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int
             start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_bus, i), "v_dc_start", cnd)
         )
     end
+
 end
 
 
-"variable: `v_dc[j]` for `j` in `gmd_branch`"
-function variable_dc_voltage_difference(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: dc voltage difference"
+function variable_dc_voltage_difference(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+    
+    # `v_dc[j]` for `j` in `gmd_branch`
     if bounded
         PMs.var(pm, nw, cnd)[:v_dc_diff] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :gmd_branch)], base_name="$(nw)_$(cnd)_v_dc_diff",
@@ -35,8 +43,10 @@ function variable_dc_voltage_difference(pm::PMs.GenericPowerModel; nw::Int=pm.cn
 end
 
 
-"variable: `v_dc[j]` for `j` in `gmd_bus`"
-function variable_dc_voltage_on_off(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: dc voltage on/off"
+function variable_dc_voltage_on_off(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    # `v_dc[j]` for `j` in `gmd_bus`
     variable_dc_voltage(pm; nw=nw, cnd=cnd, bounded=bounded)
     variable_dc_voltage_difference(pm; nw=nw, cnd=cnd, bounded=bounded)
 
@@ -45,11 +55,14 @@ function variable_dc_voltage_on_off(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, c
           [i in PMs.ids(pm, nw, :gmd_branch)], base_name="$(nw)_$(cnd)_vz",
           start = PMs.comp_start_value(PMs.ref(pm, nw, :gmd_branch, i), "v_vz_start", cnd)
     )
+
 end
 
 
-"variable: `i_dc_mag[j]` for `j` in `branch`"
-function variable_dc_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: dc current magnitude"
+function variable_dc_current_mag(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    # `i_dc_mag[j]` for `j` in `branch`
     if bounded
         PMs.var(pm, nw, cnd)[:i_dc_mag] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_i_dc_mag",
@@ -63,11 +76,14 @@ function variable_dc_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd:
             start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "i_dc_mag_start", cnd)
         )
     end
+
 end
 
 
-"variable: `i_dc_mag_sqr[j]` for `j` in `branch`"
-function variable_dc_current_mag_sqr(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: dc current magnitude squared"
+function variable_dc_current_mag_sqr(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    # `i_dc_mag_sqr[j]` for `j` in `branch`
     if bounded
         PMs.var(pm, nw, cnd)[:i_dc_mag_sqr] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_i_dc_mag_sqr",
@@ -81,11 +97,14 @@ function variable_dc_current_mag_sqr(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, 
             start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "i_dc_mag_sqr_start", cnd)
         )
     end
+
 end
 
 
-"variable: `dc[j]` for `j` in `gmd_branch`"
-function variable_dc_line_flow(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: dc line flow"
+function variable_dc_line_flow(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    # `dc[j]` for `j` in `gmd_branch`
     if bounded
         PMs.var(pm, nw, cnd)[:dc] = JuMP.@variable(pm.model,
             [(l,i,j) in PMs.ref(pm, nw, :gmd_arcs)], base_name="$(nw)_$(cnd)_dc",
@@ -112,11 +131,14 @@ function variable_dc_line_flow(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::I
     end
 
     pm.model.ext[:nw][nw][:dc_expr] = dc_expr
+
 end
 
 
-"variable: `qloss[j]` for `j` in `arcs`"
-function variable_qloss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: Qloss"
+function variable_qloss(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    # `qloss[j]` for `j` in `arcs`
     if bounded
        PMs.var(pm, nw, cnd)[:qloss] = JuMP.@variable(pm.model,
             [(l,i,j) in PMs.ref(pm, nw, :arcs)], base_name="$(nw)_$(cnd)_qloss",
@@ -130,29 +152,46 @@ function variable_qloss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.c
             start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, l), "qloss_start", cnd)
         )
     end
+
 end
 
 
-""
-function variable_demand_factor(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+"VARIABLE: demand factor"
+function variable_demand_factor(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     PMs.var(pm, nw, cnd)[:z_demand] = JuMP.@variable(pm.model,
         0 <= z_demand[i in PMs.ids(pm, nw, :bus)] <= 1,
         start = PMs.comp_start_value(PMs.ref(pm, nw, :bus, i), "z_demand_start", 1.0, cnd)
     )
+
 end
 
 
-""
-function variable_shunt_factor(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+"VARIABLE: shunt factor"
+function variable_shunt_factor(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     PMs.var(pm, nw, cnd)[:z_shunt] = JuMP.@variable(pm.model,
         0 <= z_shunt[i in PMs.ids(pm, nw, :bus)] <= 1,
         start = PMs.comp_start_value(PMs.ref(pm, nw, :bus, i), "z_shunt_nstart", 1.0, cnd)
     )
+
 end
 
 
-"variable: `pd[j]` for `j` in `bus`"
-function variable_active_load(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: load"
+function variable_load(pm::PMs.AbstractPowerModel; kwargs...)
+
+    # generates variables for both `active` and `reactive` load
+    variable_active_load(pm; kwargs...)
+    variable_reactive_load(pm; kwargs...)
+
+end
+
+
+"VARIABLE: active load"
+function variable_active_load(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    # `pd[j]` for `j` in `bus`
     if bounded
         PMs.var(pm, nw, cnd)[:pd] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :load)], base_name="$(nw)_$(cnd)_pd",
@@ -166,11 +205,14 @@ function variable_active_load(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::In
             start = PMs.comp_start_value(PMs.ref(pm, nw, :load, i), "pd_start", cnd)
         )
     end
+
 end
 
 
-"variable: `qd[j]` for `j` in `bus`"
-function variable_reactive_load(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: reactive load"
+function variable_reactive_load(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    # `qd[j]` for `j` in `bus`
     if bounded
         PMs.var(pm, nw, cnd)[:qd] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :load)], base_name="$(nw)_$(cnd)_qd",
@@ -184,18 +226,14 @@ function variable_reactive_load(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::
             start = PMs.comp_start_value(PMs.ref(pm, nw, :load, i), "qd_start", cnd)
         )
     end
+
 end
 
 
-"generates variables for both `active` and `reactive` load"
-function variable_load(pm::PMs.GenericPowerModel; kwargs...)
-    variable_active_load(pm; kwargs...)
-    variable_reactive_load(pm; kwargs...)
-end
+"VARIABLE: ac current magnitude"
+function variable_ac_current_mag(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
 
-
-"variable: `i_ac_mag[j]` for `j` in `branch'"
-function variable_ac_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+    # `i_ac_mag[j]` for `j` in `branch'
     if bounded
         PMs.var(pm, nw, cnd)[:i_ac_mag] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_i_ac_mag",
@@ -209,20 +247,26 @@ function variable_ac_current_mag(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd:
             start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "i_ac_mag_start", cnd)
         )
     end
+
 end
 
 
-"variable: `iv[j]` for `j` in `arcs`"
-function variable_iv(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+"VARIABLE: iv"
+function variable_iv(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
+    # `iv[j]` for `j` in `arcs`
     PMs.var(pm, nw, cnd)[:iv] = JuMP.@variable(pm.model,
         [(l,i,j) in PMs.ref(pm, nw, :arcs)], base_name="$(nw)_$(cnd)_iv",
         start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, l), "iv_start", cnd)
     )
+
 end
 
 
-"variable: `0 <= gen_z[i] <= 1` for `i` in `generator`s"
-function variable_gen_indicator(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+"VARIABLE: generation indicator"
+function variable_gen_indicator(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+ 
+    # `0 <= gen_z[i] <= 1` for `i` in `generator`s
     PMs.var(pm, nw, cnd)[:gen_z] = JuMP.@variable(pm.model,
         [i in PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_gen_z",
         lower_bound = 0,
@@ -230,11 +274,14 @@ function variable_gen_indicator(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::
         integer = true,
         start = PMs.comp_start_value(PMs.ref(pm, nw, :gen, i), "gen_z_start", cnd, 1.0)
     )
+
 end
 
 
-"variable: `pg[j]^2` for `j` in `gen`"
-function variable_active_generation_sqr_cost(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+"VARIABLE: active generation squared cost"
+function variable_active_generation_sqr_cost(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    # `pg[j]^2` for `j` in `gen`
     if bounded
         PMs.var(pm, nw, cnd)[:pg_sqr] = JuMP.@variable(pm.model,
             [i in PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_pg_sqr",
@@ -248,48 +295,147 @@ function variable_active_generation_sqr_cost(pm::PMs.GenericPowerModel; nw::Int=
             start = PMs.comp_start_value(PMs.ref(pm, nw, :gen, i), "pg_sqr_start", cnd)
         )
     end
+
 end
 
 
 
-# -- Thermal Variables -- #
+# --- Thermal Variables --- #
 
-"add in realistic bounds for top-oil steady-state temperature rise"
-function variable_delta_oil_ss(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+tmax = 1000
+
+"VARIABLE: steady-state top-oil temperature rise"
+function variable_delta_oil_ss(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
     if bounded
+    
+        #hsl = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit")
+        #println("hotspot limit for $i: $hsl")
         PMs.var(pm, nw, cnd)[:ross] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
             lower_bound = 0,
-            upper_bound = 200,
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
+            upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            #upper_bound = tmax,
+            #upper_bound = 280,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
         )
     else
+
         PMs.var(pm, nw, cnd)[:ross] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil_ss",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_ss_start", cnd)
         )
     end
+
 end
 
 
-"add in realistic bounds for top-oil temperature rise"
-function variable_delta_oil(pm::PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+# "VARIABLE: absolute steady-state top-oil temperature"
+# function variable_absolute_oil_ss(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+#
+#    if bounded
+#        PMs.var(pm, nw, cnd)[:rossa] = JuMP.@variable(pm.model, 
+#            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_oil_ss",
+#            lower_bound = 0,
+#            upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+#            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "oil_ss_start", cnd)
+#        )
+#    else
+#
+#        PMs.var(pm, nw, cnd)[:rossa] = JuMP.@variable(pm.model, 
+#            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_oil_ss",
+#            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "oil_ss_start", cnd)
+#        )
+#    end
+#
+# end
+
+
+"VARIABLE: top-oil temperature rise"
+function variable_delta_oil(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
     if bounded
         PMs.var(pm, nw, cnd)[:ro] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
             lower_bound = 0,
-            upper_bound = 200,
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_start", cnd)
+            upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            #upper_bound = tmax,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_start", cnd)
         )
     else
+
         PMs.var(pm, nw, cnd)[:ro] = JuMP.@variable(pm.model, 
-            [i in PMs.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
-            start = PMs.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_start", cnd)
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_oil",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_start", cnd)
         )
     end
+
 end
 
 
-#write a hot-spot rise tem
-#write a actual temp.
-#write a function for ieff as well
+"VARIABLE: steady-state hot-spot temperature rise"
+function variable_delta_hotspot_ss(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    if bounded
+        PMs.var(pm, nw, cnd)[:hsss] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspot_ss",
+            lower_bound = 0,
+            #upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            upper_bound = tmax,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_hotspot_ss_start", cnd)
+        )
+    else
+
+        PMs.var(pm, nw, cnd)[:hsss] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspot_ss",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_oil_hotspot_start", cnd)
+        )
+    end
+
+end
+
+
+"VARIABLE: hot-spot temperature rise"
+function variable_delta_hotspot(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    if bounded
+        PMs.var(pm, nw, cnd)[:hs] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspot",
+            lower_bound = 0,
+            #upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            upper_bound = tmax,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_hotspot_start", cnd)
+        )
+    else
+
+        PMs.var(pm, nw, cnd)[:hs] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_delta_hotspot",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "delta_hotspot_start", cnd)
+        )
+    end
+
+end
+
+
+"VARIABLE: hot-spot temperature"
+function variable_hotspot(pm::PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+
+    if bounded
+        PMs.var(pm, nw, cnd)[:hsa] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_hotspot",
+            lower_bound = 0,
+            upper_bound = PMs.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            #upper_bound = tmax,
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "hotspot_start", cnd)
+        )
+    else
+
+        PMs.var(pm, nw, cnd)[:hsa] = JuMP.@variable(pm.model, 
+            [i in PowerModels.ids(pm, nw, :branch)], base_name="$(nw)_$(cnd)_hotspot",
+            start = PowerModels.comp_start_value(PMs.ref(pm, nw, :branch, i), "hotspot_start", cnd)
+        )
+    end
+
+end
+
+

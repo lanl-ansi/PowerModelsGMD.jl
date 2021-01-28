@@ -1,5 +1,9 @@
-"Computes a load shed cost"
-function calc_load_shed_cost(pm::PMs.GenericPowerModel)
+# --- Objectives --- #
+
+
+"OBJECTIVE: computes a load shed cost"
+function calc_load_shed_cost(pm::PMs.AbstractPowerModel)
+
     max_cost = 0
     for (n, nw_ref) in PMs.nws(pm)
         for (i,gen) in nw_ref[:gen]
@@ -9,13 +13,15 @@ function calc_load_shed_cost(pm::PMs.GenericPowerModel)
             end
         end
     end
+
     return max_cost * 2.0
+
 end
 
 
-" OPF objective"
+"OBJECTIVE: OPF objective"
+function objective_gmd_min_fuel(pm::PMs.AbstractPowerModel)
 
-function objective_gmd_min_fuel(pm::PMs.GenericPowerModel)
     #@assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 
     #i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
@@ -37,8 +43,9 @@ function objective_gmd_min_fuel(pm::PMs.GenericPowerModel)
 end
 
 
-" SSE objective: keep generators as close as possible to original setpoint"
-function objective_gmd_min_error(pm::PMs.GenericPowerModel)
+"OBJECTIVE: SSE -- keep generators as close as possible to original setpoint"
+function objective_gmd_min_error(pm::PMs.AbstractPowerModel)
+
     @assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 
     #i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
@@ -47,17 +54,6 @@ function objective_gmd_min_error(pm::PMs.GenericPowerModel)
     #z_demand = Dict(n => pm.var[:nw][n][:z_demand] for n in nws) # pm.var[:z_demand]
 
     M_p = Dict(n => max([gen["pmax"] for (i,gen) in nw_ref[:gen]]) for (n, nw_ref) in PMs.nws(pm))
-
-    #=
-    for n in nws
-        for (i,gen) in pm.ref[:nw][n][:gen]
-            @printf "sg[%d] = %f + j%f\n" i gen["pg"] gen["qg"]
-            if gen["pmax"] > pmax
-                pmax = gen["pmax"]
-            end
-        end
-    end
-    =#
 
     # return JuMP.@objective(pm.model, Min, sum{ i_dc_mag[i]^2, i in keys(pm.ref[:branch])})
     # return JuMP.@objective(pm.model, Min, sum(get(gen["cost"], 1, 0.0)*pg[i]^2 + get(gen["cost"], 2, 0.0)*pg[i] + get(gen["cost"], 3, 0.0) for (i,gen) in pm.ref[:gen]) )
@@ -78,8 +74,9 @@ function objective_gmd_min_error(pm::PMs.GenericPowerModel)
 end
 
 
-" Minimizes load shedding and fuel cost"
-function objective_gmd_min_ls(pm::PMs.GenericPowerModel)
+"OBJECTIVE: minimizes load shedding and fuel cost"
+function objective_gmd_min_ls(pm::PMs.AbstractPowerModel)
+
     @assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 
     #pg = Dict(n => pm.var[:nw][n][:pg] for n in nws)
@@ -104,8 +101,9 @@ function objective_gmd_min_ls(pm::PMs.GenericPowerModel)
 end
 
 
-" Minimizes load shedding and fuel cost"
-function objective_gmd_min_ls_on_off(pm::PMs.GenericPowerModel)
+"OBJECTIVE: minimizes load shedding and fuel cost"
+function objective_gmd_min_ls_on_off(pm::PMs.AbstractPowerModel)
+
     @assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
 
     #pg     = Dict(n => pm.var[:nw][n][:pg] for n in nws)
@@ -130,3 +128,27 @@ function objective_gmd_min_ls_on_off(pm::PMs.GenericPowerModel)
     )
 
 end
+
+
+"OBJECTIVE: minimizes transfomer heating caused by GMD"
+function objective_gmd_min_transformer_heating(pm::PMs.AbstractPowerModel)
+
+    #@assert all(!PMs.ismulticonductor(pm) for n in PMs.nws(pm))
+
+    #i_dc_mag = Dict(n => pm.var[:nw][n][:i_dc_mag] for n in nws) #pm.var[:i_dc_mag]
+    #pg = Dict(n => pm.var[:nw][n][:pg] for n in nws) #pm.var[:pg]
+
+    # TODO: add i_dc_mag minimization
+
+    return JuMP.@objective(pm.model, Min,
+    sum(
+        sum(
+            sum( PMs.var(pm, n, c, :hsa, i) for c in PMs.conductor_ids(pm, n) )
+        # for (i,branch) in PMs.nw_ref[:branch])
+        for (i,branch) in nw_ref[:branch])
+    for (n, nw_ref) in PMs.nws(pm))
+    )
+
+end
+
+

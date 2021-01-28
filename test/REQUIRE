@@ -1,7 +1,5 @@
-julia 1.0
+julia 1.1
 
-Ipopt
-Cbc
-Juniper 0.4
-Pavito
-Gurobi
+Ipopt 0.6.1
+Cbc 0.6.5
+Juniper 0.5.2

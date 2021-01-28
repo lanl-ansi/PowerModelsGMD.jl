@@ -1,31 +1,12 @@
 export make_gmd_mixed_units, adjust_gmd_qloss, top_oil_rise, hotspot_rise, update_top_oil_rise, update_hotspot_rise
 
-function calculate_qloss(branch, case, solution)
-    @assert !InfrastructureModels.ismultinetwork(case)
-    @assert !haskey(case, "conductors")
 
-    k = "$(branch["index"])"
-    i = "$(branch["hi_bus"])"
-    j = "$(branch["lo_bus"])"
+# --- GMD Formulation Functions --- #
 
-    br_soln = solution["branch"][k]
-    bus = case["bus"][i]
-    i_dc_mag = abs(br_soln["gmd_idc"])
 
-    if "gmd_k" in keys(branch)
-
-        ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
-        K = branch["gmd_k"]*data["baseMVA"]/ibase
-
-        # K is per phase
-        return K*i_dc_mag/(3.0*branch["baseMVA"])
-    end
-
-    return 0.0
-end
-
-""
+"FUNCTION: add GMD data"
 function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
+
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
@@ -40,9 +21,10 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; deco
         if br["type"] == "line"
             k = "$(br["gmd_br"])"
             br["gmd_idc"] = solution["gmd_branch"][k]["gmd_idc"]/3.0
+        
         else # branch is transformer
             if decoupled
-                # get he high-side gmd branch
+                # get the high-side gmd branch
                 k = br["dc_brid_hi"]
                 # TODO: add calculations from constraint_dc_current_mag
                 br["gmd_idc"] = 0.0
@@ -65,6 +47,7 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; deco
         br["qf"] = br_soln["qf"]
         br["qt"] = br_soln["qt"]
     end
+
 end
 
 
@@ -76,7 +59,10 @@ end
 gmd_not_pu = Set(["gmd_gs","gmd_e_field_mag"])
 gmd_not_rad = Set(["gmd_e_field_dir"])
 
+
+"FUNCTION: make GMD per unit"
 function make_gmd_per_unit!(data::Dict{String,<:Any})
+
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
@@ -84,9 +70,13 @@ function make_gmd_per_unit!(data::Dict{String,<:Any})
         make_gmd_per_unit(data["baseMVA"], data)
         data["GMDperUnit"] = true
     end
+
 end
 
+
+"FUNCTION: make GMD per unit"
 function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
+
     @assert !InfrastructureModels.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
@@ -101,11 +91,46 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
         bus["gmd_gs"] *= zb
         #println("-> a(pu): $(bus["gmd_gs"]) \n")
     end
+
 end
 
 
-"Computes the maximum AC current on a branch"
-function calc_ac_mag_max(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
+
+# --- General Functions --- #
+
+
+"FUNCTION: calculate Qloss"
+function calculate_qloss(branch, case, solution)
+
+    @assert !InfrastructureModels.ismultinetwork(case)
+    @assert !haskey(case, "conductors")
+
+    k = "$(branch["index"])"
+    i = "$(branch["hi_bus"])"
+    j = "$(branch["lo_bus"])"
+
+    br_soln = solution["branch"][k]
+    bus = case["bus"][i]
+    i_dc_mag = abs(br_soln["gmd_idc"])
+
+    if "gmd_k" in keys(branch)
+
+        ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+        K = branch["gmd_k"]*data["baseMVA"]/ibase
+
+        # K is per phase
+        return K*i_dc_mag/(3.0*branch["baseMVA"])
+    end
+
+    return 0.0
+
+end
+
+
+"FUNCTION: compute maximum AC current on a branch"
+function calc_ac_mag_max(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    
     # ac_mag_max
     branch = PMs.ref(pm, nw, :branch, i)
     f_bus = PMs.ref(pm, nw, :bus, branch["f_bus"])
@@ -115,11 +140,13 @@ function calc_ac_mag_max(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=
     #println(i, " " , ac_max, " ", branch["rate_a"], " ", pm.ref[:nw][n][:bus][f_bus]["vmin"], " ", pm.ref[:nw][n][:bus][t_bus]["vmin"])
 
     return ac_max
+
 end
 
 
-"Computes the maximum DC current on a branch"
-function calc_dc_mag_max(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+"FUNCTION: compute the maximum DC current on a branch"
+function calc_dc_mag_max(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    
     branch = PMs.ref(pm, nw, :branch, i)
 
     ac_max = -Inf
@@ -130,26 +157,30 @@ function calc_dc_mag_max(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=
     #println(i , " ", 2 * ac_max * ibase, " ", ibase, " ", ac_max)
 
     return 2 * ac_max * ibase #   branch["ibase"]
+
 end
 
 
-"Computes the ibase for a branch"
-function calc_branch_ibase(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+"FUNCTION: computes the ibase for a branch"
+function calc_branch_ibase(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, i)
     bus = PMs.ref(pm, nw, :bus, branch["hi_bus"])
     return branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
+
 end
 
-"""
-Fits a polynomial of degree `n` through a set of points.
-Taken from CurveFit.jl by Paul Jabardo
-https://github.com/pjabardo/CurveFit.jl/blob/master/src/linfit.jl
-Simple algorithm, doesn't use orthogonal polynomials or any such thing
-and therefore unconditioned matrices are possible. Use it only for low
-degree polynomials.
-This function returns a the coefficients of the polynomial.
-"""
+
+"FUNCTION: POLYFIT"
 function poly_fit(x, y, n)
+
+    # Fits a polynomial of degree `n` through a set of points.
+    # Taken from CurveFit.jl by Paul Jabardo
+    # https://github.com/pjabardo/CurveFit.jl/blob/master/src/linfit.jl
+    # Simple algorithm, doesn't use orthogonal polynomials or any such thing
+    # and therefore unconditioned matrices are possible. Use it only for low
+    # degree polynomials.
+    # This function returns a the coefficients of the polynomial.
 
     nx = length(x)
     A = zeros(eltype(x), nx, n+1)
@@ -160,20 +191,24 @@ function poly_fit(x, y, n)
         end
     end
     A\y
+
 end
 
 
-"Computes the thermal coeffieicents for a branch"
-function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+"FUNCTION: compute the thermal coeffieicents for a branch"
+function calc_branch_thermal_coeff(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
     branch = PMs.ref(pm, nw, :branch, i)
     buses = PMs.ref(pm, nw, :bus)
 
-    if !(branch["type"] == "xf")
+    if !(branch["type"] == "xfmr")
         return NaN
     end
 
-    # A hack for now....
+    # A hack for now.... FIX LATER!
     thermal_cap_x0 = pm.data["thermal_cap_x0"]
+    # since provided values are in [per unit]...
+
     if isa(thermal_cap_x0, Dict)
         thermal_cap_x0 = []
         for (key, value) in sort(pm.data["thermal_cap_x0"]["1"])
@@ -195,6 +230,7 @@ function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
         end
     end
 
+    #x0 = 1e3*thermal_cap_x0./calc_branch_ibase(pm, i, nw=nw)  #branch["ibase"]
     x0 = thermal_cap_x0./calc_branch_ibase(pm, i, nw=nw)  #branch["ibase"]
     y0 = thermal_cap_y0./100  # convert to %
 
@@ -204,22 +240,29 @@ function calc_branch_thermal_coeff(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw,
     fit = poly_fit(x, y, 2)
     fit = round.(fit.*1e+5)./1e+5
     return fit
+
 end
 
 
-"Computes the maximum dc voltage difference between buses"
-function calc_max_dc_voltage_difference(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+"FUNCTION: computes the maximum dc voltage difference between buses"
+function calc_max_dc_voltage_difference(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return 1e6 # TODO, actually formally calculate
 end
 
-""
+
+"FUNCTION: apply function"
 function apply_func(data::Dict{String,Any}, key::String, func)
+
     if haskey(data, key)
         data[key] = func(data[key])
     end
+
 end
 
+
+"FUNCTION: adjust GMD Qloss"
 function adjust_gmd_qloss(case::Dict{String,Any}, data::Dict{String,Any})
+
     if !("branch" in keys(data))
         data["branch"] = Dict{String,Any}()
     end
@@ -244,10 +287,13 @@ function adjust_gmd_qloss(case::Dict{String,Any}, data::Dict{String,Any})
             end
         end
     end
+
 end
 
 
+"FUNCTION: make GMD mixed units"
 function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
+
     rescale      = x -> x*mva_base
     rescale_dual = x -> x/mva_base
 
@@ -340,32 +386,44 @@ function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
 
 end
 
-"Computes the maximum DC voltage at a gmd bus "
-function calc_max_dc_voltage(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
+"FUNCTION: compute the maximum DC voltage at a gmd bus "
+function calc_max_dc_voltage(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return Inf
 end
 
-"Computes the maximum DC voltage at a gmd bus "
-function calc_min_dc_voltage(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
+"FUNCTION: compute the maximum DC voltage at a gmd bus "
+function calc_min_dc_voltage(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return -Inf
 end
 
-"Computes the minimim absolute value AC current on a branch"
-function calc_ac_mag_min(pm::PMs.GenericPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+
+"FUNCTION: compute the minimum absolute value AC current on a branch"
+function calc_ac_mag_min(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     return 0
 end
 
-# Functions for the decoupled gmd formulation
-"DC current on gwye-delta transformers"
-# calculate the current magnitude for each gmd branch
+
+
+
+# --- Decoupled GMD Formulation Functions --- #
+
+
+"FUNCTION: DC current on gwye-delta transformers"
 function dc_current_mag_gwye_delta_xf(branch, case, solution)
+
+    # calculate the current magnitude for each gmd branch
+
     # find the corresponding gmd branch
     khi = branch["gmd_br_hi"]
     branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+
 end
 
-"DC current on gwye-gwye transformers"
+"FUNCTION: DC current on gwye-gwye transformers"
 function dc_current_mag_gwye_gwye_xf(branch, case, solution)
+
     # find the corresponding gmd branch
     k = branch["index"]
     khi = branch["gmd_br_hi"]
@@ -381,10 +439,39 @@ function dc_current_mag_gwye_gwye_xf(branch, case, solution)
     a = vhi/vlo
 
     branch["ieff"] = abs((a*ihi + ilo)/a)
+
+end
+
+"DC current on three-winding gwye-gwye-gwye transformers"
+function dc_current_mag_3w_xf(branch, case, solution)
+    # find the corresponding gmd branch
+    k = branch["index"]
+    khi = branch["gmd_br_hi"]
+    klo = branch["gmd_br_lo"]
+    kter = branch["gmd_br_ter"]
+    println("branch[$k]: hi_branch[$khi], lo_branch[$klo], ter_branch[$kter]")
+    ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+    iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
+
+    jfr = branch["source_id"][1]
+    jto = branch["source_id"][2]
+    jter = branch["source_id"][3]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    vter = case["bus"]["$jter"]["base_kv"]
+
+    a = vhi/vlo
+    b = vhi/vter
+
+    # From Boteler '16 eq. 51
+    # need to check if we are on the high-side branch
+    branch["ieff"] = abs(ihi + ilo/a + iter/b)
 end
 
 "DC current on gwye-gwye auto transformers"
 function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
+
     # find the corresponding gmd branch:
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
@@ -401,28 +488,31 @@ function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
     a = vhi/vlo
 
     branch["ieff"] = abs((a*is + ic)/(a + 1.0))
+
 end
 
 
-"DC current on normal lines"
+"FUNCTION: DC current on normal lines"
 function dc_current_mag_line(branch, case, solution)
     branch["ieff"] = 0.0
 end
 
 
-"DC current on ungrounded transformers"
+"FUNCTION: DC current on ungrounded transformers"
 function dc_current_mag_grounded_xf(branch, case, solution)
     branch["ieff"] = 0.0
 end
 
 
-# correct equation is ieff = |a*ihi + ilo|/a
-# just use ihi for now
-"Constraint for computing the DC current magnitude"
+"FUNCTION: constraints for computing the DC current magnitude"
 function dc_current_mag(branch, case, solution)
+
+    # correct equation is ieff = |a*ihi + ilo|/a
+    # just use ihi for now
+
     branch["ieff"] = 0.0
 
-    if branch["type"] != "xf"
+    if branch["type"] != "xfmr"
         dc_current_mag_line(branch, case, solution)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
         println("  Ungrounded config, ieff constrained to zero")
@@ -431,16 +521,21 @@ function dc_current_mag(branch, case, solution)
         dc_current_mag_gwye_delta_xf(branch, case, solution)
     elseif branch["config"] == "gwye-gwye"
         dc_current_mag_gwye_gwye_xf(branch, case, solution)
-    elseif branch["type"] == "xf" && branch["config"] == "gwye-gwye-auto"
+    elseif branch["config"] == "gwye-gwye-auto"
         dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
+    elseif branch["config"] == "three-winding" && branch["winding"] == "high"
+        dc_current_mag_3w_xf(branch, case, solution)
     end
+
 end
 
-# Function to convert dc currents to be compatible with powerworld
-# conventions
+
+"FUNCTION: convert effective GIC to PowerWorld to-phase convention"
 # TODO: do this also for ieff?
-"Convert effective GIC to PowerWorld to-phase convention"
 function adjust_gmd_phasing(dc_result)
+    
+    # Function to convert dc currents to be compatible with PowerWorld conventions
+
     gmd_branches = dc_result["solution"]["gmd_branch"]
 
     for b in values(gmd_branches)
@@ -448,100 +543,110 @@ function adjust_gmd_phasing(dc_result)
     end
 
     return dc_result
+
 end
 
 
 
-# -- Thermal Model Functions -- #
 
-"calculate steady-state top oil temperature rise"
-function ss_top_oil_rise(branch, result, base_mva; delta_rated=75)
-    if !(branch["type"] == "transformer" || branch["type"] == "xf")
+# --- Thermal Model Functions --- #
+
+
+"FUNCTION: calculate top-oil temperature rise"
+function delta_topoilrise(branch, result, base_mva, delta_t)
+
+    delta_topoilrise_ss = delta_topoilrise_ss(branch, result, base_mva)
+    #delta_topoilrise_ss = 1 #testing for step response
+    delta_topoilrise = delta_topoilrise_ss # if 1st iteration, assume it starts from steady-state value
+
+    if ( ("delta_topoilrise" in keys(branch)) && ("delta_topoilrise_ss" in keys(branch)) ) 
+        # println("Updating oil temperature")
+        delta_topoilrise_prev = branch["delta_topoilrise"]
+        delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"] 
+
+        # trapezoidal integration
+        tau = 2*(branch["topoil_time_const"]*60)/delta_t
+        delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev)/(1 + tau) - delta_topoilrise_prev*(1 - tau)/(1 + tau)
+    else
+        delta_topoilrise = 0
+        # println("Setting initial oil temperature")
+    end
+
+   branch["delta_topoilrise_ss"] = delta_topoilrise_ss
+   branch["delta_topoilrise"] = delta_topoilrise
+
+end
+
+
+"FUNCTION: calculate steady-state top-oil temperature rise"
+function delta_topoilrise_ss(branch, result, base_mva)
+    
+    if !(branch["type"] == "transformer" || branch["type"] == "xfmr")
         return 0
     end
         
     i = branch["index"]
     bs = result["solution"]["branch"]["$i"]
-    S = sqrt(bs["pf"]^2 + bs["qf"]^2)
+    p = bs["pf"]
+    q = bs["qf"]
+    S = sqrt(p^2 + q^2)
     K = S/(branch["rate_a"] * base_mva) #calculate the loading
 
-    # println("S: $S \nSmax: $(branch["rate_a"]) \n")
-    #assumptions: no-load, transformer losses are very small 
-    # 75 = top oil temp rise at rated power
-    # 30 = ambient temperature    
-    return delta_rated*K^2
+    return branch["topoil_rated"]*K^2
+
 end
 
 
-"calculate top-oil temperature rise"
-function top_oil_rise(branch, result, base_mva; tau_oil=4260, Delta_t=10)
-    # tau_oil = 71 mins
+"FUNCTION: update top-oil temperature rise in the network"
+function update_topoilrise(branch, net)
+
+    k = "$(branch["index"])"
+    net["branch"][k]["delta_topoilrise"] = branch["delta_topoilrise"]
+    net["branch"][k]["delta_topoilrise_ss"] = branch["delta_topoilrise_ss"]
+
+end
+
+
+"FUNCTION: calculate hotspot temperature rise"
+#TODO: FIX function - even though it is written correctly, it errors out when enabled in gmd_opf_ts_decoupled.jl
+function delta_hotspotrise(branch, result, Ie_prev, delta_t)
+    #determined for the time-extended mitigation problem
     
-    delta_oil_ss = ss_top_oil_rise(branch, result, base_mva)
-    #delta_oil_ss = 1 #testing for step response
-    delta_oil = delta_oil_ss # if 1st iteration, assume it starts from steady-state value
-
-    if ("delta_oil" in keys(branch) && "delta_oil_ss" in keys(branch))
-        # println("Updating oil temperature")
-        delta_oil_prev = branch["delta_oil"]
-        delta_oil_ss_prev = branch["delta_oil_ss"] 
-
-        # trapezoidal integration
-        tau = 2*tau_oil/Delta_t
-        delta_oil = (delta_oil_ss + delta_oil_ss_prev)/(1 + tau) - delta_oil_prev*(1 - tau)/(1 + tau)
-    else
-        delta_oil = 0
-        # println("Setting initial oil temperature")
-    end
-
-   branch["delta_oil_ss"] = delta_oil_ss 
-   branch["delta_oil"] = delta_oil
-
-end
-
-
-"calculate steady-state hotspot temperature rise for the time-extension mitigation problem"
-function ss_hotspot_rise(branch, result; Re=0.63)
-    delta_hs = 0
+    delta_hotspotrise = 0
     Ie = branch["ieff"]
-    delta_hs = Re*Ie
-    branch["delta_hs"] = delta_hs
-
-end
-
-
-"calculate hotspot temperature rise for the time-extension mitigation problem"
-function hotspot_rise(branch, result, Ie_prev; tau_hs=150, Delta_t=10, Re=0.63)
-    # 'Re': from Randy Horton's report, transformer model E on p. 52
-    
-    delta_hs = 0
-    Ie = branch["ieff"]
-    tau = 2*tau_hs/Delta_t
+    tau = 2*branch["hotspot_rated"]/delta_t
 
     if Ie_prev === nothing
-        delta_hs = Re*Ie
+        delta_hotspotrise = branch["hotspot_coeff"]*Ie
     else
-        delta_hs_prev = branch["delta_hs"]
-        delta_hs = Re*(Ie + Ie_prev)/(1 + tau) - delta_hs_prev*(1 - tau)/(1 + tau)
+        delta_hotspotrise_prev = branch["delta_hotspotrise"]
+        delta_hotspotrise = branch["hotspot_coeff"]*(Ie + Ie_prev)/(1 + tau) - delta_hotspotrise_prev*(1 - tau)/(1 + tau)
     end
 
-    branch["delta_hs"] = delta_hs
+    branch["delta_hotspotrise"] = delta_hotspotrise
 
 end
 
 
-"update top-oil temperature rise for the network"
-function update_top_oil_rise(branch, net)
-    k = "$(branch["index"])"
-    net["branch"][k]["delta_oil"] = branch["delta_oil"]
-    net["branch"][k]["delta_oil_ss"] = branch["delta_oil_ss"]
+"FUNCTION: calculate steady-state hotspot temperature rise"
+function delta_hotspotrise_ss(branch, result)
+    #determined for the time-extended  mitigation problem
+    
+    delta_hotspotrise_ss = 0
+    Ie = branch["ieff"]
+    delta_hotspotrise_ss = branch["hotspot_coeff"]*Ie
+    branch["delta_hotspotrise_ss"] = delta_hotspotrise_ss
+
 end
 
 
-"update hotspot temperature rise for the network"
-function update_hotspot_rise(branch, net)
+"FUNCTION: update hotspot temperature rise in the network"
+function update_hotspotrise(branch, net)
+
     k = "$(branch["index"])"
-    net["branch"][k]["delta_hs"] = branch["delta_hs"]
+    #net["branch"][k]["delta_hotspotrise"] = branch["delta_hotspotrise"]
+    net["branch"][k]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
+    
 end
 
 

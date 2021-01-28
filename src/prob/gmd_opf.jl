@@ -1,18 +1,21 @@
-# Formulations of GMD Problems
 export run_gmd_opf, run_ac_gmd_opf
 
-"Run basic GMD with the nonlinear AC equations"
-function run_ac_gmd_opf(file, solver; kwargs...)
-    return run_gmd_opf(file, ACPPowerModel, solver; kwargs...)
+
+"FUNCTION: run basic GMD model"
+function run_gmd_opf(data, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(data, model_type, optimizer, post_gmd_opf; ref_extensions=[ref_add_core!], solution_builder = solution_gmd!, kwargs...)
 end
 
-"Run the basic GMD model"
-function run_gmd_opf(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_gmd_opf; solution_builder = get_gmd_solution, kwargs...)
+
+"FUNCTION: run basic GMD with the nonlinear AC equations"
+function run_ac_gmd_opf(data, optimizer; kwargs...)
+    return run_gmd_opf(data, PMs.ACPPowerModel, optimizer; kwargs...)
 end
 
-"Basic GMD Model - Minimizes Generator Dispatch"
-function post_gmd_opf(pm::PMs.GenericPowerModel; kwargs...)
+
+"FUNCTION: Basic GMD Model - Minimizes Generator Dispatch"
+function post_gmd_opf(pm::PMs.AbstractPowerModel; kwargs...)
+
     PMs.variable_voltage(pm)
     variable_dc_voltage(pm)
     variable_dc_current_mag(pm)
@@ -35,14 +38,13 @@ function post_gmd_opf(pm::PMs.GenericPowerModel; kwargs...)
     end
 
     for i in PMs.ids(pm, :branch)
-        Memento.debug(LOGGER, @sprintf "Adding constraints for branch %d\n" i)
+        Memento.debug(LOGGER, "Adding constraints for branch $i \n")
         constraint_dc_current_mag(pm, i)
         constraint_qloss_vnom(pm, i)
 
         PMs.constraint_ohms_yt_from(pm, i)
         PMs.constraint_ohms_yt_to(pm, i)
 
-        #Why do we have the thermal limits turned off?
         # PMs.constraint_thermal_limit_from(pm, i)
         # PMs.constraint_thermal_limit_to(pm, i)
         PMs.constraint_voltage_angle_difference(pm, i)
@@ -56,10 +58,7 @@ function post_gmd_opf(pm::PMs.GenericPowerModel; kwargs...)
     for i in PMs.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
+
 end
-
-
-
-
 
 

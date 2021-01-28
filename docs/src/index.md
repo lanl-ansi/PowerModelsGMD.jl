@@ -11,7 +11,7 @@ The following formulations are supported.
 This can be run from the command line via
 
 ```@docs
-run_gic(net, solver)
+run_gic(net, optimizer)
 ```
 
 For large problems where Ipopt may incur excessive computational overhead the problem can be run using a matrix formulation via

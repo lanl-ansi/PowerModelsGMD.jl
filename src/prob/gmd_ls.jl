@@ -1,27 +1,28 @@
-# Formulations of GMD Mitigation Problems that allow load shedding and generation dispatch
-# Reference - "Optimal Transmission Line Switching under Geomagnetic Disturbances", IEEE Transactions on Power Systems
-# This corresponds to model C4
-
 export run_gmd_ls, run_ac_gmd_ls, run_qc_gmd_ls
 
-"Run the GMD mitigation with the nonlinear AC equations"
-function run_ac_gmd_ls(file, solver; kwargs...)
-    return run_gmd_ls(file, ACPPowerModel, solver; kwargs...)
+"FUNCTION: run the GMD mitigation with the nonlinear AC equations"
+function run_ac_gmd_ls(data, optimizer; kwargs...)
+    return run_gmd_ls(data, PMs.ACPPowerModel, optimizer; kwargs...)
 end
 
-"Run the GMD mitigation with the QC AC equations"
-function run_qc_gmd_ls(file, solver; kwargs...)
-    return run_gmd_ls(file, QCWRTriPowerModel, solver; kwargs...)
+
+"FUNCTION: run the GMD mitigation with the QC AC equations"
+function run_qc_gmd_ls(data, optimizer; kwargs...)
+    return run_gmd_ls(data, PMs.QCLSPowerModel, optimizer; kwargs...)
 end
 
-"Minimize load shedding and fuel costs for GMD mitigation"
 
-function run_gmd_ls(file::String, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_gmd_ls; solution_builder = get_gmd_solution, kwargs...)
+"FUNCTION: minimize load shedding and fuel costs for GMD mitigation"
+function run_gmd_ls(data::String, model_type::Type, optimizer; kwargs...)
+    return PMs.run_model(data, model_type, optimizer, post_gmd_ls; ref_extensions=[ref_add_core!], solution_builder = solution_gmd!, kwargs...)
 end
 
-"GMD Model - Minimizes Generator Dispatch and Load Shedding"
-function post_gmd_ls(pm::PMs.GenericPowerModel; kwargs...)
+
+"FUNCTION: GMD Model - Minimizes Generator Dispatch and Load Shedding"
+function post_gmd_ls(pm::PMs.AbstractPowerModel; kwargs...)
+
+    # Reference - "Optimal Transmission Line Switching under Geomagnetic Disturbances"
+    # this corresponds to model C4
 
     # AC modeling
     PMs.variable_voltage(pm) # theta_i and V_i, includes constraint 3o
@@ -74,3 +75,5 @@ function post_gmd_ls(pm::PMs.GenericPowerModel; kwargs...)
         constraint_dc_ohms(pm, i) # variation of constraint 3t
     end
 end
+
+

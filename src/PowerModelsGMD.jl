@@ -1,12 +1,10 @@
 module PowerModelsGMD
-    import JuMP
 
     import InfrastructureModels
-    import PowerModels
-
+    import Ipopt
+    import JuMP
     import Memento
-
-    using Printf: @printf, @sprintf
+    import PowerModels
 
     const LOGGER = Memento.getlogger(PowerModels)
     const PMs = PowerModels
@@ -16,7 +14,6 @@ module PowerModelsGMD
     include("core/variable.jl")
     include("core/constraint.jl")
     include("core/constraint_template.jl")
-    include("core/relaxation_scheme.jl")
     include("core/objective.jl")
     include("core/solution.jl")
 
@@ -25,15 +22,16 @@ module PowerModelsGMD
     include("form/wr.jl")
     include("form/wrm.jl")
 
-    include("prob/gmd.jl")
-    include("prob/gmd_matrix.jl")
-    include("prob/gmd_opf_decoupled.jl")
-    include("prob/gmd_pf_decoupled.jl")
-    include("prob/gmd_opf.jl")
     include("prob/gmd_ls.jl")
-    include("prob/gmd_ots.jl")
-    include("prob/gmd_msse_decoupled.jl")
-    include("prob/gmd_opf_ts.jl")
+    include("prob/gmd_matrix.jl")
+    #include("prob/gmd_msse_decoupled.jl")
+    include("prob/gmd_opf_decoupled.jl")
     include("prob/gmd_opf_ts_decoupled.jl")
-    #include("prob/gic_msse_decoupled.jl")
+    include("prob/gmd_opf_ts.jl")
+    include("prob/gmd_opf.jl")
+    include("prob/gmd_ots_ts.jl")
+    include("prob/gmd_ots.jl")
+    include("prob/gmd_pf_decoupled.jl")
+    include("prob/gmd.jl")
+
 end
