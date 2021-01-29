@@ -16,16 +16,22 @@ Dev:
 </p>
 -->
 
-PowerModelsGMD.jl (abbr. PMsGMD) is an open-source framework that provides extensions to [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) (abbr. PMs) for power system simulation, to evaluate the risks and mitigate the potential effects of Geomagnetic Disturbances (GMDs) and E3 High-altitude Electromagnetic Pulse (E3 HEMP) events on the power grid.
+PowerModelsGMD.jl (abbr.~PMsGMD) is an open-source Julia package, an extension to the [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation, which was designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (abbr.~GMDs) and E3 high-altitude electromagnetic pulse (abbr.~E3~HEMP) events on the electrical grid.
 
-PMsGMD solves for quasi-dc line flow and ac power flow on a network subjected to Geomagnetically Induced Currents (GICs). It solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
-Since it is open-source, it is easy to study, verify and customize its operation to best fit an application environment. Due to its speed and reliability, it is suitable to be a key component of frameworks that monitor GMD manifestations in real-time, that predict GICs on the power grid, that assess risk, that enhance reliability by providing aid to system-operators, and that recommend modifications in the network configuration.
-Thus, PMsGMD is equally useful for research and industry application.
+Due to its open-source nature, it is easy to verify and customize the operation of PMsGMD in order to best fit the application circumstances. Due to its speed and reliability, it is suitable to be a key component of toolkits that monitor GMD manifestations in real-time, that predict GICs on the electrical grid, that assess risk, that enhance reliability by providing aid to system-operators, and that recommend modifications in the network configuration. Consequently, PMsGMD is equally useful for research and industry application.
+
+
+
+## PMsGMD Dependencies
+
 
 
 
 ## Core Problem Specifications
 
+PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (abbr.~GIC). It also solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
+
+At the moment, the following core problem specifications are implemented:
 * GIC DC: quasi-dc power flow
 * GIC -> AC - OPF: sequential quasi-dc power flow and ac optimal power flow
 * GIC + AC - OPF: ac optimal power flow coupled with a quasi-dc power flow
@@ -260,34 +266,20 @@ This code has been developed as part of the Advanced Network Science Initiative 
 
 ## Citing PMsGMD
 
-If you find PMsGMD useful in your work, we kindly request that you cite the following publication: <!-- [publication](https://ieeexplore.ieee.org/document/...): -->
+If you find PMsGMD useful in your work, we request that you cite the following [publication](https://arxiv.org/abs/2101.05042):
 ```
-@inproceedings{[under review], 
-  author = {Adam Mate and Arthur Barnes and Russell Bent and Eduardo Cotilla-Sanchez}, 
-  title = {Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD}, 
-  booktitle = {2020 Power Systems Computation Conference (PSCC)}, 
-  year = {2020},
-  month = {...},
-  pages = {...}, 
+@Misc{pmsgmd,
+    author = {A. {Mate} and A. K. {Barnes} and R. W. {Bent} and E. {Cotilla-Sanchez}},
+    title = {{Analyzing and Mitigating the Impacts of GMD and EMP Events on the Electrical Grid with PowerModelsGMD.jl}},
+    year = {2021},
+    month = {Jan.},
+    pages = {1--10},
+    archivePrefix = {arXiv},
+    primaryClass = {eess.SY},    
+    eprint = {2101.05042},
+    note = {\url{https://arxiv.org/abs/2101.05042}. LA-UR-19-29623},
 }
 ```
-
-<!--
-Citation of the following publication is also encouraged when publishing works that rely on and utilize the time-extended mitigation capabilities of PMsGMD:
-```
-@article{..., 
-  author = {Adam Mate and Arthur Barnes and Russell Bent and Eduardo Cotilla-Sanchez}, 
-  title = {Time-Extended GMD Mitigation with PMsGMD}, 
-  journal = {...}, 
-  year = {...},
-  month = {...},
-  volume = {...},
-  number = {...}, 
-  pages = {...}, 
-  doi = {...}
-}
-```
--->
 
 
 
