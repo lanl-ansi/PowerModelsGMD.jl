@@ -16,7 +16,7 @@ Dev:
 </p>
 -->
 
-PowerModelsGMD.jl (abbr.~PMsGMD) is an open-source Julia package, an extension to the [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation, which was designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (abbr.~GMDs) and E3 high-altitude electromagnetic pulse (abbr.~E3~HEMP) events on the electrical grid.
+PowerModelsGMD.jl (abbr. PMsGMD) is an open-source Julia package, an extension to the [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation, which was designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (abbr. GMDs) and E3 high-altitude electromagnetic pulse (abbr. HEMP) events on the electrical grid.
 
 Due to its open-source nature, it is easy to verify and customize the operation of PMsGMD in order to best fit the application circumstances. Due to its speed and reliability, it is suitable to be a key component of toolkits that monitor GMD manifestations in real-time, that predict GICs on the electrical grid, that assess risk, that enhance reliability by providing aid to system-operators, and that recommend modifications in the network configuration. Consequently, PMsGMD is equally useful for research and industry application.
 
@@ -29,7 +29,7 @@ Due to its open-source nature, it is easy to verify and customize the operation 
 
 ## Core Problem Specifications
 
-PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (abbr.~GIC). It also solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
+PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (abbr. GIC). It also solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
 
 At the moment, the following core problem specifications are implemented:
 * GIC DC: quasi-dc power flow
