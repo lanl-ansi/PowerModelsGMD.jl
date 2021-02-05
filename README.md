@@ -1,29 +1,15 @@
 # PowerModelsGMD.jl
 
-<!--
-<img src="https://..." align="left" width="200" alt="PowerModelsGMD logo">
--->
+PowerModelsGMD.jl (abbr. PMsGMD) is an open-source [Julia](https://julialang.org/) package, an extension to the [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation, which was specifically designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (abbr. GMDs) and E3 high-altitude electromagnetic pulse (abbr. HEMP) events on the electrical grid.
 
-Release: 
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/stable/)
-
-
-Dev:
-[![Build Status](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl.svg?branch=master)](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl)
-<!--
-[![codecov](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl)
-[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/latest/)
-</p>
--->
-
-PowerModelsGMD.jl (abbr. PMsGMD) is an open-source Julia package, an extension to the [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation, which was designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (abbr. GMDs) and E3 high-altitude electromagnetic pulse (abbr. HEMP) events on the electrical grid.
-
-Due to its open-source nature, it is easy to verify and customize the operation of PMsGMD in order to best fit the application circumstances. Due to its speed and reliability, it is suitable to be a key component of toolkits that monitor GMD manifestations in real-time, that predict GICs on the electrical grid, that assess risk, that enhance reliability by providing aid to system-operators, and that recommend modifications in the network configuration. Consequently, PMsGMD is equally useful for research and industry application.
+Due to its open-source nature, it is easy to verify and customize its operation in order to best fit the application circumstances. Due to its speed and reliability, it is suitable to be a key component of toolkits that monitor GMD manifestations in real-time, that predict GICs on the electrical grid, that assess risk, that enhance grid resilience by providing aid to system-operators, and that recommend modifications in the network configuration. Consequently, PMsGMD is equally useful for both research and industry application.
 
 
 
 ## PMsGMD Dependencies
 
+PMsGMD builds on the following Julia packages: [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.17.4 and [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.5.4.
+Furthermore, PMsGMD relies on and was optimized for these additional packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21.1, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21.6, [MathOptInterface](https://github.com/jump-dev/MathOptInterface.jl) v0.9.19, and [Memento](https://github.com/invenia/Memento.jl) v1.1.2.
 
 
 
