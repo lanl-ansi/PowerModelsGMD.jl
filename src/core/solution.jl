@@ -124,6 +124,8 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict)
     end
 
 
+
+    
     # add_setpoint_load_demand!(sol, pm)
     # function add_setpoint_load_demand!(sol, pm::_PM.AbstractPowerModel)
     #     mva_base = pm.data["baseMVA"]
