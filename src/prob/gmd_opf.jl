@@ -38,7 +38,7 @@ function post_gmd_opf(pm::PMs.AbstractPowerModel; kwargs...)
     end
 
     for i in PMs.ids(pm, :branch)
-        Memento.debug(LOGGER, "Adding constraints for branch $i \n")
+        Memento.debug(_LOGGER, "Adding constraints for branch $i \n")
         constraint_dc_current_mag(pm, i)
         constraint_qloss_vnom(pm, i)
 

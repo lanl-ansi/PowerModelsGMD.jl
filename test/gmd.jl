@@ -6,19 +6,25 @@
     @testset "B4GIC case" begin
 
         casename = "../test/data/b4gic.m"
-        case = PowerModels.parse_file(casename)
+        case = _PM.parse_file(casename)
 
-        result = PowerModelsGMD.run_gmd(casename, ipopt_optimizer)
-        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+        result = _PMGMD.run_gmd(casename, ipopt_solver)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
-        result = PowerModelsGMD.run_gmd(casename, ipopt_optimizer; setting=setting)
-        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+        result = _PMGMD.run_gmd(casename, ipopt_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
         adjust_gmd_qloss(case, solution)
 
-        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.008063648310255, atol=0.1)
+        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.008063648310255, atol=0.1)       
+
+        # result = _PMGMD.run_gmd(case_b4gic, ipopt_solver)
+        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
+
+        # result = _PMGMD.run_gmd(case_b4gic, ipopt_solver; setting=setting)
+        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
     end
 
@@ -29,10 +35,10 @@
     @testset "NERC B6GIC case" begin
 
         casename = "../test/data/b6gic_nerc.m"
-        case = PowerModels.parse_file(casename)
-        result = PowerModelsGMD.run_gmd(casename, ipopt_optimizer; setting=setting)
+        case = _PM.parse_file(casename)
+        result = _PMGMD.run_gmd(casename, ipopt_solver; setting=setting)
 
-        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
@@ -49,10 +55,10 @@
     @testset "EPRI21 case" begin
 
         casename = "../test/data/epri21.m"
-        case = PowerModels.parse_file(casename)
-        result = PowerModelsGMD.run_gmd(casename, ipopt_optimizer; setting=setting)
+        case = _PM.parse_file(casename)
+        result = _PMGMD.run_gmd(casename, ipopt_solver; setting=setting)
 
-        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
@@ -78,10 +84,10 @@
     @testset "UIUC150 case" begin
 
         casename = "../test/data/uiuc150.m"
-        case = PowerModels.parse_file(casename)
-        result = PowerModelsGMD.run_gmd(casename, ipopt_optimizer; setting=setting)
+        case = _PM.parse_file(casename)
+        result = _PMGMD.run_gmd(casename, ipopt_solver; setting=setting)
 
-        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
         
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
@@ -101,10 +107,10 @@
     @testset "RTS-GMLC-GIC case" begin
 
         casename = "../test/data/rts_gmlc_gic.m"
-        case = PowerModels.parse_file(casename)
-        result = PowerModelsGMD.run_gmd(casename, ipopt_optimizer; setting=setting)
+        case = _PM.parse_file(casename)
+        result = _PMGMD.run_gmd(casename, ipopt_solver; setting=setting)
 
-        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
@@ -116,12 +122,10 @@
         @test isapprox(solution["gmd_bus"]["122"]["gmd_vdc"], -7.9706141598148585, atol=0.1) # Bus313=>ID"122" - PWvalue
         @test isapprox(solution["gmd_bus"]["68"]["gmd_vdc"], 16.961848248756223, atol=0.1) # Bus107=>ID"68" - PWvalue
     
-        # - NOTE: At the moment PowerModelsGMD always gives gmd_vdc=0 on the delta side of generator transformers! - #
-        @test isapprox(solution["gmd_bus"]["155"]["gmd_vdc"], 0.0, atol=0.1) # GenBus121=>ID"155" - PMGMDvalue
-        @test isapprox(solution["gmd_bus"]["186"]["gmd_vdc"], 0.0, atol=0.1) # GenBus218=>ID"186" - PMGMDvalue
+        # - NOTE: At the moment _PMGMD always gives gmd_vdc=0 on the delta side of generator transformers! - #
+        @test isapprox(solution["gmd_bus"]["155"]["gmd_vdc"], 0.0, atol=0.1) # GenBus121=>ID"155" - _PMGMDvalue
+        @test isapprox(solution["gmd_bus"]["186"]["gmd_vdc"], 0.0, atol=0.1) # GenBus218=>ID"186" - _PMGMDvalue
 
     end
 
 end
-
-

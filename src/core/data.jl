@@ -129,15 +129,13 @@ end
 
 
 "FUNCTION: compute maximum AC current on a branch"
-function calc_ac_mag_max(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    
-    # ac_mag_max
-    branch = PMs.ref(pm, nw, :branch, i)
-    f_bus = PMs.ref(pm, nw, :bus, branch["f_bus"])
-    t_bus = PMs.ref(pm, nw, :bus, branch["t_bus"])
-    ac_max = branch["rate_a"]*branch["tap"] / min(f_bus["vmin"], t_bus["vmin"])
+function calc_ac_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 
-    #println(i, " " , ac_max, " ", branch["rate_a"], " ", pm.ref[:nw][n][:bus][f_bus]["vmin"], " ", pm.ref[:nw][n][:bus][t_bus]["vmin"])
+    # ac_mag_max
+    branch = _PM.ref(pm, nw, :branch, i)
+    f_bus = _PM.ref(pm, nw, :bus, branch["f_bus"])
+    t_bus = _PM.ref(pm, nw, :bus, branch["t_bus"])
+    ac_max = branch["rate_a"]*branch["tap"] / min(f_bus["vmin"], t_bus["vmin"])
 
     return ac_max
 
@@ -145,16 +143,15 @@ end
 
 
 "FUNCTION: compute the maximum DC current on a branch"
-function calc_dc_mag_max(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     
-    branch = PMs.ref(pm, nw, :branch, i)
+    branch = _PM.ref(pm, nw, :branch, i)
 
     ac_max = -Inf
-    for l in PMs.ids(pm, nw, :branch)
+    for l in _PM.ids(pm, nw, :branch)
         ac_max = max(calc_ac_mag_max(pm, l, nw=nw), ac_max)
     end
     ibase = calc_branch_ibase(pm, i, nw=nw)
-    #println(i , " ", 2 * ac_max * ibase, " ", ibase, " ", ac_max)
 
     return 2 * ac_max * ibase #   branch["ibase"]
 
@@ -162,10 +159,10 @@ end
 
 
 "FUNCTION: computes the ibase for a branch"
-function calc_branch_ibase(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_branch_ibase(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 
-    branch = PMs.ref(pm, nw, :branch, i)
-    bus = PMs.ref(pm, nw, :bus, branch["hi_bus"])
+    branch = _PM.ref(pm, nw, :branch, i)
+    bus = _PM.ref(pm, nw, :bus, branch["hi_bus"])
     return branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
 
 end
@@ -196,10 +193,10 @@ end
 
 
 "FUNCTION: compute the thermal coeffieicents for a branch"
-function calc_branch_thermal_coeff(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_branch_thermal_coeff(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 
-    branch = PMs.ref(pm, nw, :branch, i)
-    buses = PMs.ref(pm, nw, :bus)
+    branch = _PM.ref(pm, nw, :branch, i)
+    buses = _PM.ref(pm, nw, :bus)
 
     if !(branch["type"] == "xfmr")
         return NaN
@@ -230,9 +227,8 @@ function calc_branch_thermal_coeff(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw
         end
     end
 
-    #x0 = 1e3*thermal_cap_x0./calc_branch_ibase(pm, i, nw=nw)  #branch["ibase"]
     x0 = thermal_cap_x0./calc_branch_ibase(pm, i, nw=nw)  #branch["ibase"]
-    y0 = thermal_cap_y0./100  # convert to %
+    y0 = thermal_cap_y0./100  # convert to [%]
 
     y = calc_ac_mag_max(pm, i, nw=nw) .* y0 # branch["ac_mag_max"] .* y0
     x = x0
@@ -245,7 +241,7 @@ end
 
 
 "FUNCTION: computes the maximum dc voltage difference between buses"
-function calc_max_dc_voltage_difference(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_max_dc_voltage_difference(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return 1e6 # TODO, actually formally calculate
 end
 
@@ -373,7 +369,7 @@ function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
 
             if "model" in keys(gen) && "cost" in keys(gen)
                 if gen["model"] != 2
-                    Memento.warn(LOGGER, "Skipping generator cost model of type other than 2")
+                    Memento.warn(_LOGGER, "Skipping generator cost model of type other than 2")
                 else
                     degree = length(gen["cost"])
                     for (i, item) in enumerate(gen["cost"])
@@ -388,19 +384,19 @@ end
 
 
 "FUNCTION: compute the maximum DC voltage at a gmd bus "
-function calc_max_dc_voltage(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return Inf
 end
 
 
 "FUNCTION: compute the maximum DC voltage at a gmd bus "
-function calc_min_dc_voltage(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return -Inf
 end
 
 
 "FUNCTION: compute the minimum absolute value AC current on a branch"
-function calc_ac_mag_min(pm::PMs.AbstractPowerModel, i; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function calc_ac_mag_min(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return 0
 end
 
@@ -424,7 +420,7 @@ end
 "FUNCTION: DC current on gwye-gwye transformers"
 function dc_current_mag_gwye_gwye_xf(branch, case, solution)
 
-    # find the corresponding gmd branch
+    # find the corresponding gmd branch:
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
@@ -444,7 +440,8 @@ end
 
 "DC current on three-winding gwye-gwye-gwye transformers"
 function dc_current_mag_3w_xf(branch, case, solution)
-    # find the corresponding gmd branch
+
+    # find the corresponding gmd branch:
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
@@ -648,5 +645,3 @@ function update_hotspotrise(branch, net)
     net["branch"][k]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
     
 end
-
-

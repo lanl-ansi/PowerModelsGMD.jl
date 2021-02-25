@@ -1,22 +1,22 @@
 
 "VARIABLE: ac current"
-function variable_ac_current(pm::PMs.AbstractDCPModel; kwargs...)
+function variable_ac_current(pm::_PM.AbstractDCPModel; kwargs...)
 end
 
 
 "VARIABLE: ac current on/off"
-function variable_ac_current_on_off(pm::PMs.AbstractDCPModel; kwargs...)
+function variable_ac_current_on_off(pm::_PM.AbstractDCPModel; kwargs...)
 end
 
 
 "VARIABLE: dc current"
-function variable_dc_current(pm::PMs.AbstractDCPModel; kwargs...)
+function variable_dc_current(pm::_PM.AbstractDCPModel; kwargs...)
     variable_dc_current_mag(pm; kwargs...)
 end
 
 
 "VARIABLE: reactive loss"
-function variable_reactive_loss(pm::PMs.AbstractDCPModel; kwargs...)
+function variable_reactive_loss(pm::_PM.AbstractDCPModel; kwargs...)
 end
 
 
@@ -29,12 +29,12 @@ sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_
 
 
 "CONTRAINT: kcl with shunts for load shedding"
-function constraint_kcl_shunt_gmd_ls(pm::PMs.AbstractDCPModel, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+function constraint_kcl_shunt_gmd_ls(pm::_PM.AbstractDCPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 
-    vm = PMs.var(pm, n, c, :vm)[i]
-    p = PMs.var(pm, n, c, :p)
-    pg = PMs.var(pm, n, c, :pg)
-    pd_ls = PMs.var(pm, n, c, :pd)
+    vm = _PM.var(pm, n, :vm)[i]
+    p = _PM.var(pm, n, :p)
+    pg = _PM.var(pm, n, :pg)
+    pd_ls = _PM.var(pm, n, :pd)
 
     JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_ls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs)*vm^2)
 
@@ -50,11 +50,11 @@ sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_
 
 
 "CONTRAINT: kcl with shunts"
-function constraint_kcl_shunt_gmd(pm::PMs.AbstractDCPModel, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+function constraint_kcl_shunt_gmd(pm::_PM.AbstractDCPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 
-    vm = PMs.var(pm, n, c, :vm)[i]
-    p = PMs.var(pm, n, c, :p)
-    pg = PMs.var(pm, n, c, :pg)
+    vm = _PM.var(pm, n, :vm)[i]
+    p = _PM.var(pm, n, :p)
+    pg = _PM.var(pm, n, :pg)
 
     JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs)*vm^2)
 
@@ -70,20 +70,20 @@ sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_
 
 
 "CONTRAINT: klc"
-function constraint_kcl_gmd(pm::PMs.AbstractDCPModel, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
+function constraint_kcl_gmd(pm::_PM.AbstractDCPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
 
-    p = PMs.var(pm, n, c, :p)
-    pg = PMs.var(pm, n, c, :pg)
+    p = _PM.var(pm, n, :p)
+    pg = _PM.var(pm, n, :pg)
 
     JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd))
 
 end
 
 "CONSTRAINT: relating current to power flow on/off"
-function constraint_current_on_off(pm::PMs.AbstractDCPModel, n::Int, c::Int, i, ac_max)
+function constraint_current_on_off(pm::_PM.AbstractDCPModel, n::Int, i, ac_max)
 
-    z  = PMs.var(pm, n, :z_branch)[i]
-    i_ac = PMs.var(pm, n, c, :i_ac_mag)[i]
+    z  = _PM.var(pm, n, :z_branch)[i]
+    i_ac = _PM.var(pm, n, c, :i_ac_mag)[i]
     JuMP.@constraint(pm.model, i_ac <= z * ac_max)
     JuMP.@constraint(pm.model, i_ac >= z * 0.0)
 
@@ -91,22 +91,22 @@ end
 
 
 "CONSTRAINT: computing thermal protection of transformers"
-function constraint_thermal_protection(pm::PMs.AbstractDCPModel, n::Int, c::Int, i, coeff, ibase)
+function constraint_thermal_protection(pm::_PM.AbstractDCPModel, n::Int, i, coeff, ibase)
 
-    i_ac_mag = PMs.var(pm, n, c, :i_ac_mag)[i]
-    ieff = PMs.var(pm, n, c, :i_dc_mag)[i]
+    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
+    ieff = _PM.var(pm, n, :i_dc_mag)[i]
 
     JuMP.@constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff^2/(ibase^2))
 end
 
 
 "CONSTRAINT: computing qloss"
-function constraint_qloss_vnom(pm::PMs.AbstractDCPModel, n::Int, c::Int, k, i, j, K, branchMVA)
+function constraint_qloss_vnom(pm::_PM.AbstractDCPModel, n::Int, k, i, j, K, branchMVA)
 end
 
 
 "CONSTRAINT: computing qloss"
-function constraint_qloss_vnom(pm::PMs.AbstractDCPModel, n::Int, c::Int, k, i, j)
+function constraint_qloss_vnom(pm::_PM.AbstractDCPModel, n::Int, k, i, j)
 end
 
 
