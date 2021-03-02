@@ -149,19 +149,8 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict)
                     delete!(gmd_bus, j)
                 end
 
-                gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:nw][0][:v_dc]) #FIXME
-
-                # RESULT
-                # result["solution"]["gmd_bus"]["2"]["gmd_vdc"]
-                # 1-dimensional DenseAxisArray{Float64,1,...} with index sets:
-                #   Dimension 1, [4, 2, 3, 5, 6, 1]
-                # And data, a 6-element Array{Float64,1}:
-                #   32.008063648310255
-                #   21.338709098873505
-                #   -32.008063648310255
-                #   0.0
-                #   0.0
-                #   -21.338709098873505
+                key = (gmd_bus["index"])
+                gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:nw][0][:v_dc][key])
 
             end
         end
@@ -178,18 +167,8 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict)
                     delete!(gmd_branch, j)
                 end
 
-                gmd_branch["gmd_idc"] = JuMP.value.(pm.var[:nw][0][:dc]) #FIXME
-
-                # result["solution"]["gmd_branch"]["1"]["gmd_idc"]
-                # 1-dimensional DenseAxisArray{Float64,1,...} with index sets:
-                #   Dimension 1, [(2, 3, 4), (3, 4, 2), (1, 3, 1), (2, 4, 3), (3, 2, 4), (1, 1, 3)]
-                # And data, a 6-element Array{Float64,1}:
-                #   106.69354549436753
-                #   106.69354549436753
-                #   -106.69354549436753
-                #   0.0
-                #   0.0
-                #   0.0
+                key = (gmd_branch["index"], gmd_branch["f_bus"], gmd_branch["t_bus"])
+                gmd_branch["gmd_idc"] = JuMP.value.(pm.var[:nw][0][:dc][key])
 
             end
         end
