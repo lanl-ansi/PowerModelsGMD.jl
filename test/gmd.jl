@@ -14,12 +14,15 @@
         result = _PMGMD.run_gmd(casename, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
+        
         solution = result["solution"]
         make_gmd_mixed_units(solution, 100.0)
         adjust_gmd_qloss(case, solution)
 
-        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.008063648310255, atol=0.1)       
+        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.008063648310255, atol=1e1))
+        @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 106.69354549436753, atol=1e1))
 
+        
         # result = _PMGMD.run_gmd(case_b4gic, ipopt_solver)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
