@@ -24,6 +24,10 @@ const _PMGMD = PowerModelsGMD
         Memento.setlevel!(Memento.getlogger(_PMGMD), "error")
     end
 
+    function logger_config!(level)
+        Memento.config!(Memento.getlogger("PowerModelsGMD"), level)
+    end
+
 
     # Add core functions, formulations, and problem specifications:
     include("core/base.jl")

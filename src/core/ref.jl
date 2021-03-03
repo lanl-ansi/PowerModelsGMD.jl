@@ -1,6 +1,6 @@
 
-"FUNCTION: add gmd modeling data structures"
 
+"FUNCTION: add gmd modeling data structures"
 function core_ref!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
 
     for (nw, nw_ref) in ref[:nw]
@@ -21,3 +21,4 @@ function core_ref!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     end
 
 end
+

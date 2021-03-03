@@ -37,7 +37,11 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 using Test
 
 # Parse test cases:
-case_b4gic = _PMs.parse_file("../test/data/b4gic.m")
+case_b4gic = _PM.parse_file("../test/data/b4gic.m")
+case_b6gic_nerc = _PM.parse_file("../test/data/b6gic_nerc.m")
+case_epri21 = _PM.parse_file("../test/data/epri21.m")
+case_uiuc150 = _PM.parse_file("../test/data/uiuc150.m")
+case_rtsgmlcgic = _PM.parse_file("../test/data/rts_gmlc_gic.m")
 
 
 # Perform the tests of implemented formulations:
