@@ -1,5 +1,6 @@
 @testset "TEST GMD" begin
 
+
     # ===   B4GIC   === #
 
     @testset "B4GIC case" begin
@@ -18,6 +19,7 @@
     end
 
 
+
     # ===   NERC B6GIC   === #
 
     @testset "NERC B6GIC case" begin
@@ -34,6 +36,7 @@
         @test isapprox(solution["gmd_branch"]["3"]["gmd_idc"], -13.507237320660954, atol=1e1)
 
     end
+
 
 
     # ===   EPRI21   === #
@@ -59,6 +62,7 @@
     end
 
 
+
     # ===   UIUC150   === #
 
     @testset "UIUC150 case" begin
@@ -81,6 +85,7 @@
         @test isapprox(solution["gmd_branch"]["91"]["gmd_idc"], -23.014727979030802, atol=1e-1)
 
     end
+
 
 
     # ===   RTS-GMLC-GIC   === #

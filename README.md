@@ -1,7 +1,5 @@
 # PowerModelsGMD.jl
 
-[CI](https://github.com/lanl-ansi/PowerModelsGMD.jl/workflows/CI/badge.svg) [![codecov](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl/branch/master/graph/badge.svg?token=ADfcIkUOqH)](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl) ![Documentation](https://github.com/lanl-ansi/PowerModelsGMD.jl/workflows/Documentation/badge.svg)
-
 PowerModelsGMD (abbr. PMsGMD) is an open-source [Julia](https://julialang.org/) package -- an extension to the [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation -- which was specifically designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (abbr. GMDs) and E3 high-altitude electromagnetic pulse (abbr. HEMP) events on the electrical grid.
 
 Due to its open-source nature, it is easy to verify and customize its operation to best fit the application circumstances. Due to its speed and reliability, it is suitable to be a key component of toolkits that monitor GMD manifestations in real-time, that predict GICs on the electrical grid, that assess risk, that enhance grid resilience by providing aid to system-operators, and that recommend modifications in the network configuration.
@@ -11,7 +9,7 @@ Consequently, PMsGMD is equally useful for both research and industry applicatio
 
 ## PMsGMD Dependencies
 
-PMsGMD builds on the following Julia packages: [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.17.4 and [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.5.4.
+PMsGMD builds on the following Julia packages: [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.18.0 and [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.6.0.
 In addition, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21.1, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21.6, and [Memento](https://github.com/invenia/Memento.jl) v1.1.2.
 
 
@@ -36,17 +34,12 @@ Alternatively, [Cbc](https://github.com/jump-dev/Cbc.jl), [Juniper](https://gith
 
 ## Installation
 
-Prerequisite:
-To use PMsGMD, the installation of PMs is required. Follow instructions [here](https://github.com/lanl-ansi/PowerModels.jl).
-
-
-Installation:
-From the Julia package manager REPL type
+After the installation of its dependencies, PMsGMD can be installed from the Julia package manager:
 ```
 add https://github.com/lanl-ansi/PowerModelsGMD.jl.git
 ```
 
-Testing:
+To verify that all implemented formulations work as designed, test PMsGMD:
 ```
 test PowerModelsGMD
 ```

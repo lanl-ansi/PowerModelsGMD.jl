@@ -168,7 +168,7 @@ function constraint_dc_current_mag_line(pm::_PM.AbstractPowerModel, n::Int, k)
     JuMP.@constraint(pm.model, ieff[k] >= 0.0)
 
 end
-constraint_dc_current_mag_line(pm::_PM.AbstractPowerModel, k; nw::Int=pm.cnw) = constraint_dc_current_mag_line(pm, nw, k)
+constraint_dc_current_mag_line(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_line(pm, nw, k)
 
 
 "CONSTRAINT: DC current on grounded transformers"
@@ -178,7 +178,7 @@ function constraint_dc_current_mag_grounded_xf(pm::_PM.AbstractPowerModel, n::In
     JuMP.@constraint(pm.model, ieff[k] >= 0.0)
 
 end
-constraint_dc_current_mag_grounded_xf(pm::_PM.AbstractPowerModel, k; nw::Int=pm.cnw) = constraint_dc_current_mag_grounded_xf(pm, nw, k)
+constraint_dc_current_mag_grounded_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_grounded_xf(pm, nw, k)
 
 
 "CONSTRAINT: computing the DC current magnitude"
@@ -206,7 +206,7 @@ function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
     end
 
 end
-constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=pm.cnw) = constraint_dc_current_mag(pm, nw, k)
+constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag(pm, nw, k)
 
 
 
@@ -242,7 +242,7 @@ end
 
 
 "CONSTRAINT: computing qloss"
-function constraint_zero_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j)
+function constraint_zero_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i::Int, j)
 
     qloss = _PM.var(pm, n, :qloss)
 
@@ -253,7 +253,7 @@ end
 
 
 "CONSTRAINT: computing qloss assuming ac primary voltage is 1.0 pu"
-function constraint_qloss_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, branchMVA)
+function constraint_qloss_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i::Int, j, K, branchMVA)
 
     i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
     qloss = _PM.var(pm, n, :qloss)
@@ -267,7 +267,7 @@ end
 
 
 "CONSTRAINT: computing qloss assuming varying ac voltage"
-function constraint_qloss_decoupled(pm::_PM.AbstractPowerModel, k; nw::Int=pm.cnw)
+function constraint_qloss_decoupled(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = ref(pm, nw, :branch, k)
 
@@ -291,7 +291,7 @@ end
 
 
 "CONSTRAINT:  computing qloss assuming ac voltage is 1.0 pu"
-function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=pm.cnw)
+function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
 

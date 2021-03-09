@@ -15,11 +15,11 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
 julia = "^1"
-InfrastructureModels = "~0.5.4"
+InfrastructureModels = "~0.6.0"
 JSON = "~0.21"
 JuMP = "~0.21"
 Memento = "~1.1"
-PowerModels = "~0.17.4"
+PowerModels = "~0.18.0"
 Cbc = ">= 0.7"
 Ipopt = ">= 0.6"
 Juniper = ">= 0.6"

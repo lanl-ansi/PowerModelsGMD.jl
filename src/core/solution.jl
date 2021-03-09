@@ -57,16 +57,16 @@
 
 
 "SOLUTION: add PowerModels.jl solutions"
-function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,<:Any})
+function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict)
 
-    if haskey(solution, "nw")
-        nws_data = solution["nw"]
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
     else
-        nws_data = Dict("0" => solution)
+        nws_data = Dict("0" => solution["it"][pm_it_name])
     end
 
     # Bus
-    solution["bus"] = pm.data["bus"]
+    nws_data["bus"] = pm.data["bus"]
     for (n, nw_data) in nws_data
         if haskey(nw_data, "bus")
             for (i, bus) in nw_data["bus"]
@@ -81,7 +81,7 @@ function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,<:Any})
     end
 
     # Branch
-    solution["branch"] = pm.data["branch"]
+    nws_data["branch"] = pm.data["branch"]
     for (n, nw_data) in nws_data
         if haskey(nw_data, "branch")
             for (i, branch) in nw_data["branch"]
@@ -96,7 +96,7 @@ function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,<:Any})
     end
 
     # Gen
-    solution["gen"] = pm.data["gen"]
+    nws_data["gen"] = pm.data["gen"]
     for (n, nw_data) in nws_data
         if haskey(nw_data, "gen")
             for (i, gen) in nw_data["gen"]
@@ -106,21 +106,21 @@ function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,<:Any})
                     delete!(gen, j)
                 end
 
-                gen["pg"] = gen["pg"] * solution["baseMVA"]
-                gen["qg"] = gen["qg"] * solution["baseMVA"]
+                gen["pg"] = gen["pg"] * nws_data["baseMVA"]
+                gen["qg"] = gen["qg"] * nws_data["baseMVA"]
 
             end
         end
     end
 
     # Load
-    solution["load"] = pm.data["load"]
+    nws_data["load"] = pm.data["load"]
     for (n, nw_data) in nws_data
         if haskey(nw_data, "load")
             for (i, load) in nw_data["load"]
 
-                load["pd"] = load["pd"] * solution["baseMVA"]
-                load["qd"] = load["qd"] * solution["baseMVA"]
+                load["pd"] = load["pd"] * nws_data["baseMVA"]
+                load["qd"] = load["qd"] * nws_data["baseMVA"]
 
             end
         end
@@ -132,14 +132,14 @@ end
 "SOLUTION: add GMD solutions"
 function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict)
 
-    if haskey(solution, "nw")
-        nws_data = solution["nw"]
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
     else
-        nws_data = Dict("0" => solution)
+        nws_data = Dict("0" => solution["it"][pm_it_name])
     end
 
     # GMD Bus
-    solution["gmd_bus"] = pm.data["gmd_bus"]
+    nws_data["gmd_bus"] = pm.data["gmd_bus"]
     for (n, nw_data) in nws_data
         if haskey(nw_data, "gmd_bus")
             for (i, gmd_bus) in nw_data["gmd_bus"]
@@ -157,7 +157,7 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict)
     end
 
     # GMD Branch
-    solution["gmd_branch"] = pm.data["gmd_branch"]
+    nws_data["gmd_branch"] = pm.data["gmd_branch"]
     for (n, nw_data) in nws_data
         if haskey(nw_data, "gmd_branch")
             for (i, gmd_branch) in nw_data["gmd_branch"]

@@ -6,7 +6,8 @@ const _PMGMD = PowerModelsGMD
     import InfrastructureModels
     const _IM = InfrastructureModels
 
-    import InfrastructureModels: ids, ref, var, con, sol, nw_ids, nws, optimize_model!, @im_fields, ismultinetwork
+    import PowerModels: pm_it_name, pm_it_sym
+    import InfrastructureModels: optimize_model!, @im_fields, nw_id_default
 
     import JSON
     import JuMP
