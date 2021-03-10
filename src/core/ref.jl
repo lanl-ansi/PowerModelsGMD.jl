@@ -1,23 +1,28 @@
-function ref_add_core!(refs::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    refs_gmd = refs[:it][pm_it_sym]
-    _ref_add_core!(refs_gmd[:nw])
-end
+function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    data_it = _IM.ismultiinfrastructure(data) ? data["it"][pm_it_name] : data
 
+    if _IM.ismultinetwork(data_it)
+        nws_data = data_it["nw"]
+    else
+        nws_data = Dict("0" => data_it)
+    end
 
-function _ref_add_core!(nw_refs::Dict{Int,<:Any})
-    for (nw, ref) in nw_refs
-        ref[:gmd_bus] = Dict(x for x in ref[:gmd_bus] if x.second["status"] != 0)
-        ref[:gmd_branch] = Dict(x for x in ref[:gmd_branch] if x.second["br_status"] != 0)
+    for (n, nw_data) in nws_data
+        nw_id = parse(Int, n)
+        nw_ref = ref[:it][pm_it_sym][:nw][nw_id]
 
-        ref[:gmd_arcs_from] = [(i,branch["f_bus"],branch["t_bus"]) for (i,branch) in ref[:gmd_branch]]
-        ref[:gmd_arcs_to] = [(i,branch["t_bus"],branch["f_bus"]) for (i,branch) in ref[:gmd_branch]]
-        ref[:gmd_arcs] = [ref[:gmd_arcs_from]; ref[:gmd_arcs_to]]
+        nw_ref[:gmd_bus] = Dict(x for x in nw_ref[:gmd_bus] if x.second["status"] != 0)
+        nw_ref[:gmd_branch] = Dict(x for x in nw_ref[:gmd_branch] if x.second["br_status"] != 0)
 
-        gmd_bus_arcs = Dict([(i, []) for (i,bus) in ref[:gmd_bus]])
-        for (l,i,j) in ref[:gmd_arcs]
+        nw_ref[:gmd_arcs_from] = [(i,branch["f_bus"],branch["t_bus"]) for (i,branch) in nw_ref[:gmd_branch]]
+        nw_ref[:gmd_arcs_to] = [(i,branch["t_bus"],branch["f_bus"]) for (i,branch) in nw_ref[:gmd_branch]]
+        nw_ref[:gmd_arcs] = [nw_ref[:gmd_arcs_from]; nw_ref[:gmd_arcs_to]]
+
+        gmd_bus_arcs = Dict([(i, []) for (i,bus) in nw_ref[:gmd_bus]])
+        for (l,i,j) in nw_ref[:gmd_arcs]
            push!(gmd_bus_arcs[i], (l,i,j))
         end
-        ref[:gmd_bus_arcs] = gmd_bus_arcs
+        nw_ref[:gmd_bus_arcs] = gmd_bus_arcs
     end
 end
 

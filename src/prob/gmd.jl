@@ -9,7 +9,7 @@ function run_gmd(file, optimizer; kwargs...)
         optimizer,
         build_gmd;
         ref_extensions = [
-            ref_add_core!
+            ref_add_gmd!
         ],
         solution_processors = [
             solution_PM!,

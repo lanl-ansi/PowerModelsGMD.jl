@@ -263,7 +263,7 @@ function adjust_gmd_qloss(case::Dict{String,Any}, data::Dict{String,Any})
         data["branch"] = Dict{String,Any}()
     end
 
-    for (i,br) in case["branch"]
+    for (i, br) in case["branch"]
         if !(i in keys(data["branch"]))
             data["branch"][i] = Dict{String,Any}()
             data["branch"][i]["pf"] = 0.0
@@ -403,7 +403,7 @@ end
 
 
 
-# --- Decoupled GMD Formulation Functions --- #
+# ===   DECOUPLED GMD FORMULATIONS   === #
 
 
 "FUNCTION: DC current on gwye-delta transformers"
@@ -416,6 +416,7 @@ function dc_current_mag_gwye_delta_xf(branch, case, solution)
     branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
 
 end
+
 
 "FUNCTION: DC current on gwye-gwye transformers"
 function dc_current_mag_gwye_gwye_xf(branch, case, solution)

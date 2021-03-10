@@ -1,23 +1,24 @@
-# --- General Variables --- #
+# ===   GENERAL VARIABLES   === #
 
 
 "VARIABLE: dc voltage"
-function variable_dc_voltage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true)
+function variable_dc_voltage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 
-    # `v_dc[j]` for `j` in `gmd_bus`
     if bounded
-        _PM.var(pm, nw)[:v_dc] = JuMP.@variable(pm.model,
+        v_dc= _PM.var(pm, nw)[:v_dc] = JuMP.@variable(pm.model,
             [i in _PM.ids(pm, nw, :gmd_bus)], base_name="$(nw)_v_dc",
             lower_bound = calc_min_dc_voltage(pm, i, nw=nw),
             upper_bound = calc_max_dc_voltage(pm, i, nw=nw),
             start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_bus, i), "v_dc_start")
         )
     else
-        _PM.var(pm, nw)[:v_dc] = JuMP.@variable(pm.model,
+        v_dc = _PM.var(pm, nw)[:v_dc] = JuMP.@variable(pm.model,
             [i in _PM.ids(pm, nw, :gmd_bus)], base_name="$(nw)_v_dc",
             start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_bus, i), "v_dc_start")
         )
     end
+
+    report && _PM.sol_component_value(pm, nw, :gmd_bus, :v_dc, _PM.ids(pm, nw, :gmd_bus), v_dc)
 
 end
 

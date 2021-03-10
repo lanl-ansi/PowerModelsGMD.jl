@@ -57,7 +57,7 @@
 
 
 "SOLUTION: add PowerModels.jl solutions"
-function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict)
+function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
     if haskey(solution["it"][pm_it_name], "nw")
         nws_data = solution["it"][pm_it_name]["nw"]
@@ -66,62 +66,74 @@ function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict)
     end
 
     # Bus
-    nws_data["bus"] = pm.data["bus"]
-    for (n, nw_data) in nws_data
-        if haskey(nw_data, "bus")
-            for (i, bus) in nw_data["bus"]
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["bus"] = pm.data["bus"]
 
-                remove = ["zone", "vmax", "area", "vmin", "bus_sid", "base_kv"]
-                for j in remove
-                    delete!(bus, j)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "bus")
+                for (i, bus) in nw_data["bus"]
+
+                    remove = ["zone", "vmax", "area", "vmin", "bus_sid", "base_kv"]
+                    for j in remove
+                        delete!(bus, j)
+                    end
+
                 end
-
             end
         end
     end
 
     # Branch
-    nws_data["branch"] = pm.data["branch"]
-    for (n, nw_data) in nws_data
-        if haskey(nw_data, "branch")
-            for (i, branch) in nw_data["branch"]
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["branch"] = pm.data["branch"]
 
-                remove = ["br_r", "gmd_br_series", "rate_a", "hotspot_coeff", "shift", "gmd_k", "tbus", "br_x", "topoil_init", "g_to", "hotspot_instant_limit", "topoil_rated",  "fbus", "g_fr", "b_fr", "gmd_br_hi", "baseMVA", "topoil_initialized", "topoil_time_const", "b_to", "gmd_br_common", "angmin", "temperature_ambient", "angmax", "hotspot_avg_limit", "hotspot_rated", "branch_sid", "gmd_br_lo", "tap", "transformer"]
-                for j in remove
-                    delete!(branch, j)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "branch")
+                for (i, branch) in nw_data["branch"]
+
+                    remove = ["br_r", "gmd_br_series", "rate_a", "hotspot_coeff", "shift", "gmd_k", "tbus", "br_x", "topoil_init", "g_to", "hotspot_instant_limit", "topoil_rated",  "fbus", "g_fr", "b_fr", "gmd_br_hi", "baseMVA", "topoil_initialized", "topoil_time_const", "b_to", "gmd_br_common", "angmin", "temperature_ambient", "angmax", "hotspot_avg_limit", "hotspot_rated", "branch_sid", "gmd_br_lo", "tap", "transformer"]
+                    for j in remove
+                        delete!(branch, j)
+                    end
+
                 end
-
             end
         end
     end
 
     # Gen
-    nws_data["gen"] = pm.data["gen"]
-    for (n, nw_data) in nws_data
-        if haskey(nw_data, "gen")
-            for (i, gen) in nw_data["gen"]
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["gen"] = pm.data["gen"]
 
-                remove = ["ncost",  "qc1max", "model", "shutdown", "startup", "gen_sid", "qc2max", "ramp_agc", "gen_bus", "pmax", "ramp_10", "vg", "mbase", "pc2", "cost", "qmax", "qmin", "qc1min", "qc2min", "pc1", "ramp_q", "ramp_30", "pmin", "apf"]
-                for j in remove
-                    delete!(gen, j)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "gen")
+                for (i, gen) in nw_data["gen"]
+
+                    remove = ["ncost",  "qc1max", "model", "shutdown", "startup", "gen_sid", "qc2max", "ramp_agc", "gen_bus", "pmax", "ramp_10", "vg", "mbase", "pc2", "cost", "qmax", "qmin", "qc1min", "qc2min", "pc1", "ramp_q", "ramp_30", "pmin", "apf"]
+                    for j in remove
+                        delete!(gen, j)
+                    end
+
+                    gen["pg"] = gen["pg"] * nws_data["$(nw_id)"]["baseMVA"]
+                    gen["qg"] = gen["qg"] * nws_data["$(nw_id)"]["baseMVA"]
+
                 end
-
-                gen["pg"] = gen["pg"] * nws_data["baseMVA"]
-                gen["qg"] = gen["qg"] * nws_data["baseMVA"]
-
             end
         end
     end
 
-    # Load
-    nws_data["load"] = pm.data["load"]
-    for (n, nw_data) in nws_data
-        if haskey(nw_data, "load")
-            for (i, load) in nw_data["load"]
+   # Load
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["load"] = pm.data["load"]
 
-                load["pd"] = load["pd"] * nws_data["baseMVA"]
-                load["qd"] = load["qd"] * nws_data["baseMVA"]
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "load")
+                for (i, load) in nw_data["load"]
 
+                    load["pd"] = load["pd"] * nws_data["$(nw_id)"]["baseMVA"]
+                    load["qd"] = load["qd"] * nws_data["$(nw_id)"]["baseMVA"]
+
+                end
             end
         end
     end
@@ -129,8 +141,8 @@ function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict)
 end
 
 
-"SOLUTION: add GMD solutions"
-function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict)
+"SOLUTION: add gmd solutions"
+function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
     if haskey(solution["it"][pm_it_name], "nw")
         nws_data = solution["it"][pm_it_name]["nw"]
@@ -139,42 +151,74 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict)
     end
 
     # GMD Bus
-    nws_data["gmd_bus"] = pm.data["gmd_bus"]
-    for (n, nw_data) in nws_data
-        if haskey(nw_data, "gmd_bus")
-            for (i, gmd_bus) in nw_data["gmd_bus"]
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["gmd_bus"] = pm.data["gmd_bus"]
 
-                remove = ["g_gnd", "name"]
-                for j in remove
-                    delete!(gmd_bus, j)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "gmd_bus")
+                for (i, gmd_bus) in nw_data["gmd_bus"]
+
+                    remove = ["g_gnd", "name"]
+                    for j in remove
+                        delete!(gmd_bus, j)
+                    end
+
+                    key = (gmd_bus["index"])
+                    gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:v_dc][key])
+
                 end
-
-                key = (gmd_bus["index"])
-                gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:nw][0][:v_dc][key])
-
             end
         end
     end
 
     # GMD Branch
-    nws_data["gmd_branch"] = pm.data["gmd_branch"]
-    for (n, nw_data) in nws_data
-        if haskey(nw_data, "gmd_branch")
-            for (i, gmd_branch) in nw_data["gmd_branch"]
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["gmd_branch"] = pm.data["gmd_branch"]
 
-                remove = ["br_r", "name", "br_v", "len_km"]
-                for j in remove
-                    delete!(gmd_branch, j)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "gmd_branch")
+                for (i, gmd_branch) in nw_data["gmd_branch"]
+
+                    remove = ["br_r", "name", "br_v", "len_km"]
+                    for j in remove
+                        delete!(gmd_branch, j)
+                    end
+
+                    key = (gmd_branch["index"], gmd_branch["f_bus"], gmd_branch["t_bus"])
+                    gmd_branch["gmd_idc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:dc][key])
+
                 end
-
-                key = (gmd_branch["index"], gmd_branch["f_bus"], gmd_branch["t_bus"])
-                gmd_branch["gmd_idc"] = JuMP.value.(pm.var[:nw][0][:dc][key])
-
             end
         end
     end
 
 end
+
+
+"SOLUTION: add gmd decoupled solutions"
+function solution_gmd_decoupled!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+
+    # if haskey(solution["it"][pm_it_name], "nw")
+    #     nws_data = solution["it"][pm_it_name]["nw"]
+    # else
+    #     nws_data = Dict("0" => solution["it"][pm_it_name])
+    # end
+
+
+
+
+#     add_setpoint_bus_qloss!(sol, pm)
+# "SETPOINT: add bus qloss setpoint"
+# function add_setpoint_bus_qloss!(sol, pm::_PM.AbstractPowerModel)
+#     mva_base = pm.data["baseMVA"]
+#     add_setpoint!(sol, pm, "branch", "gmd_qloss", :qloss, status_name="br_status", var_key = (idx,item) -> (idx, item["hi_bus"], item["lo_bus"]), scale = (x,item,i) -> x*mva_base)
+# end
+
+
+end
+
+
+
 
 
 
