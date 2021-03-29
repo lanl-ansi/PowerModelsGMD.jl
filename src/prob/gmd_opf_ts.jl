@@ -14,10 +14,10 @@ function post_gmd_opf_ts(pm::PMs.AbstractPowerModel; kwargs...)
 
         # -- Variables -- #
 
-        PMs.variable_voltage(pm, nw=n)
-        PMs.variable_generation(pm, nw=n)
-        PMs.variable_branch_flow(pm, nw=n)
-        PMs.variable_dcline_flow(pm, nw=n)
+        PMs.variable_bus_voltage(pm, nw=n)
+        PMs.variable_gen_power(pm, nw=n)
+        PMs.variable_branch_power(pm, nw=n)
+        PMs.variable_dcline_power(pm, nw=n)
 
         variable_dc_voltage(pm, nw=n)
         variable_dc_current_mag(pm, nw=n)
@@ -42,7 +42,7 @@ function post_gmd_opf_ts(pm::PMs.AbstractPowerModel; kwargs...)
         end
 
         for i in PMs.ids(pm, :bus, nw=n)
-            constraint_kcl_gmd(pm, i, nw=n)
+            constraint_power_balance_gmd(pm, i, nw=n)
         end
 
         for i in PMs.ids(pm, :branch, nw=n)
@@ -66,7 +66,7 @@ function post_gmd_opf_ts(pm::PMs.AbstractPowerModel; kwargs...)
         # - DC network - #
 
         for i in PMs.ids(pm, :gmd_bus)
-            constraint_dc_kcl_shunt(pm, i, nw=n)
+            constraint_dc_power_balance_shunt(pm, i, nw=n)
         end
 
         for i in PMs.ids(pm, :gmd_branch)

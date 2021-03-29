@@ -13,8 +13,8 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
     for (n, network) in nws(pm)
 
         # -- Variables -- #
-        PMs.variable_branch_flow(pm, nw=n) # p_ij, q_ij
-        PMs.variable_generation(pm, nw=n) # OTS uses bounded=false, why? 
+        PMs.variable_branch_power(pm, nw=n) # p_ij, q_ij
+        PMs.variable_gen_power(pm, nw=n) # OTS uses bounded=false, why? 
         variable_load(pm, nw=n) # l_i^p, l_i^qPG.
         #variable_ac_current_on_off(pm) # \tilde I^a_e and l_e
         PMs.variable_dcline_flow(pm, nw=n) 
@@ -55,8 +55,7 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
         end
 
         for i in PMs.ids(pm, :bus, nw=n)
-            constraint_kcl_shunt_gmd_ls(pm, i, nw=n)
-            # constraint_power_balance_shunt(pm, i, nw=n)
+            constraint_power_balance_shunt_gmd_ls(pm, i, nw=n)
         end
 
 	    for i in PMs.ids(pm, :gen)
@@ -88,7 +87,7 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
         # - DC network - #
 
         for i in PMs.ids(pm, :gmd_bus)
-            constraint_dc_kcl_shunt(pm, i, nw=n)
+            constraint_dc_power_balance_shunt(pm, i, nw=n)
         end
 
         for i in PMs.ids(pm, :gmd_branch)

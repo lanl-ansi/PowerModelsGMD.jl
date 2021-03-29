@@ -19,14 +19,15 @@ end
 
 "FUNCTION: basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
 function post_pf_qloss(pm::PMs.AbstractPowerModel, vnom; kwargs...)
+# this should be almost the same that power world does
 
     # -- Variables -- #
 
-    PMs.variable_voltage(pm, bounded = false)
+    PMs.variable_bus_voltage(pm, bounded = false)
     variable_qloss(pm)
 
-    PMs.variable_generation(pm, bounded = false)
-    PMs.variable_branch_flow(pm, bounded = false)
+    PMs.variable_gen_power(pm, bounded = false)
+    PMs.variable_branch_power(pm, bounded = false)
 
     # TODO: add dc line flow
     # PMs.variable_dcline_flow(pm, bounded = false):w
@@ -42,7 +43,7 @@ function post_pf_qloss(pm::PMs.AbstractPowerModel, vnom; kwargs...)
     end
 
     for (k,bus) in PMs.ref(pm, :bus)
-        constraint_kcl_gmd(pm, k)
+        constraint_power_balance_gmd(pm, k)
 
         # PV Bus Constraints
         if length(PMs.ref(pm, :bus_gens, k)) > 0 && !(k in PMs.ids(pm,:ref_buses))

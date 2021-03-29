@@ -30,9 +30,9 @@ function post_gmd_ots(pm::PMs.AbstractPowerModel; kwargs...)
     # -- AC modeling -- #
 
     PMs.variable_voltage_on_off(pm) # theta_i and V_i, includes constraint 3o
-    PMs.variable_branch_flow(pm) # p_ij, q_ij
+    PMs.variable_branch_power(pm) # p_ij, q_ij
     # no bounds because of the on/off constraints
-    PMs.variable_generation(pm, bounded=false) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r
+    PMs.variable_gen_power(pm, bounded=false) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r
     variable_active_generation_sqr_cost(pm)
     PMs.variable_branch_indicator(pm) # z_e variable
     variable_load(pm) # l_i^p, l_i^q
@@ -59,7 +59,7 @@ function post_gmd_ots(pm::PMs.AbstractPowerModel; kwargs...)
     end
 
     for i in PMs.ids(pm, :bus)
-        constraint_kcl_shunt_gmd_ls(pm, i) # variation of 3b, 3c
+        constraint_power_balance_shunt_gmd_ls(pm, i) # variation of 3b, 3c
     end
 
     for i in PMs.ids(pm, :gen)
@@ -88,7 +88,7 @@ function post_gmd_ots(pm::PMs.AbstractPowerModel; kwargs...)
     # -- DC network constraints -- #
 
     for i in PMs.ids(pm, :gmd_bus)
-       constraint_dc_kcl_shunt(pm, i) # constraint 3s
+        constraint_dc_power_balance_shunt(pm, i) # constraint 3s
     end
 
     for i in PMs.ids(pm, :gmd_branch)

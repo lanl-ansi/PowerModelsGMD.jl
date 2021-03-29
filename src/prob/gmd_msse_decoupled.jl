@@ -18,12 +18,12 @@ end
 "FUNCTION: GMD Model"
 function post_msse_qloss(pm::PMs.AbstractPowerModel; kwargs...)
 
-    PMs.variable_voltage(pm)
+    PMs.variable_bus_voltage(pm)
 
     variable_dc_current_mag(pm)
     variable_qloss(pm)
 
-    PMs.variable_generation(pm)
+    PMs.variable_gen_power(pm)
     PMs.variable_active_branch_flow(pm)
     PMs.variable_reactive_branch_flow(pm)
 
@@ -36,7 +36,7 @@ function post_msse_qloss(pm::PMs.AbstractPowerModel; kwargs...)
 
     for i in PMs.ids(pm, :bus)
          # TODO: check that this constraint is correct 
-         constraint_kcl_shunt_gmd_ls(pm, i)
+         constraint_power_balance_shunt_gmd_ls(pm, i)
     end
 
     for i in Pms.ids(pm, :branch)

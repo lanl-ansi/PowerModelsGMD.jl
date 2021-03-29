@@ -12,7 +12,7 @@ function run_gmd(file, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
+            solution_init!,
             solution_gmd!
         ],
         kwargs...,
@@ -27,7 +27,7 @@ function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
 
     for i in _PM.ids(pm, :gmd_bus)
         Memento.debug(_LOGGER, "Adding constraits for bus $i")
-        constraint_dc_kcl_shunt(pm, i)
+        constraint_dc_power_balance_shunt(pm, i)
     end
 
     for i in _PM.ids(pm, :gmd_branch)

@@ -16,12 +16,12 @@ end
 "FUNCTION: Basic GMD Model - Minimizes Generator Dispatch"
 function post_gmd_opf(pm::PMs.AbstractPowerModel; kwargs...)
 
-    PMs.variable_voltage(pm)
+    PMs.variable_bus_voltage(pm)
     variable_dc_voltage(pm)
     variable_dc_current_mag(pm)
     variable_qloss(pm)
-    PMs.variable_generation(pm)
-    PMs.variable_branch_flow(pm)
+    PMs.variable_gen_power(pm)
+    PMs.variable_branch_power(pm)
     variable_dc_line_flow(pm)
 
     objective_gmd_min_fuel(pm)
@@ -34,7 +34,7 @@ function post_gmd_opf(pm::PMs.AbstractPowerModel; kwargs...)
 
 
     for i in PMs.ids(pm, :bus)
-        constraint_kcl_gmd(pm, i)
+        constraint_power_balance_gmd(pm, i)
     end
 
     for i in PMs.ids(pm, :branch)
@@ -52,7 +52,7 @@ function post_gmd_opf(pm::PMs.AbstractPowerModel; kwargs...)
 
     ### DC network constraints ###
     for i in PMs.ids(pm, :gmd_bus)
-        constraint_dc_kcl_shunt(pm, i)
+        constraint_dc_power_balance_shunt(pm, i)
     end
 
     for i in PMs.ids(pm, :gmd_branch)

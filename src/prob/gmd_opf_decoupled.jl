@@ -2,143 +2,176 @@ export run_opf_qloss, run_opf_qloss_vnom
 export run_ac_opf_qloss, run_ac_opf_qloss_vnom
 export run_ac_gmd_opf_decoupled
 
-"Run basic GMD with the nonlinear AC equations"
-function run_ac_opf_qloss(file, solver; kwargs...)
-    return run_opf_qloss(file, ACPPowerModel, solver; kwargs...)
-end
 
-"Run basic GMD with the nonlinear AC equations"
-function run_ac_opf_qloss_vnom(file, solver; kwargs...)
-    return run_opf_qloss_vnom(file, ACPPowerModel, solver; kwargs...)
-end
-
-"Run the basic GMD model"
-function run_opf_qloss(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_opf_qloss; solution_builder = solution_gmd_decoupled!, kwargs...)
-end
-
-"Run the basic GMD model"
-function run_opf_qloss_vnom(file, model_constructor, solver; kwargs...)
-    return PMs.run_model(file, model_constructor, solver, post_opf_qloss_vnom; solution_builder = solution_gmd_decoupled!, kwargs...)
+"FUNCTION: run basic GMD with nonlinear AC equations"
+function run_ac_opf_qloss(file, optimizer; kwargs...)
+    return run_opf_qloss(
+        file,
+        _PM.ACPPowerModel,
+        optimizer;
+        kwargs...,
+    )
 end
 
 
-"Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss(pm::PMs.AbstractPowerModel; kwargs...)
+function run_ac_opf_qloss_vnom(file, optimizer; kwargs...)
+    return run_opf_qloss_vnom(
+        file,
+        _PM.ACPPowerModel,
+        optimizer;
+        kwargs...,
+    )
+end
+
+
+"FUNCTION: run basic GMD model"
+function run_opf_qloss(file, model_type::Type, optimizer; kwargs...)
+    return _PM.run_model(
+        file,
+        model_type,
+        optimizer,
+        build_opf_qloss;
+        solution_processors = [
+            solution_init!,
+            solution_PM!,
+            solution_gmd_decoupled!
+        ],
+        kwargs...,
+    )
+end
+
+
+function run_opf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
+    return _PM.run_model(
+        file,
+        model_type,
+        optimizer,
+        build_opf_qloss_vnom;
+        solution_processors = [
+            solution_init!,
+            solution_PM!,
+            solution_gmd_decoupled!
+        ],
+        kwargs...,
+    )
+end
+
+
+function build_opf_qloss(pm::_PM.AbstractPowerModel; kwargs...)
+
     use_vnom = false
-    post_opf_qloss(pm::PMs.AbstractACPModel, use_vnom; kwargs...)
-end
- 
+    build_opf_qloss(pm::_PM.AbstractACPModel, use_vnom; kwargs...)
 
-"Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss_vnom(pm::PMs.AbstractPowerModel; kwargs...)
+end
+
+
+function build_opf_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
+
     use_vnom = true
-    post_opf_qloss(pm::PMs.AbstractACPModel, use_vnom; kwargs...)
+    build_opf_qloss(pm::_PM.AbstractACPModel, use_vnom; kwargs...)
+
 end
 
 
-"Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss(pm::PMs.AbstractPowerModel, vnom; kwargs...)
-    PowerModels.variable_voltage(pm)
-    PowerModelsGMD.variable_qloss(pm)
-end
+function build_opf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 
+    _PM.variable_bus_voltage(pm)
+    _PM.variable_gen_power(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
 
-"FUNCTION: Basic AC + GMD Model - Minimize Generator Dispatch with Ieff Calculated"
-function post_opf_qloss(pm::PMs.AbstractACPModel, vnom; kwargs...)
-    PMs.variable_voltage(pm)
     variable_qloss(pm)
 
-    PMs.variable_generation(pm)
-    PMs.variable_branch_flow(pm)
+    _PM.constraint_model_voltage(pm)
 
-    PMs.objective_min_fuel_cost(pm)
-
-    PMs.constraint_model_voltage(pm)
-
-    for k in PMs.ids(pm, :ref_buses)
-        PMs.constraint_theta_ref(pm, k)
+    for i in _PM.ids(pm, :ref_buses)
+        _PM.constraint_theta_ref(pm, i)
     end
 
-    for k in PMs.ids(pm, :bus)
-        constraint_kcl_gmd(pm, k)
+    for i in _PM.ids(pm, :bus)
+        constraint_power_balance_gmd(pm, i)
     end
 
-    for k in PMs.ids(pm, :branch)
-        if vnom 
-            constraint_qloss_decoupled_vnom(pm, k)
+    for i in _PM.ids(pm, :branch)
+        _PM.constraint_ohms_yt_from(pm, i)
+        _PM.constraint_ohms_yt_to(pm, i)
+
+        _PM.constraint_voltage_angle_difference(pm, i)
+
+        _PM.constraint_thermal_limit_from(pm, i)
+        _PM.constraint_thermal_limit_to(pm, i)
+
+        if vnom
+            constraint_qloss_decoupled_vnom(pm, i)
         else
-            constraint_qloss_decoupled(pm, k)
+            constraint_qloss_decoupled(pm, i)
         end
 
-        PMs.constraint_ohms_yt_from(pm, k) 
-        PMs.constraint_ohms_yt_to(pm, k) 
-
-        PMs.constraint_thermal_limit_from(pm, k)
-        PMs.constraint_thermal_limit_to(pm, k)
-        PMs.constraint_voltage_angle_difference(pm, k)
     end
+
+    for i in _PM.ids(pm, :dcline)
+        _PM.constraint_dcline_power_losses(pm, i)
+    end
+
+    _PM.objective_min_fuel_and_flow_cost(pm)
+
 end
 
 
-"""
-    run_ac_gic_opf_decoupled(file)
-Run GIC followed by AC OPF with Qloss constraints
-"""
-function run_ac_gmd_opf_decoupled(file::String, solver;  setting=Dict(), kwargs...)
-    data = PowerModels.parse_file(file)
-    return run_ac_gmd_opf_decoupled(data, PMs.ACPPowerModel, solver; kwargs...)
+"FUNCTION: run GIC followed by AC OPF with Qloss constraints"
+function run_ac_gmd_opf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
+
+    data = _PM.parse_file(file)
+    return run_ac_gmd_opf_decoupled(data, _PM.ACPPowerModel, optimizer; kwargs...)
+
 end
 
-"""
-    run_ac_gic_opf_decoupled(file)
-Run GIC followed by AC OPF with Qloss constraints
-"""
-function run_ac_gmd_opf_decoupled(case::Dict{String,Any}, solver;  setting=Dict(), kwargs...)
-    return run_gmd_opf_decoupled(case, PMs.ACPPowerModel, solver; kwargs...)
+function run_ac_gmd_opf_decoupled(case::Dict{String,Any}, optimizer; setting=Dict(), kwargs...)
+    return run_gmd_opf_decoupled(
+        case,
+        _PM.ACPPowerModel,
+        optimizer;
+        kwargs...
+    )
 end
 
-"""
-    run_ac_gic_opf_decoupled(file)
-Run GIC followed by AC OPF with Qloss constraints
-"""
-function run_gmd_opf_decoupled(file::String, model_form, solver;  setting=Dict(), kwargs...)
-    data = PowerModels.parse_file(file)
-    return run_gmd_opf_decoupled(data, model_form, solver; kwargs...)
-end
 
 "Run GIC followed by AC OPF with Qloss constraints"
-function run_gmd_opf_decoupled(dc_case::Dict{String,Any}, model_form, solver; setting=Dict{String,Any}(), kwargs...)
+function run_gmd_opf_decoupled(file::String, model_type, optimizer; setting=Dict(), kwargs...)
+    
+    data = _PM.parse_file(file)
+    return run_gmd_opf_decoupled(data, model_type, optimizer; kwargs...)
+
+end
+
+function run_gmd_opf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer; setting=Dict{String,Any}(), kwargs...)
+
     branch_setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
     merge!(setting, branch_setting)
 
-    dc_result = run_gmd(dc_case, solver)
-    dc_solution = dc_result["solution"]
-    make_gmd_mixed_units(dc_solution, 100.0)
-    ac_case = deepcopy(dc_case)
+    mva_base = 100.0
 
-    for (k,br) in ac_case["branch"]
+    dc_result = run_gmd(dc_case, optimizer)
+    dc_solution = dc_result["solution"]
+    make_gmd_mixed_units(dc_solution, mva_base)
+    adjust_gmd_phasing(dc_result)
+
+    ac_case = deepcopy(dc_case)
+    for (k, br) in ac_case["branch"]
         dc_current_mag(br, ac_case, dc_solution)
     end
 
-    # println("Running ac opf with voltage-dependent qloss")
-    #ac_result = run_ac_opf_qloss(ac_case, optimizer, setting=setting)
-
-    println("Running ac opf with voltage-independent qloss")
-    ac_result = run_opf_qloss_vnom(ac_case, model_form, solver, setting=setting)
+    ac_result = run_opf_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
     ac_solution = ac_result["solution"]
-
-    make_gmd_mixed_units(ac_solution, 100.0)
+    make_gmd_mixed_units(ac_solution, mva_base)
     adjust_gmd_qloss(ac_case, ac_solution)
-  
 
     data = Dict()
+
+    
     data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
     data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
-
-    adjust_gmd_phasing(dc_result)
     return data
 
 end
-
 

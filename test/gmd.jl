@@ -4,7 +4,7 @@
     # ===   B4GIC   === #
 
     @testset "B4GIC case" begin
-        
+
         result = _PMGMD.run_gmd(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
@@ -100,7 +100,7 @@
         adjust_gmd_qloss(case_rtsgmlcgic, solution)
 
         # NOTE: currently PMsGMD always gives gmd_vdc=0 on the delta side of generator transformers
-        @test isapprox(solution["gmd_bus"]["68"]["gmd_vdc"], 16.961848248756223, atol=1e-1)    
+        @test isapprox(solution["gmd_bus"]["68"]["gmd_vdc"], 16.961848248756223, atol=1e-1)
         @test isapprox(solution["gmd_bus"]["84"]["gmd_vdc"], -6.635078362729118, atol=1e-1)
         @test isapprox(solution["gmd_bus"]["96"]["gmd_vdc"], 13.589410136012727, atol=1e-1)
         @test isapprox(solution["gmd_bus"]["121"]["gmd_vdc"], -9.644997725255688, atol=1e-1)
@@ -114,5 +114,7 @@
         @test isapprox(solution["gmd_branch"]["81"]["gmd_idc"], -1.486030984306776, atol=1e-1)
 
     end
+
+
 
 end

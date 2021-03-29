@@ -1,35 +1,32 @@
 export make_gmd_mixed_units, adjust_gmd_qloss, top_oil_rise, hotspot_rise, update_top_oil_rise, update_hotspot_rise
 
 
-# --- GMD Formulation Functions --- #
+# ===   GMD FORMULATION FUNCTIONS   === #
 
 
 "FUNCTION: add GMD data"
 function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
 
-    @assert !InfrastructureModels.ismultinetwork(case)
+    @assert !_IM.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
-    for (k,bus) in case["bus"]
+    for (k, bus) in case["bus"]
         j = "$(bus["gmd_bus"])"
         bus["gmd_vdc"] = solution["gmd_bus"][j]["gmd_vdc"]
     end
 
-    for (i,br) in case["branch"]
+    for (i, br) in case["branch"]
         br_soln = solution["branch"][i]
 
         if br["type"] == "line"
             k = "$(br["gmd_br"])"
             br["gmd_idc"] = solution["gmd_branch"][k]["gmd_idc"]/3.0
         
-        else # branch is transformer
+        else
             if decoupled
-                # get the high-side gmd branch
-                k = br["dc_brid_hi"]
                 # TODO: add calculations from constraint_dc_current_mag
+                k = br["dc_brid_hi"] # high-side gmd branch
                 br["gmd_idc"] = 0.0
-
-
                 br["ieff"] = abs(br["gmd_idc"])
                 br["qloss"] = calculate_qloss(br, case, solution)
             else
@@ -42,6 +39,7 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; deco
             else
                 br_soln["qt"] += br_soln["gmd_qloss"]
             end
+
         end
 
         br["qf"] = br_soln["qf"]
@@ -97,7 +95,7 @@ end
 
 
 
-# --- General Functions --- #
+# ===   GENERAL FUNCTIONS   === #
 
 
 "FUNCTION: calculate Qloss"
@@ -256,90 +254,50 @@ function apply_func(data::Dict{String,Any}, key::String, func)
 end
 
 
-"FUNCTION: adjust GMD Qloss"
-function adjust_gmd_qloss(case::Dict{String,Any}, data::Dict{String,Any})
-
-    if !("branch" in keys(data))
-        data["branch"] = Dict{String,Any}()
-    end
-
-    for (i, br) in case["branch"]
-        if !(i in keys(data["branch"]))
-            data["branch"][i] = Dict{String,Any}()
-            data["branch"][i]["pf"] = 0.0
-            data["branch"][i]["pt"] = 0.0
-            data["branch"][i]["qf"] = 0.0
-            data["branch"][i]["qt"] = 0.0
-        end
-
-        br_soln = data["branch"][i]
-            
-
-        if "gmd_qloss" in keys(br_soln) 
-            if br["f_bus"] == br["hi_bus"]
-                br_soln["qf"] += br_soln["gmd_qloss"]
-            else
-                br_soln["qt"] += br_soln["gmd_qloss"]
-            end
-        end
-    end
-
-end
-
-
 "FUNCTION: make GMD mixed units"
-function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
+function make_gmd_mixed_units(solution::Dict{String,Any}, mva_base::Real)
 
-    rescale      = x -> x*mva_base
-    rescale_dual = x -> x/mva_base
+    rescale = x -> (x * mva_base)
+    rescale_dual = x -> (x / mva_base)
 
-    if haskey(data, "bus")
-        for (i, bus) in data["bus"]
+    if haskey(solution, "bus")
+        for (i, bus) in solution["bus"]
             apply_func(bus, "pd", rescale)
             apply_func(bus, "qd", rescale)
-
             apply_func(bus, "gs", rescale)
             apply_func(bus, "bs", rescale)
-
             apply_func(bus, "va", rad2deg)
-
             apply_func(bus, "lam_kcl_r", rescale_dual)
             apply_func(bus, "lam_kcl_i", rescale_dual)
         end
     end
 
     branches = []
-    if haskey(data, "branch")
-        append!(branches, values(data["branch"]))
+    if haskey(solution, "branch")
+        append!(branches, values(solution["branch"]))
     end
-
-    dclines =[]
-    if haskey(data, "dcline")
-        append!(dclines, values(data["dcline"]))
+    if haskey(solution, "ne_branch")
+        append!(branches, values(solution["ne_branch"]))
     end
-
-    if haskey(data, "ne_branch")
-        append!(branches, values(data["ne_branch"]))
-    end
-
     for branch in branches
         apply_func(branch, "rate_a", rescale)
         apply_func(branch, "rate_b", rescale)
         apply_func(branch, "rate_c", rescale)
-
         apply_func(branch, "shift", rad2deg)
         apply_func(branch, "angmax", rad2deg)
         apply_func(branch, "angmin", rad2deg)
-
         apply_func(branch, "pf", rescale)
         apply_func(branch, "pt", rescale)
         apply_func(branch, "qf", rescale)
         apply_func(branch, "qt", rescale)
-
         apply_func(branch, "mu_sm_fr", rescale_dual)
         apply_func(branch, "mu_sm_to", rescale_dual)
     end
 
+    dclines =[]
+    if haskey(solution, "dcline")
+        append!(dclines, values(solution["dcline"]))
+    end
     for dcline in dclines
         apply_func(dcline, "loss0", rescale)
         apply_func(dcline, "pf", rescale)
@@ -356,28 +314,56 @@ function make_gmd_mixed_units(data::Dict{String,Any}, mva_base::Real)
         apply_func(dcline, "qminf", rescale)
     end
 
-    if haskey(data, "gen")
-        for (i, gen) in data["gen"]
+    if haskey(solution, "gen")
+        for (i, gen) in solution["gen"]
             apply_func(gen, "pg", rescale)
             apply_func(gen, "qg", rescale)
-
             apply_func(gen, "pmax", rescale)
             apply_func(gen, "pmin", rescale)
-
             apply_func(gen, "qmax", rescale)
             apply_func(gen, "qmin", rescale)
-
             if "model" in keys(gen) && "cost" in keys(gen)
                 if gen["model"] != 2
                     Memento.warn(_LOGGER, "Skipping generator cost model of type other than 2")
                 else
                     degree = length(gen["cost"])
                     for (i, item) in enumerate(gen["cost"])
-                        gen["cost"][i] = item/mva_base^(degree-i)
+                        gen["cost"][i] = item / (mva_base^(degree-i))
                     end
                 end
             end
         end
+    end
+
+end
+
+
+"FUNCTION: adjust GMD Qloss"
+function adjust_gmd_qloss(case::Dict{String,Any}, solution::Dict{String,Any})
+
+    if !("branch" in keys(solution))
+        solution["branch"] = Dict{String,Any}()
+    end
+
+    for (i, br) in case["branch"]
+
+        if !(i in keys(solution["branch"]))
+            solution["branch"][i] = Dict{String,Any}()
+            solution["branch"][i]["pf"] = 0.0
+            solution["branch"][i]["pt"] = 0.0
+            solution["branch"][i]["qf"] = 0.0
+            solution["branch"][i]["qt"] = 0.0
+        end
+
+        br_soln = solution["branch"][i]
+        if "gmd_qloss" in keys(br_soln)
+            if br["f_bus"] == br["hi_bus"]
+                br_soln["qf"] += br_soln["gmd_qloss"]
+            else
+                br_soln["qt"] += br_soln["gmd_qloss"]
+            end
+        end
+
     end
 
 end
@@ -409,9 +395,7 @@ end
 "FUNCTION: DC current on gwye-delta transformers"
 function dc_current_mag_gwye_delta_xf(branch, case, solution)
 
-    # calculate the current magnitude for each gmd branch
-
-    # find the corresponding gmd branch
+    # find corresponding gmd branch:
     khi = branch["gmd_br_hi"]
     branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
 
@@ -421,7 +405,7 @@ end
 "FUNCTION: DC current on gwye-gwye transformers"
 function dc_current_mag_gwye_gwye_xf(branch, case, solution)
 
-    # find the corresponding gmd branch:
+    # find corresponding gmd branch:
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
@@ -442,7 +426,7 @@ end
 "DC current on three-winding gwye-gwye-gwye transformers"
 function dc_current_mag_3w_xf(branch, case, solution)
 
-    # find the corresponding gmd branch:
+    # find corresponding gmd branch:
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
@@ -470,7 +454,7 @@ end
 "DC current on gwye-gwye auto transformers"
 function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
 
-    # find the corresponding gmd branch:
+    # find corresponding gmd branch:
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
     is = solution["gmd_branch"]["$ks"]["gmd_idc"]
@@ -513,7 +497,7 @@ function dc_current_mag(branch, case, solution)
     if branch["type"] != "xfmr"
         dc_current_mag_line(branch, case, solution)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-        println("  Ungrounded config, ieff constrained to zero")
+        println("Ungrounded config, ieff constrained to zero")
         dc_current_mag_grounded_xf(branch, case, solution)
     elseif branch["config"] in ["delta-gwye","gwye-delta"]
         dc_current_mag_gwye_delta_xf(branch, case, solution)
@@ -547,7 +531,7 @@ end
 
 
 
-# --- Thermal Model Functions --- #
+# ===   THERMAL MODEL FUNCTIONS   === #
 
 
 "FUNCTION: calculate top-oil temperature rise"
@@ -646,3 +630,4 @@ function update_hotspotrise(branch, net)
     net["branch"][k]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
     
 end
+

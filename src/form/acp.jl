@@ -1,4 +1,3 @@
-
 "VARIABLE: ac current"
 function variable_ac_current(pm::_PM.AbstractACPModel; kwargs...)
     variable_ac_current_mag(pm; kwargs...)
@@ -8,7 +7,6 @@ end
 "VARIABLE: ac current on/off"
 function variable_ac_current_on_off(pm::_PM.AbstractACPModel; kwargs...)
     variable_ac_current_mag(pm; bounded=false, kwargs...)
-    #NOTE: needs to be false because this is an on/off variable
 end
 
 
@@ -24,16 +22,8 @@ function variable_reactive_loss(pm::_PM.AbstractACPModel; kwargs...)
 end
 
 
-"""
-```
-sum(p[a] for a in bus_arcs)  == sum(pg[g] for g in bus_gens) - pd - gs*v^2 + pd_ls
-sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_ls - qloss
-```
-"""
-
-
-"CONSTRAINT: kcl with shunts for load shedding"
-function constraint_kcl_shunt_gmd_ls(pm::_PM.AbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+"CONSTRAINT: power balance with shunts for load shedding"
+function constraint_power_balance_shunt_gmd_ls(pm::_PM.AbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 
     vm = _PM.var(pm, n, :vm)[i]
     p = _PM.var(pm, n, :p)
@@ -44,14 +34,14 @@ function constraint_kcl_shunt_gmd_ls(pm::_PM.AbstractACPModel, n::Int, i::Int, b
     pd_ls = _PM.var(pm, n, :pd)
     qd_ls = _PM.var(pm, n, :qd)
 
-    JuMP.@constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_ls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs)*vm^2)
+    JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_ls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs)*vm^2)
     JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd - qd_ls[i] for (i, qd) in bus_qd) + sum(bs for (i, bs) in bus_bs)*vm^2)
 
 end
 
 
-"CONSTRAINT: kcl with shunts"
-function constraint_kcl_gmd(pm::_PM.AbstractACPModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
+"CONSTRAINT: power balance without shunts and load shedding"
+function constraint_power_balance_gmd(pm::_PM.AbstractACPModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
 
     p = _PM.var(pm, n, :p)
     q = _PM.var(pm, n, :q)
@@ -61,7 +51,7 @@ function constraint_kcl_gmd(pm::_PM.AbstractACPModel, n::Int, i, bus_arcs, bus_a
 
     # Bus Shunts for gs and bs are missing.  If you add it, you'll have to bifurcate one form of this constraint
     # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
-    JuMP.@constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd))
+    JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd))
     JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd for (i, qd) in bus_qd))
 
 end
@@ -85,6 +75,7 @@ function constraint_current_on_off(pm::_PM.AbstractACPModel, n::Int, i, ac_max)
 
     z = _PM.var(pm, n, :z_branch)[i]
     i_ac = _PM.var(pm, n, :i_ac_mag)[i]
+
     JuMP.@constraint(pm.model, i_ac <= z * ac_max)
     JuMP.@constraint(pm.model, i_ac >= z * 0.0)
 
@@ -106,6 +97,7 @@ end
 function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j)
 
     qloss = _PM.var(pm, n, :qloss)
+
     JuMP.@constraint(pm.model, qloss[(k,i,j)] == 0.0)
     JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
 
@@ -123,7 +115,8 @@ function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j, K, bra
         println("Warning: DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results")
     end
 
-    JuMP.@constraint(pm.model, qloss[(k,i,j)] == K*vm*i_dc_mag/(3.0*branchMVA)) #K is per phase
+    JuMP.@constraint(pm.model, qloss[(k,i,j)] == ((K * vm * i_dc_mag) / (3.0 * branchMVA)))  # 'K' is per phase
     JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
 
 end
+

@@ -25,9 +25,9 @@ function post_gmd_ls(pm::PMs.AbstractPowerModel; kwargs...)
     # this corresponds to model C4
 
     # AC modeling
-    PMs.variable_voltage(pm) # theta_i and V_i, includes constraint 3o
-    PMs.variable_branch_flow(pm) # p_ij, q_ij
-    PMs.variable_generation(pm) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r
+    PMs.variable_bus_voltage(pm) # theta_i and V_i, includes constraint 3o
+    PMs.variable_branch_power(pm) # p_ij, q_ij
+    PMs.variable_gen_power(pm) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r
     variable_load(pm) # l_i^p, l_i^q
     variable_ac_current(pm) # \tilde I^a_e and l_e
 
@@ -49,7 +49,7 @@ function post_gmd_ls(pm::PMs.AbstractPowerModel; kwargs...)
 
 
     for i in PMs.ids(pm, :bus)
-        constraint_kcl_shunt_gmd_ls(pm, i) # variation of 3b, 3c
+        constraint_power_balance_shunt_gmd_ls(pm, i) # variation of 3b, 3c
     end
 
     for i in PMs.ids(pm, :branch)
@@ -68,7 +68,7 @@ function post_gmd_ls(pm::PMs.AbstractPowerModel; kwargs...)
 
     ### DC network constraints ###
     for i in PMs.ids(pm, :gmd_bus)
-       constraint_dc_kcl_shunt(pm, i) # variation of constraint 3s
+        constraint_dc_power_balance_shunt(pm, i) # variation of constraint 3s
     end
 
     for i in PMs.ids(pm, :gmd_branch)

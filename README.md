@@ -1,6 +1,6 @@
 # PowerModelsGMD.jl
 
-PowerModelsGMD (abbr. PMsGMD) is an open-source [Julia](https://julialang.org/) package -- an extension to the [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation -- which was specifically designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (abbr. GMDs) and E3 high-altitude electromagnetic pulse (abbr. HEMP) events on the electrical grid.
+PowerModelsGMD (PMsGMD) is an open-source [Julia](https://julialang.org/) package - an extension to the [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation - which was specifically designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (GMDs) and E3 high-altitude electromagnetic pulse (HEMP) events on the electrical grid.
 
 Due to its open-source nature, it is easy to verify and customize its operation to best fit the application circumstances. Due to its speed and reliability, it is suitable to be a key component of toolkits that monitor GMD manifestations in real-time, that predict GICs on the electrical grid, that assess risk, that enhance grid resilience by providing aid to system-operators, and that recommend modifications in the network configuration.
 Consequently, PMsGMD is equally useful for both research and industry application.
@@ -16,12 +16,12 @@ In addition, it relies on and was optimized for these packages: [JSON](https://g
 
 ## Core Problem Specifications
 
-PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (abbr. GIC). It also solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
+PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (GIC). It also solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
 
 Currently the following common industry and academic formulations have been implemented:
 * GIC DC: quasi-dc power flow
-<!-- 
 * GIC -> AC - OPF: sequential quasi-dc power flow and ac optimal power flow
+<!--
 * GIC + AC - OPF: ac optimal power flow coupled with a quasi-dc power flow
 * GIC + AC - MLS: ac minimum-load-shed coupled with a quasi-dc power flow
 * GIC + AC - OTS: ac optimal transmission switching with load shed coupled with a quasi-dc power flow
@@ -46,6 +46,7 @@ test PowerModelsGMD
 
 
 
+<!-- 
 ## Quick Start
 
 The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers on the system.
@@ -58,13 +59,11 @@ case = PowerModels.parse_file(network_file)
 optimizer = with_optimizer(Ipopt.Optimizer)
 result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, optimizer)
 ```
+-->
 
 
 
 ## Function Reference
-<!-- 
-1) check that the test datasets correspond to those used in the test cases
--->
 
 
 ### GIC DC
@@ -72,7 +71,7 @@ result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, optimizer)
 Solves for steady-state dc currents on lines resulting from induced dc voltages on lines.
 `run_gmd("test/data/b4gic.m", optimizer)`
 
-For large systems (greater than 10,000 buses), the Lehtinen-Pirjola (LP) method may be used that relies on a matrix solve instead of an optimizer.
+For large systems (greater than 10,000 buses), the Lehtinen-Pirjola method may be used, which relies on a matrix solve instead of an optimizer.
 This may called by omitting the optimizer parameter
 `run_gmd("test/data/b4gic.m")`
 
@@ -88,6 +87,8 @@ run_gmd("test/data/b4gic.m", optimizer, setting=setting)
 Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-OPF to calculate the increase in transformer reactive power consumption.
 `run_ac_gmd_opf_decoupled("test/data/b4gic.m")`
 
+
+<!-- 
 
 ### GIC + AC-OPF
 
@@ -112,6 +113,8 @@ Solve the minimum-load shedding problem for a network subjected to GIC where lin
 Mitigating transformer overheating is achieved by treating the problem as an optimal transmission switching formulation.
 However, actual observed GMDs show time-varying behavior in ground electric fields both in magnitude and direction, which could cause different transformer heating than observed in the field peak magnitude.  
 Thus, the problem is extended to a multi-time-series formulation as well, in which the physics of transformer heating over time are modeled and used to inform a new optimization model that mitigates the effects of heating in terms of the thermal degradation of the transformer winding insulation.
+
+-->
 
 
 
