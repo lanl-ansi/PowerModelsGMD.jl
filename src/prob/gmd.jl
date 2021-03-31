@@ -1,7 +1,7 @@
 export run_gmd
 
 
-"FUNCTION: run GIC current model only"
+"FUNCTION: run GIC current model"
 function run_gmd(file, optimizer; kwargs...)
     return _PM.run_model(
         file,
@@ -12,7 +12,6 @@ function run_gmd(file, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_init!,
             solution_gmd!
         ],
         kwargs...,
@@ -20,6 +19,8 @@ function run_gmd(file, optimizer; kwargs...)
 end
 
 
+"FUNCTION: build the quasi-dc power flow problem
+as a linear constraint satisfaction problem"
 function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
 
     variable_dc_voltage(pm)

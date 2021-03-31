@@ -254,6 +254,64 @@ function apply_func(data::Dict{String,Any}, key::String, func)
 end
 
 
+"FUNCTION: compute the maximum DC voltage at a gmd bus "
+function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+    return Inf
+end
+
+
+"FUNCTION: compute the maximum DC voltage at a gmd bus "
+function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+    return -Inf
+end
+
+
+"FUNCTION: compute the minimum absolute value AC current on a branch"
+function calc_ac_mag_min(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+    return 0
+end
+
+
+
+
+# ===   RESULT ADJUSTMENT AND CONVERSION   === #
+
+
+"FUNCTION: convert effective GIC to PowerWorld to-phase convention"
+function adjust_gmd_phasing(result)
+
+    gmd_buses = result["solution"]["gmd_bus"]
+    for bus in values(gmd_buses)
+        bus["gmd_vdc"] = bus["gmd_vdc"]
+    end
+
+    gmd_branches = result["solution"]["gmd_branch"]
+    for branch in values(gmd_branches)
+        branch["gmd_idc"] = branch["gmd_idc"] / 3
+    end
+
+    return result
+
+end
+
+
+"FUNCTION: adjust GMD qloss"
+function adjust_gmd_qloss(case::Dict{String,Any}, solution::Dict{String,Any})
+
+    for (i, br) in case["branch"]
+        br_soln = solution["branch"][i]
+        if "gmd_qloss" in keys(br_soln)
+            if br["f_bus"] == br["hi_bus"]
+                br_soln["qf"] += br_soln["gmd_qloss"]
+            else
+                br_soln["qt"] += br_soln["gmd_qloss"]
+            end
+        end
+    end
+
+end
+
+
 "FUNCTION: make GMD mixed units"
 function make_gmd_mixed_units(solution::Dict{String,Any}, mva_base::Real)
 
@@ -338,162 +396,15 @@ function make_gmd_mixed_units(solution::Dict{String,Any}, mva_base::Real)
 end
 
 
-"FUNCTION: adjust GMD Qloss"
-function adjust_gmd_qloss(case::Dict{String,Any}, solution::Dict{String,Any})
-
-    if !("branch" in keys(solution))
-        solution["branch"] = Dict{String,Any}()
-    end
-
-    for (i, br) in case["branch"]
-
-        if !(i in keys(solution["branch"]))
-            solution["branch"][i] = Dict{String,Any}()
-            solution["branch"][i]["pf"] = 0.0
-            solution["branch"][i]["pt"] = 0.0
-            solution["branch"][i]["qf"] = 0.0
-            solution["branch"][i]["qt"] = 0.0
-        end
-
-        br_soln = solution["branch"][i]
-        if "gmd_qloss" in keys(br_soln)
-            if br["f_bus"] == br["hi_bus"]
-                br_soln["qf"] += br_soln["gmd_qloss"]
-            else
-                br_soln["qt"] += br_soln["gmd_qloss"]
-            end
-        end
-
-    end
-
-end
-
-
-"FUNCTION: compute the maximum DC voltage at a gmd bus "
-function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return Inf
-end
-
-
-"FUNCTION: compute the maximum DC voltage at a gmd bus "
-function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return -Inf
-end
-
-
-"FUNCTION: compute the minimum absolute value AC current on a branch"
-function calc_ac_mag_min(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return 0
-end
-
-
 
 
 # ===   DECOUPLED GMD FORMULATIONS   === #
 
 
-"FUNCTION: DC current on gwye-delta transformers"
-function dc_current_mag_gwye_delta_xf(branch, case, solution)
-
-    # find corresponding gmd branch:
-    khi = branch["gmd_br_hi"]
-    branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
-
-end
-
-
-"FUNCTION: DC current on gwye-gwye transformers"
-function dc_current_mag_gwye_gwye_xf(branch, case, solution)
-
-    # find corresponding gmd branch:
-    k = branch["index"]
-    khi = branch["gmd_br_hi"]
-    klo = branch["gmd_br_lo"]
-    println("branch[$k]: hi_branch[$khi], lo_branch[$klo]")
-    ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
-    ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
-
-    jfr = branch["f_bus"]
-    jto = branch["t_bus"]
-    vhi = case["bus"]["$jfr"]["base_kv"]
-    vlo = case["bus"]["$jto"]["base_kv"]
-    a = vhi/vlo
-
-    branch["ieff"] = abs((a*ihi + ilo)/a)
-
-end
-
-"DC current on three-winding gwye-gwye-gwye transformers"
-function dc_current_mag_3w_xf(branch, case, solution)
-
-    # find corresponding gmd branch:
-    k = branch["index"]
-    khi = branch["gmd_br_hi"]
-    klo = branch["gmd_br_lo"]
-    kter = branch["gmd_br_ter"]
-    println("branch[$k]: hi_branch[$khi], lo_branch[$klo], ter_branch[$kter]")
-    ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
-    ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
-    iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
-
-    jfr = branch["source_id"][1]
-    jto = branch["source_id"][2]
-    jter = branch["source_id"][3]
-    vhi = case["bus"]["$jfr"]["base_kv"]
-    vlo = case["bus"]["$jto"]["base_kv"]
-    vter = case["bus"]["$jter"]["base_kv"]
-
-    a = vhi/vlo
-    b = vhi/vter
-
-    # From Boteler '16 eq. 51
-    # need to check if we are on the high-side branch
-    branch["ieff"] = abs(ihi + ilo/a + iter/b)
-end
-
-"DC current on gwye-gwye auto transformers"
-function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
-
-    # find corresponding gmd branch:
-    ks = branch["gmd_br_series"]
-    kc = branch["gmd_br_common"]
-    is = solution["gmd_branch"]["$ks"]["gmd_idc"]
-    ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
-
-    ihi = -is
-    ilo = ic + is
-
-    jfr = branch["f_bus"]
-    jto = branch["t_bus"]
-    vhi = case["bus"]["$jfr"]["base_kv"]
-    vlo = case["bus"]["$jto"]["base_kv"]
-    a = vhi/vlo
-
-    branch["ieff"] = abs((a*is + ic)/(a + 1.0))
-
-end
-
-
-"FUNCTION: DC current on normal lines"
-function dc_current_mag_line(branch, case, solution)
-    branch["ieff"] = 0.0
-end
-
-
-"FUNCTION: DC current on ungrounded transformers"
-function dc_current_mag_grounded_xf(branch, case, solution)
-    branch["ieff"] = 0.0
-end
-
-
 "FUNCTION: constraints for computing the DC current magnitude"
 function dc_current_mag(branch, case, solution)
 
-    # correct equation is ieff = |a*ihi + ilo|/a
-    # just use ihi for now
-
     branch["ieff"] = 0.0
-
     if branch["type"] != "xfmr"
         dc_current_mag_line(branch, case, solution)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
@@ -511,20 +422,84 @@ function dc_current_mag(branch, case, solution)
 
 end
 
+function dc_current_mag_line(branch, case, solution)
 
-"FUNCTION: convert effective GIC to PowerWorld to-phase convention"
-# TODO: do this also for ieff?
-function adjust_gmd_phasing(dc_result)
-    
-    # Function to convert dc currents to be compatible with PowerWorld conventions
+    branch["ieff"] = 0.0
 
-    gmd_branches = dc_result["solution"]["gmd_branch"]
+end
 
-    for b in values(gmd_branches)
-        b["gmd_idc"] /= 3
-    end
+function dc_current_mag_grounded_xf(branch, case, solution)
 
-    return dc_result
+    branch["ieff"] = 0.0
+
+end
+
+function dc_current_mag_gwye_delta_xf(branch, case, solution)
+
+    khi = branch["gmd_br_hi"]
+
+    branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+
+end
+
+function dc_current_mag_gwye_gwye_xf(branch, case, solution)
+
+    k = branch["index"]
+    khi = branch["gmd_br_hi"]
+    klo = branch["gmd_br_lo"]
+    ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+
+    jfr = branch["f_bus"]
+    jto = branch["t_bus"]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    a = vhi/vlo
+
+    branch["ieff"] = abs((a*ihi + ilo)/a)
+
+end
+
+function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
+
+    ks = branch["gmd_br_series"]
+    kc = branch["gmd_br_common"]
+    is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+    ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+    ihi = -is
+    ilo = ic + is
+
+    jfr = branch["f_bus"]
+    jto = branch["t_bus"]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    a = vhi/vlo
+
+    branch["ieff"] = abs((a*is + ic)/(a + 1.0))
+
+end
+
+function dc_current_mag_3w_xf(branch, case, solution)
+
+
+    k = branch["index"]
+    khi = branch["gmd_br_hi"]
+    klo = branch["gmd_br_lo"]
+    kter = branch["gmd_br_ter"]
+    ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+    iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
+
+    jfr = branch["source_id"][1]
+    jto = branch["source_id"][2]
+    jter = branch["source_id"][3]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    vter = case["bus"]["$jter"]["base_kv"]
+    a = vhi/vlo
+    b = vhi/vter
+
+    branch["ieff"] = abs(ihi + ilo/a + iter/b)  # Boteler 2016 => Eq. (51)
 
 end
 
