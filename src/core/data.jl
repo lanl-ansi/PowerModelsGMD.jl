@@ -6,6 +6,8 @@ export make_gmd_mixed_units, adjust_gmd_qloss, top_oil_rise, hotspot_rise, updat
 
 "FUNCTION: add GMD data"
 function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
+# NOTE: currently not being used
+
 
     @assert !_IM.ismultinetwork(case)
     @assert !haskey(case, "conductors")
@@ -56,41 +58,6 @@ end
 # 4. electric field magnitude?
 gmd_not_pu = Set(["gmd_gs","gmd_e_field_mag"])
 gmd_not_rad = Set(["gmd_e_field_dir"])
-
-
-"FUNCTION: make GMD per unit"
-function make_gmd_per_unit!(data::Dict{String,<:Any})
-
-    @assert !InfrastructureModels.ismultinetwork(case)
-    @assert !haskey(case, "conductors")
-
-    if !haskey(data, "GMDperUnit") || data["GMDperUnit"] == false
-        make_gmd_per_unit(data["baseMVA"], data)
-        data["GMDperUnit"] = true
-    end
-
-end
-
-
-"FUNCTION: make GMD per unit"
-function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
-
-    @assert !InfrastructureModels.ismultinetwork(case)
-    @assert !haskey(case, "conductors")
-
-    # vb = 1e3*data["bus"][1]["base_kv"] # not sure h
-    # data["gmd_e_field_mag"] /= vb
-    # data["gmd_e_field_dir"] *= pi/180.0
-
-    for bus in data["bus"]
-        zb = bus["base_kv"]^2/mva_base
-
-        #println("bus: $(bus["index"]), zb: $zb, a(pu): $(bus["gmd_gs"])")
-        bus["gmd_gs"] *= zb
-        #println("-> a(pu): $(bus["gmd_gs"]) \n")
-    end
-
-end
 
 
 
@@ -274,7 +241,7 @@ end
 
 
 
-# ===   RESULT ADJUSTMENT AND CONVERSION   === #
+# ===   ADJUSTMENT AND CONVERSION   === #
 
 
 "FUNCTION: convert effective GIC to PowerWorld to-phase convention"
@@ -312,8 +279,45 @@ function adjust_gmd_qloss(case::Dict{String,Any}, solution::Dict{String,Any})
 end
 
 
+"FUNCTION: make GMD per unit"
+function make_gmd_per_unit!(data::Dict{String,<:Any})
+# FIX!
+
+    @assert !InfrastructureModels.ismultinetwork(case)
+    @assert !haskey(case, "conductors")
+
+    if !haskey(data, "GMDperUnit") || data["GMDperUnit"] == false
+        make_gmd_per_unit(data["baseMVA"], data)
+        data["GMDperUnit"] = true
+    end
+
+end
+
+
+"FUNCTION: make GMD per unit"
+function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
+# FIX!
+
+    @assert !InfrastructureModels.ismultinetwork(case)
+    @assert !haskey(case, "conductors")
+
+    # vb = 1e3*data["bus"][1]["base_kv"] # not sure h
+    # data["gmd_e_field_mag"] /= vb
+    # data["gmd_e_field_dir"] *= pi/180.0
+
+    for bus in data["bus"]
+        zb = bus["base_kv"]^2/mva_base
+
+        #println("bus: $(bus["index"]), zb: $zb, a(pu): $(bus["gmd_gs"])")
+        bus["gmd_gs"] *= zb
+        #println("-> a(pu): $(bus["gmd_gs"]) \n")
+    end
+
+end
+
 "FUNCTION: make GMD mixed units"
 function make_gmd_mixed_units(solution::Dict{String,Any}, mva_base::Real)
+# TODO: update code so all values are made to mixed unites instead of current per unit
 
     rescale = x -> (x * mva_base)
     rescale_dual = x -> (x / mva_base)

@@ -12,9 +12,9 @@
 
         dc_solution = result["solution"]
 
-        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -32.008063648310255, atol=0.1)
+        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -32.008063648310255, atol=1e-1)
 
-        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 106.69354549436753, atol=1e1)
+        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 106.69354549436753, atol=1e-1)
 
     end
 
@@ -33,7 +33,7 @@
 
         @test isapprox(dc_solution["gmd_bus"]["5"]["gmd_vdc"], -23.02219289879143, atol=1e-1)
 
-        @test isapprox(dc_solution["gmd_branch"]["3"]["gmd_idc"], -13.507237320660954, atol=1e1)
+        @test isapprox(dc_solution["gmd_branch"]["3"]["gmd_idc"], -13.507237320660954, atol=1e-1)
 
     end
 
@@ -54,10 +54,10 @@
         @test isapprox(dc_solution["gmd_bus"]["14"]["gmd_vdc"], 44.26301987818915, atol=1e-1)
         @test isapprox(dc_solution["gmd_bus"]["17"]["gmd_vdc"], -40.6570388410749, atol=1e-1)
     
-        @test isapprox(dc_solution["gmd_branch"]["5"]["gmd_idc"], 140.6256703830644, atol=1e1)
-        @test isapprox(dc_solution["gmd_branch"]["13"]["gmd_idc"], 53.32820180462106, atol=1e1)
-        @test isapprox(dc_solution["gmd_branch"]["29"]["gmd_idc"], 177.05207951275656, atol=1e1)
-        @test isapprox(dc_solution["gmd_branch"]["35"]["gmd_idc"], -54.56937304382294, atol=1e1)
+        @test isapprox(dc_solution["gmd_branch"]["5"]["gmd_idc"], 140.6256703830644, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["13"]["gmd_idc"], 53.32820180462106, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["29"]["gmd_idc"], 177.05207951275656, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["35"]["gmd_idc"], -54.56937304382294, atol=1e-1)
 
     end
 

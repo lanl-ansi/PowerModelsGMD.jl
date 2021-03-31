@@ -116,11 +116,6 @@ function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
         nws_data = Dict("0" => solution["it"][pm_it_name])
     end
 
-    println("---ORIGINAL RESULT---")
-    println(nws_data)
-    println()
-    println()
-
     # Bus
     for (nw_id, nw_ref) in nws(pm)
         for (n, nw_data) in nws_data
