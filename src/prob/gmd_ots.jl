@@ -50,7 +50,7 @@ function post_gmd_ots(pm::PMs.AbstractPowerModel; kwargs...)
 
     # -- Minimize load shedding and fuel cost -- #
 
-    objective_gmd_min_ls_on_off(pm) # variation of equation 3a
+    objective_gmd_mls_on_off(pm) # variation of equation 3a
 
     PMs.constraint_model_voltage_on_off(pm)
 
@@ -59,7 +59,7 @@ function post_gmd_ots(pm::PMs.AbstractPowerModel; kwargs...)
     end
 
     for i in PMs.ids(pm, :bus)
-        constraint_power_balance_shunt_gmd_ls(pm, i) # variation of 3b, 3c
+        constraint_power_balance_shunt_gmd_mls(pm, i) # variation of 3b, 3c
     end
 
     for i in PMs.ids(pm, :gen)

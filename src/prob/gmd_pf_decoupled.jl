@@ -101,13 +101,13 @@ end
 
 "FUNCTION: run the basic GMD model"
 function run_pf_qloss(data, model_type::Type, optimizer; kwargs...)
-    return PMs.run_model(data, model_type, optimizer, post_pf_qloss; ref_extensions=[ref_add_core!], solution_builder = solution_gmd_decoupled!, kwargs...)
+    return PMs.run_model(data, model_type, optimizer, post_pf_qloss; ref_extensions=[ref_add_core!], solution_builder = solution_gmd_qloss!, kwargs...)
 end
 
 
 "FUNCTION: run the basic GMD model"
 function run_pf_qloss_vnom(data, model_type::Type, optimizer; kwargs...)
-    return PMs.run_model(data, model_type, optimizer, post_pf_qloss; ref_extensions=[ref_add_core!], solution_builder = solution_gmd_decoupled!, kwargs...)
+    return PMs.run_model(data, model_type, optimizer, post_pf_qloss; ref_extensions=[ref_add_core!], solution_builder = solution_gmd_qloss!, kwargs...)
 end
 
 

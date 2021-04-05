@@ -39,6 +39,7 @@ using Test
 # Parse test cases:
 case_b4gic = _PM.parse_file("../test/data/b4gic.m")
 case_b6gic_nerc = _PM.parse_file("../test/data/b6gic_nerc.m")
+case24_ieee_rts_0 = _PM.parse_file("../test/data/case24_ieee_rts_0.m")
 case_epri21 = _PM.parse_file("../test/data/epri21.m")
 case_uiuc150 = _PM.parse_file("../test/data/uiuc150.m")
 case_rtsgmlcgic = _PM.parse_file("../test/data/rts_gmlc_gic.m")
@@ -46,9 +47,11 @@ case_rtsgmlcgic = _PM.parse_file("../test/data/rts_gmlc_gic.m")
 
 # Perform the tests of implemented formulations:
 @testset "PowerModelsGMD" begin
+
     include("data_ac.jl")
-    #include("gmd_ls.jl")
     #include("gmd_matrix.jl")
+    include("gmd_mls_decoupled.jl")
+    include("gmd_mls.jl")
     include("gmd_opf_decoupled.jl")
     #include("gmd_opf_ts_decoupled.jl")
     #include("gmd_opf.jl")

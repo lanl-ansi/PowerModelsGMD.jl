@@ -19,7 +19,8 @@ const _PMGMD = PowerModelsGMD
 
     # Suppresses information and warning messages:
     function silence()
-        Memento.info(_LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
+        Memento.info(_LOGGER, "Suppressing information and warning messages for the rest of this session. 
+        Use the Memento package for more fine-grained control of logging.")
         Memento.setlevel!(Memento.getlogger(_IM), "error")
         Memento.setlevel!(Memento.getlogger(_PM), "error")
         Memento.setlevel!(Memento.getlogger(_PMGMD), "error")
@@ -44,8 +45,9 @@ const _PMGMD = PowerModelsGMD
     include("form/dcp.jl")
     include("form/wr.jl")
 
-    # include("prob/gmd_ls.jl")
     # include("prob/gmd_matrix.jl")
+    include("prob/gmd_mls_decoupled.jl")
+    include("prob/gmd_mls.jl")
     # #include("prob/gmd_msse_decoupled.jl")
     include("prob/gmd_opf_decoupled.jl")
     # include("prob/gmd_opf_ts_decoupled.jl")

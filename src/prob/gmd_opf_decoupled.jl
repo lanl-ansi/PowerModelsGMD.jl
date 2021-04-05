@@ -30,7 +30,7 @@ function run_opf_qloss(file, model_type::Type, optimizer; kwargs...)
         build_opf_qloss;
         solution_processors = [
             solution_PM!,
-            solution_gmd_decoupled!
+            solution_gmd_qloss!
         ],
         kwargs...,
     )
@@ -44,7 +44,7 @@ function run_opf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
         build_opf_qloss_vnom;
         solution_processors = [
             solution_PM!,
-            solution_gmd_decoupled!
+            solution_gmd_qloss!
         ],
         kwargs...,
     )
@@ -87,6 +87,7 @@ function build_opf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
     end
 
     for i in _PM.ids(pm, :branch)
+
         _PM.constraint_ohms_yt_from(pm, i)
         _PM.constraint_ohms_yt_to(pm, i)
 

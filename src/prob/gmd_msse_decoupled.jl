@@ -36,7 +36,7 @@ function post_msse_qloss(pm::PMs.AbstractPowerModel; kwargs...)
 
     for i in PMs.ids(pm, :bus)
          # TODO: check that this constraint is correct 
-         constraint_power_balance_shunt_gmd_ls(pm, i)
+         constraint_power_balance_shunt_gmd_mls(pm, i)
     end
 
     for i in Pms.ids(pm, :branch)

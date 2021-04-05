@@ -52,6 +52,7 @@ function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i
         if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
             println("WARNING")
             println("DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
+            println()
         end
 
         JuMP.@constraint(pm.model, sum(dc_expr[a] for a in gmd_bus_arcs) == (gs * v_dc))
@@ -242,7 +243,7 @@ end
 
 
 "CONSTRAINT: computing qloss"
-function constraint_zero_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i::Int, j)
+function constraint_zero_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j)
 
     qloss = _PM.var(pm, n, :qloss)
 
@@ -253,10 +254,10 @@ end
 
 
 "CONSTRAINT: computing qloss assuming ac primary voltage is 1.0 per unit"
-function constraint_qloss_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i::Int, j, K, branchMVA)
+function constraint_qloss_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, branchMVA)
 
-    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
     qloss = _PM.var(pm, n, :qloss)
+    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
 
     JuMP.@constraint(pm.model, qloss[(k,i,j)] == ((K * i_dc_mag) / (3.0 * branchMVA)))  # 'K' is per phase
     JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
@@ -325,7 +326,7 @@ end
 
 
 "CONSTRAINT: steady-state temperature"
-function constraint_temperature_steady_state(pm::_PM.AbstractPowerModel, n::Int, i::Int, fi, rate_a, delta_oil_rated)
+function constraint_temperature_steady_state(pm::_PM.AbstractPowerModel, n::Int, i, fi, rate_a, delta_oil_rated)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
@@ -341,7 +342,7 @@ end
 
 
 "CONSTRAINT: steady-state temperature"
-function constraint_temperature_steady_state(pm::_PM.AbstractDCPModel, n::Int, i::Int, fi, rate_a, delta_oil_rated)
+function constraint_temperature_steady_state(pm::_PM.AbstractDCPModel, n::Int, i, fi, rate_a, delta_oil_rated)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
@@ -356,7 +357,7 @@ end
 
 
 "CONSTRAINT: initial temperature state"
-function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i::Int, fi)
+function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i, fi)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
@@ -369,7 +370,7 @@ end
 
 
 "CONSTRAINT: initial temperature state"
-function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i::Int, fi, delta_oil_init)
+function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i, fi, delta_oil_init)
     # i is index of the (transformer) branch
     # fi is index of the "from" branch terminal
 
@@ -380,7 +381,7 @@ end
 
 
 "CONSTRAINT: temperature state"
-function constraint_temperature_state(pm::_PM.AbstractPowerModel, n_1::Int, n_2::Int, i::Int, tau)
+function constraint_temperature_state(pm::_PM.AbstractPowerModel, n_1::Int, n_2::Int, i, tau)
 
     delta_oil_ss = var(pm, n_2, :ross, i) 
     delta_oil_ss_prev = var(pm, n_1, :ross, i)
@@ -394,7 +395,7 @@ end
 
 
 "CONSTRAINT: steady-state hot-spot temperature"
-function constraint_hotspot_temperature_steady_state(pm::_PM.AbstractPowerModel, n::Int, i::Int, fi, rate_a, Re)
+function constraint_hotspot_temperature_steady_state(pm::_PM.AbstractPowerModel, n::Int, i, fi, rate_a, Re)
     # return delta_oil_rated*K^2
     # println("Branch $i rating: $rate_a, TO rise: $delta_oil_rated")
 
@@ -407,7 +408,7 @@ end
 
 
 "CONSTRAINT: hot-spot temperature"
-function constraint_hotspot_temperature(pm::_PM.AbstractPowerModel, n::Int, i::Int, fi)
+function constraint_hotspot_temperature(pm::_PM.AbstractPowerModel, n::Int, i, fi)
 
     delta_hotspot_ss = _PM.var(pm, n, :hsss, i) 
     delta_hotspot = _PM.var(pm, n, :hs, i) 
@@ -418,7 +419,7 @@ end
 
 
 "CONSTRAINT: absolute hot-spot temperature"
-function constraint_absolute_hotspot_temperature(pm::_PM.AbstractPowerModel, n::Int, i::Int, fi, temp_ambient)
+function constraint_absolute_hotspot_temperature(pm::_PM.AbstractPowerModel, n::Int, i, fi, temp_ambient)
 
     delta_hotspot = _PM.var(pm, n, :hs, i) 
     #delta_hotspot = _PM.var(pm, n, :hsss, i) 
@@ -430,7 +431,7 @@ end
 
 
 "CONSTRAINT: average absolute hot-spot temperature"
-function constraint_avg_absolute_hotspot_temperature(pm::_PM.AbstractPowerModel, i::Int, fi, max_temp)
+function constraint_avg_absolute_hotspot_temperature(pm::_PM.AbstractPowerModel, i, fi, max_temp)
 
     N = length(_PM.nws(pm))
 

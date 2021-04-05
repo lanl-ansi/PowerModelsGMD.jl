@@ -23,7 +23,7 @@ end
 
 
 "CONSTRAINT: power balance with shunts for load shedding"
-function constraint_power_balance_shunt_gmd_ls(pm::_PM.AbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+function constraint_power_balance_shunt_gmd_mls(pm::_PM.AbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 
     vm = _PM.var(pm, n, :vm)[i]
     p = _PM.var(pm, n, :p)
@@ -31,11 +31,11 @@ function constraint_power_balance_shunt_gmd_ls(pm::_PM.AbstractACPModel, n::Int,
     pg = _PM.var(pm, n, :pg)
     qg = _PM.var(pm, n, :qg)
     qloss = _PM.var(pm, n, :qloss)
-    pd_ls = _PM.var(pm, n, :pd)
-    qd_ls = _PM.var(pm, n, :qd)
+    pd_mls = _PM.var(pm, n, :pd)
+    qd_mls = _PM.var(pm, n, :qd)
 
-    JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_ls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs)*vm^2)
-    JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd - qd_ls[i] for (i, qd) in bus_qd) + sum(bs for (i, bs) in bus_bs)*vm^2)
+    JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_mls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs)*vm^2)
+    JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd - qd_mls[i] for (i, qd) in bus_qd) + sum(bs for (i, bs) in bus_bs)*vm^2)
 
 end
 
@@ -112,7 +112,9 @@ function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j, K, bra
     vm = _PM.var(pm, n, :vm)[i]
 
     if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
-        println("Warning: DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results")
+        println("WARNING")
+        println("DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.")
+        println()
     end
 
     JuMP.@constraint(pm.model, qloss[(k,i,j)] == ((K * vm * i_dc_mag) / (3.0 * branchMVA)))  # 'K' is per phase

@@ -62,7 +62,7 @@ end
 
 
 "OBJECTIVE: minimizes load shedding and fuel cost"
-function objective_gmd_min_ls(pm::_PM.AbstractPowerModel)
+function objective_gmd_min_mls(pm::_PM.AbstractPowerModel)
 
     @assert all(!_PM.ismulticonductor(pm) for n in _PM.nws(pm))
 
@@ -85,7 +85,7 @@ end
 
 
 "OBJECTIVE: minimizes load shedding and fuel cost"
-function objective_gmd_min_ls_on_off(pm::_PM.AbstractPowerModel)
+function objective_gmd_mls_on_off(pm::_PM.AbstractPowerModel)
 
     @assert all(!_PM.ismulticonductor(pm) for n in _PM.nws(pm))
 

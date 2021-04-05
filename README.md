@@ -21,9 +21,11 @@ PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subj
 Currently the following common industry and academic formulations have been implemented:
 * GIC DC: quasi-dc power flow
 * GIC -> AC - OPF: sequential quasi-dc power flow and ac optimal power flow
+* GIC -> AC - MLS: sequential quasi-dc power flow and ac minimum-load-shed
+* GIC + AC - MLS: ac minimum-load-shed coupled with a quasi-dc power flow
+
 <!--
 * GIC + AC - OPF: ac optimal power flow coupled with a quasi-dc power flow
-* GIC + AC - MLS: ac minimum-load-shed coupled with a quasi-dc power flow
 * GIC + AC - OTS: ac optimal transmission switching with load shed coupled with a quasi-dc power flow
 -->
 
@@ -84,8 +86,20 @@ run_gmd("test/data/b4gic.m", optimizer, setting=setting)
 
 ### GIC -> AC-OPF
 
-Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-OPF to calculate the increase in transformer reactive power consumption.
+Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-OPF optimal power flow formulation to calculate the increase in transformer reactive power consumption.
 `run_ac_gmd_opf_decoupled("test/data/b4gic.m")`
+
+
+### GIC -> AC-MLS
+
+Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-MLS minimum-load-shedding formulation to calculate the increase in transformer reactive power consumption. The network topology is fixed.
+`run_ac_gmd_mls("test/data/case24_ieee_rts_0.m")`
+
+
+### GIC + AC-MLS
+
+Solves the quasi-dc voltages and currents and the AC-MLS minimum-load-shedding formulation concurrently. The network topology is fixed.
+`run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")`
 
 
 <!-- 
@@ -97,12 +111,6 @@ Solves the quasi-dc voltages and currents and the AC-OPF concurrently. The dc ne
 
 This formulation has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages.
 Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
-
-
-### GIC + AC-MLS
-
-Solve the minimum-load shedding problem for a network subjected to GIC with fixed topology.
-`run_ac_gmd_ml("test/data/case24_ieee_rts_0.m")`
 
 
 ### GIC + AC-OTS
@@ -238,25 +246,26 @@ mpc.bus_gmd = {
 
 
 
-## Contributors
+## Acknowledgments
 
-In alphabetical order:
-* Art Barnes (@bluejuniper): Decoupled model
-* Russell Bent (@rb004f): ML and OTS implementation
-* Carleton Coffrin (@ccoffrin): Architecture
-* David Fobes (@pseudocubic): Architecture
-* Adam Mate (@adammate): Decoupled time-extended model, [RTS-GMLC](https://github.com/GridMod/RTS-GMLC) integration
+This code has been developed as part of the [Advanced Network Science Initiative](https://github.com/lanl-ansi) at Los Alamos National Laboratory.
+The primary developers are [Arthur Barnes](https://github.com/bluejuniper) and [Adam Mate](https://github.com/adammate) with significant contributions from:
+* [Russell Bent](https://github.com/rb004f)
+* [Carleton Coffrin](https://github.com/ccoffrin)
+* [David Fobes](https://github.com/pseudocubic)
 
-Acknowledgments:
-The authors are grateful for Mowen Lu for developing the ML and OTS problem specifications, and for Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
-
-This code has been developed as part of the Advanced Network Science Initiative at Los Alamos National Laboratory.
+Special thanks to Mowen Lu for developing the ML and OTS problem specifications, and to Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
 
 
+### Development
 
-## Citing PMsGMD
+Community-driven development and enhancement of PMsGMD are welcome and encouraged.
+Please feel free to fork this repository and share your contributions to the master branch with a pull request.
 
-If you find PMsGMD useful in your work, we request that you cite the following [publication](https://arxiv.org/abs/2101.05042):
+
+### Citing PMsGMD
+
+If you find PMsGMD useful in your work, we kindly request that you cite the following [publication](https://arxiv.org/abs/2101.05042):
 ```
 @Misc{pmsgmd,
     author = {A. {Mate} and A. K. {Barnes} and R. W. {Bent} and E. {Cotilla-Sanchez}},
@@ -275,6 +284,4 @@ If you find PMsGMD useful in your work, we request that you cite the following [
 
 ## License
 
-This code is provided under a BSD license as part of the Multi-Infrastructure Control and Optimization Toolkit (MICOT) project, LA-CC-13-108.
-
-
+This code is provided under a [BSD license](https://github.com/lanl-ansi/PowerModelsGMD.jl/blob/master/LICENSE.md) as part of the Multi-Infrastructure Control and Optimization Toolkit (MICOT) project, LA-CC-13-108.

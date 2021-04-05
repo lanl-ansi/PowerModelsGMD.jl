@@ -10,10 +10,8 @@
 #     add_setpoint_bus_dc_voltage!(sol, pm) ==> solution_gmd! -- OK!!
 #     add_setpoint_branch_dc_flow!(sol, pm) ==> solution_gmd! -- OK!!
 
-#   NO NEED TO INCLUDE THESE RIGHT NOW:
-
-#     add_setpoint_load_demand!(sol, pm)
-#     add_setpoint_bus_dc_current_mag!(sol, pm)
+#     add_setpoint_load_demand!(sol, pm) ==> solution_gmd_mls! -- OK!!
+#     add_setpoint_bus_dc_current_mag!(sol, pm) ==> solution_gmd_mls! -- OK!!
 #     add_setpoint_load_shed!(sol, pm)
 #     add_setpoint_bus_qloss!(sol, pm) ==> solution_gmd_decoupled!
 
@@ -164,8 +162,8 @@ function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 end
 
 
-"SOLUTION: add gmd decoupled solutions"
-function solution_gmd_decoupled!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+"SOLUTION: add gmd qloss solution"
+function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
     if haskey(solution["it"][pm_it_name], "nw")
         nws_data = solution["it"][pm_it_name]["nw"]
@@ -188,6 +186,68 @@ function solution_gmd_decoupled!(pm::_PM.AbstractPowerModel, solution::Dict{Stri
 end
 
 
+"SOLUTION: add minimum-load-shed solutions"
+function solution_gmd_mls!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
+
+    # Branch
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "branch")
+                for (i, branch) in nw_data["branch"]
+                    key = (branch["index"])
+                    #key = (branch["index"], branch["hi_bus"], branch["lo_bus"]) -- check which key is needed ...               
+                    branch["gmd_idc_mag"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:i_dc_mag][key])
+                end
+            end
+        end
+    end
+
+    # Load
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "load")
+                for (i, load) in nw_data["load"]
+                    add = ["source_id", "load_bus", "status", "index"]
+                    for a in add
+                        load["$(a)"] = pm.data["load"]["$(i)"]["$(a)"]
+                    end
+                end
+            end
+        end
+    end
+
+end
+
+
+
+
+
+
+# =============================================================================== #
+
+
+# "SETPOINT: add load shed setpoint"
+# function add_setpoint_load_shed!(sol, pm::_PM.AbstractPowerModel)
+#     add_setpoint!(sol, pm, "load", "demand_served_ratio", :z_demand)
+# end
+
+    # # Load
+    # for (nw_id, nw_ref) in nws(pm)
+    #     for (n, nw_data) in nws_data
+    #         if haskey(nw_data, "load")
+    #             for (i, load) in nw_data["load"]
+    #                 key = (load["index"])
+    #                 load["demand_served_ratio"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:z_demand][key])
+    #             end
+    #         end
+    #     end
+    # end
 
 
 
@@ -216,17 +276,17 @@ end
 # end
 
 
-"SETPOINT: add bus dc current magitude setpoint"
-function add_setpoint_bus_dc_current_mag!(sol, pm::_PM.AbstractPowerModel)
-    # add_setpoint!(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
-    add_setpoint!(sol, pm, "branch", "gmd_idc_mag", :i_dc_mag, status_name="br_status", inactive_status_value=0)
-end
+# "SETPOINT: add bus dc current magitude setpoint"
+# function add_setpoint_bus_dc_current_mag!(sol, pm::_PM.AbstractPowerModel)
+#     # add_setpoint!(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
+#     add_setpoint!(sol, pm, "branch", "gmd_idc_mag", :i_dc_mag, status_name="br_status", inactive_status_value=0)
+# end
 
 
-"SETPOINT: add load shed setpoint"
-function add_setpoint_load_shed!(sol, pm::_PM.AbstractPowerModel)
-    add_setpoint!(sol, pm, "load", "demand_served_ratio", :z_demand)
-end
+# "SETPOINT: add load shed setpoint"
+# function add_setpoint_load_shed!(sol, pm::_PM.AbstractPowerModel)
+#     add_setpoint!(sol, pm, "load", "demand_served_ratio", :z_demand)
+# end
 
 
 # "SETPOINT: add branch dc flow setpoint"
@@ -248,7 +308,6 @@ function current_pu_to_si(x,item,pm)
     kv_base = pm.data["bus"]["1"]["base_kv"]
     return x*1e3*mva_base/(sqrt(3)*kv_base)
 end
-
 
 "SETPOINT: add steady-state top-oil temperature rise setpoint"
 function add_setpoint_top_oil_rise_steady_state!(sol, pm::_PM.AbstractPowerModel)

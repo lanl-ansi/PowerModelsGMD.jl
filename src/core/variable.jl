@@ -272,7 +272,7 @@ function variable_iv(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::
         start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "iv_start")
     )
 
-    report && _PM.sol_component_value(pm, nw, :branch, :iv, _PM.ids(pm, nw, :branch), iv)
+    report && _IM.sol_component_value_edge(pm, pm_it_sym, nw, :branch, :ivf, :ivt, _PM.ref(pm, nw, :arcs_from), _PM.ref(pm, nw, :arcs_to), iv)
 
 end
 

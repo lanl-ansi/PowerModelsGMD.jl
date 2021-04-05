@@ -20,14 +20,14 @@ end
 
 
 "CONTRAINT: power balance with shunts for load shedding"
-function constraint_power_balance_shunt_gmd_ls(pm::_PM.AbstractDCPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+function constraint_power_balance_shunt_gmd_mls(pm::_PM.AbstractDCPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 
     vm = _PM.var(pm, n, :vm)[i]
     p = _PM.var(pm, n, :p)
     pg = _PM.var(pm, n, :pg)
-    pd_ls = _PM.var(pm, n, :pd)
+    pd_mls = _PM.var(pm, n, :pd)
 
-    JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_ls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs) * vm^2)
+    JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_mls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs) * vm^2)
 
 end
 

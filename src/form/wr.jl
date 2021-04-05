@@ -7,21 +7,20 @@ end
 "FUNCTION: ac current"
 function variable_ac_current(pm::_PM.AbstractWRModel; kwargs...)
 
-   variable_ac_current_mag(pm; kwargs...)
+    nw = nw_id_default
 
-   #nw = pm.cnw
-   nw = nw_id_default
+    variable_ac_current_mag(pm; kwargs...)
 
-   parallel_branch = Dict(x for x in _PM.ref(pm, nw, :branch) if _PM.ref(pm, nw, :buspairs)[(x.second["f_bus"], x.second["t_bus"])]["branch"] != x.first)
-   cm_min = Dict((l, 0) for l in keys(parallel_branch))
-   cm_max = Dict((l, (branch["rate_a"]*branch["tap"]/_PM.ref(pm, nw, :bus)[branch["f_bus"]]["vmin"])^2) for (l, branch) in parallel_branch)
+    parallel_branch = Dict(x for x in _PM.ref(pm, nw, :branch) if _PM.ref(pm, nw, :buspairs)[(x.second["f_bus"], x.second["t_bus"])]["branch"] != x.first)
+    cm_min = Dict((l, 0) for l in keys(parallel_branch))
+    cm_max = Dict((l, (branch["rate_a"]*branch["tap"]/_PM.ref(pm, nw, :bus)[branch["f_bus"]]["vmin"])^2) for (l, branch) in parallel_branch)
 
-   _PM.var(pm, nw)[:cm_p] = JuMP.@variable(pm.model,
+    _PM.var(pm, nw)[:cm_p] = JuMP.@variable(pm.model,
         [l in keys(parallel_branch)], base_name="$(nw)_cm_p",
         lower_bound = cm_min[l],
         upper_bound = cm_max[l],
         start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "cm_p_start")
-   )
+    )
 
 end
 
@@ -41,7 +40,7 @@ end
 
 
 "CONSTRAINT:power balance with shunts for load shedding"
-function constraint_power_balance_shunt_gmd_ls(pm::_PM.AbstractWRModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+function constraint_power_balance_shunt_gmd_mls(pm::_PM.AbstractWRModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 
     w = _PM.var(pm, n, :w)[i]
     pg = _PM.var(pm, n, :pg)
@@ -49,15 +48,15 @@ function constraint_power_balance_shunt_gmd_ls(pm::_PM.AbstractWRModel, n::Int, 
     p = _PM.var(pm, n, :p)
     q = _PM.var(pm, n, :q)
     qloss = _PM.var(pm, n, :qloss)
-    pd_ls = _PM.var(pm, n, :pd)
-    qd_ls = _PM.var(pm, n, :qd)
+    pd_mls = _PM.var(pm, n, :pd)
+    qd_mls = _PM.var(pm, n, :qd)
 
     if length(bus_arcs) > 0 || length(bus_gens) > 0 || length(bus_pd) > 0 || length(bus_gs) > 0
-        JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_ls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs) * w)
+        JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_mls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs) * w)
     end
 
     if length(bus_arcs) > 0 || length(bus_gens) > 0 || length(bus_qd) > 0 || length(bus_bs) > 0
-        JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd - qd_ls[i] for (i, qd) in bus_qd) + sum(bs for (i, bs) in bus_bs) * w)
+        JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd - qd_mls[i] for (i, qd) in bus_qd) + sum(bs for (i, bs) in bus_bs) * w)
     end
 
 end
@@ -161,7 +160,9 @@ function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, K, branchMVA
     vm = _PM.var(pm, n, :vm)[i]
 
     if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
-        println("Warning: DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results")
+        println("WARNING")
+        println("DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.")
+        println()
     end
 
     JuMP.@constraint(pm.model, qloss[(k,i,j)] == ((K * iv) / (3.0 * branchMVA)))  # 'K' is per phase

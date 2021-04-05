@@ -55,7 +55,7 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
         end
 
         for i in PMs.ids(pm, :bus, nw=n)
-            constraint_power_balance_shunt_gmd_ls(pm, i, nw=n)
+            constraint_power_balance_shunt_gmd_mls(pm, i, nw=n)
         end
 
 	    for i in PMs.ids(pm, :gen)
@@ -120,7 +120,7 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
     # -- Objective -- #
 
     # this has multinetwork built-in
-    # objective_gmd_min_ls_on_off(pm)
+    # objective_gmd_mls_on_off(pm)
     PMs.objective_min_fuel_and_flow_cost(pm)
 
     # objective_gmd_min_fuel(pm)
