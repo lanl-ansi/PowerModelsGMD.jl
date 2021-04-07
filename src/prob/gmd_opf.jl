@@ -1,64 +1,84 @@
 export run_gmd_opf, run_ac_gmd_opf
 
 
-"FUNCTION: run basic GMD model"
-function run_gmd_opf(data, model_type::Type, optimizer; kwargs...)
-    return PMs.run_model(data, model_type, optimizer, post_gmd_opf; ref_extensions=[ref_add_core!], solution_builder = solution_gmd!, kwargs...)
+"FUNCTION: run basic GMD model with nonlinear ac equations"
+function run_ac_gmd_opf(file, optimizer; kwargs...)
+    return run_gmd_opf(
+        file,
+        _PM.ACPPowerModel,
+        optimizer;
+        kwargs...,
+    )
+end
+
+function run_gmd_opf(file, model_type::Type, optimizer; kwargs...)
+    return _PM.run_model(
+        file,
+        model_type,
+        optimizer,
+        build_gmd_opf;
+        ref_extensions = [
+            ref_add_gmd!
+        ],
+        solution_processors = [
+            solution_gmd!,
+            solution_PM!,
+            solution_gmd_qloss!,
+            solution_gmd_mls!
+        ],
+        kwargs...,
+    )
 end
 
 
-"FUNCTION: run basic GMD with the nonlinear AC equations"
-function run_ac_gmd_opf(data, optimizer; kwargs...)
-    return run_gmd_opf(data, PMs.ACPPowerModel, optimizer; kwargs...)
-end
+"FUNCTION: build the ac optimal power flow coupled with quasi-dc power flow problem
+as a generator dispatch minimization problem"
+function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
 
+    _PM.variable_bus_voltage(pm)
+    _PM.variable_gen_power(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
 
-"FUNCTION: Basic GMD Model - Minimizes Generator Dispatch"
-function post_gmd_opf(pm::PMs.AbstractPowerModel; kwargs...)
-
-    PMs.variable_bus_voltage(pm)
     variable_dc_voltage(pm)
     variable_dc_current_mag(pm)
-    variable_qloss(pm)
-    PMs.variable_gen_power(pm)
-    PMs.variable_branch_power(pm)
     variable_dc_line_flow(pm)
+    variable_qloss(pm)
 
-    objective_gmd_min_fuel(pm)
+    _PM.constraint_model_voltage(pm)
 
-    PMs.constraint_model_voltage(pm)
-
-    for i in PMs.ids(pm, :ref_buses)
-        PMs.constraint_theta_ref(pm, i)
+    for i in _PM.ids(pm, :ref_buses)
+        _PM.constraint_theta_ref(pm, i)
     end
 
-
-    for i in PMs.ids(pm, :bus)
+    for i in _PM.ids(pm, :bus)
         constraint_power_balance_gmd(pm, i)
     end
 
-    for i in PMs.ids(pm, :branch)
-        Memento.debug(_LOGGER, "Adding constraints for branch $i \n")
-        constraint_dc_current_mag(pm, i)
+    for i in _PM.ids(pm, :branch)
+
+        _PM.constraint_ohms_yt_from(pm, i)
+        _PM.constraint_ohms_yt_to(pm, i)
+
+        _PM.constraint_voltage_angle_difference(pm, i)
+
+        # _PM.constraint_thermal_limit_from(pm, i)
+        # _PM.constraint_thermal_limit_to(pm, i)
+
         constraint_qloss_vnom(pm, i)
+        constraint_dc_current_mag(pm, i)
 
-        PMs.constraint_ohms_yt_from(pm, i)
-        PMs.constraint_ohms_yt_to(pm, i)
-
-        # PMs.constraint_thermal_limit_from(pm, i)
-        # PMs.constraint_thermal_limit_to(pm, i)
-        PMs.constraint_voltage_angle_difference(pm, i)
     end
 
-    ### DC network constraints ###
-    for i in PMs.ids(pm, :gmd_bus)
+    for i in _PM.ids(pm, :gmd_bus)
         constraint_dc_power_balance_shunt(pm, i)
     end
 
-    for i in PMs.ids(pm, :gmd_branch)
+    for i in _PM.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
 
-end
+    objective_gmd_min_fuel(pm)
 
+end
 

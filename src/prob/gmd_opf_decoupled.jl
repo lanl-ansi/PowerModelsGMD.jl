@@ -3,7 +3,7 @@ export run_ac_opf_qloss, run_ac_opf_qloss_vnom
 export run_ac_gmd_opf_decoupled
 
 
-"FUNCTION: run basic GMD modelin with nonlinear ac equations"
+"FUNCTION: run basic GMD model with nonlinear ac equations"
 function run_ac_opf_qloss(file, optimizer; kwargs...)
     return run_opf_qloss(
         file,

@@ -17,8 +17,7 @@
 
     @testset "EPRI21 case" begin
 
-        result = _PMGMD.run_ac_gmd_mls(case_epri21, ipopt_solver)
-
+        # result = _PMGMD.run_ac_gmd_mls(case_epri21, ipopt_solver)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0; atol=1e1)
 
@@ -53,8 +52,7 @@ end
 
     @testset "EPRI21 case" begin
 
-        result = _PMGMD.run_qc_gmd_mls(case_epri21, ipopt_solver)
-
+        # result = _PMGMD.run_qc_gmd_mls(case_epri21, ipopt_solver)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0; atol=1e1)
 

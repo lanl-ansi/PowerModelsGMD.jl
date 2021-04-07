@@ -12,7 +12,7 @@ function run_ac_gmd_mls(file, optimizer; kwargs...)
 end
 
 
-"FUNCTION: run GMD GMD mitigation with qc ac equations"
+"FUNCTION: run GMD mitigation with qc ac equations"
 function run_qc_gmd_mls(file, optimizer; kwargs...)
     return run_gmd_mls(
         file,
@@ -42,7 +42,7 @@ function run_gmd_mls(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"FUNCTION: build the ac minimum-load-shed coupled with a quasi-dc power flow problem
+"FUNCTION: build the ac minimum-load-shed coupled with quasi-dc power flow problem
 as a generator dispatch minimization and load shedding problem"
 function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:

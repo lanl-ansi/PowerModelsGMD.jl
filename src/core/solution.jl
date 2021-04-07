@@ -200,8 +200,7 @@ function solution_gmd_mls!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any
         for (n, nw_data) in nws_data
             if haskey(nw_data, "branch")
                 for (i, branch) in nw_data["branch"]
-                    key = (branch["index"])
-                    #key = (branch["index"], branch["hi_bus"], branch["lo_bus"]) -- check which key is needed ...               
+                    key = (branch["index"])               
                     branch["gmd_idc_mag"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:i_dc_mag][key])
                 end
             end
