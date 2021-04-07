@@ -20,8 +20,8 @@ PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subj
 
 Currently the following common industry and academic formulations have been implemented:
 * GIC DC: quasi-dc power flow
-* GIC AC-OPF: ac optimal power flow with sequential / coupled quasi-dc power flow
-* GIC AC-MLS: ac minimum-load-shed with sequential / coupled quasi-dc power flow
+* GIC AC-OPF: ac optimal power flow with sequential/coupled quasi-dc power flow
+* GIC AC-MLS: ac minimum-load-shed with sequential/coupled quasi-dc power flow
 
 
 <!--
@@ -74,10 +74,16 @@ result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, optimizer)
 ### GIC DC
 
 Solves for steady-state dc currents on lines resulting from induced dc voltages on lines.
-E.g.: `run_gmd("test/data/b4gic.m", optimizer)`
+For example:
+```
+run_gmd("test/data/b4gic.m", optimizer)
+```
 
 For large systems (greater than 10,000 buses), the Lehtinen-Pirjola method may be used, which relies on a matrix solve instead of an optimizer.
-This may called by omitting the optimizer parameter: `run_gmd("test/data/b4gic.m")`
+This may called by omitting the optimizer parameter:
+```
+run_gmd("test/data/b4gic.m")
+```
 
 To save branch currents in addition to bus voltages:
 ```
@@ -91,14 +97,23 @@ run_gmd("test/data/b4gic.m", optimizer, setting=setting)
 #### GIC -> AC-OPF
 
 Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-OPF optimal power flow formulation to calculate the increase in transformer reactive power consumption.
-E.g.: `run_ac_gmd_opf_decoupled("test/data/b4gic.m")`
+For example:
+```
+run_ac_gmd_opf_decoupled("test/data/b4gic.m")
+```
 
 #### GIC + AC-OPF
 
 Solves the quasi-dc voltages and currents and the AC-OPF optimal power flow formulation concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
-E.g.: `run_ac_gmd_opf("test/data/b4gic.m")`
+For example:
+```
+run_ac_gmd_opf("test/data/b4gic.m")
+```
 
-It is advised to adjust qloss in the results: `adjust_gmd_qloss(case_b4gic, solution)`
+It is advised to adjust qloss in the results:
+```
+adjust_gmd_qloss(case_b4gic, solution)
+```
 
 This formulation has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages. Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
 
@@ -109,12 +124,17 @@ This formulation has limitations in that it does not model increase in transform
 #### GIC -> AC-MLS
 
 Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-MLS minimum-load-shedding formulation to calculate the increase in transformer reactive power consumption. The network topology is fixed.
-E.g.: `run_ac_gmd_mls("test/data/case24_ieee_rts_0.m")`
+For example:
+```
+run_ac_gmd_mls("test/data/case24_ieee_rts_0.m")
+```
 
 #### GIC + AC-MLS
 
 Solves the quasi-dc voltages and currents and the AC-MLS minimum-load-shedding formulation concurrently. The network topology is fixed.
-E.g.: `run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")`
+For example:
+```run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
+```
 
 
 <!-- 
