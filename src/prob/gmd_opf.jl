@@ -1,4 +1,6 @@
-export run_gmd_opf, run_ac_gmd_opf
+export run_ac_gmd_opf
+export run_gmd_opf
+
 
 
 "FUNCTION: run basic GMD model with nonlinear ac equations"

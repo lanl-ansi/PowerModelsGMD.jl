@@ -1,4 +1,5 @@
-export run_gmd_mls, run_ac_gmd_mls, run_qc_gmd_mls
+export run_ac_gmd_mls, run_qc_gmd_mls
+export run_gmd_mls
 
 
 "FUNCTION: run GMD mitigation with nonlinear ac equations"

@@ -51,20 +51,19 @@ test PowerModelsGMD
 
 
 
-<!-- 
 ## Quick Start
 
-The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers on the system.
-
+The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers throughout the system.
+For example:
 ```
-using PowerModels; using PowerModelsGMD; using Ipopt
+using PowerModels, PowerModelsGMD, Ipopt
+
 network_file = joinpath(dirname(pathof(PowerModelsGMD)), "../test/data/epri21.m")
 case = PowerModels.parse_file(network_file)
+solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
 
-optimizer = with_optimizer(Ipopt.Optimizer)
-result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, optimizer)
+result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, solver)
 ```
--->
 
 
 
@@ -76,11 +75,11 @@ result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, optimizer)
 Solves for steady-state dc currents on lines resulting from induced dc voltages on lines.
 For example:
 ```
-run_gmd("test/data/b4gic.m", optimizer)
+run_gmd("test/data/b4gic.m", solver)
 ```
 
 For large systems (greater than 10,000 buses), the Lehtinen-Pirjola method may be used, which relies on a matrix solve instead of an optimizer.
-This may called by omitting the optimizer parameter:
+This may called by omitting the solver parameter:
 ```
 run_gmd("test/data/b4gic.m")
 ```
@@ -88,7 +87,7 @@ run_gmd("test/data/b4gic.m")
 To save branch currents in addition to bus voltages:
 ```
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
-run_gmd("test/data/b4gic.m", optimizer, setting=setting)
+run_gmd("test/data/b4gic.m", solver, setting=setting)
 ```
 
 
@@ -133,7 +132,8 @@ run_ac_gmd_mls("test/data/case24_ieee_rts_0.m")
 
 Solves the quasi-dc voltages and currents and the AC-MLS minimum-load-shedding formulation concurrently. The network topology is fixed.
 For example:
-```run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
+```
+run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
 ```
 
 
@@ -298,7 +298,7 @@ If you find PMsGMD useful in your work, we kindly request that you cite the foll
     title = {{Analyzing and Mitigating the Impacts of GMD and EMP Events on the Electrical Grid with PowerModelsGMD.jl}},
     year = {2021},
     month = {Jan.},
-    pages = {1--10},
+    pages = {1--9},
     archivePrefix = {arXiv},
     primaryClass = {eess.SY},    
     eprint = {2101.05042},
