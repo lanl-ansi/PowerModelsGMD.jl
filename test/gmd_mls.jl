@@ -7,7 +7,7 @@
 
         result = _PMGMD.run_ac_gmd_mls(case24_ieee_rts_0, ipopt_solver)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 108817.47790523918; atol=1e1)
+        @test isapprox(result["objective"], 108817.4779; atol=1e1)
 
     end
 
@@ -42,7 +42,7 @@ end
 
         result = _PMGMD.run_qc_gmd_mls(case24_ieee_rts_0, ipopt_solver)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 110689.15181833954; atol=1e1)
+        @test isapprox(result["objective"], 110689.1518; atol=1e1)
 
     end
 
