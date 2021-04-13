@@ -1,6 +1,59 @@
 # ===   GENERAL VARIABLES   === #
 
 
+"VARIABLE: bus voltage indicator"
+function variable_bus_voltage_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+
+    if !relax
+        z_voltage = _PM.var(pm, nw)[:z_voltage] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :bus)], base_name="$(nw)_z_voltage",
+            binary = true,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "z_voltage_start")
+        )
+    else
+        z_voltage = _PM.var(pm, nw)[:z_voltage] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :bus)], base_name="$(nw)_z_voltage",
+            lower_bound = 0,
+            upper_bound = 1,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "z_voltage_start")
+        )
+    end
+
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :bus, :status, _PM.ids(pm, nw, :bus), z_voltage)
+
+end
+
+
+"VARIABLE: bus voltage magnitude on/off"
+function variable_bus_voltage_magnitude_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
+
+    vm = _PM.var(pm, nw)[:vm] = JuMP.@variable(pm.model,
+        [i in _PM.ids(pm, nw, :bus)], base_name="$(nw)_vm",
+        lower_bound = 0.0,
+        upper_bound = _PM.ref(pm, nw, :bus, i, "vmax"),
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "vm_start", 1.0)
+    )
+
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :bus, :vm, _PM.ids(pm, nw, :bus), vm)
+
+end
+
+
+"VARIABLE: squared bus voltage magnitude on/off"
+function variable_bus_voltage_magnitude_sqr_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
+
+    w = _PM.var(pm, nw)[:w] = JuMP.@variable(pm.model,
+        [i in _PM.ids(pm, nw, :bus)], base_name="$(nw)_w",
+        lower_bound = 0,
+        upper_bound = _PM.ref(pm, nw, :bus, i, "vmax")^2,
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "w_start", 1.001)
+    )
+
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :bus, :w, _PM.ids(pm, nw, :bus), w)
+
+end
+
+
 "VARIABLE: dc voltage"
 function variable_dc_voltage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 

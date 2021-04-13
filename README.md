@@ -14,7 +14,7 @@ In addition, it relies on and was optimized for these packages: [JSON](https://g
 
 
 
-## Core Problem Specifications
+## Core Problem Formulations
 
 PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (GIC). It also solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
 
@@ -67,7 +67,7 @@ result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, solver)
 
 
 
-## Function Reference
+## Problem Formulation Reference
 
 
 ### GIC DC
@@ -128,6 +128,13 @@ For example:
 run_ac_gmd_mls("test/data/case24_ieee_rts_0.m")
 ```
 
+Additionally, the sequential AC-MLS minimum-load-shedding formulation was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem formulation as well, with relaxed generator and bus participation.
+For example:
+```
+run_ac_gmd_mld("test/data/case24_ieee_rts_0.m")
+```
+
+<!-- 
 #### GIC + AC-MLS
 
 Solves the quasi-dc voltages and currents and the AC-MLS minimum-load-shedding formulation concurrently. The network topology is fixed.
@@ -136,9 +143,14 @@ For example:
 run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
 ```
 
+Additionally, the decoupled AC-MLS minimum-load-shedding formulation was implemented as a decoupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem formulation as well, with relaxed generator and bus participation.
+For example:
+```
+run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
+```
+-->
 
 <!-- 
-
 ### GIC + AC-OTS
 
 Solve the minimum-load shedding problem for a network subjected to GIC where lines and transformers can be opened or closed.
@@ -147,7 +159,6 @@ Solve the minimum-load shedding problem for a network subjected to GIC where lin
 Mitigating transformer overheating is achieved by treating the problem as an optimal transmission switching formulation.
 However, actual observed GMDs show time-varying behavior in ground electric fields both in magnitude and direction, which could cause different transformer heating than observed in the field peak magnitude.  
 Thus, the problem is extended to a multi-time-series formulation as well, in which the physics of transformer heating over time are modeled and used to inform a new optimization model that mitigates the effects of heating in terms of the thermal degradation of the transformer winding insulation.
-
 -->
 
 
@@ -280,7 +291,10 @@ The primary developers are [Arthur Barnes](https://github.com/bluejuniper) and [
 * [Carleton Coffrin](https://github.com/ccoffrin)
 * [David Fobes](https://github.com/pseudocubic)
 
-Special thanks to Mowen Lu for developing the ML and OTS problem specifications, and to Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
+Special thanks to 
+Mowen Lu for developing- and Russell Bent for implementing the MLS and OTS problem formulations, which are used in the GIC AC-OPF and GIC AC-MLS problem formulations; to
+Carleton Coffrin for developing and implementing the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem formulation, which is used in the GIC AC-MLS problem formulation; and to
+Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
 
 
 ### Development

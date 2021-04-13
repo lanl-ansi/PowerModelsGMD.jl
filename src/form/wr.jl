@@ -1,3 +1,34 @@
+# ===   WR   === #
+
+
+"VARIABLE: bus voltage on/off"
+function variable_bus_voltage_on_off(pm::_PM.AbstractWRModel; kwargs...)
+    variable_bus_voltage_magnitude_sqr_on_off(pm; kwargs...)
+    variable_bus_voltage_product_on_off(pm; kwargs...)
+end
+
+
+"VARIABLE: bus voltage product on/off"
+function variable_bus_voltage_product_on_off(pm::_PM.AbstractWRModel; nw::Int=nw_id_default)
+
+    wr_min, wr_max, wi_min, wi_max = _PM.ref_calc_voltage_product_bounds(_PM.ref(pm, nw, :buspairs))
+
+    _PM.var(pm, nw)[:wr] = JuMP.@variable(pm.model,
+        [bp in _PM.ids(pm, nw, :buspairs)], base_name="$(nw)_wr",
+        lower_bound = min(0,wr_min[bp]),
+        upper_bound = max(0,wr_max[bp]),
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :buspairs, bp), "wr_start", 1.0)
+    )
+    _PM.var(pm, nw)[:wi] = JuMP.@variable(pm.model,
+        [bp in _PM.ids(pm, nw, :buspairs)], base_name="$(nw)_wi",
+        lower_bound = min(0,wi_min[bp]),
+        upper_bound = max(0,wi_max[bp]),
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :buspairs, bp), "wi_start")
+    )
+
+end
+
+
 "FUNCTION: ac current on/off"
 function variable_ac_current_on_off(pm::_PM.AbstractWRModel; kwargs...)
    variable_ac_current_mag(pm; bounded=false, kwargs...)
@@ -39,7 +70,87 @@ function variable_reactive_loss(pm::_PM.AbstractWRModel; kwargs...)
 end
 
 
-"CONSTRAINT:power balance with shunts for load shedding"
+"CONSTRAINT: bus voltage product on/off"
+function constraint_bus_voltage_product_on_off(pm::_PM.AbstractWRModels; nw::Int=nw_id_default)
+
+    wr_min, wr_max, wi_min, wi_max = _PM.ref_calc_voltage_product_bounds(_PM.ref(pm, nw, :buspairs))
+
+    wr = _PM.var(pm, nw, :wr)
+    wi = _PM.var(pm, nw, :wi)
+    z_voltage = _PM.var(pm, nw, :z_voltage)
+
+    for bp in _PM.ids(pm, nw, :buspairs)
+        (i,j) = bp
+        z_fr = z_voltage[i]
+        z_to = z_voltage[j]
+
+        JuMP.@constraint(pm.model,
+            wr[bp]
+            <=
+            z_fr * wr_max[bp]
+        )
+        JuMP.@constraint(pm.model,
+            wr[bp]
+            >=
+            z_fr * wr_min[bp]
+        )
+        JuMP.@constraint(pm.model,
+            wi[bp]
+            <=
+            z_fr * wi_max[bp]
+        )
+        JuMP.@constraint(pm.model,
+            wi[bp]
+            >=
+            z_fr * wi_min[bp]
+        )
+
+        JuMP.@constraint(pm.model,
+            wr[bp]
+            <=
+            z_to*wr_max[bp]
+        )
+        JuMP.@constraint(pm.model,
+            wr[bp]
+            >=
+            z_to*wr_min[bp]
+        )
+        JuMP.@constraint(pm.model,
+            wi[bp]
+            <=
+            z_to*wi_max[bp]
+        )
+        JuMP.@constraint(pm.model,
+            wi[bp]
+            >=
+            z_to*wi_min[bp]
+        )
+
+    end
+end
+
+
+"CONSTRAINT: bus voltage on/off"
+function constraint_bus_voltage_on_off(pm::_PM.AbstractWRModels, n::Int; kwargs...)
+
+    for (i,bus) in _PM.ref(pm, n, :bus)
+        constraint_voltage_magnitude_sqr_on_off(pm, i; nw=n)
+    end
+
+    constraint_bus_voltage_product_on_off(pm; nw=n)
+
+    w = _PM.var(pm, n, :w)
+    wr = _PM.var(pm, n, :wr)
+    wi = _PM.var(pm, n, :wi)
+
+    for (i,j) in _PM.ids(pm, n, :buspairs)
+        _IM.relaxation_complex_product(pm.model, w[i], w[j], wr[(i,j)], wi[(i,j)])
+    end
+
+end
+
+
+"CONSTRAINT: power balance with shunts for load shedding"
 function constraint_power_balance_shunt_gmd_mls(pm::_PM.AbstractWRModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 
     w = _PM.var(pm, n, :w)[i]
@@ -52,11 +163,23 @@ function constraint_power_balance_shunt_gmd_mls(pm::_PM.AbstractWRModel, n::Int,
     qd_mls = _PM.var(pm, n, :qd)
 
     if length(bus_arcs) > 0 || length(bus_gens) > 0 || length(bus_pd) > 0 || length(bus_gs) > 0
-        JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_mls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs) * w)
+        JuMP.@constraint(pm.model,
+            sum(p[a] for a in bus_arcs)
+            ==
+            sum(pg[g] for g in bus_gens)
+            - sum(pd - pd_mls[i] for (i, pd) in bus_pd)
+            - sum(gs for (i, gs) in bus_gs) * w
+        )
     end
 
     if length(bus_arcs) > 0 || length(bus_gens) > 0 || length(bus_qd) > 0 || length(bus_bs) > 0
-        JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd - qd_mls[i] for (i, qd) in bus_qd) + sum(bs for (i, bs) in bus_bs) * w)
+        JuMP.@constraint(pm.model,
+            sum(q[a] + qloss[a] for a in bus_arcs)
+            ==
+            sum(qg[g] for g in bus_gens)
+            - sum(qd - qd_mls[i] for (i, qd) in bus_qd)
+            + sum(bs for (i, bs) in bus_bs) * w
+        )
     end
 
 end
@@ -73,8 +196,18 @@ function constraint_power_balance_gmd(pm::_PM.AbstractWRModel, n::Int, i, bus_ar
 
     # Bus Shunts for gs and bs are missing.  If you add it, you'll have to bifurcate one form of this constraint
     # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
-    JuMP.@constraint(pm.model, sum(p[a] for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd))
-    JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd for (i, qd) in bus_qd))
+    JuMP.@constraint(pm.model,
+        sum(p[a] for a in bus_arcs)
+        ==
+        sum(pg[g] for g in bus_gens)
+        - sum(pd for (i, pd) in bus_pd)
+    )
+    JuMP.@constraint(pm.model,
+        sum(q[a] + qloss[a] for a in bus_arcs)
+        ==
+        sum(qg[g] for g in bus_gens)
+        - sum(qd for (i, qd) in bus_qd)
+    )
 
 end
 
@@ -97,8 +230,14 @@ function constraint_current(pm::_PM.AbstractWRModel, n::Int, i, f_idx, f_bus, t_
         p_fr = _PM.var(pm, n, :p)[arc_from]
         q_fr = _PM.var(pm, n, :q)[arc_from]
 
-        JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= l * w)
+        JuMP.@constraint(pm.model,
+            p_fr^2 + q_fr^2
+            <=
+            l * w
+        )
+
         _IM.relaxation_sqr(pm.model, i_ac_mag, l)
+
     end
 
 end
@@ -107,18 +246,34 @@ end
 "CONSTRAINT: relating current to power flow on_off"
 function constraint_current_on_off(pm::_PM.AbstractWRModel, n::Int, i, ac_ub)
 
-    ac_lb = 0 # this implementation of the on/off relaxation is only valid for lower bounds of 0
+    # this implementation of the on/off relaxation is only valid for lower bounds of 0
+    ac_lb = 0 
 
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     l = _PM.var(pm, n, :ccm)[i]
     z = _PM.var(pm, n, :z_branch)[i]
 
     # p_fr^2 + q_fr^2 <= l * w comes for free with constraint_power_magnitude_sqr of PowerModels.jl
-    JuMP.@constraint(pm.model, l >= i_ac_mag^2)
-    JuMP.@constraint(pm.model, l <= ac_ub*i_ac_mag)
-
-    JuMP.@constraint(pm.model, i_ac_mag <= z * ac_ub)
-    JuMP.@constraint(pm.model, i_ac_mag >= z * ac_lb)
+    JuMP.@constraint(pm.model,
+        l
+        >=
+        i_ac_mag^2
+    )
+    JuMP.@constraint(pm.model,
+        l
+        <=
+        ac_ub*i_ac_mag
+    )
+    JuMP.@constraint(pm.model,
+        i_ac_mag
+        <=
+        z * ac_ub
+    )
+    JuMP.@constraint(pm.model,
+        i_ac_mag
+        >=
+        z * ac_lb
+    )
 
 end
 
@@ -130,7 +285,12 @@ function constraint_thermal_protection(pm::_PM.AbstractWRModel, n::Int, i, coeff
     ieff = _PM.var(pm, n, :i_dc_mag)[i]
     ieff_sqr = _PM.var(pm, n, :i_dc_mag_sqr)[i]
 
-    JuMP.@constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff_sqr/(ibase^2))
+    JuMP.@constraint(pm.model,
+        i_ac_mag
+        <=
+        coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff_sqr/(ibase^2)
+    )
+
     _IM.relaxation_sqr(pm.model, ieff, ieff_sqr)
 
 end
@@ -144,8 +304,17 @@ function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j)
     iv = _PM.var(pm, n, :iv)[(k,i,j)]
     vm = _PM.var(pm, n, :vm)[i]
 
-    JuMP.@constraint(pm.model, qloss[(k,i,j)] == 0.0)
-    JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        0.0
+    )
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
     _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
 
 end
@@ -165,8 +334,17 @@ function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, K, branchMVA
         println()
     end
 
-    JuMP.@constraint(pm.model, qloss[(k,i,j)] == ((K * iv) / (3.0 * branchMVA)))  # 'K' is per phase
-    JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        ((K * iv) / (3.0 * branchMVA))  # 'K' is per phase
+    )
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
     _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
 
 end

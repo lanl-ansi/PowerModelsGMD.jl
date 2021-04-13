@@ -1,3 +1,5 @@
+# ===   SOLUTIONS   === #
+
 
 # "SOLUTION: get gmd solution"
 # function sol_gmd!(pm::_PM.AbstractPowerModel, sol::Dict{String,Any})

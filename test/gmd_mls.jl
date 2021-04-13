@@ -27,6 +27,45 @@
 
     end
 
+
+
+end
+
+
+
+
+
+@testset "TEST AC GMD MAXIMUM LOADABILITY" begin
+
+
+    # ===   CASE-24 IEEE RTS-0   === #
+
+    @testset "CASE24-IEEE-RTS-0 case" begin
+
+        result = _PMGMD.run_ac_gmd_mld(case24_ieee_rts_0, ipopt_solver)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 201417.0020; atol=1e1)
+
+    end
+
+
+
+    # ===   EPRI21   === #
+
+    @testset "EPRI21 case" begin
+
+        # result = _PMGMD.run_ac_gmd_mld(case_epri21, ipopt_solver)
+        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        # @test isapprox(result["objective"], 0; atol=1e1)
+
+        # TODO => FIX ERROR
+        # Received Warning Message:
+        # DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.
+
+    end
+
+
+
 end
 
 
