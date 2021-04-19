@@ -7,7 +7,7 @@ function run_gmd_ots_ts(data, model_type::Type, optimizer; kwargs...)
 end
 
 
-"FUNCTION: GMD OTS TS problem formulation"
+"FUNCTION: GMD OTS TS problem specification"
 function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
 
     for (n, network) in nws(pm)
@@ -67,7 +67,7 @@ function post_gmd_ots_ts(pm::PMs.AbstractPowerModel; kwargs...)
         for i in PMs.ids(pm, :branch, nw=n)
             constraint_dc_current_mag(pm, i) # constraints 3u
             constraint_dc_current_mag_on_off(pm, i, nw=n)
-            # OTS formulation is using constraint_qloss
+            # OTS specification is using constraint_qloss
             constraint_qloss_vnom(pm, i, nw=n)
 
             PMs.constraint_ohms_yt_from_on_off(pm, i, nw=n)

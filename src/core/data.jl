@@ -1,7 +1,7 @@
 export make_gmd_mixed_units, adjust_gmd_qloss, top_oil_rise, hotspot_rise, update_top_oil_rise, update_hotspot_rise
 
 
-# ===   GMD FORMULATION FUNCTIONS   === #
+# ===   GMD SPECIFICATION FUNCTIONS   === #
 
 
 "FUNCTION: add GMD data"
@@ -402,7 +402,7 @@ end
 
 
 
-# ===   DECOUPLED GMD FORMULATIONS   === #
+# ===   DECOUPLED GMD SPECIFICATIONS   === #
 
 
 "FUNCTION: constraints for computing the DC current magnitude"

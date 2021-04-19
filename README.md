@@ -10,15 +10,15 @@ Consequently, PMsGMD is equally useful for both research and industry applicatio
 ## PMsGMD Dependencies
 
 PMsGMD builds on the following Julia packages: [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.18.0 and [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.6.0.
-In addition, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21.1, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21.6, and [Memento](https://github.com/invenia/Memento.jl) v1.1.2.
+In addition, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21.1, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21.7, and [Memento](https://github.com/invenia/Memento.jl) v1.1.2.
 
 
 
-## Core Problem Formulations
+## Core Problem Specifications
 
 PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (GIC). It also solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
 
-Currently the following common industry and academic formulations have been implemented:
+Currently the following common industry and academic specifications have been implemented:
 * GIC DC: quasi-dc power flow
 * GIC AC-OPF: ac optimal power flow with sequential/coupled quasi-dc power flow
 * GIC AC-MLS: ac minimum-load-shed with sequential/coupled quasi-dc power flow
@@ -32,7 +32,7 @@ Currently the following common industry and academic formulations have been impl
 * GIC + AC - OTS: ac optimal transmission switching with load shed coupled with a quasi-dc power flow
 -->
 
-Testing of implemented formulations was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v0.6.5.
+Testing of implemented specifications was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v0.6.5.
 Alternatively, [Cbc](https://github.com/jump-dev/Cbc.jl), [Juniper](https://github.com/lanl-ansi/Juniper.jl), and [SCS](https://github.com/jump-dev/SCS.jl) solvers are supported as well.
 
 
@@ -44,7 +44,7 @@ After the installation of its dependencies, PMsGMD can be installed from the Jul
 add https://github.com/lanl-ansi/PowerModelsGMD.jl.git
 ```
 
-To verify that all implemented formulations work as designed, test PMsGMD:
+To verify that all implemented specifications work as designed, test PMsGMD:
 ```
 test PowerModelsGMD
 ```
@@ -67,7 +67,7 @@ result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, solver)
 
 
 
-## Problem Formulation Reference
+## Problem Specification Reference
 
 
 ### GIC DC
@@ -95,7 +95,7 @@ run_gmd("test/data/b4gic.m", solver, setting=setting)
 
 #### GIC -> AC-OPF
 
-Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-OPF optimal power flow formulation to calculate the increase in transformer reactive power consumption.
+Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-OPF optimal power flow specification to calculate the increase in transformer reactive power consumption.
 For example:
 ```
 run_ac_gmd_opf_decoupled("test/data/b4gic.m")
@@ -103,7 +103,7 @@ run_ac_gmd_opf_decoupled("test/data/b4gic.m")
 
 #### GIC + AC-OPF
 
-Solves the quasi-dc voltages and currents and the AC-OPF optimal power flow formulation concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
+Solves the quasi-dc voltages and currents and the AC-OPF optimal power flow specification concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
 For example:
 ```
 run_ac_gmd_opf("test/data/b4gic.m")
@@ -114,7 +114,7 @@ It is advised to adjust qloss in the results:
 adjust_gmd_qloss(case_b4gic, solution)
 ```
 
-This formulation has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages. Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
+This specification has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages. Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
 
 
 
@@ -122,13 +122,13 @@ This formulation has limitations in that it does not model increase in transform
 
 #### GIC -> AC-MLS
 
-Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-MLS minimum-load-shedding formulation to calculate the increase in transformer reactive power consumption. The network topology is fixed.
+Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-MLS minimum-load-shedding specification to calculate the increase in transformer reactive power consumption. The network topology is fixed.
 For example:
 ```
 run_ac_gmd_mls("test/data/case24_ieee_rts_0.m")
 ```
 
-Additionally, the sequential AC-MLS minimum-load-shedding formulation was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem formulation as well, with relaxed generator and bus participation.
+Additionally, the sequential AC-MLS minimum-load-shedding specification was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
 For example:
 ```
 run_ac_gmd_mld("test/data/case24_ieee_rts_0.m")
@@ -137,13 +137,13 @@ run_ac_gmd_mld("test/data/case24_ieee_rts_0.m")
 <!-- 
 #### GIC + AC-MLS
 
-Solves the quasi-dc voltages and currents and the AC-MLS minimum-load-shedding formulation concurrently. The network topology is fixed.
+Solves the quasi-dc voltages and currents and the AC-MLS minimum-load-shedding specification concurrently. The network topology is fixed.
 For example:
 ```
 run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
 ```
 
-Additionally, the decoupled AC-MLS minimum-load-shedding formulation was implemented as a decoupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem formulation as well, with relaxed generator and bus participation.
+Additionally, the decoupled AC-MLS minimum-load-shedding specification was implemented as a decoupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
 For example:
 ```
 run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
@@ -156,16 +156,16 @@ run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
 Solve the minimum-load shedding problem for a network subjected to GIC where lines and transformers can be opened or closed.
 `run_ac_gmd_ots("test/data/ots_test.m")`
 
-Mitigating transformer overheating is achieved by treating the problem as an optimal transmission switching formulation.
+Mitigating transformer overheating is achieved by treating the problem as an optimal transmission switching specification.
 However, actual observed GMDs show time-varying behavior in ground electric fields both in magnitude and direction, which could cause different transformer heating than observed in the field peak magnitude.  
-Thus, the problem is extended to a multi-time-series formulation as well, in which the physics of transformer heating over time are modeled and used to inform a new optimization model that mitigates the effects of heating in terms of the thermal degradation of the transformer winding insulation.
+Thus, the problem is extended to a multi-time-series specification as well, in which the physics of transformer heating over time are modeled and used to inform a new optimization model that mitigates the effects of heating in terms of the thermal degradation of the transformer winding insulation.
 -->
 
 
 
 ## Data Reference
 
-PMsGMD uses several extensions to the PMs data format to provide input for its problem formulations.
+PMsGMD uses several extensions to the PMs data format to provide input for its problem specifications.
 For generality, it uses a separate dc network defined by the `gmd_bus` and `gmd_branch` tables.
 To correctly calculate the increased reactive power consumption of each transformer, the `branch_gmd` table adds all winding configuration related data. Furthermore, `branch_thermal` table adds thermal data necessary to determine the temperature changes in transformers.
 The `bus_gmd` table includes the latitude and longitude of buses in the ac network for use in distributionally robust optimization or for convenience in plotting the network.
@@ -292,8 +292,8 @@ The primary developers are [Arthur Barnes](https://github.com/bluejuniper) and [
 * [David Fobes](https://github.com/pseudocubic)
 
 Special thanks to 
-Mowen Lu for developing- and Russell Bent for implementing the MLS and OTS problem formulations, which are used in the GIC AC-OPF and GIC AC-MLS problem formulations; to
-Carleton Coffrin for developing and implementing the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem formulation, which is used in the GIC AC-MLS problem formulation; and to
+Mowen Lu for developing- and Russell Bent for implementing the MLS and OTS problem specifications, which are used in the GIC AC-OPF and GIC AC-MLS problem specifications; to
+Carleton Coffrin for developing and implementing the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification, which is used in the GIC AC-MLS problem specification; and to
 Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
 
 

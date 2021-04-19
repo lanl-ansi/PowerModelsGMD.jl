@@ -1,7 +1,7 @@
 export run_gmd_ots, run_ac_gmd_ots, run_qc_gmd_ots, run_soc_gmd_ots
 
 # -- Description -- #
-# Formulations of GMD Mitigation Problems that allow load shedding and generation dispatch and optimal transmission switching
+# Specification of GMD Mitigation Problems that allow load shedding and generation dispatch and optimal transmission switching
 # Reference - "Optimal Transmission Line Switching under Geomagnetic Disturbances", IEEE Transactions on Power Systems -- this corresponds to model C1
 # No longer treating generator transformers as resistance-less edges anymore
 

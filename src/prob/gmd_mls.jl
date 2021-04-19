@@ -76,7 +76,7 @@ end
 as a generator dispatch minimization and load shedding problem"
 function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
-#   built problem formulation corresponds to the "Model C4" of
+#   built problem specification corresponds to the "Model C4" of
 #   Mowen et al., "Optimal Transmission Line Switching under Geomagnetic Disturbances", 2018.
 
     _PM.variable_bus_voltage(pm)
@@ -136,7 +136,7 @@ end
 as a maximum loadability problem with relaxed generator and bus participation"
 function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
-#   built problem formulation corresponds to the "MLD" maximum loadability formulation of
+#   built problem specification corresponds to the "MLD" maximum loadability specification of
 #   PowerModelsRestoration.jl (https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl)
 
     variable_bus_voltage_indicator(pm, relax=true)

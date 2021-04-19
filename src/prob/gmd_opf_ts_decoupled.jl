@@ -18,7 +18,7 @@ function modify_gmd_case!(net, mods, time_index)
 end
 
 
-"FUNCTION: decoupled time-extended GMD+OPF formulation"
+"FUNCTION: decoupled time-extended GMD+OPF specification"
 function run_ac_gmd_opf_ts_decoupled(net, optimizer, mods, settings; kwargs...)
 
     timesteps = mods["time"]

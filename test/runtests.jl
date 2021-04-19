@@ -45,7 +45,7 @@ case_uiuc150 = _PM.parse_file("../test/data/uiuc150.m")
 case_rtsgmlcgic = _PM.parse_file("../test/data/rts_gmlc_gic.m")
 
 
-# Perform the tests of implemented formulations:
+# Perform the tests of implemented specifications:
 @testset "PowerModelsGMD" begin
 
     include("data_ac.jl")
@@ -59,3 +59,4 @@ case_rtsgmlcgic = _PM.parse_file("../test/data/rts_gmlc_gic.m")
     include("gmd.jl")
 
 end
+

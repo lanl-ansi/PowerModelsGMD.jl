@@ -364,7 +364,7 @@ constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) 
 
 
 
-# ===   DECOUPLED FORMULATION CONSTRAINTS  === #
+# ===   DECOUPLED SPECIFICATION CONSTRAINTS  === #
 
 
 "CONSTRAINT: computing qloss accounting for ac voltage"

@@ -31,7 +31,7 @@ const _PMGMD = PowerModelsGMD
     end
 
 
-    # Add core functions, formulations, and problem specifications:
+    # Add core functions, network formulations, and problem specifications:
     include("core/base.jl")
     include("core/constraint_template.jl")
     include("core/constraint.jl")

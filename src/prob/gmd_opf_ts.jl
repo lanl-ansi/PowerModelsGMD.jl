@@ -7,7 +7,7 @@ function run_gmd_opf_ts(data, model_type::Type, optimizer; kwargs...)
 end
 
 
-"FUNCTION: GMD OPF TS problem formulation"
+"FUNCTION: GMD OPF TS problem specification"
 function post_gmd_opf_ts(pm::PMs.AbstractPowerModel; kwargs...)
 
     for (n, network) in PMs.nws(pm)
