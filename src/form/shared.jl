@@ -26,8 +26,8 @@ function constraint_power_balance_shed(pm::_PM.AbstractWModels, n::Int, i::Int, 
         ==
         sum(pg[g] for g in bus_gens)
         - sum(ps[s] for s in bus_storage)
-        - sum(pd*z_demand[i] for (i,pd) in bus_pd)
-        - sum(gs*wz_shunt[i] for (i,gs) in bus_gs)
+        - sum(pd * z_demand[i] for (i,pd) in bus_pd)
+        - sum(gs * wz_shunt[i] for (i,gs) in bus_gs)
     )
     _PM.con(pm, n, :kcl_q)[i] = JuMP.@constraint(pm.model,
         sum(q[a] for a in bus_arcs)
@@ -36,8 +36,8 @@ function constraint_power_balance_shed(pm::_PM.AbstractWModels, n::Int, i::Int, 
         ==
         sum(qg[g] for g in bus_gens)
         - sum(qs[s] for s in bus_storage)
-        - sum(qd*z_demand[i] for (i,qd) in bus_qd)
-        + sum(bs*wz_shunt[i] for (i,bs) in bus_bs)
+        - sum(qd * z_demand[i] for (i,qd) in bus_qd)
+        + sum(bs * wz_shunt[i] for (i,bs) in bus_bs)
     )
 
     for s in keys(bus_gs)

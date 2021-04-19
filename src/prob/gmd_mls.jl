@@ -33,6 +33,27 @@ function run_qc_gmd_mls(file, optimizer; kwargs...)
     )
 end
 
+
+"FUNCTION: run GMD mitigation with second order cone relaxation"
+function run_soc_gmd_mls(file, optimizer; kwargs...)
+    return run_gmd_mls(
+        file,
+        _PM.SOCWRPowerModel,
+        optimizer;
+        kwargs...,
+    )
+end
+
+function run_soc_gmd_mld(file, optimizer; kwargs...)
+    return run_gmd_mld(
+        file,
+        _PM.SOCWRPowerModel,
+        optimizer;
+        kwargs...,
+    )
+end
+
+
 function run_gmd_mls(file, model_type::Type, optimizer; kwargs...)
     return _PM.run_model(
         file,
@@ -101,7 +122,7 @@ function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
     for i in _PM.ids(pm, :bus)
         constraint_power_balance_shunt_gmd_mls(pm, i)
     end
-    
+
     for i in _PM.ids(pm, :branch)
 
         _PM.constraint_ohms_yt_from(pm, i)
@@ -112,7 +133,6 @@ function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        constraint_current(pm, i)
         constraint_qloss_vnom(pm, i)
         constraint_dc_current_mag(pm, i)
         constraint_thermal_protection(pm, i)
@@ -168,7 +188,7 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :bus)
-        constraint_power_balance_shed(pm, i)
+        constraint_power_balance_shed(pm, i)  # MethodError: no method matching constraint_power_balance_shed
     end
 
     for i in _PM.ids(pm, :branch)
@@ -180,7 +200,6 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        constraint_current(pm, i)
         constraint_qloss_vnom(pm, i)
         constraint_dc_current_mag(pm, i)
         constraint_thermal_protection(pm, i)

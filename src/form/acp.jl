@@ -57,7 +57,6 @@ function constraint_power_balance_shed(pm::_PM.AbstractACPModel, n::Int, i::Int,
     z_demand = get(_PM.var(pm, n), :z_demand, Dict()); _PM._check_var_keys(z_demand, keys(bus_pd), "power factor scale", "load")
     z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor scale", "shunt")
 
-
     _PM.con(pm, n, :kcl_p)[i] = JuMP.@NLconstraint(pm.model,
         sum(p[a] for a in bus_arcs)
         + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
@@ -65,8 +64,8 @@ function constraint_power_balance_shed(pm::_PM.AbstractACPModel, n::Int, i::Int,
         ==
         sum(pg[g] for g in bus_gens)
         - sum(ps[s] for s in bus_storage)
-        - sum(pd*z_demand[i] for (i,pd) in bus_pd)
-        - sum(gs*vm^2*z_shunt[i] for (i,gs) in bus_gs)
+        - sum(pd * z_demand[i] for (i,pd) in bus_pd)
+        - sum(gs * vm^2 * z_shunt[i] for (i,gs) in bus_gs)
     )
     _PM.con(pm, n, :kcl_q)[i] = JuMP.@NLconstraint(pm.model,
         sum(q[a] for a in bus_arcs)
@@ -75,8 +74,8 @@ function constraint_power_balance_shed(pm::_PM.AbstractACPModel, n::Int, i::Int,
         ==
         sum(qg[g] for g in bus_gens)
         - sum(qs[s] for s in bus_storage)
-        - sum(qd*z_demand[i] for (i,qd) in bus_qd)
-        + sum(bs*vm^2*z_shunt[i] for (i,bs) in bus_bs)
+        - sum(qd * z_demand[i] for (i,qd) in bus_qd)
+        + sum(bs * vm^2 * z_shunt[i] for (i,bs) in bus_bs)
     )
 
 end
@@ -138,38 +137,21 @@ function constraint_power_balance_gmd(pm::_PM.AbstractACPModel, n::Int, i, bus_a
 end
 
 
-"FUNCTION: relating current to power flow"
-function constraint_current(pm::_PM.AbstractACPModel, n::Int, i, f_idx, f_bus, t_bus, tm)
-
-    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
-    p_fr = _PM.var(pm, n, :p)[f_idx]
-    q_fr = _PM.var(pm, n, :q)[f_idx]
-    vm = _PM.var(pm, n, :vm)[f_bus]
-
-    JuMP.@NLconstraint(pm.model,
-        p_fr^2 + q_fr^2
-        ==
-        i_ac_mag^2 * vm^2 / tm
-    )
-
-end
-
-
 "FUNCTION: relating current to power flow on/off"
 function constraint_current_on_off(pm::_PM.AbstractACPModel, n::Int, i, ac_max)
 
+    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     z = _PM.var(pm, n, :z_branch)[i]
-    i_ac = _PM.var(pm, n, :i_ac_mag)[i]
 
     JuMP.@constraint(pm.model,
-        i_ac
+        i_ac_mag
         <=
         z * ac_max
     )
     JuMP.@constraint(pm.model,
-        i_ac
+        i_ac_mag
         >=
-        z * 0
+        0
     )
 
 end

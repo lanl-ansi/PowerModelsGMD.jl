@@ -194,8 +194,6 @@ function constraint_power_balance_gmd(pm::_PM.AbstractWRModel, n::Int, i, bus_ar
     qg = _PM.var(pm, n, :qg)
     qloss = _PM.var(pm, n, :qloss)
 
-    # Bus Shunts for gs and bs are missing.  If you add it, you'll have to bifurcate one form of this constraint
-    # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
     JuMP.@constraint(pm.model,
         sum(p[a] for a in bus_arcs)
         ==
@@ -212,67 +210,35 @@ function constraint_power_balance_gmd(pm::_PM.AbstractWRModel, n::Int, i, bus_ar
 end
 
 
-"CONSTRAINT: relating current to power flow"
-function constraint_current(pm::_PM.AbstractWRModel, n::Int, i, f_idx, f_bus, t_bus, tm)
-
-    pair = (f_bus, t_bus)
-    arc_from = (i, f_bus, t_bus)
-
-    buspair = _PM.ref(pm, n, :buspairs, pair)
-    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
-
-    if buspair["branch"] == i
-        l = _PM.var(pm, n, :ccm)[(f_bus, t_bus)]
-        _IM.relaxation_sqr(pm.model, i_ac_mag, l)
-    else
-        l = _PM.var(pm, n, :cm_p)[i]
-        w = _PM.var(pm, n, :w)[f_bus]
-        p_fr = _PM.var(pm, n, :p)[arc_from]
-        q_fr = _PM.var(pm, n, :q)[arc_from]
-
-        JuMP.@constraint(pm.model,
-            p_fr^2 + q_fr^2
-            <=
-            l * w
-        )
-
-        _IM.relaxation_sqr(pm.model, i_ac_mag, l)
-
-    end
-
-end
-
-
 "CONSTRAINT: relating current to power flow on_off"
-function constraint_current_on_off(pm::_PM.AbstractWRModel, n::Int, i, ac_ub)
-
-    # this implementation of the on/off relaxation is only valid for lower bounds of 0
-    ac_lb = 0 
+function constraint_current_on_off(pm::_PM.AbstractWRModel, n::Int, i, ac_max)
 
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
-    l = _PM.var(pm, n, :ccm)[i]
+    ccm = _PM.var(pm, n)[:ccm]
+    # _PM.var(pm, n, :ccm)[i]
     z = _PM.var(pm, n, :z_branch)[i]
+    # _PM.var(pm, n, :z_branch)[i]
 
-    # p_fr^2 + q_fr^2 <= l * w comes for free with constraint_power_magnitude_sqr of PowerModels.jl
+
     JuMP.@constraint(pm.model,
-        l
+        ccm
         >=
         i_ac_mag^2
     )
     JuMP.@constraint(pm.model,
-        l
+        ccm
         <=
-        ac_ub*i_ac_mag
+        ac_max * i_ac_mag
     )
     JuMP.@constraint(pm.model,
         i_ac_mag
         <=
-        z * ac_ub
+        z * ac_max
     )
     JuMP.@constraint(pm.model,
         i_ac_mag
         >=
-        z * ac_lb
+        0
     )
 
 end

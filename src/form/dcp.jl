@@ -57,7 +57,6 @@ function constraint_power_balance_shed(pm::_PM.AbstractDCPModel, n::Int, i::Int,
     z_demand = get(_PM.var(pm, n), :z_demand, Dict()); _PM._check_var_keys(z_demand, keys(bus_pd), "power factor scale", "load")
     z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor scale", "shunt")
 
-
     _PM.con(pm, n, :kcl_p)[i] = JuMP.@constraint(pm.model,
         sum(p[a] for a in bus_arcs)
         + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
@@ -65,9 +64,10 @@ function constraint_power_balance_shed(pm::_PM.AbstractDCPModel, n::Int, i::Int,
         ==
         sum(pg[g] for g in bus_gens)
         - sum(ps[s] for s in bus_storage)
-        - sum(pd*z_demand[i] for (i,pd) in bus_pd)
-        - sum(gs*1.0^2*z_shunt[i] for (i,gs) in bus_gs)
+        - sum(pd * z_demand[i] for (i,pd) in bus_pd)
+        - sum(gs * 1.0^2 * z_shunt[i] for (i,gs) in bus_gs)
     )
+
 end
 
 
