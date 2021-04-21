@@ -64,8 +64,8 @@ function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
 
         _PM.constraint_voltage_angle_difference(pm, i)
 
-        # _PM.constraint_thermal_limit_from(pm, i)
-        # _PM.constraint_thermal_limit_to(pm, i)
+        _PM.constraint_thermal_limit_from(pm, i)
+        _PM.constraint_thermal_limit_to(pm, i)
 
         constraint_qloss_vnom(pm, i)
         constraint_dc_current_mag(pm, i)
