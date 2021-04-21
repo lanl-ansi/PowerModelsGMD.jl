@@ -125,30 +125,29 @@ This specification has limitations in that it does not model increase in transfo
 Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-MLS minimum-load-shedding specification to calculate the increase in transformer reactive power consumption. The network topology is fixed.
 For example:
 ```
-run_ac_gmd_mls("test/data/case24_ieee_rts_0.m")
-```
-
-Additionally, the sequential AC-MLS minimum-load-shedding specification was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
-For example:
-```
-run_ac_gmd_mld("test/data/case24_ieee_rts_0.m")
-```
-
-<!-- 
-#### GIC + AC-MLS
-
-Solves the quasi-dc voltages and currents and the AC-MLS minimum-load-shedding specification concurrently. The network topology is fixed.
-For example:
-```
 run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
 ```
 
 Additionally, the decoupled AC-MLS minimum-load-shedding specification was implemented as a decoupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
 For example:
 ```
-run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
+run_soc_gmd_mld_decoupled("test/data/case24_ieee_rts_0.m")
 ```
--->
+
+#### GIC + AC-MLS
+
+Solves the quasi-dc voltages and currents and the AC-MLS minimum-load-shedding specification concurrently. The network topology is fixed.
+For example:
+```
+run_ac_gmd_mls("test/data/case24_ieee_rts_0.m")
+```
+
+Additionally, the sequential AC-MLS minimum-load-shedding specification was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
+For example:
+```
+run_soc_gmd_mld("test/data/case24_ieee_rts_0.m")
+```
+
 
 <!-- 
 ### GIC + AC-OTS

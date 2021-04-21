@@ -1,6 +1,5 @@
-export run_ac_gmd_mls, run_qc_gmd_mls
-export run_gmd_mls
-export run_gmd_mld
+export run_ac_gmd_mls, run_ac_gmd_mld, run_qc_gmd_mls
+export run_gmd_mls, run_gmd_mld
 
 
 "FUNCTION: run GMD mitigation with nonlinear ac equations"
@@ -149,6 +148,10 @@ function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
 
     objective_gmd_min_mls(pm)
 
+    # NOTE ON ERROR:
+    # The observed Infeasibility of EPRI21 test case is likely caused by
+    # "variable_dc_current" and "constraint_thermal_protection" <==
+
 end
 
 
@@ -188,7 +191,7 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :bus)
-        constraint_power_balance_shed(pm, i)  # MethodError: no method matching constraint_power_balance_shed
+        constraint_power_balance_shed(pm, i)
     end
 
     for i in _PM.ids(pm, :branch)
@@ -209,7 +212,7 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     for i in _PM.ids(pm, :dcline)
         _PM.constraint_dcline_power_losses(pm, i)
     end
-    
+
     for i in _PM.ids(pm, :gmd_bus)
         constraint_dc_power_balance_shunt(pm, i)
     end
@@ -219,6 +222,10 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     objective_max_loadability(pm)
+
+    # NOTE ON ERROR:
+    # The observed Infeasibility of EPRI21 test case is likely caused by
+    # "variable_dc_current" and "constraint_thermal_protection" <==
 
 end
 

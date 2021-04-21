@@ -24,6 +24,7 @@
         # TODO => FIX ERROR
         # Received Warning Message:
         # DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.
+        # ["termination_status"] = LOCALLY_INFEASIBLE
 
     end
 
@@ -61,6 +62,7 @@ end
         # TODO => FIX ERROR
         # Received Warning Message:
         # DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.
+        # ["termination_status"] = LOCALLY_INFEASIBLE
 
     end
 
