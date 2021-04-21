@@ -105,7 +105,6 @@ function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_dcline_power(pm)
 
     variable_load(pm)
-    variable_ac_current(pm)
 
     variable_dc_voltage(pm)
     variable_dc_line_flow(pm)
@@ -134,7 +133,6 @@ function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
 
         constraint_qloss_vnom(pm, i)
         constraint_dc_current_mag(pm, i)
-        constraint_thermal_protection(pm, i)
 
     end
 
@@ -147,11 +145,6 @@ function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     objective_gmd_min_mls(pm)
-
-    # NOTE ON ERROR:
-    # The observed Infeasibility of EPRI21 test case is likely caused by
-    # "variable_dc_current" and "constraint_thermal_protection" <==
-
 end
 
 
@@ -173,7 +166,6 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
 
     _PM.variable_load_power_factor(pm, relax=true)
     _PM.variable_shunt_admittance_factor(pm, relax=true)
-    variable_ac_current(pm)
 
     variable_dc_voltage(pm)
     variable_dc_line_flow(pm)
@@ -205,7 +197,6 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
 
         constraint_qloss_vnom(pm, i)
         constraint_dc_current_mag(pm, i)
-        constraint_thermal_protection(pm, i)
 
     end
 
@@ -222,10 +213,6 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     objective_max_loadability(pm)
-
-    # NOTE ON ERROR:
-    # The observed Infeasibility of EPRI21 test case is likely caused by
-    # "variable_dc_current" and "constraint_thermal_protection" <==
 
 end
 
