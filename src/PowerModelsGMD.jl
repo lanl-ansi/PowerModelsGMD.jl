@@ -47,7 +47,7 @@ const _PMGMD = PowerModelsGMD
     include("form/wr.jl")
     include("form/wrm.jl")
 
-    # include("prob/gmd_matrix.jl")
+    include("prob/gmd_matrix.jl")
     include("prob/gmd_mls_decoupled.jl")
     include("prob/gmd_mls.jl")
     # #include("prob/gmd_msse_decoupled.jl")

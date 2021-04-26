@@ -10,7 +10,7 @@ Consequently, PMsGMD is equally useful for both research and industry applicatio
 ## PMsGMD Dependencies
 
 PMsGMD builds on the following Julia packages: [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.18.0 and [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.6.0.
-In addition, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21.1, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21.7, and [Memento](https://github.com/invenia/Memento.jl) v1.1.2.
+In addition, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21, and [Memento](https://github.com/invenia/Memento.jl) v1.1.
 
 
 

@@ -49,12 +49,12 @@ case_rtsgmlcgic = _PM.parse_file("../test/data/rts_gmlc_gic.m")
 @testset "PowerModelsGMD" begin
 
     include("data_ac.jl")
-    #include("gmd_matrix.jl")
+    include("gmd_matrix.jl")
     include("gmd_mls_decoupled.jl")
     include("gmd_mls.jl")
     include("gmd_opf_decoupled.jl")
+    include("gmd_opf.jl")
     #include("gmd_opf_ts_decoupled.jl")
-    #include("gmd_opf.jl")
     #include("gmd_ots.jl")
     include("gmd.jl")
 
