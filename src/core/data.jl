@@ -6,7 +6,7 @@ export make_gmd_mixed_units, adjust_gmd_qloss, top_oil_rise, hotspot_rise, updat
 
 "FUNCTION: add GMD data"
 function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
-# NOTE: currently not being used
+# NOTE: currently not being used ... consider removing
 
 
     @assert !_IM.ismultinetwork(case)
@@ -163,7 +163,7 @@ function calc_branch_thermal_coeff(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw
     branch = _PM.ref(pm, nw, :branch, i)
     buses = _PM.ref(pm, nw, :bus)
 
-    if !(branch["type"] == "xfmr")
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
         return NaN
     end
 
@@ -409,19 +409,25 @@ end
 function dc_current_mag(branch, case, solution)
 
     branch["ieff"] = 0.0
-    if branch["type"] != "xfmr"
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
         dc_current_mag_line(branch, case, solution)
+
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-        println("Ungrounded config, ieff constrained to zero")
+        println("UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
         dc_current_mag_grounded_xf(branch, case, solution)
-    elseif branch["config"] in ["delta-gwye","gwye-delta"]
+
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
         dc_current_mag_gwye_delta_xf(branch, case, solution)
+
     elseif branch["config"] == "gwye-gwye"
         dc_current_mag_gwye_gwye_xf(branch, case, solution)
+
     elseif branch["config"] == "gwye-gwye-auto"
         dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
-    elseif branch["config"] == "three-winding" && branch["winding"] == "high"
+
+    elseif branch["config"] == "three-winding"
         dc_current_mag_3w_xf(branch, case, solution)
+
     end
 
 end
@@ -485,7 +491,6 @@ end
 
 function dc_current_mag_3w_xf(branch, case, solution)
 
-
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
@@ -513,75 +518,95 @@ end
 # ===   THERMAL MODEL FUNCTIONS   === #
 
 
-"FUNCTION: calculate top-oil temperature rise"
-function delta_topoilrise(branch, result, base_mva, delta_t)
+"FUNCTION: calculate steady-state top-oil temperature rise"
+function delta_topoilrise_ss(branch, result, base_mva)
 
-    delta_topoilrise_ss = delta_topoilrise_ss(branch, result, base_mva)
-    #delta_topoilrise_ss = 1 #testing for step response
-    delta_topoilrise = delta_topoilrise_ss # if 1st iteration, assume it starts from steady-state value
+    delta_topoilrise_ss = 0
 
-    if ( ("delta_topoilrise" in keys(branch)) && ("delta_topoilrise_ss" in keys(branch)) ) 
-        # println("Updating oil temperature")
-        delta_topoilrise_prev = branch["delta_topoilrise"]
-        delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"] 
+    if (branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
 
-        # trapezoidal integration
-        tau = 2*(branch["topoil_time_const"]*60)/delta_t
-        delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev)/(1 + tau) - delta_topoilrise_prev*(1 - tau)/(1 + tau)
-    else
-        delta_topoilrise = 0
-        # println("Setting initial oil temperature")
+        i = branch["index"]
+        bs = result["solution"]["branch"]["$i"]
+        p = bs["pf"]
+        q = bs["qf"]
+        S = sqrt(p^2 + q^2)
+        K = S / (branch["rate_a"] * base_mva)
+
+        # delta_topoilrise_ss = 1  # ==> STEP response
+        delta_topoilrise_ss = branch["topoil_rated"] * K^2
+
     end
 
-   branch["delta_topoilrise_ss"] = delta_topoilrise_ss
-   branch["delta_topoilrise"] = delta_topoilrise
+    branch["delta_topoilrise_ss"] = delta_topoilrise_ss
 
 end
 
 
-"FUNCTION: calculate steady-state top-oil temperature rise"
-function delta_topoilrise_ss(branch, result, base_mva)
-    
-    if !(branch["type"] == "transformer" || branch["type"] == "xfmr")
-        return 0
-    end
-        
-    i = branch["index"]
-    bs = result["solution"]["branch"]["$i"]
-    p = bs["pf"]
-    q = bs["qf"]
-    S = sqrt(p^2 + q^2)
-    K = S/(branch["rate_a"] * base_mva) #calculate the loading
+"FUNCTION: calculate top-oil temperature rise"
+function delta_topoilrise(branch, result, base_mva, delta_t)
 
-    return branch["topoil_rated"]*K^2
+    delta_topoilrise_ss = branch["delta_topoilrise_ss"]
+    delta_topoilrise = delta_topoilrise_ss
+
+    if (("delta_topoilrise" in keys(branch)) && ("delta_topoilrise_ss" in keys(branch)))
+
+        delta_topoilrise_prev = branch["delta_topoilrise"]
+        delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"] 
+
+        tau = 2 * (branch["topoil_time_const"] * 60) / delta_t
+        delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev) / (1 + tau) - delta_topoilrise_prev * (1 - tau) / (1 + tau)
+
+    else
+
+        delta_topoilrise = 0
+
+    end
+
+    branch["delta_topoilrise"] = delta_topoilrise
 
 end
 
 
 "FUNCTION: update top-oil temperature rise in the network"
-function update_topoilrise(branch, net)
+function update_topoilrise(branch, case)
 
-    k = "$(branch["index"])"
-    net["branch"][k]["delta_topoilrise"] = branch["delta_topoilrise"]
-    net["branch"][k]["delta_topoilrise_ss"] = branch["delta_topoilrise_ss"]
+    i = branch["index"]
+    case["branch"]["$i"]["delta_topoilrise_ss"] = branch["delta_topoilrise_ss"]
+    case["branch"]["$i"]["delta_topoilrise"] = branch["delta_topoilrise"]
+
+end
+
+
+"FUNCTION: calculate steady-state hotspot temperature rise"
+function delta_hotspotrise_ss(branch, result)
+
+    delta_hotspotrise_ss = 0
+
+    Ie = branch["ieff"]
+    delta_hotspotrise_ss = branch["hotspot_coeff"] * Ie
+
+    branch["delta_hotspotrise_ss"] = delta_hotspotrise_ss
 
 end
 
 
 "FUNCTION: calculate hotspot temperature rise"
-#TODO: FIX function - even though it is written correctly, it errors out when enabled in gmd_opf_ts_decoupled.jl
 function delta_hotspotrise(branch, result, Ie_prev, delta_t)
-    #determined for the time-extended mitigation problem
-    
+
     delta_hotspotrise = 0
+
     Ie = branch["ieff"]
-    tau = 2*branch["hotspot_rated"]/delta_t
+    tau = 2 * branch["hotspot_rated"] / delta_t
 
     if Ie_prev === nothing
-        delta_hotspotrise = branch["hotspot_coeff"]*Ie
+
+        delta_hotspotrise = branch["hotspot_coeff"] * Ie
+
     else
+
         delta_hotspotrise_prev = branch["delta_hotspotrise"]
-        delta_hotspotrise = branch["hotspot_coeff"]*(Ie + Ie_prev)/(1 + tau) - delta_hotspotrise_prev*(1 - tau)/(1 + tau)
+        delta_hotspotrise = branch["hotspot_coeff"] * (Ie + Ie_prev) / (1 + tau) - delta_hotspotrise_prev * (1 - tau) / (1 + tau)
+
     end
 
     branch["delta_hotspotrise"] = delta_hotspotrise
@@ -589,24 +614,12 @@ function delta_hotspotrise(branch, result, Ie_prev, delta_t)
 end
 
 
-"FUNCTION: calculate steady-state hotspot temperature rise"
-function delta_hotspotrise_ss(branch, result)
-    #determined for the time-extended  mitigation problem
-    
-    delta_hotspotrise_ss = 0
-    Ie = branch["ieff"]
-    delta_hotspotrise_ss = branch["hotspot_coeff"]*Ie
-    branch["delta_hotspotrise_ss"] = delta_hotspotrise_ss
-
-end
-
-
 "FUNCTION: update hotspot temperature rise in the network"
-function update_hotspotrise(branch, net)
+function update_hotspotrise(branch, case)
 
-    k = "$(branch["index"])"
-    #net["branch"][k]["delta_hotspotrise"] = branch["delta_hotspotrise"]
-    net["branch"][k]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
-    
+    i = branch["index"]
+    case["branch"]["$i"]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
+    case["branch"]["$i"]["delta_hotspotrise"] = branch["delta_hotspotrise"]
+
 end
 

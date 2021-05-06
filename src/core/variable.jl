@@ -330,22 +330,6 @@ function variable_iv(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::
 end
 
 
-"VARIABLE: generation indicator"
-function variable_gen_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
- 
-    gen_z = _PM.var(pm, nw)[:gen_z] = JuMP.@variable(pm.model,
-        [i in _PM.ids(pm, nw, :gen)], base_name="$(nw)_gen_z",
-        lower_bound = 0,
-        upper_bound = 1,
-        integer = true,
-        start = _PM.comp_start_value(_PM.ref(pm, nw, :gen, i), "gen_z_start", 1.0)
-    )
-
-    report && _PM.sol_component_value(pm, nw, :gen, :gen_z, _PM.ids(pm, nw, :gen), gen_z)
-
-end
-
-
 "VARIABLE: active generation squared cost"
 function variable_active_generation_sqr_cost(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 

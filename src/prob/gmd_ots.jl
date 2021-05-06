@@ -1,100 +1,133 @@
-export run_gmd_ots, run_ac_gmd_ots, run_qc_gmd_ots, run_soc_gmd_ots
-
-# -- Description -- #
-# Specification of GMD Mitigation Problems that allow load shedding and generation dispatch and optimal transmission switching
-# Reference - "Optimal Transmission Line Switching under Geomagnetic Disturbances", IEEE Transactions on Power Systems -- this corresponds to model C1
-# No longer treating generator transformers as resistance-less edges anymore
+export run_ac_gmd_mls_ots, run_qc_gmd_mls_ots, run_soc_gmd_mls_ots
+export run_gmd_mls_ots
 
 
-"FUNCTION: run the GMD mitigation with the nonlinear AC equations"
-function run_ac_gmd_ots(data, optimizer; kwargs...)
-    return run_gmd_ots(data, PMs.ACPPowerModel, optimizer; kwargs...)
+"FUNCTION: run GMD mitigation with nonlinear ac equations"
+function run_ac_gmd_mls_ots(file, optimizer; kwargs...)
+    return run_gmd_mls_ots(
+        file,
+        _PM.ACPPowerModel,
+        optimizer;
+        kwargs...,
+    )
 end
 
 
-"FUNCTION: run the GMD mitigation with the QC AC equations"
-function run_qc_gmd_ots(data, optimizer; kwargs...)
-    return run_gmd_ots(data, PMs.QCLSPowerModel, optimizer; kwargs...)
+"FUNCTION: run GMD mitigation with qc ac equations"
+function run_qc_gmd_mls_ots(file, optimizer; kwargs...)
+    return run_gmd_mls_ots(
+        file,
+        _PM.QCLSPowerModel,
+        optimizer;
+        kwargs...,
+    )
 end
 
 
-"FUNCTION: minimize load shedding and fuel costs for GMD mitigation"
-function run_gmd_ots(data::String, model_type::Type, optimizer; kwargs...)
-    return PMs.run_model(data, model_type, optimizer, post_gmd_ots; ref_extensions=[ref_add_core!,PMs.ref_add_on_off_va_bounds!], solution_builder = solution_gmd!, kwargs...)
+"FUNCTION: run GMD mitigation with second order cone relaxation"
+function run_soc_gmd_mls_ots(file, optimizer; kwargs...)
+    return run_gmd_mls_ots(
+        file,
+        _PM.SOCWRPowerModel,
+        optimizer;
+        kwargs...,
+    )
 end
 
 
-"FUNCTION: GMD Model - Minimizes Generator Dispatch and Load Shedding"
-function post_gmd_ots(pm::PMs.AbstractPowerModel; kwargs...)
-
-    # -- AC modeling -- #
-
-    PMs.variable_voltage_on_off(pm) # theta_i and V_i, includes constraint 3o
-    PMs.variable_branch_power(pm) # p_ij, q_ij
-    # no bounds because of the on/off constraints
-    PMs.variable_gen_power(pm, bounded=false) # f^p_i, f^q_i, includes a variation of constraints 3q, 3r
-    variable_active_generation_sqr_cost(pm)
-    PMs.variable_branch_indicator(pm) # z_e variable
-    variable_load(pm) # l_i^p, l_i^q
-    variable_ac_current_on_off(pm) # \tilde I^a_e and l_e
-    variable_gen_indicator(pm) # z variables for the generators
-
-
-    # -- DC modeling -- #
-
-    variable_dc_voltage_on_off(pm) # V^d_i
-    variable_reactive_loss(pm) # Q_e^loss for each edge (used to compute  Q_i^loss for each node)
-    variable_dc_current(pm) # \tilde I^d_e
-    variable_dc_line_flow(pm;bounded=false) # I^d_e
+function run_gmd_mls_ots(file, model_type::Type, optimizer; kwargs...)
+    return _PM.run_model(
+        file,
+        model_type,
+        optimizer,
+        build_gmd_mls_ots;
+        ref_extensions = [
+            ref_add_gmd!
+            _PM.ref_add_on_off_va_bounds!
+        ],
+        solution_processors = [
+            solution_gmd!,
+            solution_PM!,
+            solution_gmd_qloss!,
+            solution_gmd_mls!,
+            solution_gmd_xfmr_temp!
+        ],        
+        kwargs...,
+    )
+end
 
 
-    # -- Minimize load shedding and fuel cost -- #
+"FUNCTION: build the ac optimal transmission switching with minimum-load-shed coupled with a quasi-dc power flow problem
+as a generator dispatch minimization and load shedding problem"
+function build_gmd_mls_ots(pm::_PM.AbstractPowerModel; kwargs...)
+# Reference:
+#   built minimum-load-shed problem specification corresponds to the "Model C4" of
+#   Mowen et al., "Optimal Transmission Line Switching under Geomagnetic Disturbances", 2018.
 
-    objective_gmd_mls_on_off(pm) # variation of equation 3a
+    _PM.variable_bus_voltage_on_off(pm)
+    _PM.variable_gen_indicator(pm)
+    _PM.variable_gen_power(pm)
+    _PM.variable_branch_indicator(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
 
-    PMs.constraint_model_voltage_on_off(pm)
+    variable_ac_current_on_off(pm)  ###
+    variable_active_generation_sqr_cost(pm)  ### ERROR
+    variable_load(pm)
 
-    for i in PMs.ids(pm, :ref_buses)
-        PMs.constraint_theta_ref(pm, i)
+    variable_dc_voltage_on_off(pm)
+    variable_dc_line_flow(pm, bounded=false)
+    variable_reactive_loss(pm)
+    variable_dc_current(pm)
+
+    _PM.constraint_model_voltage_on_off(pm)
+
+    for i in _PM.ids(pm, :ref_buses)
+        _PM.constraint_theta_ref(pm, i)
     end
 
-    for i in PMs.ids(pm, :bus)
-        constraint_power_balance_shunt_gmd_mls(pm, i) # variation of 3b, 3c
+    for i in _PM.ids(pm, :bus)
+        constraint_power_balance_shunt_gmd_mls(pm, i)
     end
 
-    for i in PMs.ids(pm, :gen)
-        constraint_gen_on_off(pm, i) # variation of 3q, 3r
+    for i in _PM.ids(pm, :gen)
+        _PM.constraint_gen_power_on_off(pm, i)
         constraint_gen_ots_on_off(pm, i)
         constraint_gen_perspective(pm, i)
     end
 
-    for i in PMs.ids(pm, :branch)
-        constraint_dc_current_mag(pm, i) # constraints 3u
-        constraint_dc_current_mag_on_off(pm, i) # helper constraint to force the "psuedo" DC current 0 when line is turned off
+    for i in _PM.ids(pm, :branch)
 
-        constraint_qloss(pm, i) # individual terms of righthand side of constraints 3x
-        constraint_thermal_protection(pm, i) # constraints 3w
-        constraint_current_on_off(pm, i) # constraints 3k, 3l, and 3n
+        _PM.constraint_ohms_yt_from_on_off(pm, i)
+        _PM.constraint_ohms_yt_to_on_off(pm, i)
 
-        PMs.constraint_ohms_yt_from_on_off(pm, i) # constraints 3d, 3e
-        PMs.constraint_ohms_yt_to_on_off(pm, i)   # constraints 3f, 3g
+        _PM.constraint_voltage_angle_difference_on_off(pm, i)
 
-        PMs.constraint_thermal_limit_from_on_off(pm, i) # constraints 3m
-        PMs.constraint_thermal_limit_to_on_off(pm, i)   # constraints 3m
-        PMs.constraint_voltage_angle_difference_on_off(pm, i) # constraints 3p
+        _PM.constraint_thermal_limit_from_on_off(pm, i)
+        _PM.constraint_thermal_limit_to_on_off(pm, i)
+
+        constraint_qloss(pm, i)
+        constraint_current_on_off(pm, i)
+        constraint_dc_current_mag(pm, i)
+        constraint_dc_current_mag_on_off(pm, i)
+
+        constraint_thermal_protection(pm, i)
+
     end
 
-
-    # -- DC network constraints -- #
-
-    for i in PMs.ids(pm, :gmd_bus)
-        constraint_dc_power_balance_shunt(pm, i) # constraint 3s
+    for i in _PM.ids(pm, :dcline)
+        _PM.constraint_dcline_power_losses(pm, i)
     end
 
-    for i in PMs.ids(pm, :gmd_branch)
-        constraint_dc_ohms_on_off(pm, i) # constraint 3t
+    for i in _PM.ids(pm, :gmd_bus)
+        constraint_dc_power_balance_shunt(pm, i)
     end
+
+    for i in _PM.ids(pm, :gmd_branch)
+        constraint_dc_ohms_on_off(pm, i)
+    end
+
+    objective_gmd_mls_on_off(pm)
 
 end
-
 

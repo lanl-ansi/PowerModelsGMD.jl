@@ -122,41 +122,10 @@ function constraint_qloss_constant_v(pm::_PM.AbstractPowerModel, n::Int, k, i, j
 end
 
 
-"CONSTRAINT: turning generators on and off"
-function constraint_gen_on_off(pm::_PM.AbstractPowerModel, n::Int, i, pmin, pmax, qmin, qmax)
-
-    z = _PM.var(pm, n, :gen_z)[i]
-    pg = _PM.var(pm, n, :pg)[i]
-    qg = _PM.var(pm, n, :qg)[i]
-
-    JuMP.@constraint(pm.model,
-        z * pmin
-        <=
-        pg
-    )
-    JuMP.@constraint(pm.model,
-        pg
-        <=
-        z * pmax
-    )
-    JuMP.@constraint(pm.model,
-        z * qmin
-        <=
-        qg
-    )
-    JuMP.@constraint(pm.model,
-        qg
-        <=
-        z * qmax
-    )
-
-end
-
-
 "CONSTRAINT: tieing ots variables to gen variables"
 function constraint_gen_ots_on_off(pm::_PM.AbstractPowerModel, n::Int, i, bus_arcs)
 
-    z = _PM.var(pm, n, :gen_z)[i]
+    z = _PM.var(pm, n, :z_gen)[i]
     zb = _PM.var(pm, n, :z_branch)
 
     JuMP.@constraint(pm.model,
@@ -171,7 +140,7 @@ end
 "CONSTRAINT: perspective constraint for generation cost"
 function constraint_gen_perspective(pm::_PM.AbstractPowerModel, n::Int, i, cost)
 
-    z = _PM.var(pm, n, :gen_z)[i]
+    z = _PM.var(pm, n, :z_gen)[i]
     pg_sqr = _PM.var(pm, n, :pg_sqr)[i]
     pg = _PM.var(pm, n, :pg)[i]
 
@@ -338,24 +307,30 @@ function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
     
     branch = _PM.ref(pm, n, :branch, k)
 
-    if branch["type"] != "xfmr"
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
         constraint_dc_current_mag_line(pm, k, nw=n)
+
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-        Memento.debug(_LOGGER, "  Ungrounded config, ieff constrained to zero")
+        Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
         constraint_dc_current_mag_grounded_xf(pm, k, nw=n)
-    elseif branch["config"] in ["delta-gwye","gwye-delta"]
+    
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
         constraint_dc_current_mag_gwye_delta_xf(pm, k, nw=n)
+
     elseif branch["config"] == "gwye-gwye"
         constraint_dc_current_mag_gwye_gwye_xf(pm, k, nw=n)
-    elseif branch["type"] == "xfmr" && branch["config"] == "gwye-gwye-auto"
+    
+    elseif branch["config"] == "gwye-gwye-auto"
         constraint_dc_current_mag_gwye_gwye_auto_xf(pm, k, nw=n)
-    else
+
+    elseif branch["config"] == "three-winding"
         ieff = _PM.var(pm, n, :i_dc_mag)
         JuMP.@constraint(pm.model,
             ieff[k]
             >=
             0.0
         )
+
     end
 
 end
@@ -507,15 +482,10 @@ end
 
 "CONSTRAINT: steady-state temperature"
 function constraint_temperature_steady_state(pm::_PM.AbstractPowerModel, n::Int, i, fi, rate_a, delta_oil_rated)
-    # i is index of the (transformer) branch
-    # fi is index of the "from" branch terminal
 
-    # return delta_oil_rated*K^2
-    println("Branch $i rating: $rate_a, TO rise: $delta_oil_rated")
-
-    p_fr = _PM.var(pm, n, :p, fi) # real power
-    q_fr = _PM.var(pm, n, :q, fi) # reactive power
-    delta_oil_ss = _PM.var(pm, n, :ross, i) # top-oil temperature rise
+    p_fr = _PM.var(pm, n, :p, fi)
+    q_fr = _PM.var(pm, n, :q, fi)
+    delta_oil_ss = _PM.var(pm, n, :ross, i)
 
     JuMP.@constraint(pm.model,
         rate_a^2 * delta_oil_ss / delta_oil_rated
@@ -528,14 +498,9 @@ end
 
 "CONSTRAINT: steady-state temperature"
 function constraint_temperature_steady_state(pm::_PM.AbstractDCPModel, n::Int, i, fi, rate_a, delta_oil_rated)
-    # i is index of the (transformer) branch
-    # fi is index of the "from" branch terminal
 
-    # return delta_oil_rated*K^2
-    println("Branch $i rating: $rate_a, TO rise: $delta_oil_rated")
-
-    p_fr = _PM.var(pm, n, :p, fi) # real power
-    delta_oil_ss = _PM.var(pm, n, :ross, i) # top-oil temperature rise
+    p_fr = _PM.var(pm, n, :p, fi)
+    delta_oil_ss = _PM.var(pm, n, :ross, i)
 
     JuMP.@constraint(pm.model,
         sqrt(rate_a) * delta_oil_ss / sqrt(delta_oil_rated)
@@ -548,10 +513,7 @@ end
 
 "CONSTRAINT: initial temperature state"
 function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i, fi)
-    # i is index of the (transformer) branch
-    # fi is index of the "from" branch terminal
 
-    # assume that transformer starts at equilibrium 
     delta_oil = var(pm, n, :ro, i) 
     delta_oil_ss = var(pm, n, :ross, i)
 
@@ -566,8 +528,6 @@ end
 
 "CONSTRAINT: initial temperature state"
 function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i, fi, delta_oil_init)
-    # i is index of the (transformer) branch
-    # fi is index of the "from" branch terminal
 
     delta_oil = var(pm, n, :ro, i) 
 
@@ -594,26 +554,20 @@ function constraint_temperature_state(pm::_PM.AbstractPowerModel, n_1::Int, n_2:
         delta_oil_ss + delta_oil_ss_prev - (1 - tau) * delta_oil_prev
     )
 
-    # @constraint(pm.model, delta_oil == delta_oil_ss)
-
 end
 
 
 "CONSTRAINT: steady-state hot-spot temperature"
 function constraint_hotspot_temperature_steady_state(pm::_PM.AbstractPowerModel, n::Int, i, fi, rate_a, Re)
-    # return delta_oil_rated*K^2
-    # println("Branch $i rating: $rate_a, TO rise: $delta_oil_rated")
 
     ieff = _PM.var(pm, n, :i_dc_mag)[i]
-    delta_hotspot_ss = _PM.var(pm, n, :hsss, i) # top-oil temperature rise
+    delta_hotspot_ss = _PM.var(pm, n, :hsss, i)
 
     JuMP.@constraint(pm.model,
         delta_hotspot_ss
         ==
         Re*ieff
     )
-
-    # JuMP.@constraint(pm.model, delta_hotspot_ss == 100)
 
 end
 
@@ -637,16 +591,15 @@ end
 "CONSTRAINT: absolute hot-spot temperature"
 function constraint_absolute_hotspot_temperature(pm::_PM.AbstractPowerModel, n::Int, i, fi, temp_ambient)
 
-    delta_hotspot = _PM.var(pm, n, :hs, i) 
-    #delta_hotspot = _PM.var(pm, n, :hsss, i) 
-    hotspot = _PM.var(pm, n, :hsa, i)     
+    delta_hotspot = _PM.var(pm, n, :hs, i)
+    hotspot = _PM.var(pm, n, :hsa, i)
     oil_temp = _PM.var(pm, n, :ro, i)
 
     JuMP.@constraint(pm.model,
         hotspot
         ==
         delta_hotspot + oil_temp + temp_ambient
-    ) 
+    )
 
 end
 

@@ -96,7 +96,7 @@ function objective_gmd_mls_on_off(pm::_PM.AbstractPowerModel)
         sum(
             get(gen["cost"], 1, 0.0) * _PM.var(pm, :pg_sqr, i, nw=n) +
             get(gen["cost"], 2, 0.0) * _PM.var(pm, :pg, i, nw=n) +
-            get(gen["cost"], 3, 0.0) * _PM.var(pm, :gen_z, i, nw=n)
+            get(gen["cost"], 3, 0.0) * _PM.var(pm, :z_gen, i, nw=n)
         for (i, gen) in nw_ref[:gen]) +
         sum(
             shed_cost * (_PM.var(pm, :pd, i, nw=n) + _PM.var(pm, :qd, i, nw=n))

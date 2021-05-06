@@ -254,7 +254,7 @@ end
 function constraint_thermal_protection(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, i)
-    if branch["type"] != "xfmr"
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
         return
     end
 
