@@ -81,7 +81,7 @@ run_gmd("test/data/b4gic.m")
 To save branch currents in addition to bus voltages:
 ```
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
-run_gmd("test/data/b4gic.m", solver, setting)
+run_gmd("test/data/b4gic.m", solver; setting)
 ```
 
 
@@ -92,7 +92,7 @@ run_gmd("test/data/b4gic.m", solver, setting)
 Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-OPF optimal power flow specification in order to calculate the increase in transformer reactive power consumption.
 For example:
 ```
-run_ac_gmd_opf_decoupled("test/data/b4gic.m")
+run_ac_gmd_opf_decoupled(case, solver)
 ```
 
 #### GIC + AC-OPF
@@ -100,16 +100,15 @@ run_ac_gmd_opf_decoupled("test/data/b4gic.m")
 Solves the quasi-dc voltages and currents plus the AC-OPF optimal power flow specification concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
 For example:
 ```
-run_ac_gmd_opf("test/data/b4gic.m")
+run_ac_gmd_opf(case, solver)
 ```
 
 It is advised to adjust qloss in the results:
 ```
-adjust_gmd_qloss(case_b4gic, solution)
+adjust_gmd_qloss(case, solution)
 ```
 
 This specification has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages. Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
-
 
 
 ### GIC AC-OPF-TS
@@ -119,21 +118,25 @@ This specification has limitations in that it does not model increase in transfo
 Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to a multi-time-series AC-OPF optimal power flow specification in order to calculate the increase in transformer reactive power consumption.
 For example:
 ```
-run_ac_gmd_opf_ts_decoupled("test/data/b4gic.m", solver, "../test/data/waveforms/b4gic-gmd-wf.json")
+run_ac_gmd_opf_ts_decoupled(case, solver, waveform)
 
 ```
 
 The implemented thermal model is disabled by default. To enable thermal calculations and display of results, the `disable_thermal` optional argument can be used.
 For example:
 ```
-run_ac_gmd_opf_ts_decoupled("test/data/b4gic.m", solver, "../test/data/waveforms/b4gic-gmd-wf.json"; setting, disable_thermal=false)
+run_ac_gmd_opf_ts_decoupled(case, solver, waveform; setting, disable_thermal=false)
 
 ```
 
 #### GIC + AC-OPF-TS
 
 Solves the quasi-dc voltages and currents plus the multi-time-series AC-OPF optimal power flow specification concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
+For example:
+```
+run_ac_gmd_opf_ts(multinetworkcase, solver)
 
+```
 
 
 ### GIC AC-MLS
@@ -143,13 +146,13 @@ Solves the quasi-dc voltages and currents plus the multi-time-series AC-OPF opti
 Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLS minimum-load-shedding specification tin order o calculate the increase in transformer reactive power consumption. The network topology is fixed.
 For example:
 ```
-run_ac_gmd_mls_decoupled("test/data/case24_ieee_rts_0.m")
+run_ac_gmd_mls_decoupled(case, solver)
 ```
 
 Additionally, the decoupled AC-MLS minimum-load-shedding specification was implemented as a decoupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
 For example:
 ```
-run_soc_gmd_mld_decoupled("test/data/case24_ieee_rts_0.m")
+run_soc_gmd_mld_decoupled(case, solver)
 ```
 
 #### GIC + AC-MLS
@@ -157,15 +160,14 @@ run_soc_gmd_mld_decoupled("test/data/case24_ieee_rts_0.m")
 Solves the quasi-dc voltages and currents plus the AC-MLS minimum-load-shedding specification concurrently. The network topology is fixed.
 For example:
 ```
-run_ac_gmd_mls("test/data/case24_ieee_rts_0.m")
+run_ac_gmd_mls(case, solver)
 ```
 
 Additionally, the sequential AC-MLS minimum-load-shedding specification was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
 For example:
 ```
-run_soc_gmd_mld("test/data/case24_ieee_rts_0.m")
+run_soc_gmd_mld(case, solver)
 ```
-
 
 
 ### GIC AC-OTS
@@ -175,9 +177,8 @@ run_soc_gmd_mld("test/data/case24_ieee_rts_0.m")
 Solves the AC-MLS minimum-load-shedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
 For example:
 ```
-run_ac_gmd_mls_ots("test/data/case24_ieee_rts_0.m")
+run_ac_gmd_mls_ots(case, solver)
 ```
-
 
 
 ### GIC AC-OTS-TS
@@ -187,7 +188,7 @@ run_ac_gmd_mls_ots("test/data/case24_ieee_rts_0.m")
 Solves the multi-time-series AC-MLS minimum-load-shedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
 For example:
 ```
-run_ac_gmd_mls_ots_ts("test/data/case24_ieee_rts_0.m")
+run_ac_gmd_mls_ots_ts(multinetworkcase, solver)
 ```
 
 Actual observed GMDs show time-varying behavior in ground electric fields both in magnitude and direction. This could cause different transformer heating than observed in the field peak magnitude. Consequently, the GIC AC-OTS specification need to be extended to a multi-time-series specification as well, in which the physics of transformer heating over time are modeled and used to inform a new optimization model that mitigates the effects of heating in terms of the thermal degradation of the transformer winding insulation.
