@@ -50,7 +50,7 @@ const _PMGMD = PowerModelsGMD
     include("prob/gmd_matrix.jl")
     include("prob/gmd_mls_decoupled.jl")
     include("prob/gmd_mls.jl")
-    # #include("prob/gmd_msse_decoupled.jl")
+    include("prob/gmd_msse.jl")
     include("prob/gmd_opf_decoupled.jl")
     include("prob/gmd_opf_ts_decoupled.jl")
     include("prob/gmd_opf_ts.jl")
