@@ -101,18 +101,18 @@
         dc_solution = result["solution"]
 
         # NOTE: currently PMsGMD always gives gmd_vdc=0 on the delta side of generator transformers
-        @test isapprox(dc_solution["gmd_bus"]["68"]["gmd_vdc"], 0.0, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["84"]["gmd_vdc"], 0.0, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["96"]["gmd_vdc"], 7.7944, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["121"]["gmd_vdc"], -2.5873, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["122"]["gmd_vdc"], -19.0424, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["155"]["gmd_vdc"], 0.0113, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["186"]["gmd_vdc"], 6.3915, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["68"]["gmd_vdc"], 16.9618, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["84"]["gmd_vdc"], -6.6351, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["96"]["gmd_vdc"], 13.5894, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["121"]["gmd_vdc"], -9.6450, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["122"]["gmd_vdc"], -7.9706, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["155"]["gmd_vdc"], 0.0, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["186"]["gmd_vdc"], 0.0, atol=1e-1)
 
-        @test isapprox(dc_solution["gmd_branch"]["13"]["gmd_idc"], -1.7000, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["38"]["gmd_idc"], -38.6139, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["67"]["gmd_idc"], 18.9514, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["81"]["gmd_idc"], 6.1200, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["13"]["gmd_idc"], 11.6549, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["38"]["gmd_idc"], 12.6479, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["67"]["gmd_idc"], -0.3426, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["81"]["gmd_idc"], -1.4860, atol=1e-1)
 
     end
 
