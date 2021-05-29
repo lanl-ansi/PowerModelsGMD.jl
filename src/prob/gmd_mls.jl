@@ -185,7 +185,7 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :bus)
-        constraint_power_balance_shed(pm, i)
+        constraint_power_balance_shed_gmd(pm, i)
     end
 
     for i in _PM.ids(pm, :branch)

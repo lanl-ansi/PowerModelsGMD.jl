@@ -266,13 +266,21 @@ end
 function adjust_gmd_qloss(case::Dict{String,Any}, solution::Dict{String,Any})
 
     for (i, br) in case["branch"]
+        if !(i in keys(solution["branch"]))
+            # branch is disabled, skip
+            continue
+        end
+
         br_soln = solution["branch"][i]
-        if "gmd_qloss" in keys(br_soln)
-            if br["f_bus"] == br["hi_bus"]
-                br_soln["qf"] += br_soln["gmd_qloss"]
-            else
-                br_soln["qt"] += br_soln["gmd_qloss"]
-            end
+
+        if !("gmd_qloss" in keys(br_soln))
+            continue
+        end
+
+        if br["f_bus"] == br["hi_bus"]
+            br_soln["qf"] += br_soln["gmd_qloss"]
+        else
+            br_soln["qt"] += br_soln["gmd_qloss"]
         end
     end
 

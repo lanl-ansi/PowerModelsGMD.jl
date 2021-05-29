@@ -1,8 +1,8 @@
 name = "PowerModelsGMD"
 uuid = "c92a0612-66bb-11e9-0491-518d0d864356"
+keywords = ["GMD", "EMP", "simulation", "evaluation", "mitigation", "optimalization"]
 authors = ["Arthur Barnes <abarnes@lanl.gov>, Adam Mate <amate@lanl.gov>"]
 repo = "https://github.com/lanl-ansi/PowerModels.jl"
-keywords = ["GMD", "EMP", "simulation", "evaluation", "mitigation", "optimalization"]
 version = "0.4.0"
 
 [deps]
@@ -14,16 +14,16 @@ PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-julia = "^1.6"
+Cbc = ">= 0.8"
 InfrastructureModels = "~0.6.0"
+Ipopt = ">= 0.6"
 JSON = "~0.21"
 JuMP = "~0.21"
+Juniper = ">= 0.7"
 Memento = "~1.1"
 PowerModels = "~0.18.0"
-Cbc = ">= 0.8"
-Ipopt = ">= 0.6"
-Juniper = ">= 0.7"
 SCS = ">= 0.7"
+julia = "^1.6"
 
 [extras]
 Cbc = "9961bab8-2fa3-5c5a-9d89-47fab24efd76"

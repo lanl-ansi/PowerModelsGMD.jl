@@ -2,7 +2,7 @@
 
 
 "CONSTRAINT: power balance for load shedding"
-function constraint_power_balance_shed(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_power_balance_shed_gmd(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     if !haskey(_PM.con(pm, nw), :kcl_p)
         _PM.con(pm, nw)[:kcl_p] = Dict{Int,JuMP.ConstraintRef}()
@@ -27,7 +27,7 @@ function constraint_power_balance_shed(pm::_PM.AbstractPowerModel, i::Int; nw::I
     bus_gs = Dict(k => _PM.ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
     bus_bs = Dict(k => _PM.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
 
-    constraint_power_balance_shed(pm, nw, i, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
+    constraint_power_balance_shed_gmd(pm, nw, i, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
 
 end
 
@@ -112,6 +112,34 @@ function constraint_power_balance_shunt_gmd_mls(pm::_PM.AbstractPowerModel, i::I
 
     constraint_power_balance_shunt_gmd_mls(pm, nw, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 
+end
+
+"CONSTRAINT:  computing qloss assuming ac voltage is 1.0 pu"
+function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch = _PM.ref(pm, nw, :branch, k)
+    branchMVA = branch["baseMVA"]
+    i = branch["hi_bus"]
+    j = branch["lo_bus"]
+
+    bus = _PM.ref(pm, nw, :bus, i)
+
+    if branch["br_status"] == 0 
+        return
+    end
+
+
+    if ("gmd_k" in keys(branch)) && ("baseMVA" in keys(branch)) && false         
+        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
+        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
+        ieff = branch["ieff"]
+        println("Branch ($k,$i,$j): ieff = $ieff")
+
+        constraint_qloss_decoupled_vnom(pm, nw, k, i, j, K, ieff, branchMVA)
+    else
+        println("Branch ($k,$i,$j): ieff = 0")
+        constraint_zero_qloss(pm, nw, k, i, j)
+    end
 end
 
 
