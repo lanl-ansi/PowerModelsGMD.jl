@@ -38,11 +38,11 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
                     #     delete!(gmd_branch, r)
                     # end
                     if gmd_branch["br_status"] == 0
-                        continue
+                        gmd_branch["gmd_idc"] = 0.0
+                    else
+                        key = (gmd_branch["index"], gmd_branch["f_bus"], gmd_branch["t_bus"])
+                        gmd_branch["gmd_idc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:dc][key])
                     end
-
-                    key = (gmd_branch["index"], gmd_branch["f_bus"], gmd_branch["t_bus"])
-                    gmd_branch["gmd_idc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:dc][key])
                 end
             end
         end
