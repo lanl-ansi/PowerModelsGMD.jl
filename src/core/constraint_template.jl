@@ -266,6 +266,20 @@ function constraint_thermal_protection(pm::_PM.AbstractPowerModel, i::Int; nw::I
 end
 
 
+"CONSTRAINT: relating current to power flow"
+function constraint_current(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+
+    branch = _PM.ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    tm = branch["tap"]^2
+
+    constraint_current(pm, nw, i, f_idx, f_bus, t_bus, tm)
+
+end
+
+
 "CONSTRAINT: relating current to power flow on/off"
 function constraint_current_on_off(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
@@ -300,20 +314,6 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
         constraint_qloss_constant_v(pm, nw, k, i, j)
 
     end
-
-end
-
-
-"CONSTRAINT: turning generators on and off"
-function constraint_gen_on_off(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-
-    gen = _PM.ref(pm, nw, :gen, i)
-    pmin = gen["pmin"]
-    pmax = gen["pmax"]
-    qmin = gen["qmin"]
-    qmax = gen["qmax"]
-
-    constraint_gen_on_off(pm, nw, i, pmin, pmax, qmin, qmax)
 
 end
 

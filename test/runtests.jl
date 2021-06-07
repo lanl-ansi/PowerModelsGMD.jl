@@ -8,7 +8,6 @@ const _IM = InfrastructureModels
 
 import JSON
 import JuMP
-#import MathOptInterface
 import Memento
 
 # Suppress warning messages:
@@ -43,6 +42,7 @@ case24_ieee_rts_0 = _PM.parse_file("../test/data/case24_ieee_rts_0.m")
 case_epri21 = _PM.parse_file("../test/data/epri21.m")
 case_uiuc150 = _PM.parse_file("../test/data/uiuc150.m")
 case_rtsgmlcgic = _PM.parse_file("../test/data/rts_gmlc_gic.m")
+case_otstest = _PM.parse_file("../test/data/ots_test.m")
 
 
 # Perform the tests of implemented specifications:
@@ -55,7 +55,7 @@ case_rtsgmlcgic = _PM.parse_file("../test/data/rts_gmlc_gic.m")
     include("gmd_opf_decoupled.jl")
     include("gmd_opf_ts_decoupled.jl")
     include("gmd_opf.jl")
-    #include("gmd_ots.jl")
+    include("gmd_ots.jl")
     include("gmd.jl")
 
 end

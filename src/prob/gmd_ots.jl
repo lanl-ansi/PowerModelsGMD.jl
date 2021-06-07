@@ -42,8 +42,8 @@ function run_gmd_mls_ots(file, model_type::Type, optimizer; kwargs...)
         optimizer,
         build_gmd_mls_ots;
         ref_extensions = [
+            _PM.ref_add_on_off_va_bounds!,
             ref_add_gmd!
-            _PM.ref_add_on_off_va_bounds!
         ],
         solution_processors = [
             solution_gmd!,
@@ -71,8 +71,8 @@ function build_gmd_mls_ots(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_branch_power(pm)
     _PM.variable_dcline_power(pm)
 
-    variable_ac_current_on_off(pm)  ###
-    variable_active_generation_sqr_cost(pm)  ### ERROR
+    variable_ac_current_on_off(pm)
+    variable_active_generation_sqr_cost(pm)
     variable_load(pm)
 
     variable_dc_voltage_on_off(pm)

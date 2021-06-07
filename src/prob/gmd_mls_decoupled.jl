@@ -24,7 +24,7 @@ function run_gmd_mls_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
         ],
         solution_processors = [
             solution_PM!,
-            solution_gmd_qloss!,
+            solution_gmd_qloss!
         ],
         kwargs...,
     )
@@ -52,7 +52,7 @@ function run_gmd_mld_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
         ],
         solution_processors = [
             solution_PM!,
-            solution_gmd_qloss!,
+            solution_gmd_qloss!
         ],
         kwargs...,
     )
