@@ -1,4 +1,4 @@
-export run_ac_gmd_mls_ots_ts
+export run_ac_gmd_mls_ots_ts, run_soc_gmd_mls_ots_ts
 export run_gmd_mls_ots_ts
 
 
@@ -12,6 +12,18 @@ function run_ac_gmd_mls_ots_ts(file, optimizer; kwargs...)
     )
 end
 
+
+"FUNCTION: run multi-time-series GMD mitigation with second order cone relaxation"
+function run_soc_gmd_mls_ots_ts(file, optimizer; kwargs...)
+    return run_gmd_mls_ots_ts(
+        file,
+        _PM.SOCWRPowerModel,
+        optimizer;
+        kwargs...,
+    )
+end
+
+
 function run_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
     return _PM.run_model(
         file,
@@ -20,8 +32,8 @@ function run_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
         build_gmd_mls_ots_ts;
         multinetwork = true,
         ref_extensions = [
+            _PM.ref_add_on_off_va_bounds!,
             ref_add_gmd!
-            _PM.ref_add_on_off_va_bounds!
         ],
         solution_processors = [
             solution_gmd!,
@@ -38,6 +50,9 @@ end
 "FUNCTION: build the multi-time-series ac optimal transmission switching with minimum-load-shed coupled with a quasi-dc power flow problem
 as a generator dispatch minimization problem"
 function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
+# Reference:
+#   built minimum-load-shed problem specification corresponds to the "Model C4" of
+#   Mowen et al., "Optimal Transmission Line Switching under Geomagnetic Disturbances", 2018.
 
     for (n, network) in _PM.nws(pm)
 

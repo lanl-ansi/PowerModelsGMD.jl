@@ -211,25 +211,11 @@ end
 
 
 "CONSTRAINT: relating current to power flow on_off"
-function constraint_current_on_off(pm::_PM.AbstractWRModel, n::Int, i, ac_max)
+function constraint_current_on_off(pm::_PM.AbstractWRModel, n::Int, i::Int, ac_max)
 
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
-    ccm = _PM.var(pm, n)[:ccm]
-    # _PM.var(pm, n, :ccm)[i]
     z = _PM.var(pm, n, :z_branch)[i]
-    # _PM.var(pm, n, :z_branch)[i]
 
-
-    JuMP.@constraint(pm.model,
-        ccm
-        >=
-        i_ac_mag^2
-    )
-    JuMP.@constraint(pm.model,
-        ccm
-        <=
-        ac_max * i_ac_mag
-    )
     JuMP.@constraint(pm.model,
         i_ac_mag
         <=
@@ -245,7 +231,7 @@ end
 
 
 "CONSTRAINT: computing thermal protection of transformers"
-function constraint_thermal_protection(pm::_PM.AbstractWRModel, n::Int, i, coeff, ibase)
+function constraint_thermal_protection(pm::_PM.AbstractWRModel, n::Int, i::Int, coeff, ibase)
 
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     ieff = _PM.var(pm, n, :i_dc_mag)[i]

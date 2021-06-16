@@ -111,7 +111,7 @@ end
 
 
 "CONSTRAINT: power balance without shunts and load shedding"
-function constraint_power_balance_gmd(pm::_PM.AbstractACPModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
+function constraint_power_balance_gmd(pm::_PM.AbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
 
     p = _PM.var(pm, n, :p)
     q = _PM.var(pm, n, :q)
@@ -138,7 +138,7 @@ end
 
 
 "FUNCTION: relating current to power flow on/off"
-function constraint_current_on_off(pm::_PM.AbstractACPModel, n::Int, i, ac_max)
+function constraint_current_on_off(pm::_PM.AbstractACPModel, n::Int, i::Int, ac_max)
 
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     z = _PM.var(pm, n, :z_branch)[i]
@@ -158,7 +158,7 @@ end
 
 
 "FUNCTION: computing thermal protection of transformers"
-function constraint_thermal_protection(pm::_PM.AbstractACPModel, n::Int, i, coeff, ibase)
+function constraint_thermal_protection(pm::_PM.AbstractACPModel, n::Int, i::Int, coeff, ibase)
 
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     ieff = _PM.var(pm, n, :i_dc_mag)[i]

@@ -13,12 +13,19 @@ function run_ac_gmd_mls_qloss_vnom(file, optimizer; kwargs...)
     )
 end
 
-"FUNCTION: run GMD mitigation with nonlinear ac equations"
-function run_ac_gmd_cascade_mls_qloss_vnom(file, optimizer; kwargs...)
-    return run_gmd_cascade_mls_qloss_vnom(
+function run_gmd_mls_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
+    return _PM.run_model(
         file,
-        _PM.ACPPowerModel,
-        optimizer;
+        model_type,
+        optimizer,
+        build_gmd_mls_qloss_vnom;
+        ref_extensions = [
+            ref_add_gmd!
+        ],
+        solution_processors = [
+            solution_PM!,
+            solution_gmd_qloss!
+        ],
         kwargs...,
     )
 end
@@ -55,7 +62,7 @@ function run_gmd_mld_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
         ],
         solution_processors = [
             solution_PM!,
-            solution_gmd_qloss!,
+            solution_gmd_qloss!
         ],
         kwargs...,
     )

@@ -26,8 +26,8 @@ Currently the following common industry and academic specifications have been im
 * GIC AC-OTS: ac optimal transmission switching with minimum-load-shed coupled with a quasi-dc power flow
 * GIC AC-OTS-TS: multi-time-series ac optimal transmission switching with minimum-load-shed coupled with a quasi-dc power flow
 
-Testing of implemented specifications was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v0.6.5.
-Alternatively, [Cbc](https://github.com/jump-dev/Cbc.jl), [Juniper](https://github.com/lanl-ansi/Juniper.jl), and [SCS](https://github.com/jump-dev/SCS.jl) solvers are supported as well.
+Testing of implemented specifications was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v0.6.5 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.7.0.
+Alternatively, [Cbc](https://github.com/jump-dev/Cbc.jl) and [SCS](https://github.com/jump-dev/SCS.jl) solvers are supported as well.
 
 
 
@@ -119,14 +119,12 @@ Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc
 For example:
 ```
 run_ac_gmd_opf_ts_decoupled(case, solver, waveform)
-
 ```
 
 The implemented thermal model is disabled by default. To enable thermal calculations and display of results, the `disable_thermal` optional argument can be used.
 For example:
 ```
 run_ac_gmd_opf_ts_decoupled(case, solver, waveform; setting, disable_thermal=false)
-
 ```
 
 #### GIC + AC-OPF-TS
@@ -135,7 +133,6 @@ Solves the quasi-dc voltages and currents plus the multi-time-series AC-OPF opti
 For example:
 ```
 run_ac_gmd_opf_ts(multinetworkcase, solver)
-
 ```
 
 

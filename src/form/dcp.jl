@@ -123,19 +123,20 @@ function constraint_power_balance_gmd(pm::_PM.AbstractDCPModel, n::Int, i::Int, 
 
 end
 
-"CONSTRAINT: relating current to power flow on/off"
-function constraint_current_on_off(pm::_PM.AbstractDCPModel, n::Int, i, ac_max)
 
+"CONSTRAINT: relating current to power flow on/off"
+function constraint_current_on_off(pm::_PM.AbstractDCPModel, n::Int, i::Int, ac_max)
+
+    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     z  = _PM.var(pm, n, :z_branch)[i]
-    i_ac = _PM.var(pm, n, :i_ac_mag)[i]
 
     JuMP.@constraint(pm.model,
-        i_ac
+        i_ac_mag
         <=
         z * ac_max
     )
     JuMP.@constraint(pm.model,
-        i_ac
+        i_ac_mag
         >=
         z * 0
     )
@@ -144,7 +145,7 @@ end
 
 
 "CONSTRAINT: computing thermal protection of transformers"
-function constraint_thermal_protection(pm::_PM.AbstractDCPModel, n::Int, i, coeff, ibase)
+function constraint_thermal_protection(pm::_PM.AbstractDCPModel, n::Int, i::Int, coeff, ibase)
 
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     ieff = _PM.var(pm, n, :i_dc_mag)[i]
