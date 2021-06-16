@@ -133,11 +133,11 @@ function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=
         ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
         K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
         ieff = branch["ieff"]
-        println("Branch ($k,$i,$j): ieff = $ieff")
+        # println("Branch ($k,$i,$j): ieff = $ieff")
 
         constraint_qloss_decoupled_vnom(pm, nw, k, i, j, K, ieff, branchMVA)
     else
-        println("Branch ($k,$i,$j): ieff = 0")
+        # println("Branch ($k,$i,$j): ieff = 0")
         constraint_zero_qloss(pm, nw, k, i, j)
     end
 end

@@ -115,8 +115,6 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :branch)
-        println("Adding constraints for branch $i")
-
         _PM.constraint_ohms_yt_from(pm, i)
         _PM.constraint_ohms_yt_to(pm, i)
 
@@ -136,8 +134,8 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 
 end
 
-"FUNCTION: build the sequential quasi-dc power flow and maximum loadability problem
-with second order cone relaxation"
+"FUNCTION: variant of gmd mld for cascading problems where line
+limits are disabled"
 function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
 #   built problem specification corresponds to the "MLD" maximum loadability specification of
@@ -172,7 +170,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :branch)
-        println("Adding constraints for branch $i")
+        # println("Adding constraints for branch $i")
 
         _PM.constraint_ohms_yt_from(pm, i)
         _PM.constraint_ohms_yt_to(pm, i)
