@@ -99,7 +99,7 @@ end
         @test isapprox(ac_solution["branch"]["13"]["pf"], -0.0523, atol=1e-1)
         @test isapprox(ac_solution["branch"]["13"]["qf"], -0.1675, atol=1e-1)
         @test isapprox(ac_solution["branch"]["13"]["gmd_qloss"], 0.0, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["25"]["pf"], -0.9574 atol=1e-1)
+        @test isapprox(ac_solution["branch"]["25"]["pf"], -0.9574, atol=1e-1)
         @test isapprox(ac_solution["branch"]["25"]["qf"], -0.1272, atol=1e-1)
         @test isapprox(ac_solution["branch"]["25"]["gmd_qloss"], 0.0, atol=1e-1)
 

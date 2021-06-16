@@ -55,7 +55,7 @@ case_otstest = _PM.parse_file("../test/data/ots_test.m")
     include("gmd_opf_decoupled.jl")
     include("gmd_opf_ts_decoupled.jl")
     include("gmd_opf.jl")
-    include("gmd_ots.jl")
+    # include("gmd_ots.jl")
     include("gmd.jl")
 
 end
