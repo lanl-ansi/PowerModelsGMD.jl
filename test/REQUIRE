@@ -1,6 +1,6 @@
-julia 1.6.0
+julia 1.6.1
 
-Ipopt 0.6.5
+Ipopt 0.7.0
 Cbc 0.8.0
 Juniper 0.7.0
 SCS 0.7.1

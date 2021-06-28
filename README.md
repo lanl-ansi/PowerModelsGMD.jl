@@ -26,7 +26,7 @@ Currently the following common industry and academic specifications have been im
 * GIC AC-OTS: ac optimal transmission switching with minimum-load-shed coupled with a quasi-dc power flow
 * GIC AC-OTS-TS: multi-time-series ac optimal transmission switching with minimum-load-shed coupled with a quasi-dc power flow
 
-Testing of implemented specifications was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v0.6.5 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.7.0.
+Testing of implemented specifications was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v0.7.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.7.0.
 Alternatively, [Cbc](https://github.com/jump-dev/Cbc.jl) and [SCS](https://github.com/jump-dev/SCS.jl) solvers are supported as well.
 
 

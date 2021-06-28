@@ -16,10 +16,6 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
         for (n, nw_data) in nws_data
             if haskey(nw_data, "gmd_bus")
                 for (i, gmd_bus) in nw_data["gmd_bus"]
-                    # remove = ["name", "parent_index"]
-                    # for r in remove
-                    #     delete!(gmd_bus, r)
-                    # end
                     key = gmd_bus["index"]
                     gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:v_dc][key])
                 end
@@ -33,10 +29,6 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
         for (n, nw_data) in nws_data
             if haskey(nw_data, "gmd_branch")
                 for (i, gmd_branch) in nw_data["gmd_branch"]
-                    # remove = ["name", "len_km", "parent_index"]
-                    # for r in remove
-                    #     delete!(gmd_branch, r)
-                    # end
                     if gmd_branch["br_status"] == 0
                         gmd_branch["gmd_idc"] = 0.0
                     else

@@ -41,7 +41,7 @@ case_b6gic_nerc = _PM.parse_file("../test/data/b6gic_nerc.m")
 case24_ieee_rts_0 = _PM.parse_file("../test/data/case24_ieee_rts_0.m")
 case_epri21 = _PM.parse_file("../test/data/epri21.m")
 case_uiuc150 = _PM.parse_file("../test/data/uiuc150.m")
-case_rtsgmlcgic = _PM.parse_file("../test/data/rts_gmlc_gic.m")
+case_rtsgmlcgic = _PM.parse_file("../test/data/rtsgmlcgic/rts_gmlc_gic_pnw.m")
 case_otstest = _PM.parse_file("../test/data/ots_test.m")
 
 
