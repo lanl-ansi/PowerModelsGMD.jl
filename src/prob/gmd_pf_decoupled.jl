@@ -75,26 +75,26 @@ end
 
 function build_pf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 
-    _PM.variable_bus_voltage(pm, bounded=false) # ok
-    _PM.variable_gen_power(pm, bounded=false) # ok
-    _PM.variable_branch_power(pm, bounded=false) # ok
+    _PM.variable_bus_voltage(pm, bounded=false)
+    _PM.variable_gen_power(pm, bounded=false)
+    _PM.variable_branch_power(pm, bounded=false)
     _PM.variable_dcline_power(pm, bounded=false)
 
-    variable_qloss(pm) # ok
+    variable_qloss(pm)
 
-    _PM.constraint_model_voltage(pm) # ok
+    _PM.constraint_model_voltage(pm)
 
     for (i, bus) in _PM.ref(pm, :ref_buses)
 
         @assert bus["bus_type"] == 3
-        _PM.constraint_theta_ref(pm, i) # ok
-        _PM.constraint_voltage_magnitude_setpoint(pm, i) # ok
+        _PM.constraint_theta_ref(pm, i)
+        _PM.constraint_voltage_magnitude_setpoint(pm, i)
 
     end
 
     for (i, bus) in _PM.ref(pm, :bus)
 
-        constraint_power_balance_gmd(pm, i) # ok
+        constraint_power_balance_gmd(pm, i)
 
         if length(_PM.ref(pm, :bus_gens, i)) > 0 && !(i in _PM.ids(pm,:ref_buses))
 
@@ -110,8 +110,8 @@ function build_pf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 
     for i in _PM.ids(pm, :branch)
 
-        _PM.constraint_ohms_yt_from(pm, i) # ok
-        _PM.constraint_ohms_yt_to(pm, i) # ok
+        _PM.constraint_ohms_yt_from(pm, i)
+        _PM.constraint_ohms_yt_to(pm, i)
 
         _PM.constraint_voltage_angle_difference(pm, i)
 
@@ -119,9 +119,9 @@ function build_pf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
         _PM.constraint_thermal_limit_to(pm, i)
 
         if vnom
-            constraint_qloss_decoupled_vnom(pm, i) # ok
+            constraint_qloss_decoupled_vnom(pm, i)
         else
-            constraint_qloss_decoupled(pm, i) # ok
+            constraint_qloss_decoupled(pm, i)
         end
 
     end

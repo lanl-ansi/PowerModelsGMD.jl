@@ -21,7 +21,7 @@ Ipopt = ">= 0.7"
 JSON = "~0.21"
 JuMP = "~0.21"
 Juniper = ">= 0.7"
-Memento = "~1.1"
+Memento = "~1.1, ~1.2"
 PowerModels = "~0.18.0"
 SCS = ">= 0.7"
 

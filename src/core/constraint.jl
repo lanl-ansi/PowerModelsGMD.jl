@@ -447,6 +447,40 @@ function constraint_qloss_decoupled(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id
 
 end
 
+
+"CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
+function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch = _PM.ref(pm, nw, :branch, k)
+    branchMVA = branch["baseMVA"]
+    i = branch["hi_bus"]
+    j = branch["lo_bus"]
+
+    bus = _PM.ref(pm, nw, :bus, i)
+
+    if branch["br_status"] == 0 
+        return
+    end
+
+    if ("gmd_k" in keys(branch)) && ("baseMVA" in keys(branch))
+
+        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
+        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
+        ieff = branch["ieff"]
+
+        constraint_qloss_decoupled_vnom(pm, nw, k, i, j, K, ieff, branchMVA)
+
+    else
+
+        constraint_zero_qloss(pm, nw, k, i, j)
+
+    end
+
+end
+
+
+
+
 # ===   THERMAL CONSTRAINTS  === #
 
 
