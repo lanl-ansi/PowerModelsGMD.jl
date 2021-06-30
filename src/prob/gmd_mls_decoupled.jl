@@ -51,7 +51,8 @@ function run_gmd_mld_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
         optimizer,
         build_gmd_mld_qloss_vnom;
         ref_extensions = [
-            ref_add_gmd!
+            ref_add_gmd!, 
+            ref_add_load_block!
         ],
         solution_processors = [
             solution_PM!,
@@ -68,7 +69,8 @@ function run_gmd_cascade_mld_qloss_vnom(file, model_type::Type, optimizer; kwarg
         optimizer,
         build_gmd_cascade_mld_qloss_vnom;
         ref_extensions = [
-            ref_add_gmd!
+            ref_add_gmd!,
+            ref_add_load_block!
         ],
         solution_processors = [
             solution_PM!,

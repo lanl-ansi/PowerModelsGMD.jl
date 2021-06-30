@@ -215,37 +215,77 @@ function variable_qloss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bound
 
 end
 
+#"""
+#    variable_mc_load_block_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
+#
+#create variables for demand status by connected component
+#"""
+#function variable_mc_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+#    if relax
+#        z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
+#            [i in _PM.ids(pm, nw, :ref_buses)], base_name="$(nw)_z_demand",
+#            lower_bound = 0,
+#            upper_bound = 1,
+#            start = 1.0
+#        )
+#    else
+#        z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
+#            [i in _PM.ids(pm, nw, :ref_buses)], base_name="$(nw)_z_demand",
+#            binary = true,
+#            start = 1
+#        )
+#    end
+#
+#
+#    load_block_map = _PM.ref(pm, nw, :load_block_map)
+#    _PM.var(pm, nw)[:z_demand] = Dict(l => z_demand[load_ref_bus_map[l]] for l in _PM.ids(pm, nw, :load))
+#
+#    # expressions for pd and qd
+#    pd = _PM.var(pm, nw)[:pd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["pd"] for i in _PM.ids(pm, nw, :load))
+#    qd = _PM.var(pm, nw)[:qd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["qd"] for i in _PM.ids(pm, nw, :load))
+#
+#    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :status, _PM.ids(pm, nw, :load), _PM.var(pm, nw)[:z_demand])
+#    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :pd, _PM.ids(pm, nw, :load), pd)
+#    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
+#end
+
 """
     variable_mc_load_block_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
 
 create variables for demand status by connected component
 """
-function variable_connected_component_demand_factor(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
+function variable_mc_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    # JuMP allows for declaring scalar variables. 
+    # Declaring this as a vector for compatibility when using multiple islands
     if relax
-        z_cc_demand = PMD.var(pm, nw)[:z_cc_demand] = PMD.JuMP.@variable(pm.model,
-            [i in PMD.ids(pm, nw, :ref_buses)], base_name="$(nw)_z_cc_demand",
+        z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
+            [1], base_name="$(nw)_z_demand",
             lower_bound = 0,
             upper_bound = 1,
             start = 1.0
         )
     else
-        z_cc_demand = PMD.var(pm, nw)[:z_cc_demand] = PMD.JuMP.@variable(pm.model,
-            [i in PMD.ids(pm, nw, :ref_buses)], base_name="$(nw)_z_cc_demand",
+        z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
+            [1], base_name="$(nw)_z_demand",
             binary = true,
             start = 1
         )
     end
 
 
-    load_ref_bus_map = PMD.ref(pm, nw, :load_ref_bus_map)
-    PMD.var(pm, nw)[:z_demand] = Dict(l => z_cc_demand[load_ref_bus_map[l]] for l in PMD.ids(pm, nw, :load))
+    #load_block_map = _PM.ref(pm, nw, :load_block_map)
+    #_PM.var(pm, nw)[:z_demand] = Dict(l => z_demand[load_ref_bus_map[l]] for l in _PM.ids(pm, nw, :load))
+    _PM.var(pm, nw)[:z_demand] = Dict(l => z_demand[1] for l in _PM.ids(pm, nw, :load))
 
     # expressions for pd and qd
-    pd = PMD.var(pm, nw)[:pd] = Dict(i => PMD.var(pm, nw)[:z_demand][i].*PMD.ref(pm, nw, :load, i)["pd"] for i in PMD.ids(pm, nw, :load))
-    qd = PMD.var(pm, nw)[:qd] = Dict(i => PMD.var(pm, nw)[:z_demand][i].*PMD.ref(pm, nw, :load, i)["qd"] for i in PMD.ids(pm, nw, :load))
+    pd = _PM.var(pm, nw)[:pd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["pd"] for i in _PM.ids(pm, nw, :load))
+    qd = _PM.var(pm, nw)[:qd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["qd"] for i in _PM.ids(pm, nw, :load))
 
-    report && PMD._IM.sol_component_value(pm, PMD.pmd_it_sym, nw, :load, :status, PMD.ids(pm, nw, :load), PMD.var(pm, nw)[:z_demand])
+    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :status, _PM.ids(pm, nw, :load), _PM.var(pm, nw)[:z_demand])
+    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :pd, _PM.ids(pm, nw, :load), pd)
+    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
 end
+
 
 "VARIABLE: demand factor"
 function variable_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
