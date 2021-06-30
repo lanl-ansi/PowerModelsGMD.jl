@@ -51,8 +51,8 @@ function run_gmd_mld_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
         optimizer,
         build_gmd_mld_qloss_vnom;
         ref_extensions = [
-            ref_add_gmd!, 
-            ref_add_load_block!
+            ref_add_gmd! 
+            #ref_add_load_block!
         ],
         solution_processors = [
             solution_PM!,
@@ -69,8 +69,8 @@ function run_gmd_cascade_mld_qloss_vnom(file, model_type::Type, optimizer; kwarg
         optimizer,
         build_gmd_cascade_mld_qloss_vnom;
         ref_extensions = [
-            ref_add_gmd!,
-            ref_add_load_block!
+            ref_add_gmd!
+            #ref_add_load_block!
         ],
         solution_processors = [
             solution_PM!,
@@ -152,8 +152,9 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_branch_power(pm, bounded=false)
     _PM.variable_dcline_power(pm)
 
-    _PM.variable_load_power_factor(pm, relax=true)
+    #_PM.variable_load_power_factor(pm, relax=true)
     _PM.variable_shunt_admittance_factor(pm, relax=true)
+    variable_mc_block_demand_factor(pm, relax=true)
 
     variable_reactive_loss(pm)
 

@@ -254,7 +254,7 @@ end
 
 create variables for demand status by connected component
 """
-function variable_mc_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_mc_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)
     # JuMP allows for declaring scalar variables. 
     # Declaring this as a vector for compatibility when using multiple islands
     if relax
@@ -281,9 +281,9 @@ function variable_mc_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_
     pd = _PM.var(pm, nw)[:pd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["pd"] for i in _PM.ids(pm, nw, :load))
     qd = _PM.var(pm, nw)[:qd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["qd"] for i in _PM.ids(pm, nw, :load))
 
-    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :status, _PM.ids(pm, nw, :load), _PM.var(pm, nw)[:z_demand])
-    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :pd, _PM.ids(pm, nw, :load), pd)
-    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
+    report && _PM._IM.sol_component_value(pm, nw, :load, :status, _PM.ids(pm, nw, :load), _PM.var(pm, nw)[:z_demand])
+    report && _PM._IM.sol_component_value(pm, nw, :load, :pd, _PM.ids(pm, nw, :load), pd)
+    report && _PM._IM.sol_component_value(pm, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
 end
 
 
