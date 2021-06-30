@@ -4,15 +4,13 @@ using SparseArrays
 
 "FUNCTION: run GIC matrix solve"
 function run_gmd(file::String; kwargs...)
-
     data = _PM.parse_file(file)
     return run_gmd(data; kwargs...)
-
 end
 
 function run_gmd(case::Dict{String,Any}; kwargs...)
-# Assumption:
-#   branchListStruct and busListStruct are snatched directly from JSON
+
+    # Assumption: branchListStruct and busListStruct are snatched directly from JSON
 
     branchMap = case["gmd_branch"]
     busMap = case["gmd_bus"]

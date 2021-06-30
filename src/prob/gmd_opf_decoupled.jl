@@ -5,21 +5,11 @@ export run_ac_gmd_opf_decoupled
 
 "FUNCTION: run basic GMD model with nonlinear ac equations"
 function run_ac_opf_qloss(file, optimizer; kwargs...)
-    return run_opf_qloss(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_opf_qloss( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 function run_ac_opf_qloss_vnom(file, optimizer; kwargs...)
-    return run_opf_qloss_vnom(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_opf_qloss_vnom( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 function run_opf_qloss(file, model_type::Type, optimizer; kwargs...)
@@ -54,17 +44,13 @@ end
 "FUNCTION: build the sequential quasi-dc power flow and ac optimal power flow problem
 as a generator dispatch minimization problem with calculated ieff"
 function build_opf_qloss(pm::_PM.AbstractPowerModel; kwargs...)
-
     use_vnom = false
     build_opf_qloss(pm::_PM.AbstractACPModel, use_vnom; kwargs...)
-
 end
 
 function build_opf_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
-
     use_vnom = true
     build_opf_qloss(pm::_PM.AbstractACPModel, use_vnom; kwargs...)
-
 end
 
 function build_opf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
@@ -115,10 +101,8 @@ end
 
 "FUNCTION: run the quasi-dc power flow problem followed by the ac-opf problem with qloss constraints"
 function run_ac_gmd_opf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
-
     data = _PM.parse_file(file)
     return run_ac_gmd_opf_decoupled(data, _PM.ACPPowerModel, optimizer; kwargs...)
-
 end
 
 function run_ac_gmd_opf_decoupled(case::Dict{String,Any}, optimizer; setting=Dict(), kwargs...)
@@ -131,10 +115,8 @@ function run_ac_gmd_opf_decoupled(case::Dict{String,Any}, optimizer; setting=Dic
 end
 
 function run_gmd_opf_decoupled(file::String, model_type, optimizer; setting=Dict(), kwargs...)
-    
     data = _PM.parse_file(file)
     return run_gmd_opf_decoupled(data, model_type, optimizer; kwargs...)
-
 end
 
 function run_gmd_opf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer; setting=Dict{String,Any}(), kwargs...)

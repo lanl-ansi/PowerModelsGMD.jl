@@ -5,21 +5,11 @@ export run_ac_gmd_pf_decoupled
 
 "FUNCTION: run basic GMD model with nonlinear ac equations"
 function run_ac_pf_qloss(file, optimizer; kwargs...)
-    return run_pf_qloss(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_pf_qloss(file, _PM.ACPPowerModel, optimizer; kwargs...,)
 end
 
 function run_ac_pf_qloss_vnom(file, optimizer; kwargs...)
-    return run_pf_qloss_vnom(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_pf_qloss_vnom(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 function run_pf_qloss(file, model_type::Type, optimizer; kwargs...)
@@ -60,17 +50,13 @@ end
 "FUNCTION: build the sequential quasi-dc power flow and ac power flow problem
 as a generator dispatch minimization problem with calculated ieff"
 function build_pf_qloss(pm::_PM.AbstractPowerModel; kwargs...)
-
     use_vnom = false
     build_pf_qloss(pm::_PM.AbstractACPModel, use_vnom; kwargs...)
-
 end
 
 function build_pf_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
-
     use_vnom = true
     build_pf_qloss(pm::_PM.AbstractACPModel, use_vnom; kwargs...)
-
 end
 
 function build_pf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
@@ -147,27 +133,19 @@ end
 
 "FUNCTION: run the quasi-dc power flow problem followed by the ac-pf problem with qloss constraints"
 function run_ac_gmd_pf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
-
     data = _PM.parse_file(file)
     return run_ac_gmd_pf_decoupled(data, _PM.ACPPowerModel, optimizer; kwargs...)
-
 end
 
 function run_ac_gmd_pf_decoupled(case::Dict{String,Any}, optimizer; setting=Dict(), kwargs...)
-    return run_gmd_pf_decoupled(
-        case,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...
-    )
+    return run_gmd_pf_decoupled(case, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 function run_gmd_pf_decoupled(file::String, model_type, optimizer; setting=Dict(), kwargs...)
-    
     data = _PM.parse_file(file)
     return run_gmd_pf_decoupled(data, model_type, optimizer; kwargs...)
-
 end
+
 
 function run_gmd_pf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer; setting=Dict{String,Any}(), kwargs...)
 

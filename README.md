@@ -140,7 +140,7 @@ run_ac_gmd_opf_ts(multinetworkcase, solver)
 
 #### GIC -> AC-MLS
 
-Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLS minimum-load-shedding specification tin order o calculate the increase in transformer reactive power consumption. The network topology is fixed.
+Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLS minimum-load-shedding specification in order to calculate the increase in transformer reactive power consumption. The network topology is fixed.
 For example:
 ```
 run_ac_gmd_mls_decoupled(case, solver)

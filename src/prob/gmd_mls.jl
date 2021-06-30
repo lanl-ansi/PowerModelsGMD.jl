@@ -5,52 +5,27 @@ export run_gmd_mls, run_gmd_mld
 
 "FUNCTION: run GMD mitigation with nonlinear ac equations"
 function run_ac_gmd_mls(file, optimizer; kwargs...)
-    return run_gmd_mls(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_gmd_mls(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 function run_ac_gmd_mld(file, optimizer; kwargs...)
-    return run_gmd_mld(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_gmd_mld(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: run GMD mitigation with qc ac equations"
 function run_qc_gmd_mls(file, optimizer; kwargs...)
-    return run_gmd_mls(
-        file,
-        _PM.QCLSPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_gmd_mls(file, _PM.QCLSPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: run GMD mitigation with second order cone relaxation"
 function run_soc_gmd_mls(file, optimizer; kwargs...)
-    return run_gmd_mls(
-        file,
-        _PM.SOCWRPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_gmd_mls(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
 function run_soc_gmd_mld(file, optimizer; kwargs...)
-    return run_gmd_mld(
-        file,
-        _PM.SOCWRPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_gmd_mld(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
 

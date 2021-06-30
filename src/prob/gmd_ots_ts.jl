@@ -4,23 +4,13 @@ export run_gmd_mls_ots_ts
 
 "FUNCTION: run multi-time-series GMD model with nonlinear ac equations"
 function run_ac_gmd_mls_ots_ts(file, optimizer; kwargs...)
-    return run_gmd_mls_ots_ts(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_gmd_mls_ots_ts( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: run multi-time-series GMD mitigation with second order cone relaxation"
 function run_soc_gmd_mls_ots_ts(file, optimizer; kwargs...)
-    return run_gmd_mls_ots_ts(
-        file,
-        _PM.SOCWRPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_gmd_mls_ots_ts( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
 
