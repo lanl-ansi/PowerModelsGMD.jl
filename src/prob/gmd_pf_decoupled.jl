@@ -5,21 +5,11 @@ export run_ac_gmd_pf_decoupled
 
 "FUNCTION: run basic GMD model with nonlinear ac equations"
 function run_ac_pf_qloss(file, optimizer; kwargs...)
-    return run_pf_qloss(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_pf_qloss(file, _PM.ACPPowerModel, optimizer; kwargs...,)
 end
 
 function run_ac_pf_qloss_vnom(file, optimizer; kwargs...)
-    return run_pf_qloss_vnom(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_pf_qloss_vnom(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 function run_pf_qloss(file, model_type::Type, optimizer; kwargs...)
@@ -60,41 +50,37 @@ end
 "FUNCTION: build the sequential quasi-dc power flow and ac power flow problem
 as a generator dispatch minimization problem with calculated ieff"
 function build_pf_qloss(pm::_PM.AbstractPowerModel; kwargs...)
-
     use_vnom = false
     build_pf_qloss(pm::_PM.AbstractACPModel, use_vnom; kwargs...)
-
 end
 
 function build_pf_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
-
     use_vnom = true
     build_pf_qloss(pm::_PM.AbstractACPModel, use_vnom; kwargs...)
-
 end
 
 function build_pf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 
-    _PM.variable_bus_voltage(pm, bounded=false) # ok
-    _PM.variable_gen_power(pm, bounded=false) # ok
-    _PM.variable_branch_power(pm, bounded=false) # ok
+    _PM.variable_bus_voltage(pm, bounded=false)
+    _PM.variable_gen_power(pm, bounded=false)
+    _PM.variable_branch_power(pm, bounded=false)
     _PM.variable_dcline_power(pm, bounded=false)
 
-    variable_qloss(pm) # ok
+    variable_qloss(pm)
 
-    _PM.constraint_model_voltage(pm) # ok
+    _PM.constraint_model_voltage(pm)
 
     for (i, bus) in _PM.ref(pm, :ref_buses)
 
         @assert bus["bus_type"] == 3
-        _PM.constraint_theta_ref(pm, i) # ok
-        _PM.constraint_voltage_magnitude_setpoint(pm, i) # ok
+        _PM.constraint_theta_ref(pm, i)
+        _PM.constraint_voltage_magnitude_setpoint(pm, i)
 
     end
 
     for (i, bus) in _PM.ref(pm, :bus)
 
-        constraint_power_balance_gmd(pm, i) # ok
+        constraint_power_balance_gmd(pm, i)
 
         if length(_PM.ref(pm, :bus_gens, i)) > 0 && !(i in _PM.ids(pm,:ref_buses))
 
@@ -110,8 +96,8 @@ function build_pf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 
     for i in _PM.ids(pm, :branch)
 
-        _PM.constraint_ohms_yt_from(pm, i) # ok
-        _PM.constraint_ohms_yt_to(pm, i) # ok
+        _PM.constraint_ohms_yt_from(pm, i)
+        _PM.constraint_ohms_yt_to(pm, i)
 
         _PM.constraint_voltage_angle_difference(pm, i)
 
@@ -119,9 +105,9 @@ function build_pf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
         _PM.constraint_thermal_limit_to(pm, i)
 
         if vnom
-            constraint_qloss_decoupled_vnom(pm, i) # ok
+            constraint_qloss_decoupled_vnom(pm, i)
         else
-            constraint_qloss_decoupled(pm, i) # ok
+            constraint_qloss_decoupled(pm, i)
         end
 
     end
@@ -147,27 +133,19 @@ end
 
 "FUNCTION: run the quasi-dc power flow problem followed by the ac-pf problem with qloss constraints"
 function run_ac_gmd_pf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
-
     data = _PM.parse_file(file)
     return run_ac_gmd_pf_decoupled(data, _PM.ACPPowerModel, optimizer; kwargs...)
-
 end
 
 function run_ac_gmd_pf_decoupled(case::Dict{String,Any}, optimizer; setting=Dict(), kwargs...)
-    return run_gmd_pf_decoupled(
-        case,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...
-    )
+    return run_gmd_pf_decoupled(case, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 function run_gmd_pf_decoupled(file::String, model_type, optimizer; setting=Dict(), kwargs...)
-    
     data = _PM.parse_file(file)
     return run_gmd_pf_decoupled(data, model_type, optimizer; kwargs...)
-
 end
+
 
 function run_gmd_pf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer; setting=Dict{String,Any}(), kwargs...)
 

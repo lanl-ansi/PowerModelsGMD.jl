@@ -10,7 +10,7 @@ Consequently, PMsGMD is equally useful for both research and industry applicatio
 ## PMsGMD Dependencies
 
 PMsGMD builds on the following Julia packages: [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.18.0 and [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.6.0.
-In addition, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21, and [Memento](https://github.com/invenia/Memento.jl) v1.1.
+In addition, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21, and [Memento](https://github.com/invenia/Memento.jl) v1.2.
 
 
 
@@ -140,7 +140,7 @@ run_ac_gmd_opf_ts(multinetworkcase, solver)
 
 #### GIC -> AC-MLS
 
-Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLS minimum-load-shedding specification tin order o calculate the increase in transformer reactive power consumption. The network topology is fixed.
+Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLS minimum-load-shedding specification in order to calculate the increase in transformer reactive power consumption. The network topology is fixed.
 For example:
 ```
 run_ac_gmd_mls_decoupled(case, solver)

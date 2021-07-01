@@ -4,12 +4,7 @@ export run_gmd_opf_ts
 
 "FUNCTION: run multi-time-series GMD model with nonlinear ac equations"
 function run_ac_gmd_opf_ts(file, optimizer; kwargs...)
-    return run_gmd_opf_ts(
-        file,
-        _PM.ACPPowerModel,
-        optimizer;
-        kwargs...,
-    )
+    return run_gmd_opf_ts( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 function run_gmd_opf_ts(file, model_type::Type, optimizer; kwargs...)
