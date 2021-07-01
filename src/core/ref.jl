@@ -1,6 +1,7 @@
 # ===   REFS   === #
 
 
+"REF: extension to add gmd to ref"
 function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
 
     data_it = _IM.ismultiinfrastructure(data) ? data["it"][pm_it_name] : data
@@ -32,4 +33,21 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     end
 
 end
+
+
+# "REF: extension to add load blocks to ref"
+# function ref_add_load_blocks!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+
+#     ref[:load_blocks] = Dict{Int,Set}(i => block for (i,block) in enumerate(PMD.identify_load_blocks(data)))
+#     load_block_map = Dict{Int,Int}()
+#     for (l,load) in get(data, "load", Dict())
+#         for (b,block) in ref[:load_blocks]
+#             if load["load_bus"] in block
+#                 load_block_map[parse(Int,l)] = b
+#             end
+#         end
+#     end
+#     ref[:load_block_map] = load_block_map
+
+# end
 
