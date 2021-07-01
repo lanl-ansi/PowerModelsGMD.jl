@@ -194,7 +194,7 @@ function variable_dc_line_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default
 end
 
 
-"VARIABLE: Qloss"
+"VARIABLE: qloss"
 function variable_qloss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 
     if bounded

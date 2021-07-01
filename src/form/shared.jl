@@ -20,7 +20,6 @@ function constraint_power_balance_shed_gmd(pm::_PM.AbstractWModels, n::Int, i::I
     z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor scale", "shunt")
     wz_shunt = get(_PM.var(pm, n), :wz_shunt, Dict()); _PM._check_var_keys(wz_shunt, keys(bus_gs), "voltage square power factor scale", "shunt")
 
-
     _PM.con(pm, n, :kcl_p)[i] = JuMP.@constraint(pm.model,
         sum(p[a] for a in bus_arcs)
         + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)

@@ -1,4 +1,8 @@
+# ===   REFS   === #
+
+
 function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+
     data_it = _IM.ismultiinfrastructure(data) ? data["it"][pm_it_name] : data
 
     if _IM.ismultinetwork(data_it)
@@ -8,6 +12,7 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     end
 
     for (n, nw_data) in nws_data
+
         nw_id = parse(Int, n)
         nw_ref = ref[:it][pm_it_sym][:nw][nw_id]
 
@@ -23,6 +28,8 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
            push!(gmd_bus_arcs[i], (l,i,j))
         end
         nw_ref[:gmd_bus_arcs] = gmd_bus_arcs
+
     end
+
 end
 

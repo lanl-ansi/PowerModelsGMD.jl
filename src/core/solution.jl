@@ -1,5 +1,5 @@
 # ===   SOLUTIONS   === #
- 
+
 
 "SOLUTION: add quasi-dc power flow solutions"
 function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
