@@ -154,7 +154,8 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_dcline_power(pm)
 
     #_PM.variable_load_power_factor(pm, relax=true)
-    _PM.variable_shunt_admittance_factor(pm, relax=true)
+    # _PM.variable_shunt_admittance_factor(pm, relax=true)
+    variable_block_shunt_admittance_factor(pm, relax=true)
     variable_block_demand_factor(pm, relax=true)
 
     variable_reactive_loss(pm)
