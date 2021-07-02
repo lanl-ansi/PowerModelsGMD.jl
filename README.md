@@ -22,9 +22,9 @@ Currently the following common industry and academic specifications have been im
 * GIC DC: quasi-dc power flow
 * GIC AC-OPF: ac optimal power flow with sequential/coupled quasi-dc power flow
 * GIC AC-OPF-TS: multi-time-series ac optimal power flow with sequential/coupled quasi-dc power flow
-* GIC AC-MLS: ac minimum-load-shed with sequential/coupled quasi-dc power flow
-* GIC AC-OTS: ac optimal transmission switching with minimum-load-shed coupled with a quasi-dc power flow
-* GIC AC-OTS-TS: multi-time-series ac optimal transmission switching with minimum-load-shed coupled with a quasi-dc power flow
+* GIC AC-MLS: ac minimum loadshed with sequential/coupled quasi-dc power flow
+* GIC AC-OTS: ac optimal transmission switching with minimum loadshed coupled with a quasi-dc power flow
+* GIC AC-OTS-TS: multi-time-series ac optimal transmission switching with minimum loadshed coupled with a quasi-dc power flow
 
 Testing of implemented specifications was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v0.7.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.7.0.
 Alternatively, [Cbc](https://github.com/jump-dev/Cbc.jl) and [SCS](https://github.com/jump-dev/SCS.jl) solvers are supported as well.
@@ -140,13 +140,13 @@ run_ac_gmd_opf_ts(multinetworkcase, solver)
 
 #### GIC -> AC-MLS
 
-Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLS minimum-load-shedding specification in order to calculate the increase in transformer reactive power consumption. The network topology is fixed.
+Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLS minimum loadshedding specification in order to calculate the increase in transformer reactive power consumption. The network topology is fixed.
 For example:
 ```
 run_ac_gmd_mls_decoupled(case, solver)
 ```
 
-Additionally, the decoupled AC-MLS minimum-load-shedding specification was implemented as a decoupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
+Additionally, the decoupled AC-MLS minimum loadshedding specification was implemented as a decoupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
 For example:
 ```
 run_soc_gmd_mld_decoupled(case, solver)
@@ -154,13 +154,13 @@ run_soc_gmd_mld_decoupled(case, solver)
 
 #### GIC + AC-MLS
 
-Solves the quasi-dc voltages and currents plus the AC-MLS minimum-load-shedding specification concurrently. The network topology is fixed.
+Solves the quasi-dc voltages and currents plus the AC-MLS minimum loadshedding specification concurrently. The network topology is fixed.
 For example:
 ```
 run_ac_gmd_mls(case, solver)
 ```
 
-Additionally, the sequential AC-MLS minimum-load-shedding specification was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
+Additionally, the sequential AC-MLS minimum loadshedding specification was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
 For example:
 ```
 run_soc_gmd_mld(case, solver)
@@ -171,7 +171,7 @@ run_soc_gmd_mld(case, solver)
 
 #### GIC + AC-OTS
 
-Solves the AC-MLS minimum-load-shedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
+Solves the AC-MLS minimum loadshedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
 For example:
 ```
 run_ac_gmd_mls_ots(case, solver)
@@ -182,7 +182,7 @@ run_ac_gmd_mls_ots(case, solver)
 
 #### GIC + AC-OTS-TS
 
-Solves the multi-time-series AC-MLS minimum-load-shedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
+Solves the multi-time-series AC-MLS minimum loadshedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
 For example:
 ```
 run_ac_gmd_mls_ots_ts(multinetworkcase, solver)

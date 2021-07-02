@@ -104,7 +104,7 @@ function run_gmd_cascade_mld_qloss_vnom(file, model_type::Type, optimizer; kwarg
 end
 
 
-"FUNCTION: build the sequential quasi-dc power flow and minimum-load-shed problem
+"FUNCTION: build the sequential quasi-dc power flow and minimum loadshed problem
 as a generator dispatch minimization and load shedding problem"
 function build_gmd_mls_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
@@ -154,7 +154,7 @@ function build_gmd_mls_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: build the sequential quasi-dc power flow and minimum-load-shed problem
+"FUNCTION: build the sequential quasi-dc power flow and minimum loadshed problem
 as a maximum loadability problem"
 function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
@@ -210,7 +210,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: build the sequential quasi-dc power flow and minimum-load-shed problem
+"FUNCTION: build the sequential quasi-dc power flow and minimum loadshed problem
 as a cascading maximum loadability problem where line limits are disabled"
 function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 
@@ -269,7 +269,7 @@ end
 
 
 
-"FUNCTION: run the quasi-dc power flow problem followed by the minimum-load-shed problem
+"FUNCTION: run the quasi-dc power flow problem followed by the minimum loadshed problem
 with nonlinear ac equations"
 function run_ac_gmd_mls_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
@@ -311,7 +311,7 @@ function run_gmd_mls_decoupled(dc_case::Dict{String,Any}, model_type, optimizer;
 end
 
 
-"FUNCTION: run the quasi-dc power flow problem followed by the cascading minimum-load-shed problem
+"FUNCTION: run the quasi-dc power flow problem followed by the cascading minimum loadshed problem
 with nonlinear ac equations"
 function run_ac_gmd_cascade_mls_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)

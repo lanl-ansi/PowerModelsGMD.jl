@@ -68,11 +68,11 @@ function run_gmd_mld(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"FUNCTION: build the ac minimum-load-shed coupled with quasi-dc power flow problem
+"FUNCTION: build the ac minimum loadshed coupled with quasi-dc power flow problem
 as a generator dispatch minimization and load shedding problem"
 function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
-#   built minimum-load-shed problem specification corresponds to the "Model C4" of
+#   built minimum loadshed problem specification corresponds to the "Model C4" of
 #   Mowen et al., "Optimal Transmission Line Switching under Geomagnetic Disturbances", 2018.
 
     _PM.variable_bus_voltage(pm)
@@ -125,7 +125,7 @@ function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: build the ac minimum-load-shed coupled with quasi-dc power flow problem
+"FUNCTION: build the ac minimum loadshed coupled with quasi-dc power flow problem
 as a maximum loadability problem with relaxed generator and bus participation"
 function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:

@@ -1,4 +1,4 @@
-@testset "TEST AC GMD MINIMUM-LOAD-SHED DECOUPLED" begin
+@testset "TEST AC GMD MINIMUM LOADSHED DECOUPLED" begin
 
 
     # ===   CASE-24 IEEE RTS-0   === #
@@ -66,7 +66,7 @@ end
 
 
 
-@testset "TEST SOC GMD MAXIMUM LOADABILITY" begin
+@testset "TEST SOC GMD MAXIMUM LOADABILITY DECOUPLED" begin
 
 
     # ===   CASE-24 IEEE RTS-0   === #
@@ -75,7 +75,7 @@ end
 
         result = _PMGMD.run_soc_gmd_mld_decoupled(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 201417.0020; atol = 1e1)
+        @test isapprox(result["ac"]["result"]["objective"], 201392.6226; atol = 1e1)
 
         # - DC solution - %
 
@@ -92,15 +92,15 @@ end
 
         ac_solution = result["ac"]["result"]["solution"]
 
-        @test isapprox(ac_solution["bus"]["11"]["w"], 0.9535, atol=1e-1) #?
-        @test isapprox(ac_solution["bus"]["17"]["w"], 0.9849, atol=1e-1) #?
-        @test isapprox(ac_solution["bus"]["23"]["w"], 1.0153, atol=1e-1) #?
+        @test isapprox(ac_solution["bus"]["11"]["w"], 0.9344, atol=1e-1) #?
+        @test isapprox(ac_solution["bus"]["17"]["w"], 0.9190, atol=1e-1) #?
+        @test isapprox(ac_solution["bus"]["23"]["w"], 0.9557, atol=1e-1) #?
 
-        @test isapprox(ac_solution["branch"]["13"]["pf"], -0.0523, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["13"]["qf"], -0.1675, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["13"]["pf"], 0.0462, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["13"]["qf"], -0.4598, atol=1e-1)
         @test isapprox(ac_solution["branch"]["13"]["gmd_qloss"], 0.0, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["25"]["pf"], -0.9574, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["25"]["qf"], -0.1272, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["25"]["pf"], -0.8602, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["25"]["qf"], -0.1550, atol=1e-1)
         @test isapprox(ac_solution["branch"]["25"]["gmd_qloss"], 0.0, atol=1e-1)
 
         @test isapprox(ac_solution["branch"]["37"]["gmd_qloss"], 0.0881, atol=1e-1)

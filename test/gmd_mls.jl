@@ -1,4 +1,4 @@
-@testset "TEST AC GMD MINIMUM-LOAD-SHED" begin
+@testset "TEST AC GMD MINIMUM LOADSHED" begin
 
 
     # ===   CASE-24 IEEE RTS-0   === #
@@ -74,7 +74,7 @@ end
 
 
 
-@testset "TEST QC GMD MINIMUM-LOAD-SHED" begin
+@testset "TEST QC GMD MINIMUM LOADSHED" begin
 
 
     # ===   CASE-24 IEEE RTS-0   === #
@@ -110,7 +110,7 @@ end
 
 
 
-@testset "TEST SOC GMD MINIMUM-LOAD-SHED" begin
+@testset "TEST SOC GMD MINIMUM LOADSHED" begin
 
 
     # ===   CASE-24 IEEE RTS-0   === #
@@ -155,7 +155,7 @@ end
 
         result = _PMGMD.run_soc_gmd_mld(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 201417.0020; atol=1e1)
+        @test isapprox(result["objective"], 201381.2334; atol=1e1)
 
     end
 

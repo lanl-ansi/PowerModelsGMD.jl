@@ -215,196 +215,6 @@ function variable_qloss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bound
 
 end
 
-#"""
-#    variable_mc_load_block_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
-#
-#create variables for demand status by connected component
-#"""
-#function variable_mc_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-#    if relax
-#        z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
-#            [i in _PM.ids(pm, nw, :ref_buses)], base_name="$(nw)_z_demand",
-#            lower_bound = 0,
-#            upper_bound = 1,
-#            start = 1.0
-#        )
-#    else
-#        z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
-#            [i in _PM.ids(pm, nw, :ref_buses)], base_name="$(nw)_z_demand",
-#            binary = true,
-#            start = 1
-#        )
-#    end
-#
-#
-#    load_block_map = _PM.ref(pm, nw, :load_block_map)
-#    _PM.var(pm, nw)[:z_demand] = Dict(l => z_demand[load_ref_bus_map[l]] for l in _PM.ids(pm, nw, :load))
-#
-#    # expressions for pd and qd
-#    pd = _PM.var(pm, nw)[:pd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["pd"] for i in _PM.ids(pm, nw, :load))
-#    qd = _PM.var(pm, nw)[:qd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["qd"] for i in _PM.ids(pm, nw, :load))
-#
-#    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :status, _PM.ids(pm, nw, :load), _PM.var(pm, nw)[:z_demand])
-#    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :pd, _PM.ids(pm, nw, :load), pd)
-#    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
-#end
-
-"""
-    variable_block_demand_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
-
-create a single for demand status by largest connected component
-"""
-function variable_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)
-    # JuMP allows for declaring scalar variables. 
-    # Declaring this as a vector for compatibility when using multiple islands
-    if relax
-        z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
-            [1], base_name="$(nw)_z_demand",
-            lower_bound = 0,
-            upper_bound = 1,
-            start = 1.0
-        )
-    else
-        z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
-            [1], base_name="$(nw)_z_demand",
-            binary = true,
-            start = 1
-        )
-    end
-
-
-    #load_block_map = _PM.ref(pm, nw, :load_block_map)
-    #_PM.var(pm, nw)[:z_demand] = Dict(l => z_demand[load_ref_bus_map[l]] for l in _PM.ids(pm, nw, :load))
-    _PM.var(pm, nw)[:z_demand] = Dict(l => z_demand[1] for l in _PM.ids(pm, nw, :load))
-
-    # expressions for pd and qd
-    pd = _PM.var(pm, nw)[:pd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["pd"] for i in _PM.ids(pm, nw, :load))
-    qd = _PM.var(pm, nw)[:qd] = Dict(i => _PM.var(pm, nw)[:z_demand][i].*_PM.ref(pm, nw, :load, i)["qd"] for i in _PM.ids(pm, nw, :load))
-
-    report && _PM.sol_component_value(pm, nw, :load, :status, _PM.ids(pm, nw, :load), _PM.var(pm, nw)[:z_demand])
-    report && _PM.sol_component_value(pm, nw, :load, :pd, _PM.ids(pm, nw, :load), pd)
-    report && _PM.sol_component_value(pm, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
-end
-
-# function variable_gen_indicator(pm::AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
-#     if !relax
-#         z_gen = var(pm, nw)[:z_gen] = JuMP.@variable(pm.model,
-#             [i in ids(pm, nw, :gen)], base_name="$(nw)_z_gen",
-#             binary = true,
-#             start = comp_start_value(ref(pm, nw, :gen, i), "z_gen_start", 1.0)
-#         )
-#     else
-#         z_gen = var(pm, nw)[:z_gen] = JuMP.@variable(pm.model,
-#             [i in ids(pm, nw, :gen)], base_name="$(nw)_z_gen",
-#             lower_bound = 0,
-#             upper_bound = 1,
-#             start = comp_start_value(ref(pm, nw, :gen, i), "z_gen_start", 1.0)
-#         )
-#     end
-
-#     report && _IM.sol_component_value(pm, nw, :gen, :gen_status, ids(pm, nw, :gen), z_gen)
-# end
-
-"""
-    variable_block_gen_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
-
-create a single for demand status by largest connected component
-"""
-function variable_block_gen_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)
-    # JuMP allows for declaring scalar variables. 
-    # Declaring this as a vector for compatibility when using multiple islands
-    if relax
-        z_gen = _PM.var(pm, nw)[:z_gen_blocks] = _PM.JuMP.@variable(pm.model,
-            [1], base_name="$(nw)_z_gen",
-            lower_bound = 0,
-            upper_bound = 1,
-            start = 1.0
-        )
-    else
-        z_gen = _PM.var(pm, nw)[:z_gen_blocks] = _PM.JuMP.@variable(pm.model,
-            [1], base_name="$(nw)_z_gen",
-            binary = true,
-            start = 1
-        )
-    end
-
-
-    #load_block_map = _PM.ref(pm, nw, :load_block_map)
-    #_PM.var(pm, nw)[:z_gen] = Dict(l => z_gen[load_ref_bus_map[l]] for l in _PM.ids(pm, nw, :load))
-    _PM.var(pm, nw)[:z_gen] = Dict(g => z_gen[1] for g in _PM.ids(pm, nw, :gen))
-
-    # expressions for pd and qd
-    # pd = _PM.var(pm, nw)[:pd] = Dict(i => _PM.var(pm, nw)[:z_gen][i].*_PM.ref(pm, nw, :load, i)["pd"] for i in _PM.ids(pm, nw, :load))
-    # qd = _PM.var(pm, nw)[:qd] = Dict(i => _PM.var(pm, nw)[:z_gen][i].*_PM.ref(pm, nw, :load, i)["qd"] for i in _PM.ids(pm, nw, :load))
-
-    report && _PM.sol_component_value(pm, nw, :load, :gen, _PM.ids(pm, nw, :gen), _PM.var(pm, nw)[:z_gen])
-    # report && _PM.sol_component_value(pm, nw, :load, :pd, _PM.ids(pm, nw, :load), pd)
-    # report && _PM.sol_component_value(pm, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
-end
-
-# ""
-# function variable_shunt_admittance_factor(pm::AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
-#     if !relax
-#         z_shunt = var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
-#             [i in ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt",
-#             binary = true,
-#             start = comp_start_value(ref(pm, nw, :shunt, i), "z_shunt_start", 1.0)
-#         )
-#     else
-#         z_shunt = var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
-#             [i in ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt",
-#             upper_bound = 1,
-#             lower_bound = 0,
-#             start = comp_start_value(ref(pm, nw, :shunt, i), "z_shunt_start", 1.0)
-#         )
-#     end
-
-#     if report
-#         _IM.sol_component_value(pm, nw, :shunt, :status, ids(pm, nw, :shunt), z_shunt)
-#         sol_gs = Dict(i => z_shunt[i]*ref(pm, nw, :shunt, i)["gs"] for i in ids(pm, nw, :shunt))
-#         _IM.sol_component_value(pm, nw, :shunt, :gs, ids(pm, nw, :shunt), sol_gs)
-#         sol_bs = Dict(i => z_shunt[i]*ref(pm, nw, :shunt, i)["bs"] for i in ids(pm, nw, :shunt))
-#         _IM.sol_component_value(pm, nw, :shunt, :bs, ids(pm, nw, :shunt), sol_bs)
-#     end
-# end
-
-"""
-    variable_block_demand_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
-
-create a single for demand status by largest connected component
-"""
-function variable_block_shunt_admittance_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)
-    # JuMP allows for declaring scalar variables. 
-    # Declaring this as a vector for compatibility when using multiple islands
-    if relax
-        z_shunt = _PM.var(pm, nw)[:z_shunt_blocks] = _PM.JuMP.@variable(pm.model,
-            [1], base_name="$(nw)_z_shunt",
-            lower_bound = 0,
-            upper_bound = 1,
-            start = 1.0
-        )
-    else
-        z_shunt = _PM.var(pm, nw)[:z_shunt_blocks] = _PM.JuMP.@variable(pm.model,
-            [1], base_name="$(nw)_z_shunt",
-            binary = true,
-            start = 1
-        )
-    end
-
-
-
-    _PM.var(pm, nw)[:z_shunt] = Dict(g => z_shunt[1] for g in _PM.ids(pm, nw, :shunt))
-
-    if report
-        # _IM.sol_component_value(pm, nw, :shunt, :status, ids(pm, nw, :shunt), z_shunt)
-        _PM.sol_component_value(pm, nw, :load, :shunt, _PM.ids(pm, nw, :shunt), _PM.var(pm, nw)[:z_shunt])
-        sol_gs = Dict(i => z_shunt[i]*_PM.ref(pm, nw, :shunt, i)["gs"] for i in _PM.ids(pm, nw, :shunt))
-        _PM.sol_component_value(pm, nw, :shunt, :gs, _PM.ids(pm, nw, :shunt), sol_gs)
-        sol_bs = Dict(i => z_shunt[i]*_PM.ref(pm, nw, :shunt, i)["bs"] for i in _PM.ids(pm, nw, :shunt))
-        _PM.sol_component_value(pm, nw, :shunt, :bs, _PM.ids(pm, nw, :shunt), sol_bs)
-    end
-end
-
 "VARIABLE: demand factor"
 function variable_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
 
@@ -699,7 +509,7 @@ end
 #end
 
 """
-    variable_block_demand_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
+variable_block_demand_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
 create a single for demand status by largest connected component
 """
 function variable_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)
@@ -754,7 +564,7 @@ end
 # end
 
 """
-    variable_block_gen_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
+variable_block_gen_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
 create a single for demand status by largest connected component
 """
 function variable_block_gen_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)
@@ -816,7 +626,7 @@ end
 # end
 
 """
-    variable_block_demand_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
+variable_block_demand_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
 create a single for demand status by largest connected component
 """
 function variable_block_shunt_admittance_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)

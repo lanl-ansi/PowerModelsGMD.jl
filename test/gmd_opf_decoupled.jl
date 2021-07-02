@@ -113,7 +113,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_uiuc150, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 1344779.2770; atol = 1e1)
+        @test isapprox(result["ac"]["result"]["objective"], 1.3447792770e6; atol = 1e1)
 
         # - DC solution - %
 

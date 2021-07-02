@@ -37,11 +37,11 @@ function run_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"FUNCTION: build the multi-time-series ac optimal transmission switching with minimum-load-shed coupled with a quasi-dc power flow problem
+"FUNCTION: build the multi-time-series ac optimal transmission switching with minimum loadshed coupled with a quasi-dc power flow problem
 as a generator dispatch minimization problem"
 function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
-#   built minimum-load-shed problem specification corresponds to the "Model C4" of
+#   built minimum loadshed problem specification corresponds to the "Model C4" of
 #   Mowen et al., "Optimal Transmission Line Switching under Geomagnetic Disturbances", 2018.
 
     for (n, network) in _PM.nws(pm)
