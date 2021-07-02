@@ -7,7 +7,7 @@
 
         # result = _PMGMD.run_ac_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -24,7 +24,7 @@
 
         # result = _PMGMD.run_ac_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -50,7 +50,7 @@ end
 
         # result = _PMGMD.run_qc_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -67,7 +67,7 @@ end
 
         # result = _PMGMD.run_qc_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -93,7 +93,7 @@ end
 
         # result = _PMGMD.run_soc_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -110,7 +110,7 @@ end
 
         # result = _PMGMD.run_soc_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:

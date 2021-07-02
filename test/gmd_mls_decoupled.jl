@@ -7,7 +7,7 @@
 
         result = _PMGMD.run_ac_gmd_mls_decoupled(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 100890.0107; atol = 1e1)
+        @test isapprox(result["ac"]["result"]["objective"], 100890.0107; atol = 1e2)
 
         # - DC solution - %
 
@@ -49,7 +49,7 @@
 
         # result = _PMGMD.run_ac_gmd_mls_decoupled(case_epri21, ipopt_solver; setting=setting)
         # @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["ac"]["result"]["objective"], 0; atol = 1e1)
+        # @test isapprox(result["ac"]["result"]["objective"], 0; atol = 1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -75,7 +75,7 @@ end
 
         result = _PMGMD.run_soc_gmd_mld_decoupled(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 201392.6226; atol = 1e1)
+        @test isapprox(result["ac"]["result"]["objective"], 201392.6226; atol = 1e2)
 
         # - DC solution - %
 
@@ -92,9 +92,9 @@ end
 
         ac_solution = result["ac"]["result"]["solution"]
 
-        @test isapprox(ac_solution["bus"]["11"]["w"], 0.9344, atol=1e-1) #?
-        @test isapprox(ac_solution["bus"]["17"]["w"], 0.9190, atol=1e-1) #?
-        @test isapprox(ac_solution["bus"]["23"]["w"], 0.9557, atol=1e-1) #?
+        @test isapprox(ac_solution["bus"]["11"]["w"], 0.9344, atol=1e-1)
+        @test isapprox(ac_solution["bus"]["17"]["w"], 0.9190, atol=1e-1)
+        @test isapprox(ac_solution["bus"]["23"]["w"], 0.9557, atol=1e-1)
 
         @test isapprox(ac_solution["branch"]["13"]["pf"], 0.0462, atol=1e-1)
         @test isapprox(ac_solution["branch"]["13"]["qf"], -0.4598, atol=1e-1)
@@ -117,7 +117,7 @@ end
 
         # result = _PMGMD.run_soc_gmd_mld_decoupled(case_epri21, ipopt_solver; setting=setting)
         # @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["ac"]["result"]["objective"], 0; atol = 1e1)
+        # @test isapprox(result["ac"]["result"]["objective"], 0; atol = 1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:

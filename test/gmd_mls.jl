@@ -7,7 +7,7 @@
 
         result = _PMGMD.run_ac_gmd_mls(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 108817.4779; atol=1e1)
+        @test isapprox(result["objective"], 108817.4779; atol=1e2)
 
     end
 
@@ -19,7 +19,7 @@
 
         # result = _PMGMD.run_ac_gmd_mls(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -45,7 +45,7 @@ end
 
         result = _PMGMD.run_ac_gmd_mld(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 201417.0020; atol=1e1)
+        @test isapprox(result["objective"], 201417.0020; atol=1e2)
 
     end
 
@@ -57,7 +57,7 @@ end
 
         # result = _PMGMD.run_ac_gmd_mld(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -83,7 +83,7 @@ end
 
         result = _PMGMD.run_qc_gmd_mls(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 110689.1477; atol=1e1)
+        @test isapprox(result["objective"], 110689.1477; atol=1e2)
 
     end
 
@@ -95,7 +95,7 @@ end
 
         # result = _PMGMD.run_qc_gmd_mls(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # ["termination_status"] = LOCALLY_INFEASIBLE
@@ -119,7 +119,7 @@ end
 
         result = _PMGMD.run_soc_gmd_mls(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 110656.0578; atol=1e1)
+        @test isapprox(result["objective"], 110656.0578; atol=1e2)
 
     end
 
@@ -131,7 +131,7 @@ end
 
         # result = _PMGMD.run_soc_gmd_mls(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # ["termination_status"] = LOCALLY_INFEASIBLE
@@ -155,7 +155,7 @@ end
 
         result = _PMGMD.run_soc_gmd_mld(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 201381.2334; atol=1e1)
+        @test isapprox(result["objective"], 201381.2334; atol=1e2)
 
     end
 
@@ -167,7 +167,7 @@ end
 
         # result = _PMGMD.run_soc_gmd_mld(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e1)
+        # @test isapprox(result["objective"], 0; atol=1e2)
 
         # TODO => FIX ERROR
         # ["termination_status"] = LOCALLY_INFEASIBLE

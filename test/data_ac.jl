@@ -7,7 +7,7 @@
 
         result = _PM.run_ac_opf(case_b4gic, ipopt_solver)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 116384.9314; atol=1e1)
+        @test isapprox(result["objective"], 116384.9314; atol=1e2)
 
     end
 
@@ -19,7 +19,7 @@
 
         result =_PM.run_ac_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 977.3899; atol=1e1)
+        @test isapprox(result["objective"], 977.3899; atol=1e2)
 
     end
 
@@ -31,7 +31,7 @@
 
         result = _PM.run_ac_opf(case_epri21, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 401802.4215; atol=1e1)
+        @test isapprox(result["objective"], 401802.4215; atol=1e2)
 
     end
 
@@ -43,7 +43,7 @@
 
         result = _PM.run_ac_opf(case_uiuc150, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 1.2795010573e6; atol=1e1)
+        @test isapprox(result["objective"], 1279501.0573; atol=1e2)
 
     end
 
@@ -55,7 +55,7 @@
 
         result = _PM.run_ac_opf(case_rtsgmlcgic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 87437.3716; atol=1e1)
+        @test isapprox(result["objective"], 87437.3716; atol=1e2)
 
     end
 

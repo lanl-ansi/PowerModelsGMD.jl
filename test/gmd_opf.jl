@@ -7,7 +7,7 @@
 
         result = _PMGMD.run_ac_gmd_opf(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 139231.9720; atol = 1e1)
+        @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
         solution = result["solution"]
         adjust_gmd_qloss(case_b4gic, solution)
@@ -35,7 +35,7 @@
 
         result = _PMGMD.run_ac_gmd_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 12312.5633; atol = 1e1)
+        @test isapprox(result["objective"], 12312.5633; atol = 1e2)
 
         solution = result["solution"]
         adjust_gmd_qloss(case_b6gic_nerc, solution)
@@ -68,7 +68,7 @@
 
         # result = _PMGMD.run_ac_gmd_opf(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol = 1e1)
+        # @test isapprox(result["objective"], 0; atol = 1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -84,7 +84,7 @@
 
         result = _PMGMD.run_ac_gmd_opf(case_uiuc150, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol = 1e1)
+        # @test isapprox(result["objective"], 0; atol = 1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
@@ -100,7 +100,7 @@
 
         result = _PMGMD.run_ac_gmd_opf(case_rtsgmlcgic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 191245.1403; atol = 1e1)
+        @test isapprox(result["objective"], 191245.1403; atol = 1e2)
 
         solution = result["solution"]
         adjust_gmd_qloss(case_rtsgmlcgic, solution)

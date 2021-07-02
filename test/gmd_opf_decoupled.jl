@@ -7,7 +7,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_b4gic, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 116456.6409; atol = 1e1)
+        @test isapprox(result["ac"]["result"]["objective"], 116456.6409; atol = 1e2)
 
         # - DC solution - %
 
@@ -36,7 +36,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 978.3884; atol = 1e1)
+        @test isapprox(result["ac"]["result"]["objective"], 978.3884; atol = 1e2)
 
         # - DC solution - %
 
@@ -70,7 +70,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_epri21, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 399393.8778; atol = 1e1)
+        @test isapprox(result["ac"]["result"]["objective"], 399393.8778; atol = 1e2)
 
         # - DC solution - %
 
@@ -113,7 +113,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_uiuc150, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 1.3447792770e6; atol = 1e1)
+        @test isapprox(result["ac"]["result"]["objective"], 1344779.2770; atol = 1e2)
 
         # - DC solution - %
 
@@ -161,7 +161,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_rtsgmlcgic, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 87444.3446; atol = 1e1)
+        @test isapprox(result["ac"]["result"]["objective"], 87444.3446; atol = 1e2)
 
         # - DC solution - %
 
