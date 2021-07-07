@@ -1,131 +1,219 @@
+# ===   ACP   === #
+
+
+"VARIABLE: bus voltage on/off"
+function variable_bus_voltage_on_off(pm::_PM.AbstractACPModel; kwargs...)
+    _PM.variable_bus_voltage_angle(pm; kwargs...)
+    variable_bus_voltage_magnitude_on_off(pm; kwargs...)
+end
+
 
 "VARIABLE: ac current"
-function variable_ac_current(pm::PMs.AbstractACPModel; kwargs...)
+function variable_ac_current(pm::_PM.AbstractACPModel; kwargs...)
     variable_ac_current_mag(pm; kwargs...)
 end
 
 
 "VARIABLE: ac current on/off"
-function variable_ac_current_on_off(pm::PMs.AbstractACPModel; kwargs...)
+function variable_ac_current_on_off(pm::_PM.AbstractACPModel; kwargs...)
     variable_ac_current_mag(pm; bounded=false, kwargs...)
-    #NOTE: needs to be false because this is an on/off variable
 end
 
 
 "VARIABLE: dc current"
-function variable_dc_current(pm::PMs.AbstractACPModel; kwargs...)
+function variable_dc_current(pm::_PM.AbstractACPModel; kwargs...)
     variable_dc_current_mag(pm; kwargs...)
 end
 
 
 "VARIABLE: reactive loss"
-function variable_reactive_loss(pm::PMs.AbstractACPModel; kwargs...)
+function variable_reactive_loss(pm::_PM.AbstractACPModel; kwargs...)
     variable_qloss(pm; kwargs...)
 end
 
 
-"""
-```
-sum(p[a] for a in bus_arcs)  == sum(pg[g] for g in bus_gens) - pd - gs*v^2 + pd_ls
-sum(q[a] for a in bus_arcs)  == sum(qg[g] for g in bus_gens) - qd + bs*v^2 + qd_ls - qloss
-```
-"""
+"CONSTRAINT: bus voltage on/off"
+function constraint_bus_voltage_on_off(pm::_PM.AbstractACPModel; nw::Int=nw_id_default, kwargs...)
+    for (i,bus) in _PM.ref(pm, nw, :bus)
+        constraint_voltage_magnitude_on_off(pm, i; nw=nw)
+    end
+end
 
 
-"CONSTRAINT: kcl with shunts for load shedding"
-function constraint_kcl_shunt_gmd_ls(pm::PMs.AbstractACPModel, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+"CONSTRAINT: power balance for load shedding"
+function constraint_power_balance_shed_gmd(pm::_PM.AbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
 
-    vm = PMs.var(pm, n, c, :vm)[i]
-    p = PMs.var(pm, n, c, :p)
-    q = PMs.var(pm, n, c, :q)
-    pg = PMs.var(pm, n, c, :pg)
-    qg = PMs.var(pm, n, c, :qg)
-    qloss = PMs.var(pm, n, c, :qloss)
-    pd_ls = PMs.var(pm, n, c, :pd)
-    qd_ls = PMs.var(pm, n, c, :qd)
+    vm = _PM.var(pm, n, :vm, i)
+    p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
+    q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
+    pg = get(_PM.var(pm, n), :pg, Dict()); _PM._check_var_keys(pg, bus_gens, "active power", "generator")
+    qg = get(_PM.var(pm, n), :qg, Dict()); _PM._check_var_keys(qg, bus_gens, "reactive power", "generator")
+    ps = get(_PM.var(pm, n), :ps, Dict()); _PM._check_var_keys(ps, bus_storage, "active power", "storage")
+    qs = get(_PM.var(pm, n), :qs, Dict()); _PM._check_var_keys(qs, bus_storage, "reactive power", "storage")
+    psw = get(_PM.var(pm, n), :psw, Dict()); _PM._check_var_keys(psw, bus_arcs_sw, "active power", "switch")
+    qsw = get(_PM.var(pm, n), :qsw, Dict()); _PM._check_var_keys(qsw, bus_arcs_sw, "reactive power", "switch")
+    p_dc = get(_PM.var(pm, n), :p_dc, Dict()); _PM._check_var_keys(p_dc, bus_arcs_dc, "active power", "dcline")
+    q_dc = get(_PM.var(pm, n), :q_dc, Dict()); _PM._check_var_keys(q_dc, bus_arcs_dc, "reactive power", "dcline")
+    z_demand = get(_PM.var(pm, n), :z_demand, Dict()); _PM._check_var_keys(z_demand, keys(bus_pd), "power factor scale", "load")
+    z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor scale", "shunt")
 
-    JuMP.@constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd - pd_ls[i] for (i, pd) in bus_pd) - sum(gs for (i, gs) in bus_gs)*vm^2)
-    JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd - qd_ls[i] for (i, qd) in bus_qd) + sum(bs for (i, bs) in bus_bs)*vm^2)
+    _PM.con(pm, n, :kcl_p)[i] = JuMP.@NLconstraint(pm.model,
+        sum(p[a] for a in bus_arcs)
+        + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
+        + sum(psw[a_sw] for a_sw in bus_arcs_sw)
+        ==
+        sum(pg[g] for g in bus_gens)
+        - sum(ps[s] for s in bus_storage)
+        - sum(pd * z_demand[i] for (i,pd) in bus_pd)
+        - sum(gs * vm^2 * z_shunt[i] for (i,gs) in bus_gs)
+    )
+    _PM.con(pm, n, :kcl_q)[i] = JuMP.@NLconstraint(pm.model,
+        sum(q[a] for a in bus_arcs)
+        + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
+        + sum(qsw[a_sw] for a_sw in bus_arcs_sw)
+        ==
+        sum(qg[g] for g in bus_gens)
+        - sum(qs[s] for s in bus_storage)
+        - sum(qd * z_demand[i] for (i,qd) in bus_qd)
+        + sum(bs * vm^2 * z_shunt[i] for (i,bs) in bus_bs)
+    )
 
 end
 
 
-"CONSTRAINT: kcl with shunts"
-function constraint_kcl_gmd(pm::PMs.AbstractACPModel, n::Int, c::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
+"CONSTRAINT: power balance with shunts for load shedding"
+function constraint_power_balance_shunt_gmd_mls(pm::_PM.AbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 
-    p = PMs.var(pm, n, c, :p)
-    q = PMs.var(pm, n, c, :q)
-    pg = PMs.var(pm, n, c, :pg)
-    qg = PMs.var(pm, n, c, :qg)
-    qloss = PMs.var(pm, n, c, :qloss)
+    vm = _PM.var(pm, n, :vm)[i]
+    p = _PM.var(pm, n, :p)
+    q = _PM.var(pm, n, :q)
+    pg = _PM.var(pm, n, :pg)
+    qg = _PM.var(pm, n, :qg)
+    qloss = _PM.var(pm, n, :qloss)
+    pd_mls = _PM.var(pm, n, :pd)
+    qd_mls = _PM.var(pm, n, :qd)
+
+    JuMP.@constraint(pm.model,
+        sum(p[a] for a in bus_arcs)
+        ==
+        sum(pg[g] for g in bus_gens)
+        - sum(pd - pd_mls[i] for (i, pd) in bus_pd)
+        - sum(gs for (i, gs) in bus_gs) * vm^2
+    )
+    JuMP.@constraint(pm.model,
+        sum(q[a] + qloss[a] for a in bus_arcs)
+        == sum(qg[g] for g in bus_gens)
+        - sum(qd - qd_mls[i] for (i, qd) in bus_qd)
+        + sum(bs for (i, bs) in bus_bs) * vm^2
+    )
+
+end
+
+
+"CONSTRAINT: power balance without shunts and load shedding"
+function constraint_power_balance_gmd(pm::_PM.AbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
+
+    p = _PM.var(pm, n, :p)
+    q = _PM.var(pm, n, :q)
+    pg = _PM.var(pm, n, :pg)
+    qg = _PM.var(pm, n, :qg)
+    qloss = _PM.var(pm, n, :qloss)
 
     # Bus Shunts for gs and bs are missing.  If you add it, you'll have to bifurcate one form of this constraint
     # for the acp model (uses v^2) and the wr model (uses w).  See how the ls version of these constraints does it
-    JuMP.@constraint(pm.model, sum(p[a]            for a in bus_arcs) == sum(pg[g] for g in bus_gens) - sum(pd for (i, pd) in bus_pd))
-    JuMP.@constraint(pm.model, sum(q[a] + qloss[a] for a in bus_arcs) == sum(qg[g] for g in bus_gens) - sum(qd for (i, qd) in bus_qd))
-
-end
-
-
-"FUNCTION: relating current to power flow"
-function constraint_current(pm::PMs.AbstractACPModel, n::Int, c::Int, i, f_idx, f_bus, t_bus, tm)
-
-    i_ac_mag = PMs.var(pm, n, c, :i_ac_mag)[i]
-    p_fr     = PMs.var(pm, n, c, :p)[f_idx]
-    q_fr     = PMs.var(pm, n, c, :q)[f_idx]
-    vm       = PMs.var(pm, n, c, :vm)[f_bus]
-
-    JuMP.@NLconstraint(pm.model, p_fr^2 + q_fr^2 == i_ac_mag^2 * vm^2 / tm)
+    JuMP.@constraint(pm.model,
+        sum(p[a] for a in bus_arcs)
+        ==
+        sum(pg[g] for g in bus_gens)
+        - sum(pd for (i, pd) in bus_pd)
+    )
+    JuMP.@constraint(pm.model,
+        sum(q[a] + qloss[a] for a in bus_arcs)
+        ==
+        sum(qg[g] for g in bus_gens)
+        - sum(qd for (i, qd) in bus_qd)
+    )
 
 end
 
 
 "FUNCTION: relating current to power flow on/off"
-function constraint_current_on_off(pm::PMs.AbstractACPModel, n::Int, c::Int, i, ac_max)
+function constraint_current_on_off(pm::_PM.AbstractACPModel, n::Int, i::Int, ac_max)
 
-    z  = PMs.var(pm, n, :z_branch)[i]
-    i_ac = PMs.var(pm, n, c, :i_ac_mag)[i]
-    JuMP.@constraint(pm.model, i_ac <= z * ac_max)
-    JuMP.@constraint(pm.model, i_ac >= z * 0.0)
+    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
+    z = _PM.var(pm, n, :z_branch)[i]
+
+    JuMP.@constraint(pm.model,
+        i_ac_mag
+        <=
+        z * ac_max
+    )
+    JuMP.@constraint(pm.model,
+        i_ac_mag
+        >=
+        0
+    )
 
 end
 
 
 "FUNCTION: computing thermal protection of transformers"
-function constraint_thermal_protection(pm::PMs.AbstractACPModel, n::Int, c::Int, i, coeff, ibase)
+function constraint_thermal_protection(pm::_PM.AbstractACPModel, n::Int, i::Int, coeff, ibase)
 
-    i_ac_mag = PMs.var(pm, n, c, :i_ac_mag)[i]
-    ieff = PMs.var(pm, n, c, :i_dc_mag)[i]
+    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
+    ieff = _PM.var(pm, n, :i_dc_mag)[i]
 
-    JuMP.@constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff^2/(ibase^2))
-
-end
-
-
-"FUNCTION: computing qloss"
-function constraint_qloss_vnom(pm::PMs.AbstractACPModel, n::Int, c::Int, k, i, j)
-
-    qloss = PMs.var(pm, n, c, :qloss)
-    JuMP.@constraint(pm.model, qloss[(k,i,j)] == 0.0)
-    JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
+    JuMP.@constraint(pm.model,
+        i_ac_mag
+        <=
+        coeff[1] + coeff[2] * ieff / ibase + coeff[3] * ieff^2 / ibase^2
+    )
 
 end
 
 
 "FUNCTION: computing qloss"
-function constraint_qloss_vnom(pm::PMs.AbstractACPModel, n::Int, c::Int, k, i, j, K, branchMVA)
+function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j)
 
-    qloss = PMs.var(pm, n, c, :qloss)
-    i_dc_mag = PMs.var(pm, n, c, :i_dc_mag)[k]
-    vm = PMs.var(pm, n, c, :vm)[i]
+    qloss = _PM.var(pm, n, :qloss)
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        0.0
+    )
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+end
+
+
+"FUNCTION: computing qloss"
+function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j, K, branchMVA)
+
+    qloss = _PM.var(pm, n, :qloss)
+    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
+    vm = _PM.var(pm, n, :vm)[i]
 
     if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
-        println("Warning: DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results")
+        println("WARNING")
+        println("DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.")
+        println()
     end
 
-    JuMP.@constraint(pm.model, qloss[(k,i,j)] == K*vm*i_dc_mag/(3.0*branchMVA)) #K is per phase
-    JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        (K * vm * i_dc_mag) / (3.0 * branchMVA)  # 'K' is per phase
+    )
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
 
 end
-
 

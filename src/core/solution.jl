@@ -1,145 +1,212 @@
-# --- Solutions --- #
+# ===   SOLUTIONS   === #
 
 
-"SOLUTION: get gmd solution"
-function solution_gmd!(pm::PMs.AbstractPowerModel, sol::Dict{String,Any})
+"SOLUTION: add quasi-dc power flow solutions"
+function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
-    PMs.add_setpoint_bus_voltage!(sol, pm)
-    PMs.add_setpoint_generator_power!(sol, pm)
-    PMs.add_setpoint_branch_flow!(sol, pm)
-    PMs.add_setpoint_branch_status!(sol, pm)
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
 
-    add_setpoint_load_demand!(sol, pm)
-    add_setpoint_bus_dc_voltage!(sol, pm)
-    add_setpoint_bus_dc_current_mag!(sol, pm)
-    add_setpoint_load_shed!(sol, pm)
-    add_setpoint_branch_dc_flow!(sol, pm)
-    add_setpoint_bus_qloss!(sol, pm)
+    # GMD Bus
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["gmd_bus"] = pm.data["gmd_bus"]
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "gmd_bus")
+                for (i, gmd_bus) in nw_data["gmd_bus"]
+                    key = gmd_bus["index"]
+                    gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:v_dc][key])
+                end
+            end
+        end
+    end
 
-end
-
-
-"SOLUTION: get gmd decoupled solution"
-function solution_gmd_decoupled!(pm::PMs.AbstractPowerModel, sol::Dict{String,Any})
-
-    PMs.add_setpoint_bus_voltage!(sol, pm)
-    PMs.add_setpoint_generator_power!(sol, pm)
-    PMs.add_setpoint_branch_flow!(sol, pm)
-
-    add_setpoint_bus_qloss!(sol, pm)
-
-end
-
-
-"SOLUTION: get gmd ts solution"
-function solution_gmd_ts!(pm::PMs.AbstractPowerModel, sol::Dict{String,Any})
-
-    PMs.add_setpoint_bus_voltage!(sol, pm)
-    PMs.add_setpoint_generator_power!(sol, pm)
-    PMs.add_setpoint_branch_flow!(sol, pm)
-
-    add_setpoint_load_demand!(sol, pm)
-    add_setpoint_bus_dc_voltage!(sol, pm)
-    add_setpoint_bus_dc_current_mag!(sol, pm)
-    add_setpoint_load_shed!(sol, pm)
-    add_setpoint_branch_dc_flow!(sol, pm)
-    add_setpoint_bus_qloss!(sol, pm)
-
-    add_setpoint_top_oil_rise_steady_state!(sol, pm)
-    add_setpoint_top_oil_rise!(sol, pm)
-    add_setpoint_hotspot_rise_steady_state!(sol, pm)
-    add_setpoint_hotspot_rise!(sol, pm)
-    add_setpoint_hotspot_temperature!(sol, pm)
+    # GMD Branch
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["gmd_branch"] = pm.data["gmd_branch"]
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "gmd_branch")
+                for (i, gmd_branch) in nw_data["gmd_branch"]
+                    if gmd_branch["br_status"] == 0
+                        gmd_branch["gmd_idc"] = 0.0
+                    else
+                        key = (gmd_branch["index"], gmd_branch["f_bus"], gmd_branch["t_bus"])
+                        gmd_branch["gmd_idc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:dc][key])
+                    end
+                end
+            end
+        end
+    end
 
 end
 
 
+"SOLUTION: add PowerModels.jl power flow solutions"
+function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
-# --- Add Setpoints --- #
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
 
+    # Bus
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "bus")
+                for (i, bus) in nw_data["bus"]
+                    add = ["bus_type", "source_id", "index"]
+                    for a in add
+                        bus["$(a)"] = pm.data["bus"]["$(i)"]["$(a)"]
+                    end
+                end
+            end
+        end
+    end
 
-"SETPOINT: add setpoint load demand"
-function add_setpoint_load_demand!(sol, pm::PMs.AbstractPowerModel)
-    mva_base = pm.data["baseMVA"]
-    PMs.add_setpoint!(sol, pm, "load", "pd", :pd; default_value = (item) -> item["pd"]*mva_base)
-    PMs.add_setpoint!(sol, pm, "load", "qd", :qd; default_value = (item) -> item["qd"]*mva_base)
+    # Branch
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "branch")
+                for (i, branch) in nw_data["branch"]
+                    add = ["lo_bus", "source_id", "f_bus", "br_status", "hi_bus", "config", "t_bus", "index", "type"]
+                    for a in add
+                        branch["$(a)"] = pm.data["branch"]["$(i)"]["$(a)"]
+                    end
+                end
+            end
+        end
+    end
+
+    # Gen
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "gen")
+                for (i, gen) in nw_data["gen"]
+                    add = ["gen_bus", "index", "source_id", "gen_status"]
+                    for a in add
+                        gen["$(a)"] = pm.data["gen"]["$(i)"]["$(a)"]
+                    end
+                end
+            end
+        end
+    end
+
 end
 
 
-"SETPOINT: add setpoint bus dc voltage"
-function add_setpoint_bus_dc_voltage!(sol, pm::PMs.AbstractPowerModel)
-    # dc voltage is measured line-neutral not line-line, so divide by sqrt(3)
-    # fields are: solution, power model, dict name, index name, param name, variable symbol
-    # add_setpoint!(sol, pm, "bus", "vm", :vm, status_name="bus_type", inactive_status_value = 4)
-    PMs.add_setpoint!(sol, pm, "gmd_bus", "gmd_vdc", :v_dc, status_name="status", inactive_status_value=0)
+"SOLUTION: add gmd qloss solution"
+function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
+
+    # Branch
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "branch")
+                for (i, branch) in nw_data["branch"]
+                    key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
+                    branch["gmd_qloss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss][key])
+                end
+            end
+        end
+    end
+
 end
 
 
-"SETPOINT: add setpoint bus dc current mag"
-function add_setpoint_bus_dc_current_mag!(sol, pm::PMs.AbstractPowerModel)
-    # PMs.add_setpoint!(sol, pm, "bus", "bus_i", "gmd_idc_mag", :i_dc_mag)
-    PMs.add_setpoint!(sol, pm, "branch", "gmd_idc_mag", :i_dc_mag, status_name="br_status", inactive_status_value=0)
+"SOLUTION: add minimum-load-shed solutions"
+function solution_gmd_mls!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
+
+    # Branch
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "branch")
+                for (i, branch) in nw_data["branch"]
+                    key = (branch["index"])               
+                    branch["gmd_idc_mag"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:i_dc_mag][key])
+                end
+            end
+        end
+    end
+
+    # Load
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "load")
+                for (i, load) in nw_data["load"]
+                    add = ["source_id", "load_bus", "status", "index"]
+                    for a in add
+                        load["$(a)"] = pm.data["load"]["$(i)"]["$(a)"]
+                    end
+                end
+            end
+        end
+    end
+
 end
 
 
-"SETPOINT: add setpoint load shed"
-function add_setpoint_load_shed!(sol, pm::PMs.AbstractPowerModel)
-    PMs.add_setpoint!(sol, pm, "load", "demand_served_ratio", :z_demand)
+"SOLUTION: add transformer temperature solutions"
+function solution_gmd_xfmr_temp!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
+
+    # Branch
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "branch")
+                for (i, branch) in nw_data["branch"]
+                    key = (branch["index"])               
+                    branch["topoil_rise_ss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:ross][key])
+                    branch["topoil_rise"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:ro][key])
+                    branch["hotspot_rise_ss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:hsss][key])
+                    branch["hotspot_rise"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:hs][key])
+                    branch["actual_hotspot"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:hsa][key])
+                end
+            end
+        end
+    end
+
 end
 
 
-"SETPOINT: add setpoint branch dc flow"
-function add_setpoint_branch_dc_flow!(sol, pm::PMs.AbstractPowerModel)
-    #if haskey(pm.setting, "output") && haskey(pm.setting["output"], "line_flows") && pm.setting["output"]["line_flows"] == true
-    PMs.add_setpoint!(sol, pm, "gmd_branch", "gmd_idc", :dc, status_name="br_status", inactive_status_value=0, var_key = (idx,item) -> (idx, item["f_bus"], item["t_bus"]))
-    #end
+"SOLUTION: add demand factor solution"
+function solution_gmd_demand!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
+
+    # Load
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "load")
+                for (i, load) in nw_data["load"]
+                    key = (load["index"])
+                    load["demand_served_ratio"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:z_demand][key])
+                end
+            end
+        end
+    end
+
 end
-
-
-"SETPOINT: add setpoint bus qloss"
-function add_setpoint_bus_qloss!(sol, pm::PMs.AbstractPowerModel)
-    # need to scale by base MVA
-    mva_base = pm.data["baseMVA"]
-    # mva_base = 1.0
-    PMs.add_setpoint!(sol, pm, "branch", "gmd_qloss", :qloss, status_name="br_status", var_key = (idx,item) -> (idx, item["hi_bus"], item["lo_bus"]), scale = (x,item,i) -> x*mva_base)
-end
-
-
-"SETPOINT: current pu to si"
-function current_pu_to_si(x,item,pm)
-    mva_base = pm.data["baseMVA"]
-    kv_base = pm.data["bus"]["1"]["base_kv"]
-    return x*1e3*mva_base/(sqrt(3)*kv_base)
-end
-
-
-"SETPOINT: add setpoint steady-state top-oil temperature rise"
-function add_setpoint_top_oil_rise_steady_state!(sol, pm::PMs.AbstractPowerModel)
-    PMs.add_setpoint!(sol, pm, "branch", "topoil_rise_ss", :ross, status_name="br_status")
-end
-
-
-"SETPOINT: add setpoint top-oil temperature rise"
-function add_setpoint_top_oil_rise!(sol, pm::PMs.AbstractPowerModel)
-    PMs.add_setpoint!(sol, pm, "branch", "topoil_rise", :ro, status_name="br_status")
-end
-
-
-"SETPOINT: add setpoint steady-state hot-spot temperature rise"
-function add_setpoint_hotspot_rise_steady_state!(sol, pm::PMs.AbstractPowerModel)
-    PMs.add_setpoint!(sol, pm, "branch", "hotspot_rise_ss", :hsss, status_name="br_status")
-end
-
-
-"SETPOINT: add setpoint hot-spot temperature rise"
-function add_setpoint_hotspot_rise!(sol, pm::PMs.AbstractPowerModel)
-    PMs.add_setpoint!(sol, pm, "branch", "hotspot_rise", :hs, status_name="br_status")
-end
-
-
-"SETPOINT: add setpoint hot-spot temperature"
-function add_setpoint_hotspot_temperature!(sol, pm::PMs.AbstractPowerModel)
-    PMs.add_setpoint!(sol, pm, "branch", "hotspot", :hsa, status_name="br_status")
-end
-
 

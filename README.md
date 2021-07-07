@@ -1,52 +1,44 @@
 # PowerModelsGMD.jl
 
-<!--
-<img src="https://..." align="left" width="200" alt="PowerModelsGMD logo">
--->
+PowerModelsGMD (PMsGMD) is an open-source [Julia](https://julialang.org/) package - an extension to the [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation - which was specifically designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (GMDs) and E3 high-altitude electromagnetic pulse (HEMP) events on the electrical grid.
 
-Release: 
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/stable/)
+Due to its open-source nature, it is easy to verify and customize its operation to best fit the application circumstances. Due to its speed and reliability, it is suitable to be a key component of toolkits that monitor GMD manifestations in real-time, that predict GICs on the electrical grid, that assess risk, that enhance grid resilience by providing aid to system-operators, and that recommend modifications in the network configuration.
+Consequently, PMsGMD is equally useful for both research and industry application.
 
 
-Dev:
-[![Build Status](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl.svg?branch=master)](https://travis-ci.org/lanl-ansi/PowerModelsGMD.jl)
-<!--
-[![codecov](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl)
-[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/latest/)
-</p>
--->
 
-PowerModelsGMD.jl (abbr. PMsGMD) is an open-source framework that provides extensions to [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) (abbr. PMs) for power system simulation, to evaluate the risks and mitigate the potential effects of Geomagnetic Disturbances (GMDs) and E3 High-altitude Electromagnetic Pulse (E3 HEMP) events on the power grid.
+## PMsGMD Dependencies
 
-PMsGMD solves for quasi-dc line flow and ac power flow on a network subjected to Geomagnetically Induced Currents (GICs). It solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
-Since it is open-source, it is easy to study, verify and customize its operation to best fit an application environment. Due to its speed and reliability, it is suitable to be a key component of frameworks that monitor GMD manifestations in real-time, that predict GICs on the power grid, that assess risk, that enhance reliability by providing aid to system-operators, and that recommend modifications in the network configuration.
-Thus, PMsGMD is equally useful for research and industry application.
+PMsGMD builds on the following Julia packages: [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.18.0 and [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.6.0.
+In addition, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21, and [Memento](https://github.com/invenia/Memento.jl) v1.2.
 
 
 
 ## Core Problem Specifications
 
+PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (GIC). It also solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
+
+Currently the following common industry and academic specifications have been implemented:
 * GIC DC: quasi-dc power flow
-* GIC -> AC - OPF: sequential quasi-dc power flow and ac optimal power flow
-* GIC + AC - OPF: ac optimal power flow coupled with a quasi-dc power flow
-* GIC + AC - MLS: ac minimum-load-shed coupled with a quasi-dc power flow
-* GIC + AC - OTS: ac optimal transmission switching with load shed coupled with a quasi-dc power flow
+* GIC AC-OPF: ac optimal power flow with sequential/coupled quasi-dc power flow
+* GIC AC-OPF-TS: multi-time-series ac optimal power flow with sequential/coupled quasi-dc power flow
+* GIC AC-MLS: ac minimum loadshed with sequential/coupled quasi-dc power flow
+* GIC AC-OTS: ac optimal transmission switching with minimum loadshed coupled with a quasi-dc power flow
+* GIC AC-OTS-TS: multi-time-series ac optimal transmission switching with minimum loadshed coupled with a quasi-dc power flow
+
+Testing of implemented specifications was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v0.7.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.7.0.
+Alternatively, [Cbc](https://github.com/jump-dev/Cbc.jl) and [SCS](https://github.com/jump-dev/SCS.jl) solvers are supported as well.
 
 
 
 ## Installation
 
-Prerequisite:
-To use PMsGMD, the installation of PMs is required. Follow instructions [here](https://github.com/lanl-ansi/PowerModels.jl).
-
-
-Installation:
-From the Julia package manager REPL type
+After the installation of its dependencies, PMsGMD can be installed from the Julia package manager:
 ```
 add https://github.com/lanl-ansi/PowerModelsGMD.jl.git
 ```
 
-Testing:
+To verify that all implemented specifications work as designed, test PMsGMD:
 ```
 test PowerModelsGMD
 ```
@@ -55,76 +47,154 @@ test PowerModelsGMD
 
 ## Quick Start
 
-The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers on the system.
-
+The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers throughout the system.
+For example:
 ```
-using PowerModels; using PowerModelsGMD; using Ipopt
+using PowerModels, PowerModelsGMD, Ipopt
+
 network_file = joinpath(dirname(pathof(PowerModelsGMD)), "../test/data/epri21.m")
 case = PowerModels.parse_file(network_file)
+solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
 
-optimizer = with_optimizer(Ipopt.Optimizer)
-result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, optimizer)
+result = PowerModelsGMD.run_ac_gmd_opf_decoupled(case, solver)
 ```
 
 
 
-## Function Reference
-<!-- 
-1) check that the test datasets correspond to those used in the test cases
--->
+## Problem Specification Reference
 
 
 ### GIC DC
 
 Solves for steady-state dc currents on lines resulting from induced dc voltages on lines.
-`run_gmd("test/data/b4gic.m", optimizer)`
+For example:
+```
+run_gmd("test/data/b4gic.m", solver)
+```
 
-For large systems (greater than 10,000 buses), the Lehtinen-Pirjola (LP) method may be used that relies on a matrix solve instead of an optimizer.
-This may called by omitting the optimizer parameter
-`run_gmd("test/data/b4gic.m")`
+For large systems (greater than 10,000 buses), the Lehtinen-Pirjola method may be used, which relies on a matrix solve instead of an optimizer.
+This may called by omitting the solver parameter:
+```
+run_gmd("test/data/b4gic.m")
+```
 
-To save branch currents in addition to bus voltages
+To save branch currents in addition to bus voltages:
 ```
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
-run_gmd("test/data/b4gic.m", optimizer, setting=setting)
+run_gmd("test/data/b4gic.m", solver; setting)
 ```
 
 
-### GIC -> AC-OPF
+### GIC AC-OPF
 
-Solves for the quasi-dc voltages and currents, and uses the calculated quasi-dc currents through transformer windings as inputs to an AC-OPF to calculate the increase in transformer reactive power consumption.
-`run_ac_gmd_opf_decoupled("test/data/b4gic.m")`
+#### GIC -> AC-OPF
+
+Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-OPF optimal power flow specification in order to calculate the increase in transformer reactive power consumption.
+For example:
+```
+run_ac_gmd_opf_decoupled(case, solver)
+```
+
+#### GIC + AC-OPF
+
+Solves the quasi-dc voltages and currents plus the AC-OPF optimal power flow specification concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
+For example:
+```
+run_ac_gmd_opf(case, solver)
+```
+
+It is advised to adjust qloss in the results:
+```
+adjust_gmd_qloss(case, solution)
+```
+
+This specification has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages. Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
 
 
-### GIC + AC-OPF
+### GIC AC-OPF-TS
 
-Solves the quasi-dc voltages and currents and the AC-OPF concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
-`run_ac_gmd_opf("test/data/b4gic.m")`
+#### GIC -> AC-OPF-TS
 
-This formulation has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages.
-Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
+Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to a multi-time-series AC-OPF optimal power flow specification in order to calculate the increase in transformer reactive power consumption.
+For example:
+```
+run_ac_gmd_opf_ts_decoupled(case, solver, waveform)
+```
+
+The implemented thermal model is disabled by default. To enable thermal calculations and display of results, the `disable_thermal` optional argument can be used.
+For example:
+```
+run_ac_gmd_opf_ts_decoupled(case, solver, waveform; setting, disable_thermal=false)
+```
+
+#### GIC + AC-OPF-TS
+
+Solves the quasi-dc voltages and currents plus the multi-time-series AC-OPF optimal power flow specification concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
+For example:
+```
+run_ac_gmd_opf_ts(multinetworkcase, solver)
+```
 
 
-### GIC + AC-MLS
+### GIC AC-MLS
 
-Solve the minimum-load shedding problem for a network subjected to GIC with fixed topology.
-`run_ac_gmd_ml("test/data/case24_ieee_rts_0.m")`
+#### GIC -> AC-MLS
+
+Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLS minimum loadshedding specification in order to calculate the increase in transformer reactive power consumption. The network topology is fixed.
+For example:
+```
+run_ac_gmd_mls_decoupled(case, solver)
+```
+
+Additionally, the decoupled AC-MLS minimum loadshedding specification was implemented as a decoupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
+For example:
+```
+run_soc_gmd_mld_decoupled(case, solver)
+```
+
+#### GIC + AC-MLS
+
+Solves the quasi-dc voltages and currents plus the AC-MLS minimum loadshedding specification concurrently. The network topology is fixed.
+For example:
+```
+run_ac_gmd_mls(case, solver)
+```
+
+Additionally, the sequential AC-MLS minimum loadshedding specification was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
+For example:
+```
+run_soc_gmd_mld(case, solver)
+```
 
 
-### GIC + AC-OTS
+### GIC AC-OTS
 
-Solve the minimum-load shedding problem for a network subjected to GIC where lines and transformers can be opened or closed.
-`run_ac_gmd_ots("test/data/ots_test.m")`
+#### GIC + AC-OTS
 
-Mitigating transformer overheating is achieved by treating the problem as an optimal transmission switching formulation.
-However, actual observed GMDs show time-varying behavior in ground electric fields both in magnitude and direction, which could cause different transformer heating than observed in the field peak magnitude.  
-Thus, the problem is extended to a multi-time-series formulation as well, in which the physics of transformer heating over time are modeled and used to inform a new optimization model that mitigates the effects of heating in terms of the thermal degradation of the transformer winding insulation.
+Solves the AC-MLS minimum loadshedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
+For example:
+```
+run_ac_gmd_mls_ots(case, solver)
+```
+
+
+### GIC AC-OTS-TS
+
+#### GIC + AC-OTS-TS
+
+Solves the multi-time-series AC-MLS minimum loadshedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
+For example:
+```
+run_ac_gmd_mls_ots_ts(multinetworkcase, solver)
+```
+
+Actual observed GMDs show time-varying behavior in ground electric fields both in magnitude and direction. This could cause different transformer heating than observed in the field peak magnitude. Consequently, the GIC AC-OTS specification need to be extended to a multi-time-series specification as well, in which the physics of transformer heating over time are modeled and used to inform a new optimization model that mitigates the effects of heating in terms of the thermal degradation of the transformer winding insulation.
 
 
 
 ## Data Reference
 
-PMsGMD uses several extensions to the PMs data format to provide input for its problem formulations.
+PMsGMD uses several extensions to the PMs data format to provide input for its problem specifications.
 For generality, it uses a separate dc network defined by the `gmd_bus` and `gmd_branch` tables.
 To correctly calculate the increased reactive power consumption of each transformer, the `branch_gmd` table adds all winding configuration related data. Furthermore, `branch_thermal` table adds thermal data necessary to determine the temperature changes in transformers.
 The `bus_gmd` table includes the latitude and longitude of buses in the ac network for use in distributionally robust optimization or for convenience in plotting the network.
@@ -162,7 +232,7 @@ This table includes
 * `br_status` - binary value that defines the status of branch (1: enabled, 0: disabled)
 * `br_r` - branch resistance (in unit of Ohms)
 * `br_v` - induced quasi-dc voltage (in unit of Volts)
-* `len_km` - length of branch (in unit of km) -- not required
+* `len_km` - length of branch (in unit of km) -- optional
 * `name` - a descriptive name for the branch
 
 ```
@@ -186,8 +256,8 @@ This table includes
 * `gmd_br_series` - index of gmd branch corresponding to series winding (for auto-transformers)
 * `gmd_br_common` - index of gmd branch corresponding to common winding (for auto-transformers)
 * `baseMVA` - MVA base of transformer
-* `type` - type of branch -- "xfmr" / "transformer, "line", or "series_cap"
-* `config` - winding configuration of transformer -- currently "gwye-gwye", "gwye-delta", "delta-delta", and "gwye-gwye-auto" are supported
+* `type` - type of branch -- "xfmr" / "transformer", "line", or "series_cap"
+* `config` - winding configuration of transformer -- currently "delta-delta", "delta-wye", "wye-delta", "wye-wye", "delta-gwye", "gwye-delta", "gwye-gwye", and "gwye-gwye-auto" are supported
 
 ```
 %column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
@@ -211,7 +281,7 @@ This table includes
 * `topoil_rated` - top-oil temperature-rise of transformer at rated power (in unit of Celsius)
 * `topoil_init` - initial top-oil temperature of transformer (in unit of Celsius)
 * `topoil_initialized` - binary value that defines the initial top-oil temperature of transformer (1: temperature starts with `topoil_init` value, 0: temperature starts with steady-state value)
-* `hotspot_coeff` - relationship of hot-spot temperature rise to Ieff (in unit of Celsius/amp)
+* `hotspot_coeff` - relationship of hot-spot temperature rise to Ieff (in unit of Celsius/Amp)
 
 ```
 %column_names% xfmr temperature_ambient hotspot_instant_limit hotspot_avg_limit hotspot_rated
@@ -242,57 +312,45 @@ mpc.bus_gmd = {
 
 
 
-## Contributors
+## Acknowledgments
 
-In alphabetical order:
-* Art Barnes (@bluejuniper): Decoupled model
-* Russell Bent (@rb004f): ML and OTS implementation
-* Carleton Coffrin (@ccoffrin): Architecture
-* David Fobes (@pseudocubic): Architecture
-* Adam Mate (@adammate): Decoupled time-extended model, [RTS-GMLC](https://github.com/GridMod/RTS-GMLC) integration
+This code has been developed as part of the [Advanced Network Science Initiative](https://github.com/lanl-ansi) at Los Alamos National Laboratory.
+The primary developers are [Arthur Barnes](https://github.com/bluejuniper) and [Adam Mate](https://github.com/adammate) with significant contributions from:
+* [Russell Bent](https://github.com/rb004f)
+* [Carleton Coffrin](https://github.com/ccoffrin)
+* [David Fobes](https://github.com/pseudocubic)
 
-Acknowledgments:
-The authors are grateful for Mowen Lu for developing the ML and OTS problem specifications, and for Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
-
-This code has been developed as part of the Advanced Network Science Initiative at Los Alamos National Laboratory.
-
+Special thanks to 
+Mowen Lu for developing- and Russell Bent for implementing the MLS and OTS problem specifications, which are used in the GIC AC-OPF and GIC AC-MLS problem specifications; to
+Carleton Coffrin for developing and implementing the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification, which is used in the GIC AC-MLS problem specification; and to
+Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver.
 
 
-## Citing PMsGMD
+### Development
 
-If you find PMsGMD useful in your work, we kindly request that you cite the following publication: <!-- [publication](https://ieeexplore.ieee.org/document/...): -->
+Community-driven development and enhancement of PMsGMD are welcome and encouraged.
+Please feel free to fork this repository and share your contributions to the master branch with a pull request.
+
+
+### Citing PMsGMD
+
+If you find PMsGMD useful in your work, we kindly request that you cite the following [publication](https://arxiv.org/abs/2101.05042):
 ```
-@inproceedings{[under review], 
-  author = {Adam Mate and Arthur Barnes and Russell Bent and Eduardo Cotilla-Sanchez}, 
-  title = {Analyzing and Mitigating the Impact of GMD and EMP Events on the Power Grid with PMsGMD}, 
-  booktitle = {2020 Power Systems Computation Conference (PSCC)}, 
-  year = {2020},
-  month = {...},
-  pages = {...}, 
+@Misc{pmsgmd,
+    author = {A. {Mate} and A. K. {Barnes} and R. W. {Bent} and E. {Cotilla-Sanchez}},
+    title = {{Analyzing and Mitigating the Impacts of GMD and EMP Events on the Electrical Grid with PowerModelsGMD.jl}},
+    year = {2021},
+    month = {Jan.},
+    pages = {1--9},
+    archivePrefix = {arXiv},
+    primaryClass = {eess.SY},    
+    eprint = {2101.05042},
+    note = {\url{https://arxiv.org/abs/2101.05042}. LA-UR-19-29623},
 }
 ```
-
-<!--
-Citation of the following publication is also encouraged when publishing works that rely on and utilize the time-extended mitigation capabilities of PMsGMD:
-```
-@article{..., 
-  author = {Adam Mate and Arthur Barnes and Russell Bent and Eduardo Cotilla-Sanchez}, 
-  title = {Time-Extended GMD Mitigation with PMsGMD}, 
-  journal = {...}, 
-  year = {...},
-  month = {...},
-  volume = {...},
-  number = {...}, 
-  pages = {...}, 
-  doi = {...}
-}
-```
--->
 
 
 
 ## License
 
-This code is provided under a BSD license as part of the Multi-Infrastructure Control and Optimization Toolkit (MICOT) project, LA-CC-13-108.
-
-
+This code is provided under a [BSD license](https://github.com/lanl-ansi/PowerModelsGMD.jl/blob/master/LICENSE.md) as part of the Multi-Infrastructure Control and Optimization Toolkit (MICOT) project, LA-CC-13-108.

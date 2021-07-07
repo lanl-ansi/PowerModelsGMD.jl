@@ -1,33 +1,38 @@
 export run_gmd
 
 
-"FUNCTION: run GIC current model only"
-function run_gmd(data, optimizer; kwargs...)
-    return PMs.run_model(data, PMs.ACPPowerModel, optimizer, post_gmd; ref_extensions=[ref_add_core!], solution_builder = solution_gmd!, kwargs...)
+"FUNCTION: run GIC current model"
+function run_gmd(file, optimizer; kwargs...)
+    return _PM.run_model(
+        file,
+        _PM.ACPPowerModel,
+        optimizer,
+        build_gmd;
+        ref_extensions = [
+            ref_add_gmd!
+        ],
+        solution_processors = [
+            solution_gmd!
+        ],
+        kwargs...,
+    )
 end
 
 
-"FUNCTION: post problem corresponding to the dc gic problem this is a linear constraint satisfaction problem"
-function post_gmd(pm::PMs.AbstractPowerModel; kwargs...)
-
-    # -- Variables -- #
+"FUNCTION: build the quasi-dc power flow problem
+as a linear constraint satisfaction problem"
+function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
 
     variable_dc_voltage(pm)
     variable_dc_line_flow(pm)
 
-    # -- Constraints -- #
-
-    # - DC network - #
-
-    for i in PMs.ids(pm, :gmd_bus)
-        Memento.debug(LOGGER, "Adding constraits for bus $i")
-        constraint_dc_kcl_shunt(pm, i)
+    for i in _PM.ids(pm, :gmd_bus)
+        constraint_dc_power_balance_shunt(pm, i)
     end
 
-    for i in PMs.ids(pm, :gmd_branch)
+    for i in _PM.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
 
 end
-
 
