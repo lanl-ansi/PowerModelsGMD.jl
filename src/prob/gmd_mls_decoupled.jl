@@ -226,6 +226,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 
     # _PM.variable_load_power_factor(pm, relax=true)
     # _PM.variable_shunt_admittance_factor(pm, relax=true)
+    # TODO: Should I use a single variable for both load and shunt shedding???
     variable_block_shunt_admittance_factor(pm, relax=true)
     variable_block_demand_factor(pm, relax=true)
 
