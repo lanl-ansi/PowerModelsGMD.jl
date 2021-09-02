@@ -180,11 +180,14 @@ end
 
 "FUNCTION: computing the dc current magnitude"
 function dc_current_mag(branch, case, solution)
+    k = branch["index"]
 
     branch["ieff"] = 0.0
-    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
+    if branch["transformer"] == 0 
         dc_current_mag_line(branch, case, solution)
-
+    elseif !("config" in keys(branch))
+        Memento.warn(_LOGGER, "No winding configuration for transformer $k, treating as line")
+        dc_current_mag_line(branch, case, solution)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
         println("UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
         dc_current_mag_grounded_xf(branch, case, solution)
@@ -220,11 +223,16 @@ end
 
 "FUNCTION: dc current on ungrounded gwye-delta transformers"
 function dc_current_mag_gwye_delta_xf(branch, case, solution)
+    k = branch["index"]
 
     khi = branch["gmd_br_hi"]
 
-    branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
-
+    if khi == -1 || khi === nothing
+        Memento.warn(_LOGGER, "khi for gwye-delta transformer $k is -1")
+        branch["ieff"] = 0.0
+    else
+        branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+    end
 end
 
 
@@ -234,8 +242,21 @@ function dc_current_mag_gwye_gwye_xf(branch, case, solution)
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
-    ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
-    ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+
+    ihi = 0.0
+    ilo = 0.0
+
+    if khi == -1 || khi === nothing
+        Memento.warn(_LOGGER, "khi for gwye-gwye transformer $k is -1")
+    else
+        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    end
+
+    if klo == -1 || klo === nothing
+        Memento.warn(_LOGGER, "klo for gwye-gwye transformer $k is -1")
+    else
+        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+    end
 
     jfr = branch["f_bus"]
     jto = branch["t_bus"]
@@ -250,11 +271,25 @@ end
 
 "FUNCTION: dc current on ungrounded gwye-gwye auto transformers"
 function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
-
+    k = branch["index"]
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
-    is = solution["gmd_branch"]["$ks"]["gmd_idc"]
-    ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+
+    is = 0.0
+    ic = 0.0
+
+    if ks == -1 || ks === nothing
+        Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
+    else
+        is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+    end
+
+    if kc == -1 || kc === nothing
+        Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
+    else
+        ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+    end
+
     ihi = -is
     ilo = ic + is
 
@@ -276,9 +311,28 @@ function dc_current_mag_3w_xf(branch, case, solution)
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
     kter = branch["gmd_br_ter"]
-    ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
-    ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
-    iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
+
+    ihi = 0.0
+    ilo = 0.0
+    iter = 0.0
+
+    if khi == -1 || khi === nothing
+        Memento.warn(_LOGGER, "khi for three-winding transformer $k is -1")
+    else
+        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    end
+
+    if klo == -1 || klo === nothing
+        Memento.warn(_LOGGER, "klo for three-winding transformer $k is -1")
+    else
+        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+    end
+
+    if kter == -1 || kter === nothing
+        Memento.warn(_LOGGER, "kter for three-winding transformer $k is -1")
+    else
+        iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
+    end
 
     jfr = branch["source_id"][1]
     jto = branch["source_id"][2]
@@ -436,7 +490,15 @@ function adjust_gmd_qloss(case::Dict{String,Any}, solution::Dict{String,Any})
             continue
         end
 
-        if br["f_bus"] == br["hi_bus"]
+        if br_soln["gmd_qloss"] === nothing
+            continue
+        end
+
+        if !("hi_bus" in keys(br))
+            continue
+        end
+
+        if  br["f_bus"] == br["hi_bus"]
             br_soln["qf"] += br_soln["gmd_qloss"]
         else
             br_soln["qt"] += br_soln["gmd_qloss"]

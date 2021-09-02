@@ -73,7 +73,11 @@ function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
                 for (i, branch) in nw_data["branch"]
                     add = ["lo_bus", "source_id", "f_bus", "br_status", "hi_bus", "config", "t_bus", "index", "type"]
                     for a in add
-                        branch["$(a)"] = pm.data["branch"]["$(i)"]["$(a)"]
+                        if "$(a)" in keys(pm.data["branch"]["$(i)"])
+                            branch["$(a)"] = pm.data["branch"]["$(i)"]["$(a)"]
+                        else
+                            branch["$(a)"] = nothing
+                        end
                     end
                 end
             end
@@ -111,8 +115,18 @@ function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,A
         for (n, nw_data) in nws_data
             if haskey(nw_data, "branch")
                 for (i, branch) in nw_data["branch"]
-                    key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
-                    branch["gmd_qloss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss][key])
+                    if "hi_bus" in keys(branch) && "lo_bus" in keys(branch)
+                        key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
+
+                        if key in keys(JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss]))
+                            branch["gmd_qloss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss][key])
+                        else
+                            Memento.warn(_LOGGER, "Qloss key $key not found, setting qloss for branch to zero")
+                            branch["gmd_qloss"] = 0.0
+                        end
+                    else
+                        branch["gmd_qloss"] = 0.0
+                    end
                 end
             end
         end

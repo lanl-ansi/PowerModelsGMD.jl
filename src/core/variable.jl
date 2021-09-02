@@ -649,12 +649,22 @@ function variable_block_shunt_admittance_factor(pm::_PM.AbstractPowerModel; nw::
 
     _PM.var(pm, nw)[:z_shunt] = Dict(g => z_shunt[1] for g in _PM.ids(pm, nw, :shunt))
 
+    wz_shunt = _PM.var(pm, nw)[:wz_shunt] = JuMP.@variable(pm.model,
+    [1], base_name="$(nw)_wz_shunt",
+    lower_bound = 0,
+    upper_bound = 1.1,
+    start = 1.001
+    )
+
+    _PM.var(pm, nw)[:wz_shunt] = Dict(g => wz_shunt[1] for g in _PM.ids(pm, nw, :shunt))
+
     if report
+        # TODO: will this fail if there are no shunts in the system?
         # _IM.sol_component_value(pm, nw, :shunt, :status, ids(pm, nw, :shunt), z_shunt)
         _PM.sol_component_value(pm, nw, :load, :shunt, _PM.ids(pm, nw, :shunt), _PM.var(pm, nw)[:z_shunt])
-        sol_gs = Dict(i => z_shunt[i]*_PM.ref(pm, nw, :shunt, i)["gs"] for i in _PM.ids(pm, nw, :shunt))
+        sol_gs = Dict(i => z_shunt[1]*_PM.ref(pm, nw, :shunt, i)["gs"] for i in _PM.ids(pm, nw, :shunt))
         _PM.sol_component_value(pm, nw, :shunt, :gs, _PM.ids(pm, nw, :shunt), sol_gs)
-        sol_bs = Dict(i => z_shunt[i]*_PM.ref(pm, nw, :shunt, i)["bs"] for i in _PM.ids(pm, nw, :shunt))
+        sol_bs = Dict(i => z_shunt[1]*_PM.ref(pm, nw, :shunt, i)["bs"] for i in _PM.ids(pm, nw, :shunt))
         _PM.sol_component_value(pm, nw, :shunt, :bs, _PM.ids(pm, nw, :shunt), sol_bs)
     end
 end

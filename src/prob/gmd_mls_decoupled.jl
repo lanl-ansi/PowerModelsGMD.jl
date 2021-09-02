@@ -198,7 +198,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        constraint_qloss_decoupled_vnom(pm, i)  
+        constraint_qloss_decoupled(pm, i)  
     end
 
     for i in _PM.ids(pm, :dcline)

@@ -17,6 +17,7 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         nw_id = parse(Int, n)
         nw_ref = ref[:it][pm_it_sym][:nw][nw_id]
 
+        # println(nw_ref[:gmd_bus])
         nw_ref[:gmd_bus] = Dict(x for x in nw_ref[:gmd_bus] if x.second["status"] != 0)
         nw_ref[:gmd_branch] = Dict(x for x in nw_ref[:gmd_branch] if x.second["br_status"] != 0)
 
