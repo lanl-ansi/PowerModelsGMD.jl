@@ -208,6 +208,56 @@ function dc_current_mag(branch, case, solution)
 
 end
 
+"CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
+function qloss_decoupled_vnom(case)
+    for (_, bus) in case["bus"]
+        bus["qloss"] = 0.0
+    end
+
+    for (k, branch) in case["branch"]
+        Smax = 1000
+        branchMVA = min(get(branch, "rate_a", Smax), Smax)
+        # using hi/lo bus shouldn't be an issue because qloss is defined in arcs going in both directions
+
+        if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
+            Memento.warn(_LOGGER, "Branch $k is missing hi bus/lo bus")
+            return
+        end
+
+        i = branch["hi_bus"]
+        j = branch["lo_bus"]
+
+        bus = case["bus"]["$i"]
+
+        if branch["br_status"] == 0 
+            return
+        end
+
+        if "gmd_k" in keys(branch)
+            ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
+            K = (branch["gmd_k"] * case["baseMVA"]) / (ibase)
+            ieff = branch["ieff"]
+            qloss = (K * ieff) / (3.0 * branchMVA)
+            bus["qloss"] += qloss
+        end
+    end
+
+
+    for (_, bus) in case["bus"]
+        if bus["qloss"] >= 1e-3
+            n = length(case["load"])
+
+            load = Dict()
+            load["source_id"] = ["qloss", bus["index"]]
+            load["load_bus"] = bus["index"]
+            load["status"] = 1
+            load["pd"] = 0
+            load["qd"] = bus["qloss"]
+            load["index"] = n + 1
+            case["load"]["$(n + 1)"] = load
+        end
+    end
+end
 
 "FUNCTION: dc current on normal lines"
 function dc_current_mag_line(branch, case, solution)

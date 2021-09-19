@@ -198,7 +198,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        constraint_qloss_decoupled(pm, i)  
+        # constraint_qloss_decoupled_vnom(pm, i)  
     end
 
     for i in _PM.ids(pm, :dcline)
@@ -256,7 +256,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        constraint_qloss_decoupled_vnom(pm, i)  
+        # constraint_qloss_decoupled_vnom(pm, i)  
     end
 
     for i in _PM.ids(pm, :dcline)
@@ -396,6 +396,7 @@ function run_gmd_mld_decoupled(dc_case::Dict{String,Any}, model_type, optimizer;
         dc_current_mag(branch, ac_case, dc_solution)
     end
     
+    PowerModelsGMD.qloss_decoupled_vnom(ac_case)
     ac_result = run_gmd_mld_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
     ac_solution = ac_result["solution"]
     adjust_gmd_qloss(ac_case, ac_solution)
@@ -438,6 +439,7 @@ function run_gmd_cascade_mld_decoupled(dc_case::Dict{String,Any}, model_type, op
         dc_current_mag(branch, ac_case, dc_solution)
     end
     
+    PowerModelsGMD.qloss_decoupled_vnom(ac_case)
     ac_result = run_gmd_cascade_mld_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
     ac_solution = ac_result["solution"]
     adjust_gmd_qloss(ac_case, ac_solution)
