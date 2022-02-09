@@ -23,13 +23,12 @@ Memento.setlevel!(TESTLOG, "error")
 import Cbc
 import Ipopt
 import Juniper
-import SCS
+import PowerModelsRestoration
 
 # Default setup for optimizers:
 cbc_solver = JuMP.optimizer_with_attributes(Cbc.Optimizer, "logLevel"=>0)
 ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-6, "print_level"=>0)
 juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>PowerModels.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-4, "print_level"=>0), "log_levels"=>[])
-scs_solver = JuMP.optimizer_with_attributes(SCS.Optimizer, "max_iters"=>100000, "eps"=>1e-5, "verbose"=>0)
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
 

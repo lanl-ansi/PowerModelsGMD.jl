@@ -373,6 +373,41 @@ function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=
 
 end
 
+"CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
+function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch = _PM.ref(pm, nw, :branch, k)
+    Smax = 1000
+    branchMVA = min(get(branch, "rate_a", Smax), Smax)
+    # using hi/lo bus shouldn't be an issue because qloss is defined in arcs going in both directions
+
+    if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
+        Memento.warn(_LOGGER, "Branch $k is missing hi bus/lo bus")
+        return
+    end
+
+    i = branch["hi_bus"]
+    j = branch["lo_bus"]
+
+    bus = _PM.ref(pm, nw, :bus, i)
+
+    if branch["br_status"] == 0 
+        return
+    end
+
+    if "gmd_k" in keys(branch)
+        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
+        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
+        ieff = branch["ieff"]
+
+        constraint_qloss_decoupled_vnom_mld(pm, nw, k, i, j, K, ieff, branchMVA)
+
+    else
+        constraint_zero_qloss(pm, nw, k, i, j)
+    end
+
+end
+
 
 "CONSTRAINT: computing qloss accounting for ac voltage"
 function constraint_qloss_decoupled(pm::_PM.AbstractPowerModel, n::Int, k, i, j, ih, K, ieff, branchMVA)
@@ -396,6 +431,24 @@ end
 
 "CONSTRAINT: computing qloss assuming 1.0 pu ac voltage"
 function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, ieff, branchMVA)
+
+    qloss = _PM.var(pm, n, :qloss)
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        (K * ieff) / (3.0 * branchMVA)  # 'K' is per phase
+    )
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+end
+
+"CONSTRAINT: computing qloss assuming 1.0 pu ac voltage"
+function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, ieff, branchMVA)
 
     qloss = _PM.var(pm, n, :qloss)
     z_voltage = _PM.var(pm, n, :z_voltage)
