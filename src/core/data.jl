@@ -247,7 +247,7 @@ function qloss_decoupled_vnom(case)
         if bus["qloss"] >= 1e-3
             n = length(case["load"])
 
-            load = Dict()
+            load = Dict{String, Any}()
             load["source_id"] = ["qloss", bus["index"]]
             load["load_bus"] = bus["index"]
             load["status"] = 1
