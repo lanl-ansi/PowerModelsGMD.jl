@@ -113,21 +113,29 @@ function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,A
     # Branch
     for (nw_id, nw_ref) in nws(pm)
         for (n, nw_data) in nws_data
-            if haskey(nw_data, "branch")
-                for (i, branch) in nw_data["branch"]
-                    if "hi_bus" in keys(branch) && "lo_bus" in keys(branch)
-                        key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
+            if !haskey(nw_data, "branch")
+                continue
+            end
 
-                        if key in keys(JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss]))
-                            branch["gmd_qloss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss][key])
-                        else
-                            Memento.warn(_LOGGER, "Qloss key $key not found, setting qloss for branch to zero")
-                            branch["gmd_qloss"] = 0.0
-                        end
-                    else
-                        branch["gmd_qloss"] = 0.0
-                    end
+            for (i, branch) in nw_data["branch"]
+                branch["gmd_qloss"] = 0.0
+
+                if !("hi_bus" in keys(branch) && "lo_bus" in keys(branch))
+                    continue
                 end
+
+                key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
+
+                if !(:qloss in keys(pm.var[:it][pm_it_sym][:nw][0]))
+                    continue
+                end
+
+                if !(key in keys(JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss])))
+                    Memento.warn(_LOGGER, "Qloss key $key not found, setting qloss for branch to zero")
+                    continue
+                end
+                
+                branch["gmd_qloss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss][key])
             end
         end
     end

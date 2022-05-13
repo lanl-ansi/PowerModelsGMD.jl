@@ -281,9 +281,7 @@ function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, K, branchMVA
     vm = _PM.var(pm, n, :vm)[i]
 
     if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
-        println("WARNING")
-        println("DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.")
-        println()
+        Memento.warn(_LOGGER, "DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.")
     end
 
     JuMP.@constraint(pm.model,

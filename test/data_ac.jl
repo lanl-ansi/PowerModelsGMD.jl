@@ -43,7 +43,7 @@
 
         result = _PM.run_ac_opf(case_uiuc150, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 1279501.0573; atol=1e2)
+        @test isapprox(result["objective"], 803609.8084; atol=1e2)
 
     end
 

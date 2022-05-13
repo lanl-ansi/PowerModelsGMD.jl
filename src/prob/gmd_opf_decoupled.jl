@@ -102,7 +102,7 @@ end
 "FUNCTION: run the quasi-dc power flow problem followed by the ac-opf problem with qloss constraints"
 function run_ac_gmd_opf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
-    return run_ac_gmd_opf_decoupled(data, _PM.ACPPowerModel, optimizer; kwargs...)
+    return run_ac_gmd_opf_decoupled(data, optimizer; kwargs...)
 end
 
 function run_ac_gmd_opf_decoupled(case::Dict{String,Any}, optimizer; setting=Dict(), kwargs...)
@@ -132,7 +132,9 @@ function run_gmd_opf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer;
         dc_current_mag(branch, ac_case, dc_solution)
     end
 
-    ac_result = run_opf_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
+    PowerModelsGMD.qloss_decoupled_vnom(ac_case)
+    # ac_result = run_opf_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
+    ac_result = _PM.run_opf(ac_case, model_type, optimizer, setting=setting)
     ac_solution = ac_result["solution"]
     adjust_gmd_qloss(ac_case, ac_solution)
 

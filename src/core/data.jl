@@ -238,7 +238,7 @@ function qloss_decoupled_vnom(case)
             K = (branch["gmd_k"] * case["baseMVA"]) / (ibase)
             ieff = branch["ieff"]
             qloss = (K * ieff) / (3.0 * branchMVA)
-            bus["qloss"] += qloss
+            bus["qloss"] += qloss/case["baseMVA"]
         end
     end
 

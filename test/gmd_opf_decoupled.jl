@@ -7,7 +7,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_b4gic, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 116456.6409; atol = 1e2)
+        @test isapprox(result["ac"]["result"]["objective"], 116456.6409; atol = 1e3)
 
         # - DC solution - %
 
@@ -24,7 +24,7 @@
         @test isapprox(ac_solution["bus"]["1"]["vm"], 1.0978, atol=1e-1)
 
         @test isapprox(ac_solution["branch"]["3"]["pf"], -10.0551, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["3"]["qf"], -3.8517, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["3"]["qf"], -16.0624, atol=1e-1)
 
     end
 
@@ -70,7 +70,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_epri21, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 399393.8778; atol = 1e2)
+        @test isapprox(result["ac"]["result"]["objective"], 399288.91189; atol = 1e3)
 
         # - DC solution - %
 
@@ -87,21 +87,24 @@
 
         # - AC solution - %
 
+        ac_case = result["ac"]["case"]
         ac_solution = result["ac"]["result"]["solution"]
 
-        @test isapprox(ac_solution["bus"]["5"]["vm"], 1.1880, atol=1e-1)
+        @test isapprox(ac_solution["bus"]["5"]["vm"], 1.3000, atol=1e-1)
         @test isapprox(ac_solution["bus"]["13"]["va"], -0.0413, atol=1e-1)
 
         @test isapprox(ac_solution["gen"]["5"]["pg"], 5.0394, atol=1e-1)
         @test isapprox(ac_solution["gen"]["5"]["qg"], -0.1061, atol=1e-1)
 
         @test isapprox(ac_solution["branch"]["13"]["pf"], 4.5151, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["13"]["qf"], -0.6707, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["13"]["gmd_qloss"], 0.0, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["13"]["qf"], -2.7510, atol=1e-1)
+        # @test isapprox(ac_solution["branch"]["13"]["gmd_qloss"], 0.0, atol=1e-1)
         @test isapprox(ac_solution["branch"]["24"]["pt"], 8.9500, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["24"]["qt"], -0.5656, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["24"]["gmd_qloss"], 0.2891, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["30"]["gmd_qloss"], 0.1597, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["24"]["qt"], -0.1363, atol=1e-1)
+        # @test isapprox(ac_solution["branch"]["24"]["gmd_qloss"], 0.2891, atol=1e-1)
+        @test isapprox(ac_case["load"]["8"]["qd"], 40.1562, atol=1e-1)
+        # @test isapprox(ac_solution["branch"]["30"]["gmd_qloss"], 0.1597, atol=1e-1)
+        @test isapprox(ac_case["load"]["11"]["qd"], 11.8122, atol=1e-1)
 
     end
 
@@ -113,7 +116,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_uiuc150, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 1344779.2770; atol = 1e2)
+        @test isapprox(result["ac"]["result"]["objective"], 895102.8865; atol = 1e3)
 
         # - DC solution - %
 
@@ -131,25 +134,28 @@
 
         # - AC solution - %
 
+        ac_case = result["ac"]["case"]
         ac_solution = result["ac"]["result"]["solution"]
 
         @test isapprox(ac_solution["bus"]["5"]["va"], -0.0496, atol=1e-1)
         @test isapprox(ac_solution["bus"]["55"]["vm"], 1.1292, atol=1e-1)
-        @test isapprox(ac_solution["bus"]["115"]["va"], -0.3771, atol=1e-1)
-        @test isapprox(ac_solution["bus"]["115"]["vm"], 1.1544, atol=1e-1)
+        @test isapprox(ac_solution["bus"]["115"]["va"], -0.0441, atol=1e-1)
+        @test isapprox(ac_solution["bus"]["115"]["vm"], 1.0219, atol=2e-1)
 
-        @test isapprox(ac_solution["gen"]["13"]["pg"], 0.0, atol=1e-1)
-        @test isapprox(ac_solution["gen"]["13"]["qg"], -0.2170, atol=1e-1)
-        @test isapprox(ac_solution["gen"]["24"]["pg"], 6.0431, atol=1e-1)
-        @test isapprox(ac_solution["gen"]["24"]["qg"], 3.0644, atol=1e-1)
+        @test isapprox(ac_solution["gen"]["13"]["pg"], 2.4228, atol=1e-1)
+        @test isapprox(ac_solution["gen"]["13"]["qg"], 1.7062, atol=1e-1)
+        @test isapprox(ac_solution["gen"]["24"]["pg"], 3.8719, atol=1e-1)
+        @test isapprox(ac_solution["gen"]["24"]["qg"], 2.9339, atol=2e-1)
 
-        @test isapprox(ac_solution["branch"]["73"]["gmd_qloss"], 0, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["73"]["pf"], -2.6012, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["131"]["gmd_qloss"], 0.0, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["131"]["pt"], -0.0705, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["131"]["qt"], 1.8067, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["184"]["gmd_qloss"], 0.0350, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["208"]["gmd_qloss"], 0.0294, atol=1e-1)
+        # @test isapprox(ac_solution["branch"]["73"]["gmd_qloss"], 0, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["73"]["pf"], -2.4127, atol=2e-1)
+        # @test isapprox(ac_solution["branch"]["131"]["gmd_qloss"], 0.0, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["131"]["pt"], 5.0864, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["131"]["qt"], -0.3272, atol=1e-1)
+        # @test isapprox(ac_solution["branch"]["184"]["gmd_qloss"], 0.0350, atol=1e-1)
+        @test isapprox(ac_case["load"]["97"]["qd"], 43.1620, atol=1e-1)
+        # @test isapprox(ac_solution["branch"]["208"]["gmd_qloss"], 0.0294, atol=1e-1)
+        @test isapprox(ac_case["load"]["100"]["qd"], 11.8901, atol=1e-1)
 
     end
 
@@ -161,7 +167,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_decoupled(case_rtsgmlcgic, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 87444.3446; atol = 1e2)
+        @test isapprox(result["ac"]["result"]["objective"], 83948.9454; atol = 1e3)
 
         # - DC solution - %
 
@@ -182,7 +188,8 @@
         @test isapprox(dc_solution["gmd_branch"]["81"]["gmd_idc"], -1.4860, atol=1e-1)
 
         # - AC solution - %
-
+        
+        ac_case = result["ac"]["case"]
         ac_solution = result["ac"]["result"]["solution"]
 
         @test isapprox(ac_solution["bus"]["211"]["vm"], 1.0214, atol=1e-1)  # Bus211
@@ -191,21 +198,25 @@
         @test isapprox(ac_solution["bus"]["1052"]["vm"], 1.1281, atol=1e-1)  # GenBus218=>ID"1052"
     
         @test isapprox(ac_solution["branch"]["100"]["pf"], 1.7369, atol=1e-1)  # Branch107-108=>ID"100"
-        @test isapprox(ac_solution["branch"]["100"]["qf"], 0.2137, atol=1e-1)  # Branch107-108=>ID"100"
-        @test isapprox(ac_solution["branch"]["165"]["pt"], 0.9953, atol=1e-1)  # Branch306-310=>ID"165"
-        @test isapprox(ac_solution["branch"]["165"]["qt"], -1.4394, atol=1e-1)  # Branch306-310=>ID"165"
-        @test isapprox(ac_solution["branch"]["24"]["pt"], 0.8886, atol=1e-1)  # Branch106-110=>ID"24"
+        @test isapprox(ac_solution["branch"]["100"]["qf"], -0.1573, atol=1e-1)  # Branch107-108=>ID"100"
+        @test isapprox(ac_solution["branch"]["165"]["pt"], 0.1947, atol=1e-1)  # Branch306-310=>ID"165"
+        @test isapprox(ac_solution["branch"]["165"]["qt"], -1.7391, atol=1e-1)  # Branch306-310=>ID"165"
+        @test isapprox(ac_solution["branch"]["24"]["pt"], 0.3215, atol=1e-1)  # Branch106-110=>ID"24"
         @test isapprox(ac_solution["branch"]["24"]["pf"], -0.8771, atol=1e-1)  # Branch106-110=>ID"24"
-        @test isapprox(ac_solution["branch"]["198"]["qt"], -1.5081, atol=1e-1)  # Branch206-210=>ID"198"
-        @test isapprox(ac_solution["branch"]["198"]["qf"], -0.9307, atol=1e-1)  # Branch206-210=>ID"198"
-        @test isapprox(ac_solution["branch"]["150"]["gmd_qloss"], 0.0059, atol=1e-1)  # Branch213-1042=>ID"150"
-        @test isapprox(ac_solution["branch"]["97"]["gmd_qloss"], 0.0130, atol=1e-1)  # Branch309-312=>ID"97"
-        @test isapprox(ac_solution["branch"]["44"]["gmd_qloss"], 0.0157, atol=1e-1)  # Branch210-211=>ID"44"
+        @test isapprox(ac_solution["branch"]["198"]["qt"], -1.7293, atol=1e-1)  # Branch206-210=>ID"198"
+        @test isapprox(ac_solution["branch"]["198"]["qf"], -1.4273, atol=1e-1)  # Branch206-210=>ID"198"
+        # @test isapprox(ac_solution["branch"]["150"]["gmd_qloss"], 0.0059, atol=1e-1)  # Branch213-1042=>ID"150"
+        @test isapprox(ac_case["load"]["58"]["qd"], 46.9801, atol=1e-1)  # Branch213-1042=>ID"150"
+        # @test isapprox(ac_solution["branch"]["97"]["gmd_qloss"], 0.0130, atol=1e-1)  # Branch309-312=>ID"97"
+        @test isapprox(ac_case["load"]["86"]["qd"], 16.8225, atol=1e-1)  # Branch309-312=>ID"97"
+        # @test isapprox(ac_solution["branch"]["44"]["gmd_qloss"], 0.0157, atol=1e-1)  # Branch210-211=>ID"44"
+        @test isapprox(ac_case["load"]["87"]["qd"], 19.3985, atol=1e-1)  # Branch210-211=>ID"44"
 
-        @test isapprox(ac_solution["gen"]["88"]["pg"], 2.5583, atol=1e-1)  # GenBus-313-Bus1076=>ID"88"
+
+        @test isapprox(ac_solution["gen"]["88"]["pg"], 3.5500, atol=1e-1)  # GenBus-313-Bus1076=>ID"88"
         @test isapprox(ac_solution["gen"]["88"]["qg"], 1.5000, atol=1e-1)  # GenBus-313-Bus1076=>ID"88"
-        @test isapprox(ac_solution["gen"]["92"]["pg"], 3.5500, atol=1e-1)  # GenBus-221-Bus1053=>ID"92"
-        @test isapprox(ac_solution["gen"]["11"]["qg"], 0.9568, atol=1e-1)  # GenBus-107-Bus1009=>ID"11"
+        @test isapprox(ac_solution["gen"]["92"]["pg"], 3.2837, atol=1e-1)  # GenBus-221-Bus1053=>ID"92"
+        @test isapprox(ac_solution["gen"]["11"]["qg"], 1.5000, atol=1e-1)  # GenBus-107-Bus1009=>ID"11"
 
     end
 

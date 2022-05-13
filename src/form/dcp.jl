@@ -71,6 +71,31 @@ function constraint_power_balance_shed_gmd(pm::_PM.AbstractDCPModel, n::Int, i::
 end
 
 
+"CONSTRAINT: power balance for load shedding"
+function constraint_power_balance_shed(pm::_PM.AbstractDCPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
+
+    p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
+    pg = get(_PM.var(pm, n), :pg, Dict()); _PM._check_var_keys(pg, bus_gens, "active power", "generator")
+    ps = get(_PM.var(pm, n), :ps, Dict()); _PM._check_var_keys(ps, bus_storage, "active power", "storage")
+    psw = get(_PM.var(pm, n), :psw, Dict()); _PM._check_var_keys(psw, bus_arcs_sw, "active power", "switch")
+    p_dc = get(_PM.var(pm, n), :p_dc, Dict()); _PM._check_var_keys(p_dc, bus_arcs_dc, "active power", "dcline")
+    z_demand = get(_PM.var(pm, n), :z_demand, Dict()); _PM._check_var_keys(z_demand, keys(bus_pd), "power factor scale", "load")
+    z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor scale", "shunt")
+
+    _PM.con(pm, n, :kcl_p)[i] = JuMP.@constraint(pm.model,
+        sum(p[a] for a in bus_arcs)
+        + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
+        + sum(psw[a_sw] for a_sw in bus_arcs_sw)
+        ==
+        sum(pg[g] for g in bus_gens)
+        - sum(ps[s] for s in bus_storage)
+        - sum(pd * z_demand[i] for (i,pd) in bus_pd)
+        - sum(gs * 1.0^2 * z_shunt[i] for (i,gs) in bus_gs)
+    )
+
+end
+
+
 "CONTRAINT: power balance with shunts for load shedding"
 function constraint_power_balance_shunt_gmd_mls(pm::_PM.AbstractDCPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
 

@@ -5,12 +5,13 @@
 
     @testset "B4GIC case" begin
 
-        result = _PMGMD.run_ac_gmd_opf(case_b4gic, ipopt_solver; setting=setting)
+        b4gic_data = _PM.parse_file(case_b4gic)
+        result = _PMGMD.run_ac_gmd_opf(b4gic_data, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
         solution = result["solution"]
-        adjust_gmd_qloss(case_b4gic, solution)
+        adjust_gmd_qloss(b4gic_data, solution)
 
         # - DC solution - %
 
@@ -23,7 +24,7 @@
         @test isapprox(solution["bus"]["1"]["vm"], 1.0967, atol=1e-1)
 
         @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
-        @test isapprox(solution["branch"]["3"]["qf"], -3.9149, atol=1e-1)
+        @test isapprox(solution["branch"]["3"]["qf"], -4.5913, atol=1e-1)
 
     end
 
@@ -32,13 +33,13 @@
     # ===   NERC B6GIC   === #
 
     @testset "NERC B6GIC case" begin
-
-        result = _PMGMD.run_ac_gmd_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
+        b6gic_nerc_data = _PM.parse_file(case_b6gic_nerc)
+        result = _PMGMD.run_ac_gmd_opf(b6gic_nerc_data, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["objective"], 12312.5633; atol = 1e2)
 
         solution = result["solution"]
-        adjust_gmd_qloss(case_b6gic_nerc, solution)
+        adjust_gmd_qloss(b6gic_nerc_data, solution)
 
         # - DC solution - %
 
@@ -98,12 +99,13 @@
 
     @testset "RTS-GMLC-GIC case" begin
 
-        result = _PMGMD.run_ac_gmd_opf(case_rtsgmlcgic, ipopt_solver; setting=setting)
+        rtsgmlcgic_data = _PM.parse_file(case_rtsgmlcgic)
+        result = _PMGMD.run_ac_gmd_opf(rtsgmlcgic_data, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["objective"], 191245.1403; atol = 1e2)
 
         solution = result["solution"]
-        adjust_gmd_qloss(case_rtsgmlcgic, solution)
+        adjust_gmd_qloss(rtsgmlcgic_data, solution)
 
         # - DC solution - %
 
