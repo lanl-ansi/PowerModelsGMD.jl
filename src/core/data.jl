@@ -215,8 +215,6 @@ function qloss_decoupled_vnom(case)
     end
 
     for (k, branch) in case["branch"]
-        Smax = 1000
-        branchMVA = min(get(branch, "rate_a", Smax), Smax)
         # using hi/lo bus shouldn't be an issue because qloss is defined in arcs going in both directions
 
         if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
@@ -233,11 +231,14 @@ function qloss_decoupled_vnom(case)
             return
         end
 
+        branch["gmd_qloss"] = 0.0
+
         if "gmd_k" in keys(branch)
-            ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
+            ibase = (1000.0 * sqrt(2.0) * case["baseMVA"]) / (bus["base_kv"] * sqrt(3.0))
             K = (branch["gmd_k"] * case["baseMVA"]) / (ibase)
-            ieff = branch["ieff"]
-            qloss = (K * ieff) / (3.0 * branchMVA)
+            ieff = branch["ieff"]/3.0
+            qloss = K * ieff
+            branch["gmd_qloss"] = qloss
             bus["qloss"] += qloss/case["baseMVA"]
         end
     end

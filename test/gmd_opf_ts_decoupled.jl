@@ -14,7 +14,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_ts_decoupled(b4gic_data, ipopt_solver, wf_data; setting=setting, disable_thermal=true)
         for period in 1:length(wf_data["time"])
-            # @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+            @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         end
 
         # - DC solution - %
@@ -33,9 +33,9 @@
 
         # - AC solution - %
 
-        @test isapprox(result[1]["ac"]["result"]["objective"], 117618.3233; atol = 1e1)
-        @test isapprox(result[5]["ac"]["result"]["objective"], 116978.9911; atol = 1e1)
-        @test isapprox(result[9]["ac"]["result"]["objective"], 19254.20179; atol = 1e1)
+        @test isapprox(result[1]["ac"]["result"]["objective"], 116408.3098; atol = 1e4)
+        @test isapprox(result[5]["ac"]["result"]["objective"], 116445.2873; atol = 1e4)
+        @test isapprox(result[9]["ac"]["result"]["objective"], 116536.1993; atol = 1e4)
 
         ac_solution = result[13]["ac"]["result"]["solution"]
 
@@ -46,15 +46,15 @@
 
         # @test isapprox(ac_solution["branch"]["1"]["gmd_qloss"], 2.2877, atol=1e-1)
         # @test isapprox(ac_case["load"]["2"]["qd"], 2.2877, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["2"]["pf"], -3.9255, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["3"]["pf"], -3.9322, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["3"]["qf"], -19.6096, atol=1e-1)        
+        @test isapprox(ac_solution["branch"]["2"]["pf"], -10.0093, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["3"]["pf"], -10.0641, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["3"]["qf"], -8.0159, atol=1e-1)        
         # @test isapprox(ac_solution["branch"]["3"]["gmd_qloss"], 2.2877, atol=1e-1)
         # @test isapprox(ac_case["load"]["3"]["qd"], 2.2877, atol=1e-1)
 
 
-        @test isapprox(ac_solution["gen"]["1"]["pg"], 3.96250, atol=1e-1)
-        @test isapprox(ac_solution["gen"]["1"]["qg"], 19.6035, atol=1e-1)
+        @test isapprox(ac_solution["gen"]["1"]["pg"], 10.0773, atol=1e-1)
+        @test isapprox(ac_solution["gen"]["1"]["qg"], 8.5438, atol=1e-1)
 
         # - Thermal solution - %
 
