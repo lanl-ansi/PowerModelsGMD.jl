@@ -60,7 +60,7 @@
 
         result = _PMGMD.run_ac_gmd_opf_ts_decoupled(b4gic_data, ipopt_solver, wf_data; setting=setting, disable_thermal=false)
         for period in 1:length(wf_data["time"])
-            # @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+            @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         end
 
         ac_solution = result[13]["ac"]["result"]["solution"]

@@ -49,8 +49,8 @@ case_otstest = "../test/data/ots_test.m"
 
     include("data_ac.jl")
     include("gmd_matrix.jl")
-    include("gmd_mls_decoupled.jl")
-    include("gmd_mls.jl")
+    include("gmd_mld_decoupled.jl")
+    include("gmd_mld.jl")
     include("gmd_opf_decoupled.jl")
     include("gmd_opf_ts_decoupled.jl")
     include("gmd_opf.jl")
