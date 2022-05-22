@@ -58,7 +58,7 @@
         @test isapprox(ac_solution["branch"]["4"]["qf"], 1.1453, atol=5e-1)
 
         @test isapprox(ac_solution["branch"]["5"]["pf"], -10.0546, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["5"]["qf"], -2.1053, atol=5e-1)
+        @test isapprox(ac_solution["branch"]["5"]["qf"], -2.6997, atol=5e-1)
 
 
     end
@@ -184,7 +184,7 @@
         @test isapprox(ac_solution["branch"]["131"]["pt"], -0.6382, atol=1e-1)
         @test isapprox(ac_solution["branch"]["131"]["qt"], -5.4310, atol=1e-1)
         # @test isapprox(ac_solution["branch"]["184"]["gmd_qloss"], 0.0350, atol=1e-1)
-        @test isapprox(ac_case["load"]["97"]["qd"], 0.2681, atol=1e-1)
+        @test isapprox(ac_case["load"]["97"]["qd"], 0.1030, atol=1e-1)
         # @test isapprox(ac_solution["branch"]["208"]["gmd_qloss"], 0.0294, atol=1e-1)
         @test isapprox(ac_case["load"]["100"]["qd"], 0.1189, atol=1e-1)
 

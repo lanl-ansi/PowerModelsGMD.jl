@@ -328,8 +328,6 @@ end
 
 "CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
 function qloss_decoupled_vnom(case)
-    println("Start calculating qloss")
-
     for (_, bus) in case["bus"]
         bus["qloss"] = 0.0
         bus["qloss0"] = 0.0
@@ -373,7 +371,7 @@ function qloss_decoupled_vnom(case)
             qloss = branch["gmd_k"]*ieff
             #println("Qloss for transformer ($i,$j) = $qloss")
             case["bus"]["$i"]["qloss"] += qloss
-            case["branch"][k]["qloss"] = qloss
+            case["branch"][k]["gmd_qloss"] = qloss*case["baseMVA"]
 
             n = length(case["load"])
 
@@ -391,8 +389,6 @@ function qloss_decoupled_vnom(case)
             Memento.warn(_LOGGER, "Transformer $k ($i,$j) does not have field gmd_k, skipping")
         end
     end
-
-    println("Done calculating qloss")
 end
 
 "FUNCTION: dc current on normal lines"
