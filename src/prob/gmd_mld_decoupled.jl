@@ -67,6 +67,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_branch_power(pm)
     _PM.variable_dcline_power(pm)
 
+    # TODO: Should I use a single variable for both load and shunt shedding???
     _PM.variable_load_power_factor(pm, relax=true)
     _PM.variable_shunt_admittance_factor(pm, relax=true)
 
