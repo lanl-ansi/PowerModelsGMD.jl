@@ -36,6 +36,19 @@ using Test
 
 # Parse test cases:
 case_b4gic = "../test/data/b4gic.m"
+
+case_b4gic3w = "../test/data/b4gic3w.raw"
+mods_b4gic3w = "../test/data/b4gic3w_mods.json"
+
+b4gic3w_data = PowerModels.parse_file(case_b4gic3w)
+
+f = open(mods_b4gic3w)
+mods = JSON.parse(f)
+close(f)
+
+_PMGMD.apply_mods!(b4gic3w_data, mods)
+_PMGMD.fix_gmd_indices!(b4gic3w_data)
+
 case_b6gic_nerc = "../test/data/b6gic_nerc.m"
 case24_ieee_rts_0 = "../test/data/case24_ieee_rts_0.m"
 case_epri21 = "../test/data/epri21.m"
