@@ -13,6 +13,5 @@ test/test-mixed-units.jl
 test/test-gmd-gic.jl
 test/gmd.log
 src/scratch
-test/data/*.json
 
 Manifest.toml

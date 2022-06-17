@@ -1,0 +1,290 @@
+{
+  "bus": {
+    "1": {
+      "source_id": [
+        "bus",
+        "1"
+      ],
+      "sub_i": 1,
+      "lat": 40.0,
+      "lon": -89.0
+    },
+    "2": {
+      "source_id": [
+        "bus",
+        "2"
+      ],
+      "sub_i": 2,
+      "lat": 40.0,
+      "lon": -87.0
+    },
+    "3": {
+      "source_id": [
+        "bus",
+        "3"
+      ],
+      "sub_i": 1,
+      "lat": 40.0,
+      "lon": -89.0
+    },
+    "4": {
+      "source_id": [
+        "bus",
+        "4"
+      ],
+      "sub_i": 2,
+      "lat": 40.0,
+      "lon": -87.0
+    },
+    "5": {
+      "source_id": [
+        "bus",
+        "5"
+      ],
+      "sub_i": -1,
+      "lat": 999,
+      "lon": 999
+    }
+  },
+  "branch": {
+    "1": {
+      "source_id": [
+        "branch",
+        1,
+        2,
+        "1 "
+      ],
+      "source_bus_1": 1,
+      "source_bus_2": 2,
+      "source_bus_3": -1,
+      "ckt": "1 ",
+      "gmd_index": 1,
+      "sub_id": -1,
+      "hi_bus": 1,
+      "lo_bus": 2,
+      "gmd_br_hi": -1,
+      "gmd_br_lo": -1,
+      "gmd_k": 0,
+      "gmd_br_series": -1,
+      "gmd_br_common": -1,
+      "type": "line",
+      "config": "none",
+      "trace": "branch.Branch.gmd_data()",
+      "otype": "<class 'branch.Line'>"
+    },
+    "2": {
+      "source_id": [
+        "transformer",
+        1,
+        3,
+        5,
+        "1 ",
+        1
+      ],
+      "source_bus_1": 1,
+      "source_bus_2": 3,
+      "source_bus_3": 5,
+      "ckt": "1 ",
+      "gmd_index": 2,
+      "sub_id": 1,
+      "hi_bus": 1,
+      "lo_bus": 3,
+      "ter_bus": 5,
+      "star_bus": 6,
+      "gmd_br_hi": 2,
+      "gmd_br_lo": -1,
+      "gmd_br_ter": -1,
+      "gmd_k": 1.8,
+      "gmd_br_series": -1,
+      "gmd_br_common": -1,
+      "type": "xf",
+      "config": "gwye-delta-delta",
+      "name": "xf1-3-5",
+      "trace": "branch.ThreeWindingTransformer.gmd_data()",
+      "otype": "<class 'branch.ThreeWindingTransformer'>"
+    },
+    "3": {
+      "source_id": [
+        "transformer",
+        2,
+        4,
+        0,
+        "1 ",
+        0
+      ],
+      "source_bus_1": 2,
+      "source_bus_2": 4,
+      "source_bus_3": -1,
+      "ckt": "1 ",
+      "gmd_index": 3,
+      "sub_id": 2,
+      "hi_bus": 2,
+      "lo_bus": 4,
+      "gmd_br_hi": 3,
+      "gmd_br_lo": -1,
+      "gmd_k": 1.8,
+      "gmd_br_series": -1,
+      "gmd_br_common": -1,
+      "type": "xf",
+      "config": "gwye-delta",
+      "name": "xf2-4",
+      "trace": "branch.Transformer.gmd_data()",
+      "otype": "<class 'branch.GWyeDeltaTransformer'>"
+    }
+  },
+  "gmd_bus": {
+    "1": {
+      "bus_i": 1,
+      "index": 1,
+      "g_gnd": 5.0,
+      "status": 1,
+      "parent_name": "Sub A",
+      "parent_index": 1,
+      "parent_type": "sub",
+      "name": "dc_Sub A"
+    },
+    "2": {
+      "bus_i": 2,
+      "index": 2,
+      "g_gnd": 5.0,
+      "status": 1,
+      "parent_name": "Sub B",
+      "parent_index": 2,
+      "parent_type": "sub",
+      "name": "dc_Sub B"
+    },
+    "3": {
+      "bus_i": 3,
+      "index": 3,
+      "g_gnd": 0.0,
+      "status": 1,
+      "parent_name": "Bus 1       ",
+      "parent_index": 1,
+      "parent_type": "bus",
+      "name": "dc_Bus 1       ",
+      "parent_source_id": [
+        "bus",
+        1
+      ]
+    },
+    "4": {
+      "bus_i": 4,
+      "index": 4,
+      "g_gnd": 0.0,
+      "status": 1,
+      "parent_name": "Bus 2       ",
+      "parent_index": 2,
+      "parent_type": "bus",
+      "name": "dc_Bus 2       ",
+      "parent_source_id": [
+        "bus",
+        2
+      ]
+    },
+    "5": {
+      "bus_i": 5,
+      "index": 5,
+      "g_gnd": 0.0,
+      "status": 1,
+      "parent_name": "Bus 3       ",
+      "parent_index": 3,
+      "parent_type": "bus",
+      "name": "dc_Bus 3       ",
+      "parent_source_id": [
+        "bus",
+        3
+      ]
+    },
+    "6": {
+      "bus_i": 6,
+      "index": 6,
+      "g_gnd": 0.0,
+      "status": 1,
+      "parent_name": "Bus 4       ",
+      "parent_index": 4,
+      "parent_type": "bus",
+      "name": "dc_Bus 4       ",
+      "parent_source_id": [
+        "bus",
+        4
+      ]
+    },
+    "7": {
+      "bus_i": 7,
+      "index": 7,
+      "g_gnd": 0.0,
+      "status": 1,
+      "parent_name": "Bus 5       ",
+      "parent_index": 5,
+      "parent_type": "bus",
+      "name": "dc_Bus 5       ",
+      "parent_source_id": [
+        "bus",
+        5
+      ]
+    }
+  },
+  "gmd_branch": {
+    "1": {
+      "br_r": 1.0007346666666666,
+      "br_status": 1,
+      "index": 1,
+      "parent_name": "line1-2",
+      "parent_index": 1,
+      "name": "dc_line1-2",
+      "len_km": 0.0,
+      "type": "line",
+      "parent_source_id": [
+        "branch",
+        1,
+        2,
+        "1 "
+      ],
+      "f_bus": 3,
+      "t_bus": 4,
+      "br_v": 170.788589
+    },
+    "2": {
+      "br_r": 0.14630633333333334,
+      "br_status": 1,
+      "index": 2,
+      "parent_name": "xf1-3-5",
+      "parent_index": 2,
+      "name": "dc_xf1-3-5_hi",
+      "len_km": 0.0,
+      "type": "gwye winding high-side",
+      "parent_source_id": [
+        "transformer",
+        1,
+        3,
+        5,
+        "1 ",
+        1
+      ],
+      "f_bus": 3,
+      "t_bus": 1,
+      "br_v": 0.0
+    },
+    "3": {
+      "br_r": 0.09753733333333332,
+      "br_status": 1,
+      "index": 3,
+      "parent_name": "xf2-4",
+      "parent_index": 3,
+      "name": "dc_xf2-4_hi",
+      "len_km": 0.0,
+      "type": "gwye winding high-side",
+      "parent_source_id": [
+        "transformer",
+        2,
+        4,
+        0,
+        "1 ",
+        0
+      ],
+      "f_bus": 4,
+      "t_bus": 2,
+      "br_v": 0.0
+    }
+  }
+}
