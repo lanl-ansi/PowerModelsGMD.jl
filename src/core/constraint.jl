@@ -42,27 +42,31 @@ end
 
 
 "CONSTRAINT: power balance constraint for dc circuits"
-function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gs, gmd_bus_arcs)
-
+function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gs, blocker_status, gmd_bus_arcs)
     v_dc = _PM.var(pm, n, :v_dc)[i]
 
     if length(gmd_bus_arcs) > 0
-
         if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
-            println("WARNING")
-            println("DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
+            Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
             println()
         end
 
-        JuMP.@constraint(pm.model,
-            sum(dc_expr[a] for a in gmd_bus_arcs)
-            ==
-            (gs * v_dc)
-        )
+        if blocker_status
+            JuMP.@constraint(pm.model,
+                sum(dc_expr[a] for a in gmd_bus_arcs)
+                ==
+                0.0
+            )
+        else
+            JuMP.@constraint(pm.model,
+                sum(dc_expr[a] for a in gmd_bus_arcs)
+                ==
+                (gs * v_dc)
+            )
+        end
+
         return
-
     end
-
 end
 
 

@@ -236,9 +236,19 @@ function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, i::Int; n
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     gs = gmd_bus["g_gnd"]
 
+    has_blocker = get(gmd_bus, "has_blocker", true)
+
+    # if false, then the dc blocker is bypassed
+    blocker_status = get(gmd_bus, "blocker_status", false)
+
+    if !has_blocker && blocker_status
+        Memento.warn(_LOGGER, "GMD bus $gmd_bus does not have blocker but blocker status is true, setting to false")
+        blocker_status = false
+    end
+
     gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
 
-    constraint_dc_power_balance_shunt(pm, nw, i, dc_expr, gs, gmd_bus_arcs)
+    constraint_dc_power_balance_shunt(pm, nw, i, dc_expr, gs, blocker_status, gmd_bus_arcs)
 
 end
 
