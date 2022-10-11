@@ -51,7 +51,7 @@ function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i
             println()
         end
 
-        if blocker_status
+        if blocker_status != 0.0
             JuMP.@constraint(pm.model,
                 sum(dc_expr[a] for a in gmd_bus_arcs)
                 ==
