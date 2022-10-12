@@ -201,7 +201,7 @@ function dc_current_mag(branch, case, solution)
     elseif branch["config"] == "gwye-gwye-auto"
         dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
 
-    elseif branch["config"] == "three-winding"
+    elseif branch["config"] in ["three-winding", "gwye-gwye-delta", "gwye-gwye-gwye", "gywe-delta-delta"]
         dc_current_mag_3w_xf(branch, case, solution)
 
     end
@@ -210,16 +210,34 @@ end
 
 "CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
 function qloss_decoupled_vnom(case)
+    println("Start calculating qloss")
+
     for (_, bus) in case["bus"]
         bus["qloss"] = 0.0
+        bus["qloss0"] = 0.0
+    end
+
+    for (_, branch) in case["branch"]
+        branch["qloss"] = 0.0
+        branch["qloss0"] = 0.0
     end
 
     for (k, branch) in case["branch"]
+        #Smax = 1000
+        #branchMVA = min(get(branch, "rate_a", Smax), Smax)
         # using hi/lo bus shouldn't be an issue because qloss is defined in arcs going in both directions
 
+        i = branch["f_bus"]
+        j = branch["t_bus"]
+        ckt = "  "
+
+        if "ckt" in keys(branch)
+          ckt = branch["ckt"]
+        end
+
         if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
-            Memento.warn(_LOGGER, "Branch $k is missing hi bus/lo bus")
-            return
+            Memento.warn(_LOGGER, "Branch $k ($i, $j, $ckt) is missing hi bus/lo bus")
+            continue
         end
 
         i = branch["hi_bus"]
@@ -228,36 +246,35 @@ function qloss_decoupled_vnom(case)
         bus = case["bus"]["$i"]
 
         if branch["br_status"] == 0 
-            return
+            continue
         end
-
-        branch["gmd_qloss"] = 0.0
 
         if "gmd_k" in keys(branch)
-            ibase = (1000.0 * sqrt(2.0) * case["baseMVA"]) / (bus["base_kv"] * sqrt(3.0))
-            K = (branch["gmd_k"] * case["baseMVA"]) / (ibase)
-            ieff = branch["ieff"]/3.0
-            qloss = K * ieff
-            branch["gmd_qloss"] = qloss
-            bus["qloss"] += qloss/case["baseMVA"]
-        end
-    end
+            ibase = (case["baseMVA"] * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
+            ieff = branch["ieff"]/(3*ibase)
+            qloss = branch["gmd_k"]*ieff
+            #println("Qloss for transformer ($i,$j) = $qloss")
+            case["bus"]["$i"]["qloss"] += qloss
+            case["branch"][k]["qloss"] = qloss
 
-
-    for (_, bus) in case["bus"]
-        if bus["qloss"] >= 1e-3
             n = length(case["load"])
 
-            load = Dict{String, Any}()
-            load["source_id"] = ["qloss", bus["index"]]
-            load["load_bus"] = bus["index"]
-            load["status"] = 1
-            load["pd"] = 0
-            load["qd"] = bus["qloss"]
-            load["index"] = n + 1
-            case["load"]["$(n + 1)"] = load
+            if qloss >= 1e-3
+                load = Dict{String, Any}()
+                load["source_id"] = ["qloss", branch["index"]]
+                load["load_bus"] = i
+                load["status"] = 1
+                load["pd"] = 0
+                load["qd"] = qloss
+                load["index"] = n + 1
+                case["load"]["$(n + 1)"] = load
+            end
+        else
+            Memento.warn(_LOGGER, "Transformer $k ($i,$j) does not have field gmd_k, skipping")
         end
     end
+
+    println("Done calculating qloss")
 end
 
 "FUNCTION: dc current on normal lines"
@@ -385,9 +402,9 @@ function dc_current_mag_3w_xf(branch, case, solution)
         iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
     end
 
-    jfr = branch["source_id"][1]
-    jto = branch["source_id"][2]
-    jter = branch["source_id"][3]
+    jfr = branch["source_id"][2]
+    jto = branch["source_id"][3]
+    jter = branch["source_id"][4]
     vhi = case["bus"]["$jfr"]["base_kv"]
     vlo = case["bus"]["$jto"]["base_kv"]
     vter = case["bus"]["$jter"]["base_kv"]
