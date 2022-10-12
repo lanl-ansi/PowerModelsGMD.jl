@@ -1,125 +1,7 @@
-export make_gmd_mixed_units, adjust_gmd_qloss, top_oil_rise, hotspot_rise, update_top_oil_rise, update_hotspot_rise, apply_mods!
+export make_gmd_mixed_units, adjust_gmd_qloss, top_oil_rise, hotspot_rise, update_top_oil_rise, update_hotspot_rise
 
 
 # ===   GENERAL FUNCTIONS   === #
-
-
-"FUNCTION: apply a json file or a dictionary of mods"
-function apply_mods!(net, modsfile::AbstractString)
-    if modsfile !== nothing
-        println("Applying $modsfile")
-        io = open(modsfile)
-        mods = JSON.parse(io)
-        close(io)
-        apply_mods!(net, mods)
-    end
-end
-
-
-"FUNCTION: apply a dictionary of mods"
-function apply_mods!(net, mods::AbstractDict{String,Any})
-    for (otype, objs) in mods
-        if !isa(objs, Dict)
-            continue
-        end
-
-        if !(otype in keys(net))
-            net[otype] = Dict{String,Any}()
-        end
-    end        
-
-    net_by_sid = create_sid_map(net)     
-
-    if "mods" in keys(mods)
-        mods = mods["mods"]
-    elseif "modifications" in keys(mods)
-        mods = mods["modifications"]
-    end
-
-    for (otype, objs) in mods
-        if !isa(objs, Dict)
-            continue
-        end
-
-        println("============= $otype =============")
-
-        if !(otype in keys(net))
-            net[otype] = Dict{String,Any}()
-        end
-
-        for (okey, obj) in objs
-            key = okey
-
-            if ("source_id" in keys(obj)) && (obj["source_id"] in keys(net_by_sid[otype]))
-                key = net_by_sid[otype][obj["source_id"]]
-                # print(obj["source_id"])
-                # print(" => ")
-                # println(key)
-            elseif otype == "branch"
-                print("Skipping branch $key ")
-                
-                if "source_id" in keys(obj)
-                    print(obj["source_id"])
-                    print(" ")
-                end
-
-                println("without matching source id")
-                continue
-            end
-
-            if !(key in keys(net[otype]))
-                net[otype][key] = Dict{String,Any}()
-            end
-
-            for (fname, fval) in obj
-                # println("case[$otype][$key][$fname] = $fval")
-                net[otype][key][fname] = fval
-            end
-        end
-    end
-end
-
-
-"FUNCTION: index mods dictionary by source id"
-function create_sid_map(net)
-    net_by_sid = Dict()
-
-    for (otype, objs) in net
-        if !isa(objs, Dict)
-            continue
-        end
-
-        if !(otype in keys(net_by_sid))
-            net_by_sid[otype] = Dict()
-        end
-
-        for (okey, obj) in objs
-            if "source_id" in keys(obj)
-                net_by_sid[otype][obj["source_id"]] = okey
-            end
-        end
-    end 
-
-    return net_by_sid
-end
-
-
-"FUNCTION: correct parent branches for gmd branches after applying mods"
-function fix_gmd_indices!(net)
-    # map branch source ids to indices
-    branch_map = Dict(map(x -> x["source_id"] => x["index"], values(net["branch"])))
-
-
-    for (i,gbr) in net["gmd_branch"]
-        k = gbr["parent_source_id"]
-        if k in keys(branch_map)
-            gbr["parent_index"] = branch_map[k]
-        else
-            println("Can't find parent branch for gmd branch $k")
-            # delete!(net["gmd_branch"], i)
-        end
-    end
-end
 
 
 "FUNCTION: calculate Qloss"
@@ -328,6 +210,8 @@ end
 
 "CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
 function qloss_decoupled_vnom(case)
+    println("Start calculating qloss")
+
     for (_, bus) in case["bus"]
         bus["qloss"] = 0.0
         bus["qloss0"] = 0.0
@@ -371,7 +255,7 @@ function qloss_decoupled_vnom(case)
             qloss = branch["gmd_k"]*ieff
             #println("Qloss for transformer ($i,$j) = $qloss")
             case["bus"]["$i"]["qloss"] += qloss
-            case["branch"][k]["gmd_qloss"] = qloss*case["baseMVA"]
+            case["branch"][k]["qloss"] = qloss
 
             n = length(case["load"])
 
@@ -389,6 +273,8 @@ function qloss_decoupled_vnom(case)
             Memento.warn(_LOGGER, "Transformer $k ($i,$j) does not have field gmd_k, skipping")
         end
     end
+
+    println("Done calculating qloss")
 end
 
 "FUNCTION: dc current on normal lines"
