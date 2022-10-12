@@ -1,5 +1,9 @@
 # PowerModelsGMD.jl
 
+```
+BRANCH FOR DEVELOPMENT. VERSION 0.5.0 WILL BE RELEASED IN THE FUTURE.
+```
+
 PowerModelsGMD (PMsGMD) is an open-source [Julia](https://julialang.org/) package - an extension to the [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation - which was specifically designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (GMDs) and E3 high-altitude electromagnetic pulse (HEMP) events on the electrical grid.
 
 Due to its open-source nature, it is easy to verify and customize its operation to best fit the application circumstances. Due to its speed and reliability, it is suitable to be a key component of toolkits that monitor GMD manifestations in real-time, that predict GICs on the electrical grid, that assess risk, that enhance grid resilience by providing aid to system-operators, and that recommend modifications in the network configuration.

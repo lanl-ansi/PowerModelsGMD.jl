@@ -380,10 +380,9 @@ function qloss_decoupled_vnom(case)
                 load["source_id"] = ["qloss", branch["index"]]
                 load["load_bus"] = i
                 load["status"] = 1
-                load["pd"] = 0.0
+                load["pd"] = 0
                 load["qd"] = qloss
                 load["index"] = n + 1
-                load["weight"] = 100.0
                 case["load"]["$(n + 1)"] = load
             end
         else
