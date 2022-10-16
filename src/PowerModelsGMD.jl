@@ -59,5 +59,5 @@ const _PMGMD = PowerModelsGMD
     include("prob/gmd_ots.jl")
     include("prob/gmd_pf_decoupled.jl")
     include("prob/gmd.jl")
-
+    include("prob/gmd_blocker_placement.jl")
 end
