@@ -15,8 +15,8 @@ Consequently, PMsGMD is equally useful for both research and industry applicatio
 
 ## PMsGMD Dependencies
 
-PMsGMD builds on the following Julia packages: [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.18.0 and [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.6.0.
-In addition, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.21, and [Memento](https://github.com/invenia/Memento.jl) v1.2.
+PMsGMD builds on the following Julia packages: [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.7.5 and [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.19.6.
+Additionally, it relies on and was optimized for these packages: [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v0.4, and [Memento](https://github.com/invenia/Memento.jl) v1.4.
 
 
 
@@ -32,8 +32,8 @@ Currently the following common industry and academic specifications have been im
 * GIC AC-OTS: ac optimal transmission switching with minimum loadshed coupled with a quasi-dc power flow
 * GIC AC-OTS-TS: multi-time-series ac optimal transmission switching with minimum loadshed coupled with a quasi-dc power flow
 
-Testing of implemented specifications was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v0.7.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.7.0.
-Alternatively, [Cbc](https://github.com/jump-dev/Cbc.jl) and [SCS](https://github.com/jump-dev/SCS.jl) solvers are supported as well.
+Testing of implemented specifications was done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v1.1.0 and [KNITRO](https://github.com/jump-dev/KNITRO.jl) v0.13.1.
+Alternatively, [Cbc](https://github.com/jump-dev/Cbc.jl), [SCS](https://github.com/jump-dev/SCS.jl), or [Juniper](https://github.com/lanl-ansi/Juniper.jl) solvers may be used for certain problems.
 
 
 
