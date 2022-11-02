@@ -21,7 +21,6 @@ Memento.setlevel!(TESTLOG, "error")
 
 
 import Ipopt
-import PowerModelsRestoration
 
 # Default setup for optimizers:
 ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-5, "print_level"=>0)

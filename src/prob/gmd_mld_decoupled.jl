@@ -242,7 +242,6 @@ function run_gmd_cascade_mld_decoupled(dc_case::Dict{String,Any}, model_construc
     
     qloss_decoupled_vnom(ac_case)
     ac_result = run_gmd_cascade_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting)
-    # ac_result = _PMR.run_gmd_cascade_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting)
     ac_solution = ac_result["solution"]
     adjust_gmd_qloss(ac_case, ac_solution)
 

@@ -1,10 +1,10 @@
 module PowerModelsGMD
 const _PMGMD = PowerModelsGMD
 
-    import PowerModels
-    const _PM = PowerModels
     import InfrastructureModels
     const _IM = InfrastructureModels
+    import PowerModels
+    const _PM = PowerModels
 
     import PowerModels: pm_it_name, pm_it_sym, nw_ids, nws, ismultinetwork
     import InfrastructureModels: optimize_model!, @im_fields, nw_id_default
