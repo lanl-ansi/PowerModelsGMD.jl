@@ -21,9 +21,11 @@ Memento.setlevel!(TESTLOG, "error")
 
 
 import Ipopt
+import Juniper
 
 # Default setup for optimizers:
 ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-5, "print_level"=>0)
+juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>PowerModels.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-4, "print_level"=>0), "log_levels"=>[])
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
 
