@@ -1,5 +1,4 @@
 export run_gmd
-using SparseArrays
 
 
 "FUNCTION: run GIC matrix solve"

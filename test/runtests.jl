@@ -29,6 +29,8 @@ juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
 
+import LinearAlgebra
+import SparseArrays
 using Test
 
 # Parse test cases:

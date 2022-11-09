@@ -13,6 +13,10 @@ const _PMGMD = PowerModelsGMD
     import JuMP
     import Memento
 
+    import LinearAlgebra
+    import SparseArrays
+
+    
     # Create module level logger
     const _LOGGER = Memento.getlogger(@__MODULE__)
     __init__() = Memento.register(_LOGGER)
