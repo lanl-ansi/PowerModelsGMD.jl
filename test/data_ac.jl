@@ -49,16 +49,4 @@
 
 
 
-    # ===   RTS-GMLC-GIC   === #
-
-    @testset "RTS-GMLC-GIC case" begin
-
-        result = _PM.run_ac_opf(case_rtsgmlcgic, ipopt_solver; setting=setting)
-        @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 87437.3716; atol=1e2)
-
-    end
-
-
-
 end

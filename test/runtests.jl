@@ -39,17 +39,17 @@ case_b4gic3w = "../test/data/b4gic3w.raw"
 case_b6gic_nerc = "../test/data/b6gic_nerc.m"
 case24_ieee_rts_0 = "../test/data/case24_ieee_rts_0.m"
 case_epri21 = "../test/data/epri21.m"
+
 case_uiuc150 = "../test/data/uiuc150_95pct_loading.m"
-case_rtsgmlcgic = "../test/data/rtsgmlcgic/rts_gmlc_gic_pnw.m"
 case_otstest = "../test/data/ots_test.m"
 
-# mods_b4gic3w = "../test/data/b4gic3w_mods.json"
-# f = open(mods_b4gic3w)
-# mods = JSON.parse(f)
-# close(f)
-# b4gic3w_data = _PM.parse_file(case_b4gic3w)
-# _PMGMD.apply_mods!(b4gic3w_data, mods) # function not defined!
-# _PMGMD.fix_gmd_indices!(b4gic3w_data) # function not defined!
+    # mods_b4gic3w = "../test/data/b4gic3w_mods.json"
+    # f = open(mods_b4gic3w)
+    # mods = JSON.parse(f)
+    # close(f)
+    # b4gic3w_data = _PM.parse_file(case_b4gic3w)
+    # _PMGMD.apply_mods!(b4gic3w_data, mods) # function not defined!
+    # _PMGMD.fix_gmd_indices!(b4gic3w_data) # function not defined!
 
 # Perform automated testing of PMsGMD problem specifications:
 @testset "PowerModelsGMD" begin
