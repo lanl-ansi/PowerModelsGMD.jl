@@ -63,29 +63,4 @@
 
 
 
-    # ===   UIUC150   === #
-
-    @testset "UIUC150 case" begin
-
-        result = _PMGMD.run_gmd(case_uiuc150; setting=setting)
-        @test result["status"] == :LocalOptimal
-        
-        # - DC solution - %
-
-        dc_solution = result["solution"]
-
-        @test isapprox(dc_solution["gmd_bus"]["13"]["gmd_vdc"], 0.6851, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["57"]["gmd_vdc"], 0.0, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["131"]["gmd_vdc"], 3.8044, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["190"]["gmd_vdc"], 6.9636, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["197"]["gmd_vdc"], -32.6745, atol=1e-1)
-
-        @test isapprox(dc_solution["gmd_branch"]["7"]["gmd_idc"], 10.0816, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["45"]["gmd_idc"], 24.9693, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["91"]["gmd_idc"], -11.4774, atol=1e-1)
-
-    end
-
-
-
 end

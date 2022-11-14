@@ -39,8 +39,6 @@ case_b4gic3w = "../test/data/b4gic3w.raw"
 case_b6gic_nerc = "../test/data/b6gic_nerc.m"
 case24_ieee_rts_0 = "../test/data/case24_ieee_rts_0.m"
 case_epri21 = "../test/data/epri21.m"
-
-case_uiuc150 = "../test/data/uiuc150_95pct_loading.m"
 case_otstest = "../test/data/ots_test.m"
 
     # mods_b4gic3w = "../test/data/b4gic3w_mods.json"

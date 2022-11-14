@@ -37,16 +37,4 @@
 
 
 
-    # ===   UIUC150   === #
-
-    @testset "UIUC150 case" begin
-
-        result = _PM.run_ac_opf(case_uiuc150, ipopt_solver; setting=setting)
-        @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 803609.8084; atol=1e2)
-
-    end
-
-
-
 end

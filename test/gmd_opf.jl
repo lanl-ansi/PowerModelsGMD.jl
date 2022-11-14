@@ -79,20 +79,4 @@
 
 
 
-    # ===   UIUC150   === #
-
-    @testset "UIUC150 case" begin
-
-        result = _PMGMD.run_ac_gmd_opf(case_uiuc150, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol = 1e2)
-
-        # TODO => FIX ERROR
-        # Received Warning Message:
-        # DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.
-
-    end
-
-
-
 end
