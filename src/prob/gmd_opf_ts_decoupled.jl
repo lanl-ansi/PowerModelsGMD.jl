@@ -1,8 +1,8 @@
-export run_ac_gmd_opf_ts_decoupled
+export solve_ac_gmd_opf_ts_decoupled
 
 
 "FUNCTION: run the multi-time-series sequential quasi-dc power flow and ac optimal power flow problem"
-function run_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{String,Any}(), disable_thermal=true, kwargs...)
+function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{String,Any}(), disable_thermal=true, kwargs...)
 
     wf_time = waveform["time"]
     wf_waveforms = waveform["waveforms"]
@@ -27,7 +27,7 @@ function run_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{Str
 
         update_gmd_case!(case, waveform, i)
 
-        result = run_ac_gmd_opf_decoupled(case, optimizer; setting=setting)
+        result = solve_ac_gmd_opf_decoupled(case, optimizer; setting=setting)
         result["time_index"] = i
         result["time"] = wf_time[i]
 

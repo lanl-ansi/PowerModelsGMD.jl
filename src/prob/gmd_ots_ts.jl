@@ -1,20 +1,20 @@
-export run_ac_gmd_mls_ots_ts, run_soc_gmd_mls_ots_ts
-export run_gmd_mls_ots_tsend
+export solve_ac_gmd_mls_ots_ts, solve_soc_gmd_mls_ots_ts
+export solve_gmd_mls_ots_tsend
 
 
 "FUNCTION: run multi-time-series GMD model with nonlinear ac equations"
-function run_ac_gmd_mls_ots_ts(file, optimizer; kwargs...)
-    return run_gmd_mls_ots_ts( file, _PM.ACPPowerModel, optimizer; kwargs...)
+function solve_ac_gmd_mls_ots_ts(file, optimizer; kwargs...)
+    return solve_gmd_mls_ots_ts( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: run multi-time-series GMD mitigation with second order cone relaxation"
-function run_soc_gmd_mls_ots_ts(file, optimizer; kwargs...)
-    return run_gmd_mls_ots_ts( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
+function solve_soc_gmd_mls_ots_ts(file, optimizer; kwargs...)
+    return solve_gmd_mls_ots_ts( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
 
-function run_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
+function solve_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
         model_type,

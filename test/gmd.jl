@@ -3,7 +3,7 @@
 
     @testset "B4GIC case" begin
 
-        result = _PMGMD.run_gmd(case_b4gic, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_gmd(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         # DC solution:
@@ -16,7 +16,7 @@
 
     @testset "NERC B6GIC case" begin
 
-        result = _PMGMD.run_gmd(case_b6gic_nerc, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_gmd(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         # DC solution:
@@ -29,7 +29,7 @@
 
     @testset "EPRI21 case" begin
 
-        result = _PMGMD.run_gmd(case_epri21, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_gmd(case_epri21, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         # DC solution:

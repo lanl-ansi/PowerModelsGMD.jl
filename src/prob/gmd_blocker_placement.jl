@@ -1,8 +1,8 @@
-export run_gmd_blocker_placement
+export solve_gmd_blocker_placement
 
 
 "FUNCTION: run GIC current model"
-function run_gmd_blocker_placement(file, optimizer; kwargs...)
+function solve_gmd_blocker_placement(file, optimizer; kwargs...)
     return _PM.solve_model(
         file,
         _PM.ACPPowerModel,

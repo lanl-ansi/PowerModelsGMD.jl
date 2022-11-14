@@ -1,13 +1,13 @@
-export run_ac_gmd_msse
-export run_msse_qloss
+export solve_ac_gmd_msse
+export solve_msse_qloss
 
 
 "FUNCTION: run basic GMD model with nonlinear ac equations"
-function run_ac_gmd_msse(file, optimizer; kwargs...)
-    return run_msse_qloss(file, _PM.ACPPowerModel, optimizer; kwargs...)
+function solve_ac_gmd_msse(file, optimizer; kwargs...)
+    return solve_msse_qloss(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-function run_msse_qloss(file, model_type::Type, optimizer; kwargs...)
+function solve_msse_qloss(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
         model_type,

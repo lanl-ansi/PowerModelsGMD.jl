@@ -1,18 +1,18 @@
-export run_ac_pf_qloss, run_ac_pf_qloss_vnom
-export run_pf_qloss, run_pf_qloss_vnom
-export run_ac_gmd_pf_decoupled
+export solve_ac_pf_qloss, solve_ac_pf_qloss_vnom
+export solve_pf_qloss, solve_pf_qloss_vnom
+export solve_ac_gmd_pf_decoupled
 
 
 "FUNCTION: run basic GMD model with nonlinear ac equations"
-function run_ac_pf_qloss(file, optimizer; kwargs...)
-    return run_pf_qloss(file, _PM.ACPPowerModel, optimizer; kwargs...,)
+function solve_ac_pf_qloss(file, optimizer; kwargs...)
+    return solve_pf_qloss(file, _PM.ACPPowerModel, optimizer; kwargs...,)
 end
 
-function run_ac_pf_qloss_vnom(file, optimizer; kwargs...)
-    return run_pf_qloss_vnom(file, _PM.ACPPowerModel, optimizer; kwargs...)
+function solve_ac_pf_qloss_vnom(file, optimizer; kwargs...)
+    return solve_pf_qloss_vnom(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-function run_pf_qloss(file, model_type::Type, optimizer; kwargs...)
+function solve_pf_qloss(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
         model_type,
@@ -29,7 +29,7 @@ function run_pf_qloss(file, model_type::Type, optimizer; kwargs...)
     )
 end
 
-function run_pf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
+function solve_pf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
         model_type,
@@ -132,27 +132,27 @@ end
 
 
 "FUNCTION: run the quasi-dc power flow problem followed by the ac-pf problem with qloss constraints"
-function run_ac_gmd_pf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
+function solve_ac_gmd_pf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
-    return run_ac_gmd_pf_decoupled(data, _PM.ACPPowerModel, optimizer; kwargs...)
+    return solve_ac_gmd_pf_decoupled(data, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-function run_ac_gmd_pf_decoupled(case::Dict{String,Any}, optimizer; setting=Dict(), kwargs...)
-    return run_gmd_pf_decoupled(case, _PM.ACPPowerModel, optimizer; kwargs...)
+function solve_ac_gmd_pf_decoupled(case::Dict{String,Any}, optimizer; setting=Dict(), kwargs...)
+    return solve_gmd_pf_decoupled(case, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-function run_gmd_pf_decoupled(file::String, model_type, optimizer; setting=Dict(), kwargs...)
+function solve_gmd_pf_decoupled(file::String, model_type, optimizer; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
-    return run_gmd_pf_decoupled(data, model_type, optimizer; kwargs...)
+    return solve_gmd_pf_decoupled(data, model_type, optimizer; kwargs...)
 end
 
 
-function run_gmd_pf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer; setting=Dict{String,Any}(), kwargs...)
+function solve_gmd_pf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer; setting=Dict{String,Any}(), kwargs...)
 
     branch_setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
     merge!(setting, branch_setting)
 
-    dc_result = run_gmd(dc_case, optimizer)
+    dc_result = solve_gmd(dc_case, optimizer)
     dc_solution = dc_result["solution"]
 
     ac_case = deepcopy(dc_case)
@@ -160,7 +160,7 @@ function run_gmd_pf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer; 
         dc_current_mag(branch, ac_case, dc_solution)
     end
 
-    ac_result = run_pf_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
+    ac_result = solve_pf_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
     ac_solution = ac_result["solution"]
     adjust_gmd_qloss(ac_case, ac_solution)
 

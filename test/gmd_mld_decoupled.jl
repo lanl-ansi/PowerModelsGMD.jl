@@ -5,7 +5,7 @@
 
     # @testset "CASE24-IEEE-RTS-0 case" begin
 
-    #     result = _PMGMD.run_ac_gmd_mls_decoupled(case24_ieee_rts_0, ipopt_solver; setting=setting)
+    #     result = _PMGMD.solve_ac_gmd_mls_decoupled(case24_ieee_rts_0, ipopt_solver; setting=setting)
     #     @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
     #     @test isapprox(result["ac"]["result"]["objective"], 100890.0107; atol = 1e2)
 
@@ -47,7 +47,7 @@
 
     # @testset "EPRI21 case" begin
 
-        # result = _PMGMD.run_ac_gmd_mls_decoupled(case_epri21, ipopt_solver; setting=setting)
+        # result = _PMGMD.solve_ac_gmd_mls_decoupled(case_epri21, ipopt_solver; setting=setting)
         # @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["ac"]["result"]["objective"], 0; atol = 1e2)
 
@@ -73,7 +73,7 @@ end
 
     @testset "CASE24-IEEE-RTS-0 case" begin
 
-        result = _PMGMD.run_soc_gmd_mld_decoupled(case24_ieee_rts_0, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_soc_gmd_mld_decoupled(case24_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["ac"]["result"]["objective"], 200859.6769; atol = 1e3)
 
@@ -115,7 +115,7 @@ end
 
     @testset "EPRI21 case" begin
 
-        # result = _PMGMD.run_soc_gmd_mld_decoupled(case_epri21, ipopt_solver; setting=setting)
+        # result = _PMGMD.solve_soc_gmd_mld_decoupled(case_epri21, ipopt_solver; setting=setting)
         # @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["ac"]["result"]["objective"], 0; atol = 1e2)
 

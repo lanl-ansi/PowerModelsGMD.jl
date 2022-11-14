@@ -1,13 +1,13 @@
-export run_ac_gmd_opf
-export run_gmd_opf
+export solve_ac_gmd_opf
+export solve_gmd_opf
 
 
 "FUNCTION: run basic GMD model with nonlinear ac equations"
-function run_ac_gmd_opf(file, optimizer; kwargs...)
-    return run_gmd_opf( file, _PM.ACPPowerModel, optimizer; kwargs...)
+function solve_ac_gmd_opf(file, optimizer; kwargs...)
+    return solve_gmd_opf( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-function run_gmd_opf(file, model_type::Type, optimizer; kwargs...)
+function solve_gmd_opf(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
         model_type,

@@ -12,7 +12,7 @@
 
         b4gic_data = _PM.parse_file(case_b4gic)
 
-        result = _PMGMD.run_ac_gmd_opf_ts_decoupled(b4gic_data, ipopt_solver, wf_data; setting=setting, disable_thermal=true)
+        result = _PMGMD.solve_ac_gmd_opf_ts_decoupled(b4gic_data, ipopt_solver, wf_data; setting=setting, disable_thermal=true)
         for period in 1:length(wf_data["time"])
             @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         end
@@ -58,7 +58,7 @@
 
         # - Thermal solution - %
 
-        result = _PMGMD.run_ac_gmd_opf_ts_decoupled(b4gic_data, ipopt_solver, wf_data; setting=setting, disable_thermal=false)
+        result = _PMGMD.solve_ac_gmd_opf_ts_decoupled(b4gic_data, ipopt_solver, wf_data; setting=setting, disable_thermal=false)
         for period in 1:length(wf_data["time"])
             @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         end

@@ -5,7 +5,7 @@
 
     @testset "B4GIC case" begin
 
-        result = _PMGMD.run_ac_gmd_opf_decoupled(case_b4gic, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b4gic, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["ac"]["result"]["objective"], 116456.6409; atol = 1e1)
 
@@ -34,7 +34,7 @@
 
     @testset "NERC B6GIC case" begin
 
-        result = _PMGMD.run_ac_gmd_opf_decoupled(case_b6gic_nerc, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["ac"]["result"]["objective"], 978.3884; atol = 1e1)
 
@@ -68,7 +68,7 @@
 
     @testset "EPRI21 case" begin
 
-        result = _PMGMD.run_ac_gmd_opf_decoupled(case_epri21, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_opf_decoupled(case_epri21, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["ac"]["result"]["objective"], 399393.8778; atol = 1e1)
 

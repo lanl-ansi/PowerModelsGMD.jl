@@ -1,8 +1,8 @@
-export run_gmd
+export solve_gmd
 
 
 "FUNCTION: run GIC current model"
-function run_gmd(file, optimizer; kwargs...)
+function solve_gmd(file, optimizer; kwargs...)
     return _PM.solve_model(
         file,
         _PM.ACPPowerModel,

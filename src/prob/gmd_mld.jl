@@ -1,35 +1,35 @@
-export run_ac_gmd_mls, run_qc_gmd_mls, run_soc_gmd_mls
-export run_ac_gmd_mld, run_soc_gmd_mld
-export run_gmd_mls, run_gmd_mld
+export solve_ac_gmd_mls, solve_qc_gmd_mls, solve_soc_gmd_mls
+export solve_ac_gmd_mld, solve_soc_gmd_mld
+export solve_gmd_mls, solve_gmd_mld
 
 
 "FUNCTION: run GMD mitigation with nonlinear ac equations"
-function run_ac_gmd_mls(file, optimizer; kwargs...)
-    return run_gmd_mls(file, _PM.ACPPowerModel, optimizer; kwargs...)
+function solve_ac_gmd_mls(file, optimizer; kwargs...)
+    return solve_gmd_mls(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-function run_ac_gmd_mld(file, optimizer; kwargs...)
-    return run_gmd_mld(file, _PM.ACPPowerModel, optimizer; kwargs...)
+function solve_ac_gmd_mld(file, optimizer; kwargs...)
+    return solve_gmd_mld(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: run GMD mitigation with qc ac equations"
-function run_qc_gmd_mls(file, optimizer; kwargs...)
-    return run_gmd_mls(file, _PM.QCLSPowerModel, optimizer; kwargs...)
+function solve_qc_gmd_mls(file, optimizer; kwargs...)
+    return solve_gmd_mls(file, _PM.QCLSPowerModel, optimizer; kwargs...)
 end
 
 
 "FUNCTION: run GMD mitigation with second order cone relaxation"
-function run_soc_gmd_mls(file, optimizer; kwargs...)
-    return run_gmd_mls(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
+function solve_soc_gmd_mls(file, optimizer; kwargs...)
+    return solve_gmd_mls(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
-function run_soc_gmd_mld(file, optimizer; kwargs...)
-    return run_gmd_mld(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
+function solve_soc_gmd_mld(file, optimizer; kwargs...)
+    return solve_gmd_mld(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
 
-function run_gmd_mls(file, model_type::Type, optimizer; kwargs...)
+function solve_gmd_mls(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
         model_type,
@@ -48,7 +48,7 @@ function run_gmd_mls(file, model_type::Type, optimizer; kwargs...)
     )
 end
 
-function run_gmd_mld(file, model_type::Type, optimizer; kwargs...)
+function solve_gmd_mld(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
         model_type,

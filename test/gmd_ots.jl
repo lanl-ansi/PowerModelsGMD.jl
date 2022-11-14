@@ -5,7 +5,7 @@
 
     @testset "EPRI21 case" begin
 
-        # result = _PMGMD.run_ac_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
+        # result = _PMGMD.solve_ac_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0; atol=1e2)
 
@@ -22,7 +22,7 @@
 
     @testset "OTS-TEST case" begin
 
-        # result = _PMGMD.run_ac_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
+        # result = _PMGMD.solve_ac_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0; atol=1e2)
 
@@ -48,7 +48,7 @@ end
 
     @testset "EPRI21 case" begin
 
-        # result = _PMGMD.run_qc_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
+        # result = _PMGMD.solve_qc_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0; atol=1e2)
 
@@ -65,7 +65,7 @@ end
 
     @testset "OTS-TEST case" begin
 
-        # result = _PMGMD.run_qc_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
+        # result = _PMGMD.solve_qc_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0; atol=1e2)
 
@@ -91,7 +91,7 @@ end
 
     @testset "EPRI21 case" begin
 
-        # result = _PMGMD.run_soc_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
+        # result = _PMGMD.solve_soc_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0; atol=1e2)
 
@@ -108,7 +108,7 @@ end
 
     @testset "OTS-TEST case" begin
 
-        # result = _PMGMD.run_soc_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
+        # result = _PMGMD.solve_soc_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0; atol=1e2)
 

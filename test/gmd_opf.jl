@@ -6,7 +6,7 @@
     @testset "B4GIC case" begin
 
         b4gic_data = _PM.parse_file(case_b4gic)
-        result = _PMGMD.run_ac_gmd_opf(b4gic_data, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_opf(b4gic_data, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
@@ -34,7 +34,7 @@
 
     @testset "NERC B6GIC case" begin
         b6gic_nerc_data = _PM.parse_file(case_b6gic_nerc)
-        result = _PMGMD.run_ac_gmd_opf(b6gic_nerc_data, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_opf(b6gic_nerc_data, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["objective"], 12312.5633; atol = 1e2)
 
@@ -67,7 +67,7 @@
 
     @testset "EPRI21 case" begin
 
-        # result = _PMGMD.run_ac_gmd_opf(case_epri21, ipopt_solver; setting=setting)
+        # result = _PMGMD.solve_ac_gmd_opf(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0; atol = 1e2)
 

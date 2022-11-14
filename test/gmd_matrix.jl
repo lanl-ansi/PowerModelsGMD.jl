@@ -5,7 +5,7 @@
 
     @testset "B4GIC case" begin
 
-        result = _PMGMD.run_gmd(case_b4gic; setting=setting)
+        result = _PMGMD.solve_gmd(case_b4gic; setting=setting)
         @test result["status"] == :LocalOptimal
 
         # - DC solution - %
@@ -24,7 +24,7 @@
 
     @testset "NERC B6GIC case" begin
 
-        result = _PMGMD.run_gmd(case_b6gic_nerc; setting=setting)
+        result = _PMGMD.solve_gmd(case_b6gic_nerc; setting=setting)
         @test result["status"] == :LocalOptimal
 
         # - DC solution - %
@@ -43,7 +43,7 @@
 
     @testset "EPRI21 case" begin
 
-        result = _PMGMD.run_gmd(case_epri21; setting=setting)
+        result = _PMGMD.solve_gmd(case_epri21; setting=setting)
         @test result["status"] == :LocalOptimal
 
         # - DC solution - %

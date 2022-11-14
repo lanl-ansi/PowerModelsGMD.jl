@@ -1,14 +1,14 @@
-export run_soc_gmd_mld_qloss_vnom, run_soc_gmd_cascade_mld_qloss_vnom
-export run_gmd_mld_qloss_vnom, run_gmd_cascade_mld_qloss_vnom
-export run_soc_gmd_mld_decoupled, run_soc_gmd_cascade_mld_decoupled
+export solve_soc_gmd_mld_qloss_vnom, solve_soc_gmd_cascade_mld_qloss_vnom
+export solve_gmd_mld_qloss_vnom, solve_gmd_cascade_mld_qloss_vnom
+export solve_soc_gmd_mld_decoupled, solve_soc_gmd_cascade_mld_decoupled
 
 
 "FUNCTION: run GMD MLD mitigation with second order cone relaxation"
-function run_soc_gmd_mld_qloss_vnom(file, solver; kwargs...)
-    return run_gmd_mld_qloss_vnom(file, _PM.SOCWRPowerModel, solver; kwargs...)
+function solve_soc_gmd_mld_qloss_vnom(file, solver; kwargs...)
+    return solve_gmd_mld_qloss_vnom(file, _PM.SOCWRPowerModel, solver; kwargs...)
 end
 
-function run_gmd_mld_qloss_vnom(file, model_constructor, solver; kwargs...)
+function solve_gmd_mld_qloss_vnom(file, model_constructor, solver; kwargs...)
     return _PM.solve_model(
         file,
         model_constructor,
@@ -27,11 +27,11 @@ end
 
 
 "FUNCTION: run GMD CASCADE MLD mitigation with second order cone relaxation"
-function run_soc_gmd_cascade_mld_qloss_vnom(file, solver; kwargs...)
-    return run_gmd_cascade_mld_qloss_vnom(file, _PM.SOCWRPowerModel, solver; kwargs...)
+function solve_soc_gmd_cascade_mld_qloss_vnom(file, solver; kwargs...)
+    return solve_gmd_cascade_mld_qloss_vnom(file, _PM.SOCWRPowerModel, solver; kwargs...)
 end
 
-function run_gmd_cascade_mld_qloss_vnom(file, model_constructor, solver; kwargs...)
+function solve_gmd_cascade_mld_qloss_vnom(file, model_constructor, solver; kwargs...)
     return _PM.solve_model(
         file,
         model_constructor,
@@ -169,27 +169,27 @@ end
 
 "FUNCTION: run the quasi-dc power flow problem followed by the maximum loadability problem 
 with second order cone relaxation"
-function run_soc_gmd_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
+function solve_soc_gmd_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
-    return run_soc_gmd_mld_decoupled(data, solver; kwargs...)
+    return solve_soc_gmd_mld_decoupled(data, solver; kwargs...)
 end
 
-function run_soc_gmd_mld_decoupled(case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
-    return run_gmd_mld_decoupled(case, _PM.SOCWRPowerModel, solver; kwargs...)
+function solve_soc_gmd_mld_decoupled(case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
+    return solve_gmd_mld_decoupled(case, _PM.SOCWRPowerModel, solver; kwargs...)
 end
 
-function run_gmd_mld_decoupled(file::String, model_constructor, solver; setting=Dict(), kwargs...)
+function solve_gmd_mld_decoupled(file::String, model_constructor, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
-    return run_gmd_mld_decoupled(data, model_constructor, solver; kwargs...)
+    return solve_gmd_mld_decoupled(data, model_constructor, solver; kwargs...)
 end
 
 
-function run_gmd_mld_decoupled(dc_case::Dict{String,Any}, model_constructor, solver; setting=Dict{String,Any}(), kwargs...)
+function solve_gmd_mld_decoupled(dc_case::Dict{String,Any}, model_constructor, solver; setting=Dict{String,Any}(), kwargs...)
 
     branch_setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
     merge!(setting, branch_setting)
 
-    dc_result = run_gmd(dc_case, solver)
+    dc_result = solve_gmd(dc_case, solver)
     dc_solution = dc_result["solution"]
 
     ac_case = deepcopy(dc_case)
@@ -198,7 +198,7 @@ function run_gmd_mld_decoupled(dc_case::Dict{String,Any}, model_constructor, sol
     end
     
     qloss_decoupled_vnom(ac_case)
-    ac_result = run_gmd_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting)
+    ac_result = solve_gmd_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting)
     ac_solution = ac_result["solution"]
     adjust_gmd_qloss(ac_case, ac_solution)
 
@@ -212,27 +212,27 @@ end
 
 "FUNCTION: run the quasi-dc power flow problem followed the cascading maximum loadability problem
 with second order cone relaxation"
-function run_soc_gmd_cascade_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
+function solve_soc_gmd_cascade_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
-    return run_soc_gmd_cascade_mld_decoupled(data, _PM.SOCWRPowerModel, solver; kwargs...)
+    return solve_soc_gmd_cascade_mld_decoupled(data, _PM.SOCWRPowerModel, solver; kwargs...)
 end
 
-function run_soc_gmd_cascade_mld_decoupled(case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
-    return run_gmd_cascade_mld_decoupled(case, _PM.SOCWRPowerModel, solver; kwargs...)
+function solve_soc_gmd_cascade_mld_decoupled(case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
+    return solve_gmd_cascade_mld_decoupled(case, _PM.SOCWRPowerModel, solver; kwargs...)
 end
 
-function run_gmd_cascade_mld_decoupled(file::String, model_constructor, solver; setting=Dict(), kwargs...)
+function solve_gmd_cascade_mld_decoupled(file::String, model_constructor, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
-    return run_gmd_cascade_mld_decoupled(data, model_constructor, solver; kwargs...)
+    return solve_gmd_cascade_mld_decoupled(data, model_constructor, solver; kwargs...)
 end
 
 
-function run_gmd_cascade_mld_decoupled(dc_case::Dict{String,Any}, model_constructor, solver; setting=Dict{String,Any}(), kwargs...)
+function solve_gmd_cascade_mld_decoupled(dc_case::Dict{String,Any}, model_constructor, solver; setting=Dict{String,Any}(), kwargs...)
 
     branch_setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
     merge!(setting, branch_setting)
 
-    dc_result = run_gmd(dc_case, solver)
+    dc_result = solve_gmd(dc_case, solver)
     dc_solution = dc_result["solution"]
 
     ac_case = deepcopy(dc_case)
@@ -241,7 +241,7 @@ function run_gmd_cascade_mld_decoupled(dc_case::Dict{String,Any}, model_construc
     end
     
     qloss_decoupled_vnom(ac_case)
-    ac_result = run_gmd_cascade_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting)
+    ac_result = solve_gmd_cascade_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting)
     ac_solution = ac_result["solution"]
     adjust_gmd_qloss(ac_case, ac_solution)
 

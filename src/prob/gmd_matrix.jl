@@ -1,13 +1,13 @@
-export run_gmd
+export solve_gmd
 
 
 "FUNCTION: run GIC matrix solve"
-function run_gmd(file::String; kwargs...)
+function solve_gmd(file::String; kwargs...)
     data = _PM.parse_file(file)
-    return run_gmd(data; kwargs...)
+    return solve_gmd(data; kwargs...)
 end
 
-function run_gmd(case::Dict{String,Any}; kwargs...)
+function solve_gmd(case::Dict{String,Any}; kwargs...)
 
     # Assumption: branchListStruct and busListStruct are snatched directly from JSON
 
