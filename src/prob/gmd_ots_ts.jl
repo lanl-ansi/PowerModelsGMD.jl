@@ -1,5 +1,5 @@
 export run_ac_gmd_mls_ots_ts, run_soc_gmd_mls_ots_ts
-export run_gmd_mls_ots_ts
+export run_gmd_mls_ots_tsend
 
 
 "FUNCTION: run multi-time-series GMD model with nonlinear ac equations"
@@ -15,7 +15,7 @@ end
 
 
 function run_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_type,
         optimizer,

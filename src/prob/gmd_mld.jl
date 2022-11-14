@@ -30,7 +30,7 @@ end
 
 
 function run_gmd_mls(file, model_type::Type, optimizer; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_type,
         optimizer,
@@ -49,7 +49,7 @@ function run_gmd_mls(file, model_type::Type, optimizer; kwargs...)
 end
 
 function run_gmd_mld(file, model_type::Type, optimizer; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_type,
         optimizer,

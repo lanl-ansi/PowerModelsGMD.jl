@@ -13,7 +13,7 @@ function run_ac_opf_qloss_vnom(file, optimizer; kwargs...)
 end
 
 function run_opf_qloss(file, model_type::Type, optimizer; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_type,
         optimizer,
@@ -27,7 +27,7 @@ function run_opf_qloss(file, model_type::Type, optimizer; kwargs...)
 end
 
 function run_opf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_type,
         optimizer,

@@ -3,7 +3,7 @@ export run_gmd_blocker_placement
 
 "FUNCTION: run GIC current model"
 function run_gmd_blocker_placement(file, optimizer; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         _PM.ACPPowerModel,
         optimizer,

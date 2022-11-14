@@ -8,7 +8,7 @@ function run_ac_gmd_msse(file, optimizer; kwargs...)
 end
 
 function run_msse_qloss(file, model_type::Type, optimizer; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_type,
         optimizer,

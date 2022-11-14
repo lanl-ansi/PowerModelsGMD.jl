@@ -21,7 +21,7 @@ end
 
 
 function run_gmd_mls_ots(file, model_type::Type, optimizer; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_type,
         optimizer,

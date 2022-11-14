@@ -9,7 +9,7 @@ function run_soc_gmd_mld_qloss_vnom(file, solver; kwargs...)
 end
 
 function run_gmd_mld_qloss_vnom(file, model_constructor, solver; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_constructor,
         solver,
@@ -32,7 +32,7 @@ function run_soc_gmd_cascade_mld_qloss_vnom(file, solver; kwargs...)
 end
 
 function run_gmd_cascade_mld_qloss_vnom(file, model_constructor, solver; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_constructor,
         solver,
