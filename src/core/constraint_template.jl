@@ -236,11 +236,39 @@ function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, i::Int; n
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     gs = gmd_bus["g_gnd"]
 
+    # assume by default that blocker is not present
+    has_blocker = get(gmd_bus, "blocker", 0.0)
+
+    # assume by default that the blocker is active
+    # if 0.0, then the dc blocker is bypassed
+    blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
+    gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
+    constraint_dc_power_balance_shunt(pm, nw, i, dc_expr, gs, blocker_status, gmd_bus_arcs)
+end
+
+
+"CONSTRAINT: power balance constraint for dc circuits with GIC blockers"
+function constraint_blocker_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    dc_expr = pm.model.ext[:nw][nw][:dc_expr]
+
+    gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
+    gs = gmd_bus["g_gnd"]
+
+    # assume by default that blocker is not present
+    has_blocker = get(gmd_bus, "blocker", 0.0)
+
+    # assume by default that the blocker is active
+    # if 0.0, then the dc blocker is bypassed
+    blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
     gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
 
-    constraint_dc_power_balance_shunt(pm, nw, i, dc_expr, gs, gmd_bus_arcs)
-
+    if has_blocker != 0.0
+        constraint_blocker_dc_power_balance_shunt(pm, nw, i, dc_expr, gs, gmd_bus_arcs)
+    else
+        constraint_dc_power_balance_shunt(pm, nw, i, dc_expr, gs, blocker_status, gmd_bus_arcs)
+    end
 end
+
 
 
 "CONSTRAINT: relating current to power flow"
