@@ -244,6 +244,7 @@ function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, i::Int; n
     blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
     gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
     constraint_dc_power_balance_shunt(pm, nw, i, dc_expr, gs, blocker_status, gmd_bus_arcs)
+
 end
 
 
@@ -267,6 +268,7 @@ function constraint_blocker_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, i
     else
         constraint_dc_power_balance_shunt(pm, nw, i, dc_expr, gs, blocker_status, gmd_bus_arcs)
     end
+
 end
 
 

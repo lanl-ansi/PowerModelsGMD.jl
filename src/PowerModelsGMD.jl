@@ -13,15 +13,10 @@ const _PMGMD = PowerModelsGMD
     import JuMP
     import Memento
 
-    import LinearAlgebra
-    import SparseArrays
-
-    
-    # Create module level logger
+    # Suppressing information and warning messages:
     const _LOGGER = Memento.getlogger(@__MODULE__)
     __init__() = Memento.register(_LOGGER)
 
-    # Suppresses information and warning messages:
     function silence()
         Memento.info(_LOGGER, "Suppressing information and warning messages for the rest of this session. 
         Use the Memento package for more fine-grained control of logging.")
@@ -35,7 +30,10 @@ const _PMGMD = PowerModelsGMD
     end
 
 
-    # Add core functions, network formulations, and problem specifications:
+    import LinearAlgebra
+    import SparseArrays
+
+    # Add core functions:
     include("core/base.jl")
     include("core/constraint_template.jl")
     include("core/constraint.jl")
@@ -45,12 +43,14 @@ const _PMGMD = PowerModelsGMD
     include("core/solution.jl")
     include("core/variable.jl")
 
+    # Add network formulations:
     include("form/acp.jl")
     include("form/dcp.jl")
     include("form/shared.jl")
     include("form/wr.jl")
     include("form/wrm.jl")
 
+    # Add problem specifications:
     include("prob/gmd_matrix.jl")
     include("prob/gmd_mld_decoupled.jl")
     include("prob/gmd_mld.jl")
@@ -64,4 +64,5 @@ const _PMGMD = PowerModelsGMD
     include("prob/gmd_pf_decoupled.jl")
     include("prob/gmd.jl")
     include("prob/gmd_blocker_placement.jl")
+
 end

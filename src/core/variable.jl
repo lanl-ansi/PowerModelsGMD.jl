@@ -350,6 +350,72 @@ function variable_active_generation_sqr_cost(pm::_PM.AbstractPowerModel; nw::Int
 end
 
 
+# "VARIABLE: `0 <= gic_blocker_placement[l] <= 1` for `l` in `gmd_bus`es"
+# function variable_gic_blocker_placement_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+#     if !relax
+#         z_gic_blocker_placement = var(pm, nw)[:gic_blocker_placement] = JuMP.@variable(pm.model,
+#             [l in ids(pm, nw, :placement_gic_blocker)], base_name="$(nw)_gic_blocker_placement",
+#             binary = true,
+#             start = comp_start_value(ref(pm, nw, :placement_gic_blocker, l), "gic_blocker_placement_start", 1.0)
+#         )
+#     else
+#         z_gic_blocker_placement = var(pm, nw)[:gic_blocker_placement] = JuMP.@variable(pm.model,
+#             [l in ids(pm, nw, :placement_gic_blocker)], base_name="$(nw)_gic_blocker_placement",
+#             lower_bound = 0.0,
+#             upper_bound = 1.0,
+#             start = comp_start_value(ref(pm, nw, :placement_gic_blocker, l), "gic_blocker_placement_start", 1.0)
+#         )
+#     end
+# 
+#     report && sol_component_value(pm, nw, :placement_gic_blocker, :built, ids(pm, nw, :placement_gic_blocker), z_gic_blocker_placement)
+#
+# end
+# 
+#
+# "VARIABLE: `0 <= gic_blocker[l] <= 1` for `l` in `gmd_bus`es"
+# function variable_gic_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+#     if !relax
+#         z_gic_blocker = var(pm, nw)[:gic_blocker] = JuMP.@variable(pm.model,
+#             [l in ids(pm, nw, :gic_blocker)], base_name="$(nw)_gic_blocker",
+#             binary = true,
+#             start = comp_start_value(ref(pm, nw, :gic_blocker, l), "gic_blocker_start", 1.0)
+#         )
+#     else
+#         z_gic_blocker = var(pm, nw)[:gic_blocker] = JuMP.@variable(pm.model,
+#             [l in ids(pm, nw, :gic_blocker)], base_name="$(nw)_gic_blocker",
+#             lower_bound = 0.0,
+#             upper_bound = 1.0,
+#             start = comp_start_value(ref(pm, nw, :gic_blocker, l), "gic_blocker_start", 1.0)
+#         )
+#     end
+# 
+#     report && sol_component_value(pm, nw, :gic_blocker, :built, ids(pm, nw, :gic_blocker), z_gic_blocker)
+#
+# end
+
+
+"VARIABLE: `0 <= gic_blocker[l] <= 1` for `l` in `gmd_bus`es"
+function variable_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default, relax::Bool=false, report::Bool=true)
+    # TODO: only create GIC blocker variables where GIC blockers are installed
+    if !relax
+        z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :gmd_bus)], base_name="$(nw)_z_blocker",
+            binary = true,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_bus, i), "z_blocker_start", 1.0)
+        )
+    else
+        z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :gmd_bus)], base_name="$(nw)_z_blocker",
+            lower_bound = 0,
+            upper_bound = 1,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_bus, i), "z_blocker_start", 1.0)
+        )
+    end
+
+    report && _PM.sol_component_value(pm, nw, :gmd_bus, :z_blocker, _PM.ids(pm, nw, :gmd_bus), z_gic_blocker)
+
+end
+
 
 
 # ===   THERMAL VARIABLES   === #
@@ -667,67 +733,5 @@ function variable_block_shunt_admittance_factor(pm::_PM.AbstractPowerModel; nw::
         sol_bs = Dict(i => z_shunt[1]*_PM.ref(pm, nw, :shunt, i)["bs"] for i in _PM.ids(pm, nw, :shunt))
         _PM.sol_component_value(pm, nw, :shunt, :bs, _PM.ids(pm, nw, :shunt), sol_bs)
     end
-end
-
-# "variable: `0 <= gic_blocker_placement[l] <= 1` for `l` in `gmd_bus`es"
-# function variable_gic_blocker_placement_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
-#     if !relax
-#         z_gic_blocker_placement = var(pm, nw)[:gic_blocker_placement] = JuMP.@variable(pm.model,
-#             [l in ids(pm, nw, :placement_gic_blocker)], base_name="$(nw)_gic_blocker_placement",
-#             binary = true,
-#             start = comp_start_value(ref(pm, nw, :placement_gic_blocker, l), "gic_blocker_placement_start", 1.0)
-#         )
-#     else
-#         z_gic_blocker_placement = var(pm, nw)[:gic_blocker_placement] = JuMP.@variable(pm.model,
-#             [l in ids(pm, nw, :placement_gic_blocker)], base_name="$(nw)_gic_blocker_placement",
-#             lower_bound = 0.0,
-#             upper_bound = 1.0,
-#             start = comp_start_value(ref(pm, nw, :placement_gic_blocker, l), "gic_blocker_placement_start", 1.0)
-#         )
-#     end
-# 
-#     report && sol_component_value(pm, nw, :placement_gic_blocker, :built, ids(pm, nw, :placement_gic_blocker), z_gic_blocker_placement)
-# end
-# 
-# "variable: `0 <= gic_blocker[l] <= 1` for `l` in `gmd_bus`es"
-# function variable_gic_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
-#     if !relax
-#         z_gic_blocker = var(pm, nw)[:gic_blocker] = JuMP.@variable(pm.model,
-#             [l in ids(pm, nw, :gic_blocker)], base_name="$(nw)_gic_blocker",
-#             binary = true,
-#             start = comp_start_value(ref(pm, nw, :gic_blocker, l), "gic_blocker_start", 1.0)
-#         )
-#     else
-#         z_gic_blocker = var(pm, nw)[:gic_blocker] = JuMP.@variable(pm.model,
-#             [l in ids(pm, nw, :gic_blocker)], base_name="$(nw)_gic_blocker",
-#             lower_bound = 0.0,
-#             upper_bound = 1.0,
-#             start = comp_start_value(ref(pm, nw, :gic_blocker, l), "gic_blocker_start", 1.0)
-#         )
-#     end
-# 
-#     report && sol_component_value(pm, nw, :gic_blocker, :built, ids(pm, nw, :gic_blocker), z_gic_blocker)
-# end
-
-
-"variable: `0 <= gic_blocker[l] <= 1` for `l` in `gmd_bus`es"
-function variable_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default, relax::Bool=false, report::Bool=true)
-    # TODO: only create GIC blocker variables where GIC blockers are installed
-    if !relax
-        z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :gmd_bus)], base_name="$(nw)_z_blocker",
-            binary = true,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_bus, i), "z_blocker_start", 1.0)
-        )
-    else
-        z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :gmd_bus)], base_name="$(nw)_z_blocker",
-            lower_bound = 0,
-            upper_bound = 1,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_bus, i), "z_blocker_start", 1.0)
-        )
-    end
-
-    report && _PM.sol_component_value(pm, nw, :gmd_bus, :z_blocker, _PM.ids(pm, nw, :gmd_bus), z_gic_blocker)
 end
 
