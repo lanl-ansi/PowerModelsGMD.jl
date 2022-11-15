@@ -53,14 +53,14 @@ function apply_mods!(net, mods::AbstractDict{String,Any})
 
             if ("source_id" in keys(obj)) && (obj["source_id"] in keys(net_by_sid[otype]))
                 key = net_by_sid[otype][obj["source_id"]]
-                # println(obj["source_id"])
-                # println(" => ")
-                # println(key)
+                # print(obj["source_id"])
+                # print(" => ")
+                # print(key)
             elseif otype == "branch"
                 # println("Skipping branch $key ")
                 if "source_id" in keys(obj)
-                    # println(obj["source_id"])
-                    # println(" ")
+                    # print(obj["source_id"])
+                    # print(" ")
                 end
                 # println("without matching source id")
                 continue
@@ -110,7 +110,7 @@ end
 "FUNCTION: correct parent branches for gmd branches after applying mods"
 function fix_gmd_indices!(net)
 
-    # Map branch source ids to indices
+    # map branch source ids to indices
     branch_map = Dict(map(x -> x["source_id"] => x["index"], values(net["branch"])))
 
     for (i,gbr) in net["gmd_branch"]
@@ -333,7 +333,8 @@ end
 
 "CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
 function qloss_decoupled_vnom(case)
-    println("Start calculating qloss")
+
+    # println("Start calculating qloss")
 
     for (_, bus) in case["bus"]
         bus["qloss"] = 0.0
@@ -346,8 +347,8 @@ function qloss_decoupled_vnom(case)
     end
 
     for (k, branch) in case["branch"]
-        #Smax = 1000
-        #branchMVA = min(get(branch, "rate_a", Smax), Smax)
+        # Smax = 1000
+        # branchMVA = min(get(branch, "rate_a", Smax), Smax)
         # using hi/lo bus shouldn't be an issue because qloss is defined in arcs going in both directions
 
         i = branch["f_bus"]
@@ -376,9 +377,12 @@ function qloss_decoupled_vnom(case)
             ibase = (case["baseMVA"] * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
             ieff = branch["ieff"]/(3*ibase)
             qloss = branch["gmd_k"]*ieff
-            #println("Qloss for transformer ($i,$j) = $qloss")
+            # println("Qloss for transformer ($i,$j) = $qloss")
+        
             case["bus"]["$i"]["qloss"] += qloss
-            case["branch"][k]["qloss"] = qloss
+        
+            # case["branch"][k]["qloss"] = qloss   # OLD value
+            case["branch"][k]["gmd_qloss"] = qloss * case["baseMVA"]
 
             n = length(case["load"])
 
@@ -387,17 +391,19 @@ function qloss_decoupled_vnom(case)
                 load["source_id"] = ["qloss", branch["index"]]
                 load["load_bus"] = i
                 load["status"] = 1
-                load["pd"] = 0
+                load["pd"] = 0.0
                 load["qd"] = qloss
                 load["index"] = n + 1
                 case["load"]["$(n + 1)"] = load
+                load["weight"] = 100.0
             end
         else
             Memento.warn(_LOGGER, "Transformer $k ($i,$j) does not have field gmd_k, skipping")
         end
     end
 
-    println("Done calculating qloss")
+    # println("Done calculating qloss")
+
 end
 
 "FUNCTION: dc current on normal lines"
@@ -870,9 +876,9 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
     for bus in data["bus"]
         zb = bus["base_kv"]^2/mva_base
 
-        #println("bus: $(bus["index"]), zb: $zb, a(pu): $(bus["gmd_gs"])")
+        # println("bus: $(bus["index"]), zb: $zb, a(pu): $(bus["gmd_gs"])")
         bus["gmd_gs"] *= zb
-        #println("-> a(pu): $(bus["gmd_gs"]) \n")
+        # println("-> a(pu): $(bus["gmd_gs"]) \n")
     end
 
 end
