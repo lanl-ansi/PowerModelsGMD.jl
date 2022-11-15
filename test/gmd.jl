@@ -14,7 +14,20 @@
     end
 
 
-    @testset "NERC B6GIC case" begin
+    @testset "B4GIC-3W case" begin
+
+        result = _PMGMD.solve_gmd(case_b4gic3w, ipopt_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+
+        # DC solution:
+        dc_solution = result["solution"]
+        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
+
+    end
+
+
+    @testset "B6GIC-NERC case" begin
 
         result = _PMGMD.solve_gmd(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
