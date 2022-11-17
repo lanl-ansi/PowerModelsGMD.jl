@@ -27,7 +27,7 @@ function apply_mods!(net, mods::AbstractDict{String,Any})
         if !(otype in keys(net))
             net[otype] = Dict{String,Any}()
         end
-    end        
+    end
 
     net_by_sid = create_sid_map(net)     
 
@@ -331,6 +331,7 @@ function dc_current_mag(branch, case, solution)
 
 end
 
+
 "CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
 function qloss_decoupled_vnom(case)
 
@@ -347,6 +348,7 @@ function qloss_decoupled_vnom(case)
     end
 
     for (k, branch) in case["branch"]
+
         # Smax = 1000
         # branchMVA = min(get(branch, "rate_a", Smax), Smax)
         # using hi/lo bus shouldn't be an issue because qloss is defined in arcs going in both directions
@@ -374,14 +376,13 @@ function qloss_decoupled_vnom(case)
         end
 
         if "gmd_k" in keys(branch)
+
             ibase = (case["baseMVA"] * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
             ieff = branch["ieff"]/(3*ibase)
             qloss = branch["gmd_k"]*ieff
             # println("Qloss for transformer ($i,$j) = $qloss")
         
             case["bus"]["$i"]["qloss"] += qloss
-        
-            # case["branch"][k]["qloss"] = qloss   # OLD value
             case["branch"][k]["gmd_qloss"] = qloss * case["baseMVA"]
 
             n = length(case["load"])
@@ -397,6 +398,7 @@ function qloss_decoupled_vnom(case)
                 case["load"]["$(n + 1)"] = load
                 load["weight"] = 100.0
             end
+
         else
             Memento.warn(_LOGGER, "Transformer $k ($i,$j) does not have field gmd_k, skipping")
         end
@@ -405,6 +407,7 @@ function qloss_decoupled_vnom(case)
     # println("Done calculating qloss")
 
 end
+
 
 "FUNCTION: dc current on normal lines"
 function dc_current_mag_line(branch, case, solution)
