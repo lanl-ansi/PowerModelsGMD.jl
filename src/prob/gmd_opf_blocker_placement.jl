@@ -20,7 +20,8 @@ function run_gmd_opf_blocker_placement(file, model_type::Type, optimizer; kwargs
             solution_gmd!,
             solution_PM!,
             solution_gmd_qloss!,
-            solution_gmd_mls!
+            solution_gmd_mls!,
+            solution_gmd_blocker!,
         ],
         kwargs...,
     )

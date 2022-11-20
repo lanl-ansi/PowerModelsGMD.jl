@@ -14,7 +14,7 @@ function run_gmd_blocker_placement(file, optimizer; kwargs...)
         ],
         solution_processors = [
             solution_gmd!,
-            solution_gmd_blocker!
+            solution_gmd_blocker!,
         ],
         kwargs...,
     )
