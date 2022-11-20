@@ -675,19 +675,19 @@ function variable_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_i
     # TODO: only create GIC blocker variables where GIC blockers are installed
     if !relax
         z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :blocker_buses)], base_name="$(nw)_z_blocker",
+            [i in _PM.ids(pm, nw, :bus_blockers)], base_name="$(nw)_z_blocker",
             binary = true,
             start = _PM.comp_start_value(_PM.ref(pm, nw, :blocker_buses, i), "z_blocker_start", 1.0)
         )
     else
         z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :blocker_buses)], base_name="$(nw)_z_blocker",
+            [i in _PM.ids(pm, nw, :bus_blockers)], base_name="$(nw)_z_blocker",
             lower_bound = 0,
             upper_bound = 1,
             start = _PM.comp_start_value(_PM.ref(pm, nw, :blocker_buses, i), "z_blocker_start", 1.0)
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :blocker_buses, :z_blocker, _PM.ids(pm, nw, :blocker_buses), z_gic_blocker)
+    report && _PM.sol_component_value(pm, nw, :bus_blockers, :z_blocker, _PM.ids(pm, nw, :bus_blockers), z_gic_blocker)
 end
 

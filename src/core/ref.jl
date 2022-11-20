@@ -12,7 +12,6 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     end
 
     for (n, nw_data) in nws_data
-
         nw_id = parse(Int, n)
         nw_ref = ref[:it][pm_it_sym][:nw][nw_id]
 
@@ -31,15 +30,29 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         end
 
         nw_ref[:gmd_bus_arcs] = gmd_bus_arcs
-        nw_ref[:blocker_buses] = Dict(i=>gmd_bus for (i,gmd_bus) in nw_ref[:gmd_bus] if gmd_bus["blocker"] != 0.0)
-    end
+        #nw_ref[:blocker_buses] = Dict(i=>gmd_bus for (i,gmd_bus) in nw_ref[:gmd_bus] if gmd_bus["blocker"] != 0.0)
+        #nw_ref[:bus_blockers] = Dict(j=>i for (i,j) in enumerate(keys(nw_ref[:gmd_bus])))
+        #nw_ref[:blockers] = [i for (i,j) in enumerate(keys(nw_ref[:gmd_bus]))]
 
+        nw_ref[:bus_blockers] = Dict()
+        nw_ref[:blocker_buses] = Dict()
+        i = 1
+
+        for j in sort(collect(keys(nw_ref[:gmd_bus])))
+            gmd_bus = nw_ref[:gmd_bus][j]
+
+            if gmd_bus["blocker"] != 0.0
+                nw_ref[:bus_blockers][j] = i
+                nw_ref[:blocker_buses][j] = gmd_bus
+                i += 1
+            end
+        end
+    end
 end
 
 function ref_add_gmd_blockers!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     for (nw, nw_ref) in ref[:it][pm_it_sym][:nw]
-        #nw_ref[:blocker_buses] = [(i,gmd_bus) for (i,gmd_bus) in nw_ref[:gmd_bus] if gmd_bus["blocker"] != 0.0]
-        nw_ref[:blocker_buses] = Dict(i=>gmd_bus for (i,gmd_bus) in nw_ref[:gmd_bus])
+        nw_ref[:blocker_buses] = Dict(i=>gmd_bus for (i,gmd_bus) in nw_ref[:gmd_bus] if gmd_bus["blocker"] != 0.0)
     end
 end
 
