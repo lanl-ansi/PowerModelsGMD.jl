@@ -72,6 +72,7 @@ end
 function constraint_blocker_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gs, gmd_bus_arcs)
     v_dc = _PM.var(pm, n, :v_dc)[i]
     z = _PM.var(pm, n, :z_blocker)[i]
+    println("Adding blocking dc power balance constraint for gmd bus $i with admittance $gs")
 
     if length(gmd_bus_arcs) > 0
         if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)

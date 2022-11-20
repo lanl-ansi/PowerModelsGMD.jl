@@ -43,6 +43,29 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 end
 
 
+"SOLUTION: add quasi-dc power flow solutions"
+function solution_gmd_blocker!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
+
+    # GMD Bus
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["gmd_bus"] = pm.data["gmd_bus"]
+
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "gmd_bus")
+                for (i, gmd_bus) in nw_data["blocker_buses"]
+                    gmd_bus["blocker_placed"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:z_blocker]["$i"])
+                end
+            end
+        end
+    end
+end
+
+
 "SOLUTION: add PowerModels.jl power flow solutions"
 function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
