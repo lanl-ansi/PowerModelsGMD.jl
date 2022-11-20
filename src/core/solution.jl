@@ -60,11 +60,10 @@ function solution_gmd_blocker!(pm::_PM.AbstractPowerModel, solution::Dict{String
                 for (i, gmd_bus) in nw_data["gmd_bus"]
                     if haskey(nw_data, "bus_blockers") && haskey(nw_data["bus_blockers"], i)
                         key = gmd_bus["index"]
-                        #key = nw_data["bus_blockers"][i]
-                        #gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:v_dc][key])
-                        gmd_bus["blocker_placed"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:z_blocker][key])
+                        z = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:z_blocker][key])
+                        gmd_bus["blocker_placed"] = Int64(z)
                     else
-                        gmd_bus["blocker_placed"] = -1.0
+                        gmd_bus["blocker_placed"] = 0
                     end
                 end
             end
