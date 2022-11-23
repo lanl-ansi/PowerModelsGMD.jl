@@ -37,7 +37,7 @@ function build_gmd_opf_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_branch_power(pm)
     _PM.variable_dcline_power(pm)
 
-    variable_blocker_indicator(pm; relax=true)
+    variable_blocker_indicator(pm; relax=false)
     variable_dc_voltage(pm)
     variable_dc_current_mag(pm)
     variable_dc_line_flow(pm)
@@ -69,7 +69,11 @@ function build_gmd_opf_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :gmd_bus)
-        constraint_blocker_dc_power_balance_shunt(pm, i)
+        if i in _PM.ids(pm, :bus_blockers)
+            constraint_blocker_dc_power_balance_shunt(pm, i)
+        else
+            constraint_dc_power_balance_shunt(pm, i)
+        end
     end
 
     for i in _PM.ids(pm, :gmd_branch)
