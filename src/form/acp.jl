@@ -284,7 +284,7 @@ end
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh)
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
-    JuMP.@constraint(pm.model, ieff == abs(ihi))
+    JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
 end
 
 
@@ -294,7 +294,7 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractACPModel, n::Int
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
     ilo = _PM.var(pm, n, :dc)[(kl,il,jl)]
-    JuMP.@constraint(pm.model, ieff == abs(a*ihi + ilo)/a)
+    JuMP.@NLconstraint(pm.model, ieff == abs(a*ihi + ilo)/a)
 end
 
 
@@ -303,6 +303,6 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractACPModel, n
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     is = _PM.var(pm, n, :dc)[(ks,is,js)]
     ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
-    JuMP.@constraint(pm.model, ieff == abs(a*is + ic)/(a + 1.0))
+    JuMP.@NLconstraint(pm.model, ieff == abs(a*is + ic)/(a + 1.0))
 end
 
