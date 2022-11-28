@@ -74,7 +74,6 @@ function constraint_blocker_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n
 
     v_dc = _PM.var(pm, n, :v_dc)[i]
     z = _PM.var(pm, n, :z_blocker)[i]
-    println("Adding blocking dc power balance constraint for gmd bus $i with admittance $gs")
 
     println("Adding blocking dc power balance constraint for gmd bus $i with admittance $gs")
 
