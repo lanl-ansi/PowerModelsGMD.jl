@@ -10,9 +10,11 @@ function solve_gmd_blocker_placement(file, optimizer; kwargs...)
         build_gmd_blocker_placement;
         ref_extensions = [
             ref_add_gmd!
+            #ref_add_gmd_blockers!
         ],
         solution_processors = [
-            solution_gmd!
+            solution_gmd!,
+            solution_gmd_blocker!
         ],
         kwargs...,
     )
@@ -23,12 +25,16 @@ end
 as a linear constraint satisfaction problem"
 function build_gmd_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 
-    variable_blocker_indicator(pm; relax=true)
-    variable_dc_voltage(pm)
-    variable_dc_line_flow(pm)
+    variable_blocker_indicator(pm)
+    variable_dc_voltage(pm; bounded=true)
+    variable_dc_line_flow(pm; bounded=true)
 
     for i in _PM.ids(pm, :gmd_bus)
-        constraint_blocker_dc_power_balance_shunt(pm, i)
+        if i in _PM.ids(pm, :bus_blockers)
+            constraint_blocker_dc_power_balance_shunt(pm, i)
+        else
+            constraint_dc_power_balance_shunt(pm, i)
+        end
     end
 
     for i in _PM.ids(pm, :gmd_branch)
@@ -46,7 +52,7 @@ function objective_blocker_placement_cost(pm::_PM.AbstractPowerModel)
     nw = nw_id_default # TODO: extend to multinetwork
 
     return JuMP.@objective(pm.model, Min,
-        sum( get(_PM.ref(pm, nw, :gmd_bus, i), "blocker_cost", 1.0)*_PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :gmd_bus) )
+        -sum( get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0)*_PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses) )
     )
 
 end

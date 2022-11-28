@@ -255,3 +255,63 @@ function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j, K, bra
 
 end
 
+
+"CONSTRAINT: computing the dc current magnitude"
+function constraint_dc_current_mag(pm::_PM.AbstractACPModel, n::Int, k)
+
+    # correct equation is ieff = |a*ihi + ilo|/a
+    # just use ihi for now
+    branch = _PM.ref(pm, n, :branch, k)
+
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
+        constraint_dc_current_mag_line(pm, k, nw=n)
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
+        constraint_dc_current_mag_grounded_xf(pm, k, nw=n)
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
+        constraint_dc_current_mag_gwye_delta_xf(pm, k, nw=n)
+    elseif branch["config"] == "gwye-gwye"
+        constraint_dc_current_mag_gwye_gwye_xf(pm, k, nw=n)
+    elseif branch["config"] == "gwye-gwye-auto"
+        constraint_dc_current_mag_gwye_gwye_auto_xf(pm, k, nw=n)
+    # TODO: need to support 3W transformers in optimization problems
+    elseif branch["config"] == "three-winding"
+        ieff = _PM.var(pm, n, :i_dc_mag)
+        JuMP.@constraint(pm.model, ieff[k] >= 0.0)
+    end
+
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-delta transformers"
+function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh)
+
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+    JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
+
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
+function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh, kl, il, jl, a)
+
+    Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+    ilo = _PM.var(pm, n, :dc)[(kl,il,jl)]
+    JuMP.@NLconstraint(pm.model, ieff == abs(a*ihi + ilo)/a)
+
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye auto transformers"
+function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractACPModel, n::Int, k, ks, is, js, kc, ic, jc, a)
+
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    is = _PM.var(pm, n, :dc)[(ks,is,js)]
+    ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
+    JuMP.@NLconstraint(pm.model, ieff == abs(a*is + ic)/(a + 1.0))
+
+end
+

@@ -26,11 +26,38 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         nw_ref[:gmd_arcs] = [nw_ref[:gmd_arcs_from]; nw_ref[:gmd_arcs_to]]
 
         gmd_bus_arcs = Dict([(i, []) for (i,bus) in nw_ref[:gmd_bus]])
+        
         for (l,i,j) in nw_ref[:gmd_arcs]
            push!(gmd_bus_arcs[i], (l,i,j))
         end
-        nw_ref[:gmd_bus_arcs] = gmd_bus_arcs
 
+        nw_ref[:gmd_bus_arcs] = gmd_bus_arcs
+        #nw_ref[:blocker_buses] = Dict(i=>gmd_bus for (i,gmd_bus) in nw_ref[:gmd_bus] if gmd_bus["blocker"] != 0.0)
+        #nw_ref[:bus_blockers] = Dict(j=>i for (i,j) in enumerate(keys(nw_ref[:gmd_bus])))
+        #nw_ref[:blockers] = [i for (i,j) in enumerate(keys(nw_ref[:gmd_bus]))]
+
+        nw_ref[:bus_blockers] = Dict()
+        nw_ref[:blocker_buses] = Dict()
+        i = 1
+
+        for j in sort(collect(keys(nw_ref[:gmd_bus])))
+            gmd_bus = nw_ref[:gmd_bus][j]
+
+            if gmd_bus["blocker"] != 0.0
+                nw_ref[:bus_blockers][j] = i
+                nw_ref[:blocker_buses][j] = gmd_bus
+                i += 1
+            end
+        end
+    end
+end
+
+
+"REF: extension to add gmd blockers to ref"
+function ref_add_gmd_blockers!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+
+    for (nw, nw_ref) in ref[:it][pm_it_sym][:nw]
+        nw_ref[:blocker_buses] = Dict(i=>gmd_bus for (i,gmd_bus) in nw_ref[:gmd_bus] if gmd_bus["blocker"] != 0.0)
     end
 
 end

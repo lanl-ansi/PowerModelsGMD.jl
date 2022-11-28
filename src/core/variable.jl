@@ -574,13 +574,16 @@ end
 #    report && _PM._IM.sol_component_value(pm, _PM.pmd_it_sym, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
 #end
 
+
 """
+VARIABLE:
 variable_block_demand_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
 create a single for demand status by largest connected component
 """
 function variable_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)
     # JuMP allows for declaring scalar variables. 
     # Declaring this as a vector for compatibility when using multiple islands
+
     if relax
         z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
             [1], base_name="$(nw)_z_demand",
@@ -607,6 +610,7 @@ function variable_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_
     report && _PM.sol_component_value(pm, nw, :load, :status, _PM.ids(pm, nw, :load), _PM.var(pm, nw)[:z_demand])
     report && _PM.sol_component_value(pm, nw, :load, :pd, _PM.ids(pm, nw, :load), pd)
     report && _PM.sol_component_value(pm, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
+
 end
 
 
@@ -629,13 +633,16 @@ end
 #     report && _IM.sol_component_value(pm, nw, :gen, :gen_status, ids(pm, nw, :gen), z_gen)
 # end
 
+
 """
+VARIABLE:
 variable_block_gen_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
 create a single for demand status by largest connected component
 """
 function variable_block_gen_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)
     # JuMP allows for declaring scalar variables. 
     # Declaring this as a vector for compatibility when using multiple islands
+
     if relax
         z_gen = _PM.var(pm, nw)[:z_gen_blocks] = _PM.JuMP.@variable(pm.model,
             [1], base_name="$(nw)_z_gen",
@@ -662,6 +669,7 @@ function variable_block_gen_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_
     report && _PM.sol_component_value(pm, nw, :load, :gen, _PM.ids(pm, nw, :gen), _PM.var(pm, nw)[:z_gen])
     # report && _PM.sol_component_value(pm, nw, :load, :pd, _PM.ids(pm, nw, :load), pd)
     # report && _PM.sol_component_value(pm, nw, :load, :qd, _PM.ids(pm, nw, :load), qd)
+
 end
 
 
@@ -691,13 +699,16 @@ end
 #     end
 # end
 
+
 """
+VARIABLE:
 variable_block_demand_indicator(pm::PMD.AbstractUnbalancedPowerModel; nw::Int=PMD.nw_id_default, relax::Bool=false, report::Bool=true)
 create a single for demand status by largest connected component
 """
 function variable_block_shunt_admittance_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, relax::Bool=false)
     # JuMP allows for declaring scalar variables. 
     # Declaring this as a vector for compatibility when using multiple islands
+
     if relax
         z_shunt = _PM.var(pm, nw)[:z_shunt_blocks] = _PM.JuMP.@variable(pm.model,
             [1], base_name="$(nw)_z_shunt",
@@ -733,5 +744,30 @@ function variable_block_shunt_admittance_factor(pm::_PM.AbstractPowerModel; nw::
         sol_bs = Dict(i => z_shunt[1]*_PM.ref(pm, nw, :shunt, i)["bs"] for i in _PM.ids(pm, nw, :shunt))
         _PM.sol_component_value(pm, nw, :shunt, :bs, _PM.ids(pm, nw, :shunt), sol_bs)
     end
+
+end
+
+
+"VARIABLE: `0 <= gic_blocker[l] <= 1` for `l` in `gmd_bus`es"
+function variable_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default, relax::Bool=false, report::Bool=true)
+
+    # TODO: only create GIC blocker variables where GIC blockers are installed
+    if !relax
+        z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :bus_blockers)], base_name="$(nw)_z_blocker",
+            binary = true,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :blocker_buses, i), "z_blocker_start", 1.0)
+        )
+    else
+        z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :bus_blockers)], base_name="$(nw)_z_blocker",
+            lower_bound = 0,
+            upper_bound = 1,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :blocker_buses, i), "z_blocker_start", 1.0)
+        )
+    end
+
+    report && _PM.sol_component_value(pm, nw, :bus_blockers, :z_blocker, _PM.ids(pm, nw, :bus_blockers), z_gic_blocker)
+
 end
 
