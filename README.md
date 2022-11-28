@@ -6,17 +6,16 @@ UNDER DEVELOPMENT
 PMSGMD V0.5.0 WILL BE RELEASED IN EARLY 2023
 ```
 
-PowerModelsGMD (PMsGMD) is an open-source [Julia](https://julialang.org/) package - an extension to the [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) platform for power system simulation - which was specifically designed to evaluate the risks and mitigate the impacts of geomagnetic disturbances (GMDs) and E3 high-altitude electromagnetic pulse (HEMP) events on the electrical grid.
-
-Due to its open-source nature, it is easy to verify and customize its operation to best fit the application circumstances. Due to its speed and reliability, it is suitable to be a key component of toolkits that monitor GMD manifestations in real-time, that predict GICs on the electrical grid, that assess risk, that enhance grid resilience by providing aid to system-operators, and that recommend modifications in the network configuration.
-Consequently, PMsGMD is equally useful for both research and industry application.
+PowerModelsGMD (PMsGMD) is an open-source [Julia](https://julialang.org/) tool for evaluating the risks and mitigating the impacts of geomagnetic disturbances (GMDs) and E3 high-altitude electromagnetic pulse (HEMP) events on electrical power transmission networks.
+It solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (GIC) and calculates GICs based on pre-determined geoelectric fields and takes in the coupled line voltages as inputs.
+The code is engineered to decouple problem specifications from the network formulations; this enables the definition of a wide variety of power network formulations, including a relaxation based modeling of GMD-induced cascading failures and GMD mitigation strategies.
 
 
 
 ## PMsGMD Dependencies
 
-PMsGMD directly builds on [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.19.6, a package for electrical power transmission network modeling and optimization, of the [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.7.5 open-source software ecosystem.
-In addition, it relies on and was optimized for [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v1.4, and [Memento](https://github.com/invenia/Memento.jl) v1.4 packages.
+PMsGMD directly builds on [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.19.6 - a package for electrical power transmission network modeling and optimization - of the [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.7.5 open-source software ecosystem.
+Additionally, it relies on and was optimized for [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v1.4, and [Memento](https://github.com/invenia/Memento.jl) v1.4 packages.
 
 Automated testing of PMsGMD problem specifications is done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v1.1.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.9.1 packages.
 Alternatively, commercial [KNITRO](https://github.com/jump-dev/KNITRO.jl) or [Gurobi](https://github.com/jump-dev/Gurobi.jl), or open-source [SCS](https://github.com/jump-dev/SCS.jl), [Pajarito](https://github.com/jump-dev/Pajarito.jl), [Pavito](https://github.com/jump-dev/Pavito.jl), or [SCIP](https://github.com/scipopt/SCIP.jl) solvers may be used for specific problems.
