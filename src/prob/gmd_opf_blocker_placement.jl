@@ -31,7 +31,6 @@ end
 "FUNCTION: build the ac optimal power flow coupled with quasi-dc power flow problem
 as a generator dispatch minimization problem"
 function build_gmd_opf_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
-
     _PM.variable_bus_voltage(pm)
     _PM.variable_gen_power(pm)
     _PM.variable_branch_power(pm)
@@ -80,6 +79,6 @@ function build_gmd_opf_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_ohms(pm, i)
     end
 
-    objective_blocker_placement_cost(pm)
+    objective_minimize_idc_sum(pm)
 end
 
