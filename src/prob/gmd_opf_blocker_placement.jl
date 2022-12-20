@@ -80,5 +80,6 @@ function build_gmd_opf_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     objective_minimize_idc_sum(pm)
+    #objective_blocker_placement_cost(pm)
 end
 
