@@ -43,7 +43,7 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         for j in sort(collect(keys(nw_ref[:gmd_bus])))
             gmd_bus = nw_ref[:gmd_bus][j]
 
-            if gmd_bus["blocker"] != 0.0
+            if get(gmd_bus, "blocker", 0.0) != 0.0
                 nw_ref[:bus_blockers][j] = i
                 nw_ref[:blocker_buses][j] = gmd_bus
                 i += 1
@@ -57,7 +57,7 @@ end
 function ref_add_gmd_blockers!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
 
     for (nw, nw_ref) in ref[:it][pm_it_sym][:nw]
-        nw_ref[:blocker_buses] = Dict(i=>gmd_bus for (i,gmd_bus) in nw_ref[:gmd_bus] if gmd_bus["blocker"] != 0.0)
+        nw_ref[:blocker_buses] = Dict(i=>gmd_bus for (i,gmd_bus) in nw_ref[:gmd_bus] if get(gmd_bus, "blocker", 0.0) != 0.0)
     end
 
 end
