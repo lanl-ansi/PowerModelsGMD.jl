@@ -1,6 +1,6 @@
-# PMsGMD Model Data Format
+# PowerModelsGMD.jl Model Data Format
 
-PowerModelGMD supports the following model data formats ...
+PMsGMD supports the following model data formats ...
 
 
 ## RAW and JSON Data Format

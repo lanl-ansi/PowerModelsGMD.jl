@@ -1,4 +1,11 @@
-# ===   GMD CONSTRAINTS   === #
+##########################
+# Constraint Definitions #
+##########################
+
+# Commonly used constraints are defined here. 
+
+
+# ===   VOLTAGE CONSTRAINTS   === #
 
 
 "CONSTRAINT: voltage magnitude on/off constraint"
@@ -41,94 +48,7 @@ function constraint_voltage_magnitude_sqr_on_off(pm::_PM.AbstractPowerModel, n::
 end
 
 
-"CONSTRAINT: power balance constraint for dc circuits"
-function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gs, blocker_status, gmd_bus_arcs)
-    v_dc = _PM.var(pm, n, :v_dc)[i]
-
-    if length(gmd_bus_arcs) > 0
-        if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
-            Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
-            println()
-        end
-
-        if blocker_status != 0.0
-            JuMP.@constraint(pm.model,
-                sum(dc_expr[a] for a in gmd_bus_arcs)
-                ==
-                0.0
-            )
-        else
-            JuMP.@constraint(pm.model,
-                sum(dc_expr[a] for a in gmd_bus_arcs)
-                ==
-                (gs * v_dc)
-            )
-        end
-    end
-
-end
-
-
-"CONSTRAINT: power balance constraint for dc circuits with GIC blockers"
-function constraint_blocker_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gs, gmd_bus_arcs)
-
-    v_dc = _PM.var(pm, n, :v_dc)[i]
-    z = _PM.var(pm, n, :z_blocker)[i]
-
-    println("Adding blocking dc power balance constraint for gmd bus $i with admittance $gs")
-
-    if length(gmd_bus_arcs) > 0
-        if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
-            Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
-            println()
-        end
-
-        JuMP.@NLconstraint(pm.model,
-            sum(dc_expr[a] for a in gmd_bus_arcs)
-            ==
-            (gs * v_dc)*(1 - z)
-        )
-    end
-
-end
-
-
-"CONSTRAINT: computing the dc current magnitude"
-function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
-
-    # correct equation is ieff = |a*ihi + ilo|/a
-    # just use ihi for now
-    
-    branch = _PM.ref(pm, n, :branch, k)
-
-    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
-        constraint_dc_current_mag_line(pm, k, nw=n)
-
-    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-        Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
-        constraint_dc_current_mag_grounded_xf(pm, k, nw=n)
-    
-    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
-        constraint_dc_current_mag_gwye_delta_xf(pm, k, nw=n)
-
-    elseif branch["config"] == "gwye-gwye"
-        constraint_dc_current_mag_gwye_gwye_xf(pm, k, nw=n)
-    
-    elseif branch["config"] == "gwye-gwye-auto"
-        constraint_dc_current_mag_gwye_gwye_auto_xf(pm, k, nw=n)
-
-    elseif branch["config"] == "three-winding"
-        ieff = _PM.var(pm, n, :i_dc_mag)
-        JuMP.@constraint(pm.model,
-            ieff[k]
-            >=
-            0.0
-        )
-
-    end
-
-end
-constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag(pm, nw, k)
+# ===   CURRENT CONSTRAINTS   === #
 
 
 "CONSTRAINT: dc current on normal lines"
@@ -230,6 +150,44 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel,
 end
 
 
+"CONSTRAINT: computing the dc current magnitude"
+function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
+
+    # correct equation is ieff = |a*ihi + ilo|/a
+    # just use ihi for now
+    
+    branch = _PM.ref(pm, n, :branch, k)
+
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
+        constraint_dc_current_mag_line(pm, k, nw=n)
+
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
+        constraint_dc_current_mag_grounded_xf(pm, k, nw=n)
+    
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
+        constraint_dc_current_mag_gwye_delta_xf(pm, k, nw=n)
+
+    elseif branch["config"] == "gwye-gwye"
+        constraint_dc_current_mag_gwye_gwye_xf(pm, k, nw=n)
+    
+    elseif branch["config"] == "gwye-gwye-auto"
+        constraint_dc_current_mag_gwye_gwye_auto_xf(pm, k, nw=n)
+
+    elseif branch["config"] == "three-winding"
+        ieff = _PM.var(pm, n, :i_dc_mag)
+        JuMP.@constraint(pm.model,
+            ieff[k]
+            >=
+            0.0
+        )
+
+    end
+
+end
+constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag(pm, nw, k)
+
+
 "CONSTRAINT: on/off dc current on the ac lines"
 function constraint_dc_current_mag_on_off(pm::_PM.AbstractPowerModel, n::Int, k, dc_max)
 
@@ -243,6 +201,9 @@ function constraint_dc_current_mag_on_off(pm::_PM.AbstractPowerModel, n::Int, k,
     )
 
 end
+
+
+# ===   GENERATOR CONSTRAINTS   === #
 
 
 "CONSTRAINT: perspective constraint for generation cost"
@@ -261,7 +222,7 @@ function constraint_gen_perspective(pm::_PM.AbstractPowerModel, n::Int, i, cost)
 end
 
 
-"CONSTRAINT: tieing OTS variables to gen variables"
+"CONSTRAINT: tie OTS variables to gen variables"
 function constraint_gen_ots_on_off(pm::_PM.AbstractPowerModel, n::Int, i, bus_arcs)
 
     z = _PM.var(pm, n, :z_gen)[i]
@@ -274,6 +235,213 @@ function constraint_gen_ots_on_off(pm::_PM.AbstractPowerModel, n::Int, i, bus_ar
     )
 
 end
+
+
+# ===   BUS - POWER BALANCE CONSTRAINTS   === #
+
+
+"CONSTRAINT: nodal power balance with gmd"
+function constraint_power_balance_gmd(pm::_PM.AbstractWModels, n::Int, i, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd)
+
+    w = _PM.var(pm, n, :w, i)
+    p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
+    q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
+    qloss = get(_PM.var(pm, n), :qloss, Dict()); _PM._check_var_keys(qloss, bus_arcs, "reactive power", "branch")
+    pg = get(_PM.var(pm, n), :pg, Dict()); _PM._check_var_keys(pg, bus_gens, "active power", "generator")
+    qg = get(_PM.var(pm, n), :qg, Dict()); _PM._check_var_keys(qg, bus_gens, "reactive power", "generator")
+    ps = get(_PM.var(pm, n), :ps, Dict()); _PM._check_var_keys(ps, bus_storage, "active power", "storage")
+    qs = get(_PM.var(pm, n), :qs, Dict()); _PM._check_var_keys(qs, bus_storage, "reactive power", "storage")
+    psw = get(_PM.var(pm, n), :psw, Dict()); _PM._check_var_keys(psw, bus_arcs_sw, "active power", "switch")
+    qsw = get(_PM.var(pm, n), :qsw, Dict()); _PM._check_var_keys(qsw, bus_arcs_sw, "reactive power", "switch")
+    p_dc = get(_PM.var(pm, n), :p_dc, Dict()); _PM._check_var_keys(p_dc, bus_arcs_dc, "active power", "dcline")
+    q_dc = get(_PM.var(pm, n), :q_dc, Dict()); _PM._check_var_keys(q_dc, bus_arcs_dc, "reactive power", "dcline")
+
+    cstr_p = JuMP.@constraint(pm.model,
+        sum(p[a] for a in bus_arcs)
+        + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
+        + sum(psw[a_sw] for a_sw in bus_arcs_sw)
+        ==
+        sum(pg[g] for g in bus_gens)
+        - sum(ps[s] for s in bus_storage)
+        - sum(pd for pd in values(bus_pd))
+    )
+    cstr_q = JuMP.@constraint(pm.model,
+        sum(q[a] + qloss[a] for a in bus_arcs)
+        + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
+        + sum(qsw[a_sw] for a_sw in bus_arcs_sw)
+        ==
+        sum(qg[g] for g in bus_gens)
+        - sum(qs[s] for s in bus_storage)
+        - sum(qd for qd in values(bus_qd))
+    )
+
+    if _IM.report_duals(pm)
+        _PM.sol(pm, n, :bus, i)[:lam_kcl_r] = cstr_p
+        _PM.sol(pm, n, :bus, i)[:lam_kcl_i] = cstr_q
+    end
+
+end
+
+
+"CONSTRAINT: nodal power balance with gmd and shunts"
+function constraint_power_balance_gmd_shunt(pm::_PM.AbstractWModels, n::Int, i, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
+
+    w = _PM.var(pm, n, :w, i)
+    p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
+    q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
+    qloss = get(_PM.var(pm, n), :qloss, Dict()); _PM._check_var_keys(qloss, bus_arcs, "reactive power", "branch")
+    pg = get(_PM.var(pm, n), :pg, Dict()); _PM._check_var_keys(pg, bus_gens, "active power", "generator")
+    qg = get(_PM.var(pm, n), :qg, Dict()); _PM._check_var_keys(qg, bus_gens, "reactive power", "generator")
+    ps = get(_PM.var(pm, n), :ps, Dict()); _PM._check_var_keys(ps, bus_storage, "active power", "storage")
+    qs = get(_PM.var(pm, n), :qs, Dict()); _PM._check_var_keys(qs, bus_storage, "reactive power", "storage")
+    psw = get(_PM.var(pm, n), :psw, Dict()); _PM._check_var_keys(psw, bus_arcs_sw, "active power", "switch")
+    qsw = get(_PM.var(pm, n), :qsw, Dict()); _PM._check_var_keys(qsw, bus_arcs_sw, "reactive power", "switch")
+    p_dc = get(_PM.var(pm, n), :p_dc, Dict()); _PM._check_var_keys(p_dc, bus_arcs_dc, "active power", "dcline")
+    q_dc = get(_PM.var(pm, n), :q_dc, Dict()); _PM._check_var_keys(q_dc, bus_arcs_dc, "reactive power", "dcline")
+
+    cstr_p = JuMP.@constraint(pm.model,
+        sum(p[a] for a in bus_arcs)
+        + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
+        + sum(psw[a_sw] for a_sw in bus_arcs_sw)
+        ==
+        sum(pg[g] for g in bus_gens)
+        - sum(ps[s] for s in bus_storage)
+        - sum(pd for pd in values(bus_pd))
+        - sum(gs for gs in values(bus_gs)) * w
+    )
+    cstr_q = JuMP.@constraint(pm.model,
+        sum(q[a] + qloss[a] for a in bus_arcs)
+        + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
+        + sum(qsw[a_sw] for a_sw in bus_arcs_sw)
+        ==
+        sum(qg[g] for g in bus_gens)
+        - sum(qs[s] for s in bus_storage)
+        - sum(qd for qd in values(bus_qd))
+        + sum(bs for bs in values(bus_bs)) * w
+    )
+
+    if _IM.report_duals(pm)
+        _PM.sol(pm, n, :bus, i)[:lam_kcl_r] = cstr_p
+        _PM.sol(pm, n, :bus, i)[:lam_kcl_i] = cstr_q
+    end
+
+end
+
+
+"CONSTRAINT: nodal power balance with gmd, shunts, and constant power factor load shedding"
+function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWConvexModels, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
+
+    w = _PM.var(pm, n, :w, i)
+    p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
+    q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
+    qloss = get(_PM.var(pm, n), :qloss, Dict()); _PM._check_var_keys(qloss, bus_arcs, "reactive power", "branch")
+    pg = get(_PM.var(pm, n), :pg, Dict()); _PM._check_var_keys(pg, bus_gens, "active power", "generator")
+    qg = get(_PM.var(pm, n), :qg, Dict()); _PM._check_var_keys(qg, bus_gens, "reactive power", "generator")
+    ps = get(_PM.var(pm, n), :ps, Dict()); _PM._check_var_keys(ps, bus_storage, "active power", "storage")
+    qs = get(_PM.var(pm, n), :qs, Dict()); _PM._check_var_keys(qs, bus_storage, "reactive power", "storage")
+    psw = get(_PM.var(pm, n), :psw, Dict()); _PM._check_var_keys(psw, bus_arcs_sw, "active power", "switch")
+    qsw = get(_PM.var(pm, n), :qsw, Dict()); _PM._check_var_keys(qsw, bus_arcs_sw, "reactive power", "switch")
+    p_dc = get(_PM.var(pm, n), :p_dc, Dict()); _PM._check_var_keys(p_dc, bus_arcs_dc, "active power", "dcline")
+    q_dc = get(_PM.var(pm, n), :q_dc, Dict()); _PM._check_var_keys(q_dc, bus_arcs_dc, "reactive power", "dcline")
+
+    z_demand = get(_PM.var(pm, n), :z_demand, Dict()); _PM._check_var_keys(z_demand, keys(bus_pd), "power factor", "load")
+    z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor", "shunt")
+    wz_shunt = get(_PM.var(pm, n), :wz_shunt, Dict()); _PM._check_var_keys(wz_shunt, keys(bus_gs), "voltage square power factor", "shunt")
+
+    cstr_p = JuMP.@constraint(pm.model,
+        sum(p[a] for a in bus_arcs)
+        + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
+        + sum(psw[a_sw] for a_sw in bus_arcs_sw)
+        ==
+        sum(pg[g] for g in bus_gens)
+        - sum(ps[s] for s in bus_storage)
+        - sum(pd * z_demand[i] for (i,pd) in bus_pd)
+        - sum(gs * wz_shunt[i] for (i,gs) in bus_gs)
+    )
+    cstr_q = JuMP.@constraint(pm.model,
+        sum(q[a] + qloss[a] for a in bus_arcs)
+        + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
+        + sum(qsw[a_sw] for a_sw in bus_arcs_sw)
+        ==
+        sum(qg[g] for g in bus_gens)
+        - sum(qs[s] for s in bus_storage)
+        - sum(qd * z_demand[i] for (i,qd) in bus_qd)
+        + sum(bs * wz_shunt[i] for (i,bs) in bus_bs)
+    )
+
+    for s in keys(bus_gs)
+        _IM.relaxation_product(pm.model, w, z_shunt[s], wz_shunt[s])
+    end
+
+    if _IM.report_duals(pm)
+        _PM.sol(pm, n, :bus, i)[:lam_kcl_r] = cstr_p
+        _PM.sol(pm, n, :bus, i)[:lam_kcl_i] = cstr_q
+    end
+
+end
+
+
+###########################
+
+
+
+
+
+
+
+"CONSTRAINT: power balance constraint for dc circuits"
+function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gs, blocker_status, gmd_bus_arcs)
+    v_dc = _PM.var(pm, n, :v_dc)[i]
+
+    if length(gmd_bus_arcs) > 0
+        if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
+            Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
+            println()
+        end
+
+        if blocker_status != 0.0
+            JuMP.@constraint(pm.model,
+                sum(dc_expr[a] for a in gmd_bus_arcs)
+                ==
+                0.0
+            )
+        else
+            JuMP.@constraint(pm.model,
+                sum(dc_expr[a] for a in gmd_bus_arcs)
+                ==
+                (gs * v_dc)
+            )
+        end
+    end
+
+end
+
+
+"CONSTRAINT: power balance constraint for dc circuits with GIC blockers"
+function constraint_blocker_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gs, gmd_bus_arcs)
+
+    v_dc = _PM.var(pm, n, :v_dc)[i]
+    z = _PM.var(pm, n, :z_blocker)[i]
+
+    println("Adding blocking dc power balance constraint for gmd bus $i with admittance $gs")
+
+    if length(gmd_bus_arcs) > 0
+        if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
+            Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
+            println()
+        end
+
+        JuMP.@NLconstraint(pm.model,
+            sum(dc_expr[a] for a in gmd_bus_arcs)
+            ==
+            (gs * v_dc)*(1 - z)
+        )
+    end
+
+end
+
+
+
 
 
 "CONSTRAINT: dc ohms constraint for GIC"
@@ -551,6 +719,10 @@ function constraint_qloss_constant_v(pm::_PM.AbstractPowerModel, n::Int, k, i, j
 
 end
 
+
+
+
+# ===   GMD CONSTRAINTS   === #
 
 
 

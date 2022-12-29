@@ -84,8 +84,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :bus)
-        # constraint_power_balance_shed(pm, i)
-        constraint_power_balance_shed(pm, i)
+        _PM.constraint_power_balance_ls(pm, i)
     end
 
     for i in _PM.ids(pm, :branch)
@@ -141,7 +140,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :bus)
-        constraint_power_balance_shed_gmd(pm, i)
+        constraint_power_balance_gmd_shunt_ls(pm, i)
     end
 
     for i in _PM.ids(pm, :branch)

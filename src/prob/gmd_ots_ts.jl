@@ -74,7 +74,7 @@ function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
         end
 
         for i in _PM.ids(pm, :bus, nw=n)
-            constraint_power_balance_shunt_gmd_mls(pm, i, nw=n)
+            constraint_power_balance_gmd_shunt_ls(pm, i, nw=n)
         end
 
         for i in _PM.ids(pm, :bus, nw=n)
