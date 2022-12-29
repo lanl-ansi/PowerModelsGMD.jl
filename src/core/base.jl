@@ -1,4 +1,6 @@
-# ===   BASE   === #
+#####################################
+# Collection of Universal Functions #
+#####################################
 
 
 "FUNCTION: check gmd branch parent status"
