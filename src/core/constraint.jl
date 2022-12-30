@@ -381,19 +381,20 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWConvexModels, n:
 end
 
 
-###########################
+# ===   BUS - DC POWER BALANCE CONSTRAINTS   === #
+
+# TODO:
+# constraint_dc_power_balance_shunt ==> check/udpdate formulation
+# constraint_dc_power_balance_blocker_shunt ==> check/udpdate formulation
 
 
+"CONSTRAINT: nodal power balance for dc circuits with shunts"
+function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
 
-
-
-
-
-"CONSTRAINT: power balance constraint for dc circuits"
-function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gs, blocker_status, gmd_bus_arcs)
     v_dc = _PM.var(pm, n, :v_dc)[i]
 
     if length(gmd_bus_arcs) > 0
+
         if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
             Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
             println()
@@ -412,13 +413,14 @@ function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i
                 (gs * v_dc)
             )
         end
+
     end
 
 end
 
 
-"CONSTRAINT: power balance constraint for dc circuits with GIC blockers"
-function constraint_blocker_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gs, gmd_bus_arcs)
+"CONSTRAINT: nodal power balance for dc circuits with GIC blockers and shunts"
+function constraint_dc_power_balance_blocker_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs)
 
     v_dc = _PM.var(pm, n, :v_dc)[i]
     z = _PM.var(pm, n, :z_blocker)[i]
@@ -426,6 +428,7 @@ function constraint_blocker_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n
     println("Adding blocking dc power balance constraint for gmd bus $i with admittance $gs")
 
     if length(gmd_bus_arcs) > 0
+
         if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
             Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
             println()
@@ -436,9 +439,14 @@ function constraint_blocker_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n
             ==
             (gs * v_dc)*(1 - z)
         )
+
     end
 
 end
+
+
+#########################
+
 
 
 
