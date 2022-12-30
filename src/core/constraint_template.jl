@@ -267,8 +267,8 @@ end
 # ===   BUS - DC POWER BALANCE CONSTRAINTS   === #
 
 # TODO:
-# constraint_dc_power_balance_shunt ==> check/udpdate formulation, add qloss [?], add shunts [?]
-# constraint_dc_power_balance_blocker_shunt ==> check/udpdate formulation, add qloss [?], add shunts [?]
+# constraint_dc_power_balance_shunt ==> check/udpdate formulation, add shunts [?]
+# constraint_dc_power_balance_blocker_shunt ==> check/udpdate formulation, add shunts [?]
 # check/update constraint formulations in constraint.jl as well
 # both constraint formulations are farily similar to each other... constraint_dc_power_balance_shunt should not have blocker in it at all
 
@@ -315,57 +315,61 @@ function constraint_dc_power_balance_blocker_shunt(pm::_PM.AbstractPowerModel, i
 end
 
 
-#########################
+# ===   BRANCH - OHM'S LAW CONSTRAINTS   === #
 
 
-
-
-
-"CONSTRAINT: dc ohms constraint for GIC"
+"CONSTRAINT: ohms constraint for dc circuits"
 function constraint_dc_ohms(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :gmd_branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
-    vs = branch["br_v"]  # line dc series voltage
+    f_idx = (i, f_bus, t_bus)
+    t_idx = (i, t_bus, f_bus)
 
+    vs = branch["br_v"]
+        # line dc series voltage
     if branch["br_r"] === nothing
         gs = 0.0
     else
-        gs = 1.0 / branch["br_r"]  # line dc series resistance
+        gs = 1.0 / branch["br_r"]
+            # line dc series resistance
     end
 
-    Memento.debug(_LOGGER, "branch $i: ($f_bus,$t_bus), $vs, $gs \n")
-
-    bus1 = _PM.ref(pm, nw, :gmd_bus, f_bus)
-    bus2 = _PM.ref(pm, nw, :gmd_bus, t_bus)
-
-    constraint_dc_ohms(pm, nw, i, f_bus, t_bus, vs, gs)
+    constraint_dc_ohms(pm, nw, i, f_bus, t_bus, f_idx, t_idx, vs, gs)
 
 end
 
 
-"CONSTRAINT: dc ohms on/off constraint for dc circuits"
+"CONSTRAINT: ohms on/off constraint for dc circuits"
 function constraint_dc_ohms_on_off(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :gmd_branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
-    ac_branch = branch["parent_index"]
-    vs = branch["br_v"]  # line dc series voltage
+    f_idx = (i, f_bus, t_bus)
+    t_idx = (i, t_bus, f_bus)
 
+    ac_branch = branch["parent_index"]
+    vs = branch["br_v"]
+        # line dc series voltage
     if branch["br_r"] === nothing
         gs = 0.0
     else
-        gs = (1.0 / branch["br_r"])  # line dc series resistance
+        gs = (1.0 / branch["br_r"])
+            # line dc series resistance
     end
 
-    bus1 = _PM.ref(pm, nw, :gmd_bus, f_bus)
-    bus2 = _PM.ref(pm, nw, :gmd_bus, t_bus)
-
-    constraint_dc_ohms_on_off(pm, nw, i, gs, vs, f_bus, t_bus, ac_branch)
+    constraint_dc_ohms_on_off(pm, nw, i, f_bus, t_bus, f_idx, t_idx, ac_branch, vs, gs)
 
 end
+
+
+# ===   BRANCH - QLOSS CONSTRAINTS   === #
+
+
+
+
 
 
 "CONSTRAINT: computing qloss"

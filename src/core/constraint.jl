@@ -445,54 +445,62 @@ function constraint_dc_power_balance_blocker_shunt(pm::_PM.AbstractPowerModel, n
 end
 
 
-#########################
+# ===   BRANCH - OHM'S LAW CONSTRAINTS   === #
 
 
+"CONSTRAINT: ohms constraint for dc circuits"
+function constraint_dc_ohms(pm::_PM.AbstractPowerModel, n::Int, i, f_bus, t_bus, f_idx, t_idx, vs, gs)
 
+    Memento.debug(_LOGGER, "branch $i: ($f_bus,$t_bus), $vs, $gs \n")
 
-
-
-"CONSTRAINT: dc ohms constraint for GIC"
-function constraint_dc_ohms(pm::_PM.AbstractPowerModel, n::Int, i, f_bus, t_bus, vs, gs)
-
-    vf = _PM.var(pm, n, :v_dc)[f_bus]  # from dc voltage
-    vt = _PM.var(pm, n, :v_dc)[t_bus]  # to dc voltage
     dc = _PM.var(pm, n, :dc)[(i, f_bus, t_bus)]
+    vfr = _PM.var(pm, n, :v_dc)[f_bus]
+    vto = _PM.var(pm, n, :v_dc)[t_bus]
 
     JuMP.@constraint(pm.model,
         dc
         ==
-        gs * (vf + vs - vt)
+        gs * (vfr + vs - vto)
     )
 
 end
 
 
-"CONSTRAINT: dc ohms on/off constraint for dc circuits"
-function constraint_dc_ohms_on_off(pm::_PM.AbstractPowerModel, n::Int, i, gs, vs, f_bus, t_bus, ac_branch)
+"CONSTRAINT: ohms on/off constraint for dc circuits"
+function constraint_dc_ohms_on_off(pm::_PM.AbstractPowerModel, n::Int, i, f_bus, t_bus, f_idx, t_idx, ac_branch, vs, gs)
 
-    vf = _PM.var(pm, n, :v_dc)[f_bus] # from dc voltage
-    vt = _PM.var(pm, n, :v_dc)[t_bus] # to dc voltage
-    v_dc_diff = _PM.var(pm, n, :v_dc_diff)[i] # voltage diff
-    vz = _PM.var(pm, n, :vz)[i] # voltage diff
+    Memento.debug(_LOGGER, "branch $i: ($f_bus,$t_bus), $vs, $gs \n")
+
+    v_dc_diff = _PM.var(pm, n, :v_dc_diff)[i]
+    vfr = _PM.var(pm, n, :v_dc)[f_bus]
+    vto = _PM.var(pm, n, :v_dc)[t_bus]
+    
     dc = _PM.var(pm, n, :dc)[(i,f_bus,t_bus)]
+    vz = _PM.var(pm, n, :vz)[i]
     z = _PM.var(pm, n, :z_branch)[ac_branch]
 
     JuMP.@constraint(pm.model,
         v_dc_diff
         ==
-        vf - vt
+        vfr - vto
     )
 
     JuMP.@constraint(pm.model,
         dc
         ==
-        gs * (vz + z*vs)
+        gs * (vz + z * vs)
     )
 
     _IM.relaxation_product(pm.model, z, v_dc_diff, vz)
 
 end
+
+
+# ===   BRANCH - QLOSS CONSTRAINTS   === #
+
+
+
+
 
 
 "CONSTRAINT: computing qloss assuming ac primary voltage is 1.0 per unit"
