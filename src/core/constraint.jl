@@ -499,186 +499,7 @@ end
 # ===   BRANCH - QLOSS CONSTRAINTS   === #
 
 
-
-
-
-
-"CONSTRAINT: computing qloss assuming ac primary voltage is 1.0 per unit"
-function constraint_qloss_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, branchMVA)
-
-    qloss = _PM.var(pm, n, :qloss)
-    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        (K * i_dc_mag) / (3.0 * branchMVA)  # 'K' is per phase
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-end
-
-
-"CONSTRAINT: computing qloss assuming varying ac voltage"
-function constraint_qloss_decoupled(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
-
-    branch = _PM.ref(pm, nw, :branch, k)
-    branchMVA = branch["baseMVA"]
-    i = branch["hi_bus"]
-    j = branch["lo_bus"]
-
-    bus = _PM.ref(pm, nw, :bus, i)
-
-    if "gmd_k" in keys(branch)
-
-        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
-        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
-        ieff = branch["ieff"]
-        ih = branch["hi_bus"]
-
-        constraint_qloss_decoupled(pm, nw, k, i, j, ih, K, ieff, branchMVA)
-
-    else
-        constraint_zero_qloss(pm, nw, k, i, j)
-    end
-
-end
-
-
-"CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
-function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
-
-    branch = _PM.ref(pm, nw, :branch, k)
-    Smax = 1000
-    branchMVA = min(get(branch, "rate_a", Smax), Smax)
-    # using hi/lo bus shouldn't be an issue because qloss is defined in arcs going in both directions
-
-    if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
-        Memento.warn(_LOGGER, "Branch $k is missing hi bus/lo bus")
-        return
-    end
-
-    i = branch["hi_bus"]
-    j = branch["lo_bus"]
-
-    bus = _PM.ref(pm, nw, :bus, i)
-
-    if branch["br_status"] == 0 
-        return
-    end
-
-    if "gmd_k" in keys(branch)
-        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
-        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
-        ieff = branch["ieff"]
-
-        constraint_qloss_decoupled_vnom(pm, nw, k, i, j, K, ieff, branchMVA)
-
-    else
-        constraint_zero_qloss(pm, nw, k, i, j)
-    end
-
-end
-
-"CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
-function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
-
-    branch = _PM.ref(pm, nw, :branch, k)
-    Smax = 1000
-    branchMVA = min(get(branch, "rate_a", Smax), Smax)
-    # using hi/lo bus shouldn't be an issue because qloss is defined in arcs going in both directions
-
-    if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
-        Memento.warn(_LOGGER, "Branch $k is missing hi bus/lo bus")
-        return
-    end
-
-    i = branch["hi_bus"]
-    j = branch["lo_bus"]
-
-    bus = _PM.ref(pm, nw, :bus, i)
-
-    if branch["br_status"] == 0 
-        return
-    end
-
-    if "gmd_k" in keys(branch)
-        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
-        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
-        ieff = branch["ieff"]
-
-        constraint_qloss_decoupled_vnom_mld(pm, nw, k, i, j, K, ieff, branchMVA)
-
-    else
-        constraint_zero_qloss(pm, nw, k, i, j)
-    end
-
-end
-
-
-"CONSTRAINT: computing qloss accounting for ac voltage"
-function constraint_qloss_decoupled(pm::_PM.AbstractPowerModel, n::Int, k, i, j, ih, K, ieff, branchMVA)
-
-    qloss = _PM.var(pm, n, :qloss)
-    v = _PM.var(pm, n, :vm)[ih]  # 'ih' is the index of the high-side bus
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        (K * v * ieff) / (3.0 * branchMVA)  # 'K' is per phase
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-end
-
-
-"CONSTRAINT: computing qloss assuming 1.0 pu ac voltage"
-function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, ieff, branchMVA)
-
-    qloss = _PM.var(pm, n, :qloss)
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        (K * ieff) / (3.0 * branchMVA)  # 'K' is per phase
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-end
-
-"CONSTRAINT: computing qloss assuming 1.0 pu ac voltage"
-function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, ieff, branchMVA)
-
-    qloss = _PM.var(pm, n, :qloss)
-    z_voltage = _PM.var(pm, n, :z_voltage)
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        (K * ieff * z_voltage[i]) / (3.0 * branchMVA)  # 'K' is per phase
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-end
-
-
-"CONSTRAINT: computing qloss"
+"CONSTRAINT: zero qloss"
 function constraint_zero_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j)
 
     qloss = _PM.var(pm, n, :qloss)
@@ -688,6 +509,7 @@ function constraint_zero_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j)
         ==
         0.0
     )
+
     JuMP.@constraint(pm.model,
         qloss[(k,j,i)]
         ==
@@ -697,17 +519,19 @@ function constraint_zero_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j)
 end
 
 
-"CONSTRAINT: computing qloss assuming ac primary voltage is constant"
-function constraint_qloss_constant_v(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, V, branchMVA)
+"CONSTRAINT: qloss assuming constant ac voltage"
+function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA, K, V)
 
+    qloss = _PM.var(pm, n, :qloss)
     i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
-    qloss = _PM.var(pm, n, :qloss)
 
     JuMP.@constraint(pm.model,
         qloss[(k,i,j)]
         ==
-        (K * V * i_dc_mag) / (3.0 * branchMVA)  # 'K' is per phase
+        (K * V * i_dc_mag) / (3.0 * branchMVA)
+            # K is per phase
     )
+
     JuMP.@constraint(pm.model,
         qloss[(k,j,i)]
         ==
@@ -717,16 +541,19 @@ function constraint_qloss_constant_v(pm::_PM.AbstractPowerModel, n::Int, k, i, j
 end
 
 
-"CONSTRAINT: computing qloss assuming ac primary voltage is constant"
-function constraint_qloss_constant_v(pm::_PM.AbstractPowerModel, n::Int, k, i, j)
+"CONSTRAINT: qloss assuming constant dc voltage"
+function constraint_qloss_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA, K)
 
     qloss = _PM.var(pm, n, :qloss)
+    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
 
     JuMP.@constraint(pm.model,
         qloss[(k,i,j)]
         ==
-        0.0
+        (K * i_dc_mag) / (3.0 * branchMVA)
+            # K is per phase
     )
+
     JuMP.@constraint(pm.model,
         qloss[(k,j,i)]
         ==
@@ -736,13 +563,79 @@ function constraint_qloss_constant_v(pm::_PM.AbstractPowerModel, n::Int, k, i, j
 end
 
 
+"CONSTRAINT: decoupled qloss assuming constant ac voltage"
+function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, branchMVA, ieff)
+
+    qloss = _PM.var(pm, n, :qloss)
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        (K * ieff) / (3.0 * branchMVA)            
+            # K is per phase
+    )
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+end
 
 
-# ===   GMD CONSTRAINTS   === #
+"CONSTRAINT: qloss assuming varying ac voltage"
+function constraint_qloss_decoupled(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA, K, ieff, ih)
+
+    qloss = _PM.var(pm, n, :qloss)
+    v = _PM.var(pm, n, :vm)[ih]
+        # ih is the index of the high-side bus
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        (K * v * ieff) / (3.0 * branchMVA)
+            # K is per phase
+    )
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+end
+
+
+"CONSTRAINT: decoupled qloss assuming constant ac voltage for MLD"
+function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, branchMVA, ieff)
+
+    qloss = _PM.var(pm, n, :qloss)
+    z_voltage = _PM.var(pm, n, :z_voltage)
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        (K * ieff * z_voltage[i]) / (3.0 * branchMVA)
+            # K is per phase
+    )
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+end
+
+
+# ===   BRANCH - THERMAL CONSTRAINTS   === #
+
+##########
 
 
 
-# ===   THERMAL CONSTRAINTS   === #
+
 
 
 "CONSTRAINT: steady-state temperature"

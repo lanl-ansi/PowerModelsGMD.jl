@@ -190,7 +190,9 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractDCPModel, n::Int,
 end
 
 
-###################
+# ===   BRANCH - THERMAL CONSTRAINTS   === #
+
+##########
 
 
 
@@ -231,15 +233,6 @@ function constraint_thermal_protection(pm::_PM.AbstractDCPModel, n::Int, i::Int,
 
 end
 
-
-"CONSTRAINT: computing qloss"
-function constraint_qloss_vnom(pm::_PM.AbstractDCPModel, n::Int, k, i, j, K, branchMVA)
-end
-
-
-"CONSTRAINT: computing qloss"
-function constraint_qloss_vnom(pm::_PM.AbstractDCPModel, n::Int, k, i, j)
-end
 
 
 "OBJECTIVE: needed because dc models do not have the z_voltage variable"

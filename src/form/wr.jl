@@ -380,7 +380,67 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWRModel, n::Int, 
 end
 
 
-###################
+# ===   BRANCH - QLOSS CONSTRAINTS   === #
+
+
+"CONSTRAINT: zero qloss"
+function constraint_zero_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j)
+
+    qloss = _PM.var(pm, n, :qloss)
+    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
+
+    vm = _PM.var(pm, n, :vm)[i]
+    iv = _PM.var(pm, n, :iv)[(k,i,j)]
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        0.0
+    )
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+    _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
+
+end
+
+
+"CONSTRAINT: qloss assuming constant ac primary voltage"
+function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, branchMVA, K, V)
+
+    qloss = _PM.var(pm, n, :qloss)
+    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
+
+    vm = _PM.var(pm, n, :vm)[i]
+    iv = _PM.var(pm, n, :iv)[(k,i,j)]
+
+    if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
+        Memento.warn(_LOGGER, "DC voltage magnitude cannot take a 0 value. In OTS applications, this may result in incorrect results.")
+    end
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        ((K * iv) / (3.0 * branchMVA))
+            # K is per phase
+    )
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+    _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
+
+end
+
+
+# ===   BRANCH - THERMAL CONSTRAINTS   === #
+
+##########
 
 
 
@@ -424,55 +484,4 @@ function constraint_thermal_protection(pm::_PM.AbstractWRModel, n::Int, i::Int, 
 
 end
 
-
-"CONSTRAINT: computing qloss"
-function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j)
-
-    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
-    qloss = _PM.var(pm, n, :qloss)
-    iv = _PM.var(pm, n, :iv)[(k,i,j)]
-    vm = _PM.var(pm, n, :vm)[i]
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        0.0
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-    _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
-
-end
-
-
-"CONSTRAINT: computing qloss"
-function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, K, branchMVA)
-
-    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
-    qloss = _PM.var(pm, n, :qloss)
-    iv = _PM.var(pm, n, :iv)[(k,i,j)]
-    vm = _PM.var(pm, n, :vm)[i]
-
-    if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
-        Memento.warn(_LOGGER, "DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.")
-    end
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        ((K * iv) / (3.0 * branchMVA))  # 'K' is per phase
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-    _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
-
-end
 

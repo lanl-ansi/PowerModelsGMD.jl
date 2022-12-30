@@ -322,6 +322,7 @@ end
 function constraint_dc_ohms(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :gmd_branch, i)
+
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
     f_idx = (i, f_bus, t_bus)
@@ -345,6 +346,7 @@ end
 function constraint_dc_ohms_on_off(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :gmd_branch, i)
+
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
     f_idx = (i, f_bus, t_bus)
@@ -368,65 +370,175 @@ end
 # ===   BRANCH - QLOSS CONSTRAINTS   === #
 
 
-
-
-
-
-"CONSTRAINT: computing qloss"
+"CONSTRAINT: qloss assuming constant ac voltage"
 function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
+    bus = _PM.ref(pm, nw, :bus, i)
+
     branchMVA = branch["baseMVA"]
     i = branch["hi_bus"]
     j = branch["lo_bus"]
-
-    bus = _PM.ref(pm, nw, :bus, i)
+    busKV = bus["base_kv"]
 
     if "gmd_k" in keys(branch)
 
-        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
+        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
         K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
+        V = 1.0
 
-        constraint_qloss_constant_v(pm, nw, k, i, j, K, 1.0, branchMVA)
+        constraint_qloss(pm, nw, k, i, j, branchMVA, K, V)
 
     else
-        constraint_qloss_constant_v(pm, nw, k, i, j)
+
+        constraint_zero_qloss(pm, nw, k, i, j)
+
     end
 
 end
 
 
-"CONSTRAINT: computing qloss assuming dc voltage is constant"
+"CONSTRAINT: qloss assuming constant dc voltage"
 function constraint_qloss_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
+    bus = _PM.ref(pm, nw, :bus, i)
+
     branchMVA = branch["baseMVA"]
     i = branch["hi_bus"]
     j = branch["lo_bus"]
-
-    bus = _PM.ref(pm, nw, :bus, i)
+    busKV = bus["base_kv"]
 
     if "gmd_k" in keys(branch)
 
-        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
+        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
         K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
 
-        constraint_qloss_vnom(pm, nw, k, i, j, K, branchMVA)
+        constraint_qloss_vnom(pm, nw, k, i, j, branchMVA, K)
 
     else
-        constraint_qloss_vnom(pm, nw, k, i, j)
+
+        constraint_zero_qloss(pm, nw, k, i, j)
+
     end
 
 end
 
 
+"CONSTRAINT: decoupled qloss assuming constant ac voltage"
+function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch = _PM.ref(pm, nw, :branch, k)
+    bus = _PM.ref(pm, nw, :bus, i)
+
+    Smax = 1000
+    branchMVA = min(get(branch, "rate_a", Smax), Smax)
+        # using hi/lo bus (qloss is defined in arcs going in both directions)
+    i = branch["hi_bus"]
+    j = branch["lo_bus"]
+    busKV = bus["base_kv"]
+
+    if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
+        Memento.warn(_LOGGER, "Branch $k is missing hi bus/lo bus.")
+        return
+    end
+
+    if branch["br_status"] == 0 
+        return
+    end
+
+    if "gmd_k" in keys(branch)
+
+        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
+        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
+        ieff = branch["ieff"]
+
+        constraint_qloss_decoupled_vnom(pm, nw, k, i, j, K, branchMVA, ieff)
+
+    else
+
+        constraint_zero_qloss(pm, nw, k, i, j)
+
+    end
+
+end
+
+
+"CONSTRAINT: decoupled qloss assuming varying ac voltage"
+function constraint_qloss_decoupled(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch = _PM.ref(pm, nw, :branch, k)
+    bus = _PM.ref(pm, nw, :bus, i)
+
+    branchMVA = branch["baseMVA"]
+    i = branch["hi_bus"]
+    j = branch["lo_bus"]
+    busKV = bus["base_kv"]
+
+    if "gmd_k" in keys(branch)
+
+        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
+        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
+        ieff = branch["ieff"]
+        ih = branch["hi_bus"]
+
+        constraint_qloss_decoupled(pm, nw, k, i, j, branchMVA, K, ieff, ih)
+
+    else
+
+        constraint_zero_qloss(pm, nw, k, i, j)
+
+    end
+
+end
+
+
+"CONSTRAINT: decoupled qloss assuming constant ac voltage for MLD"
+function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch = _PM.ref(pm, nw, :branch, k)
+    bus = _PM.ref(pm, nw, :bus, i)
+
+    Smax = 1000
+    branchMVA = min(get(branch, "rate_a", Smax), Smax)
+        # using hi/lo bus (qloss is defined in arcs going in both directions)
+    i = branch["hi_bus"]
+    j = branch["lo_bus"]
+    busKV = bus["base_kv"]
+
+    if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
+        Memento.warn(_LOGGER, "Branch $k is missing hi bus/lo bus.")
+        return
+    end
+
+    if branch["br_status"] == 0 
+        return
+    end
+
+    if "gmd_k" in keys(branch)
+
+        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
+        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
+        ieff = branch["ieff"]
+
+        constraint_qloss_decoupled_vnom_mld(pm, nw, k, i, j, K, branchMVA, ieff)
+
+    else
+
+        constraint_zero_qloss(pm, nw, k, i, j)
+
+    end
+
+end
+
+
+# ===   BRANCH - THERMAL CONSTRAINTS   === #
+
+##########
 
 
 
 
-# ===   GMD CONSTRAINTS   === #
-
-# ===   THERMAL CONSTRAINTS   === #
 
 
 "CONSTRAINT: steady-state temperature state"

@@ -64,7 +64,7 @@ function build_msse_qloss(pm::_PM.AbstractPowerModel; kwargs...)
             constraint_qloss(pm, i)
         end
 
-        constraint_qloss_constant_v(pm, i)
+        #constraint_qloss(pm, i) => likely not needed 
         constraint_dc_current_mag(pm, i)
 
     end

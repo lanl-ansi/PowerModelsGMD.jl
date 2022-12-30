@@ -270,7 +270,60 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractACPModel, n::Int,
 end
 
 
-###################
+# ===   BRANCH - QLOSS CONSTRAINTS   === #
+
+
+"CONSTRAINT: zero qloss"
+function constraint_zero_qloss(pm::_PM.AbstractACPModel, n::Int, k, i, j)
+
+    qloss = _PM.var(pm, n, :qloss)
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        0.0
+    )
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+end
+
+
+"CONSTRAINT: qloss assuming constant dc voltage"
+function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j, branchMVA, K)
+
+    qloss = _PM.var(pm, n, :qloss)
+    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
+
+    vm = _PM.var(pm, n, :vm)[i]
+
+    if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
+        Memento.warn(_LOGGER, "DC voltage magnitude cannot take a 0 value. In OTS applications, this may result in incorrect results.")
+    end
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        (K * vm * i_dc_mag) / (3.0 * branchMVA)
+            # K is per phase
+    )
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+end
+
+
+# ===   BRANCH - THERMAL CONSTRAINTS   === #
+
+##########
 
 
 
@@ -311,49 +364,6 @@ function constraint_thermal_protection(pm::_PM.AbstractACPModel, n::Int, i::Int,
 
 end
 
-
-"FUNCTION: computing qloss"
-function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j)
-
-    qloss = _PM.var(pm, n, :qloss)
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        0.0
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-end
-
-
-"FUNCTION: computing qloss"
-function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j, K, branchMVA)
-
-    qloss = _PM.var(pm, n, :qloss)
-    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
-    vm = _PM.var(pm, n, :vm)[i]
-
-    if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
-        Memento.warn(_LOGGER, "DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.")
-    end
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        (K * vm * i_dc_mag) / (3.0 * branchMVA)  # 'K' is per phase
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-end
 
 
 "CONSTRAINT: computing the dc current magnitude"
