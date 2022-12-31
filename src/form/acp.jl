@@ -1,50 +1,71 @@
-# ===   ACP   === #
+#############################################
+# Polar Form of the Non-Convex AC Equations #
+#############################################
+
+
+# ===   VOLTAGE VARIABLES   === #
 
 
 "VARIABLE: bus voltage on/off"
 function variable_bus_voltage_on_off(pm::_PM.AbstractACPModel; kwargs...)
+
     _PM.variable_bus_voltage_angle(pm; kwargs...)
+
     variable_bus_voltage_magnitude_on_off(pm; kwargs...)
+
 end
+
+
+# ===   CURRENT VARIABLES   === #
 
 
 "VARIABLE: ac current"
 function variable_ac_current(pm::_PM.AbstractACPModel; kwargs...)
+
     variable_ac_current_mag(pm; kwargs...)
+
 end
 
 
 "VARIABLE: ac current on/off"
 function variable_ac_current_on_off(pm::_PM.AbstractACPModel; kwargs...)
+
     variable_ac_current_mag(pm; bounded=false, kwargs...)
+
 end
 
 
 "VARIABLE: dc current"
 function variable_dc_current(pm::_PM.AbstractACPModel; kwargs...)
+
     variable_dc_current_mag(pm; kwargs...)
+
 end
 
 
 "VARIABLE: reactive loss"
 function variable_reactive_loss(pm::_PM.AbstractACPModel; kwargs...)
+
     variable_qloss(pm; kwargs...)
+
 end
 
+
+# ===   VOLTAGE CONSTRAINTS   === #
 
 "CONSTRAINT: bus voltage on/off"
 function constraint_bus_voltage_on_off(pm::_PM.AbstractACPModel; nw::Int=nw_id_default, kwargs...)
+
     for (i,bus) in _PM.ref(pm, nw, :bus)
+
         constraint_voltage_magnitude_on_off(pm, i; nw=nw)
+
     end
+
 end
 
 
-
-
-
-
-# ===   BUS - POWER BALANCE CONSTRAINTS   === #
+# ===   POWER BALANCE CONSTRAINTS   === #
 
 
 "CONSTRAINT: nodal power balance with gmd"
@@ -270,7 +291,7 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractACPModel, n::Int,
 end
 
 
-# ===   BRANCH - QLOSS CONSTRAINTS   === #
+# ===   QLOSS CONSTRAINTS   === #
 
 
 "CONSTRAINT: zero qloss"
@@ -321,7 +342,7 @@ function constraint_qloss_vnom(pm::_PM.AbstractACPModel, n::Int, k, i, j, branch
 end
 
 
-# ===   BRANCH - THERMAL CONSTRAINTS   === #
+# ===   THERMAL CONSTRAINTS   === #
 
 ##########
 

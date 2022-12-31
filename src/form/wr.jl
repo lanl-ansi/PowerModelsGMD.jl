@@ -1,10 +1,17 @@
-# ===   WR   === #
+####################################################
+# Quadratic Relaxations in the Rectangular W-Space #
+####################################################
+
+
+# ===   VOLTAGE VARIABLES   === #
 
 
 "VARIABLE: bus voltage on/off"
 function variable_bus_voltage_on_off(pm::_PM.AbstractWRModel; kwargs...)
+
     variable_bus_voltage_magnitude_sqr_on_off(pm; kwargs...)
     variable_bus_voltage_product_on_off(pm; kwargs...)
+
 end
 
 
@@ -19,6 +26,7 @@ function variable_bus_voltage_product_on_off(pm::_PM.AbstractWRModel; nw::Int=nw
         upper_bound = max(0,wr_max[bp]),
         start = _PM.comp_start_value(_PM.ref(pm, nw, :buspairs, bp), "wr_start", 1.0)
     )
+
     _PM.var(pm, nw)[:wi] = JuMP.@variable(pm.model,
         [bp in _PM.ids(pm, nw, :buspairs)], base_name="$(nw)_wi",
         lower_bound = min(0,wi_min[bp]),
@@ -29,9 +37,14 @@ function variable_bus_voltage_product_on_off(pm::_PM.AbstractWRModel; nw::Int=nw
 end
 
 
+# ===   CURRENT VARIABLES   === #
+
+
 "FUNCTION: ac current on/off"
 function variable_ac_current_on_off(pm::_PM.AbstractWRModel; kwargs...)
+
    variable_ac_current_mag(pm; bounded=false, kwargs...)
+
 end
 
 
@@ -58,16 +71,23 @@ end
 
 "FUNCTION: dc current"
 function variable_dc_current(pm::_PM.AbstractWRModel; kwargs...)
+
     variable_dc_current_mag(pm; kwargs...)
     variable_dc_current_mag_sqr(pm; kwargs...)
+
 end
 
 
 "FUNCTION: reactive loss"
 function variable_reactive_loss(pm::_PM.AbstractWRModel; kwargs...)
+
     variable_qloss(pm; kwargs...)
     variable_iv(pm; kwargs...)
+
 end
+
+
+# ===   VOLTAGE CONSTRAINTS   === #
 
 
 "CONSTRAINT: bus voltage product on/off"
@@ -89,16 +109,19 @@ function constraint_bus_voltage_product_on_off(pm::_PM.AbstractWRModels; nw::Int
             <=
             z_fr * wr_max[bp]
         )
+
         JuMP.@constraint(pm.model,
             wr[bp]
             >=
             z_fr * wr_min[bp]
         )
+
         JuMP.@constraint(pm.model,
             wi[bp]
             <=
             z_fr * wi_max[bp]
         )
+
         JuMP.@constraint(pm.model,
             wi[bp]
             >=
@@ -110,16 +133,19 @@ function constraint_bus_voltage_product_on_off(pm::_PM.AbstractWRModels; nw::Int
             <=
             z_to*wr_max[bp]
         )
+
         JuMP.@constraint(pm.model,
             wr[bp]
             >=
             z_to*wr_min[bp]
         )
+
         JuMP.@constraint(pm.model,
             wi[bp]
             <=
             z_to*wi_max[bp]
         )
+
         JuMP.@constraint(pm.model,
             wi[bp]
             >=
@@ -134,7 +160,9 @@ end
 function constraint_bus_voltage_on_off(pm::_PM.AbstractWRModels, n::Int; kwargs...)
 
     for (i,bus) in _PM.ref(pm, n, :bus)
+
         constraint_voltage_magnitude_sqr_on_off(pm, i; nw=n)
+
     end
 
     constraint_bus_voltage_product_on_off(pm; nw=n)
@@ -144,17 +172,15 @@ function constraint_bus_voltage_on_off(pm::_PM.AbstractWRModels, n::Int; kwargs.
     wi = _PM.var(pm, n, :wi)
 
     for (i,j) in _PM.ids(pm, n, :buspairs)
+
         _IM.relaxation_complex_product(pm.model, w[i], w[j], wr[(i,j)], wi[(i,j)])
+
     end
 
 end
 
 
-
-
-
-
-# ===   BUS - POWER BALANCE CONSTRAINTS   === #
+# ===   POWER BALANCE CONSTRAINTS   === #
 
 
 "CONSTRAINT: nodal power balance with gmd"
@@ -380,7 +406,7 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWRModel, n::Int, 
 end
 
 
-# ===   BRANCH - QLOSS CONSTRAINTS   === #
+# ===   QLOSS CONSTRAINTS   === #
 
 
 "CONSTRAINT: zero qloss"
@@ -438,7 +464,7 @@ function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, branchMVA, K
 end
 
 
-# ===   BRANCH - THERMAL CONSTRAINTS   === #
+# ===   THERMAL CONSTRAINTS   === #
 
 ##########
 

@@ -1,56 +1,38 @@
-# ===   DCP   === #
+###########################################
+# Simple Active Power Only Approximations #
+###########################################
+
+
+# ===   VOLTAGE VARIABLES   === #
 
 
 "VARIABLE: bus voltage indicator"
 function variable_bus_voltage_indicator(pm::_PM.AbstractDCPModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+
     report && _IM.sol_component_fixed(pm, _PM.pm_it_sym, nw, :bus, :status, _PM.ids(pm, nw, :bus), 1.0)
+
 end
 
 
 "VARIABLE: bus voltage on/off"
 function variable_bus_voltage_on_off(pm::_PM.AbstractDCPModel; kwargs...)
+
     _PM.variable_bus_voltage_angle(pm; kwargs...)
+
     variable_bus_voltage_magnitude_on_off(pm; kwargs...)
+
 end
 
 
 "VARIABLE: bus voltage magnitude on/off"
 function variable_bus_voltage_magnitude_on_off(pm::_PM.AbstractDCPModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+
     report && _IM.sol_component_fixed(pm, _PM.pm_it_sym, nw, :bus, :vm, _PM.ids(pm, nw, :bus), 1.0)
+
 end
 
 
-"VARIABLE: ac current"
-function variable_ac_current(pm::_PM.AbstractDCPModel; kwargs...)
-end
-
-
-"VARIABLE: ac current on/off"
-function variable_ac_current_on_off(pm::_PM.AbstractDCPModel; kwargs...)
-end
-
-
-"VARIABLE: dc current"
-function variable_dc_current(pm::_PM.AbstractDCPModel; kwargs...)
-    variable_dc_current_mag(pm; kwargs...)
-end
-
-
-"VARIABLE: reactive loss"
-function variable_reactive_loss(pm::_PM.AbstractDCPModel; kwargs...)
-end
-
-
-"CONTRAINT: bus voltage on/off"
-function constraint_bus_voltage_on_off(pm::_PM.AbstractDCPModel; nw::Int=nw_id_default, kwargs...)
-end
-
-
-
-
-
-
-# ===   BUS - POWER BALANCE CONSTRAINTS   === #
+# ===   POWER BALANCE CONSTRAINTS   === #
 
 
 "CONSTRAINT: nodal power balance with gmd"
@@ -190,7 +172,7 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractDCPModel, n::Int,
 end
 
 
-# ===   BRANCH - THERMAL CONSTRAINTS   === #
+# ===   THERMAL CONSTRAINTS   === #
 
 ##########
 
