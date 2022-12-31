@@ -237,7 +237,7 @@ function constraint_gen_ots_on_off(pm::_PM.AbstractPowerModel, n::Int, i, bus_ar
 end
 
 
-# ===   BUS - POWER BALANCE CONSTRAINTS   === #
+# ===   POWER BALANCE CONSTRAINTS   === #
 
 
 "CONSTRAINT: nodal power balance with gmd"
@@ -381,7 +381,7 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWConvexModels, n:
 end
 
 
-# ===   BUS - DC POWER BALANCE CONSTRAINTS   === #
+# ===   DC POWER BALANCE CONSTRAINTS   === #
 
 # TODO:
 # constraint_dc_power_balance_shunt ==> check/udpdate formulation
@@ -445,7 +445,7 @@ function constraint_dc_power_balance_blocker_shunt(pm::_PM.AbstractPowerModel, n
 end
 
 
-# ===   BRANCH - OHM'S LAW CONSTRAINTS   === #
+# ===   OHM'S LAW CONSTRAINTS   === #
 
 
 "CONSTRAINT: ohms constraint for dc circuits"
@@ -496,7 +496,7 @@ function constraint_dc_ohms_on_off(pm::_PM.AbstractPowerModel, n::Int, i, f_bus,
 end
 
 
-# ===   BRANCH - QLOSS CONSTRAINTS   === #
+# ===   QLOSS CONSTRAINTS   === #
 
 
 "CONSTRAINT: zero qloss"
@@ -629,7 +629,7 @@ function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, n::Int,
 end
 
 
-# ===   BRANCH - THERMAL CONSTRAINTS   === #
+# ===   THERMAL CONSTRAINTS   === #
 
 ##########
 
