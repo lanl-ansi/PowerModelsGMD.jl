@@ -4,8 +4,8 @@ InfrastructureModels 0.7.5
 PowerModels 0.19.7
 
 JSON 0.21.3
-JUMP 1.5.0
+JUMP 1.6.0
 Memento 1.4.1
 
 Ipopt 1.1.0
-Juniper 0.9.0
+Juniper 0.9.1
