@@ -51,7 +51,7 @@ function objective_blocker_placement_cost(pm::_PM.AbstractPowerModel)
     )
 end
 
-"Minimize GIC"
+"Minimize weighted sum of GIC and placement cost"
 function objective_minimize_idc_sum(pm::_PM.AbstractPowerModel)
     nw = nw_id_default # TODO: extend to multinetwork
     return JuMP.@objective(pm.model, Min,
