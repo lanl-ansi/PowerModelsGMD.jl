@@ -32,6 +32,29 @@ function variable_bus_voltage_magnitude_on_off(pm::_PM.AbstractDCPModel; nw::Int
 end
 
 
+# ===   CURRENT CONSTRAINTS   === #
+
+
+"CONSTRAINT: relating current to power flow on/off"
+function constraint_current_on_off(pm::_PM.AbstractDCPModel, n::Int, i::Int, ac_max)
+
+    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
+    z  = _PM.var(pm, n, :z_branch)[i]
+
+    JuMP.@constraint(pm.model,
+        i_ac_mag
+        <=
+        z * ac_max
+    )
+    JuMP.@constraint(pm.model,
+        i_ac_mag
+        >=
+        z * 0
+    )
+
+end
+
+
 # ===   POWER BALANCE CONSTRAINTS   === #
 
 
@@ -174,34 +197,23 @@ end
 
 # ===   THERMAL CONSTRAINTS   === #
 
-##########
 
+"CONSTRAINT: steady-state temperature state"
+function constraint_temperature_steady_state(pm::_PM.AbstractDCPModel, n::Int, i::Int, f_idx, rate_a, delta_oil_rated)
 
-
-
-
-
-"CONSTRAINT: relating current to power flow on/off"
-function constraint_current_on_off(pm::_PM.AbstractDCPModel, n::Int, i::Int, ac_max)
-
-    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
-    z  = _PM.var(pm, n, :z_branch)[i]
+    p_fr = _PM.var(pm, n, :p, f_idx)
+    delta_oil_ss = _PM.var(pm, n, :ross, i)
 
     JuMP.@constraint(pm.model,
-        i_ac_mag
-        <=
-        z * ac_max
-    )
-    JuMP.@constraint(pm.model,
-        i_ac_mag
+        sqrt(rate_a) * delta_oil_ss / sqrt(delta_oil_rated)
         >=
-        z * 0
+        p_fr
     )
 
 end
 
 
-"CONSTRAINT: computing thermal protection of transformers"
+"CONSTRAINT: thermal protection of transformers"
 function constraint_thermal_protection(pm::_PM.AbstractDCPModel, n::Int, i::Int, coeff, ibase)
 
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
@@ -210,48 +222,7 @@ function constraint_thermal_protection(pm::_PM.AbstractDCPModel, n::Int, i::Int,
     JuMP.@constraint(pm.model,
         i_ac_mag
         <=
-        coeff[1] + coeff[2] * ieff / ibase + coeff[3] * ieff^2 / (ibase^2)
-    )
-
-end
-
-
-
-"OBJECTIVE: needed because dc models do not have the z_voltage variable"
-function objective_max_loadability(pm::_PM.AbstractDCPModel)
-
-    nws = _PM.nw_ids(pm)
-
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
-
-    z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
-    z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)
-    z_gen = Dict(n => _PM.var(pm, n, :z_gen) for n in nws)
-    time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
-
-    load_weight = Dict(n =>
-        Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load))
-    for n in nws)
-
-    M = Dict()
-    for n in nws
-        scaled_weight = [load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]
-        if isempty(scaled_weight)
-            scaled_weight = [1.0]
-        end
-        M[n] = 10*maximum(scaled_weight)
-    end
-
-    return JuMP.@objective(pm.model, Max,
-        sum(
-            (
-                time_elapsed[n]*(
-                 sum(M[n]*z_gen[n][i] for (i,gen) in _PM.ref(pm, n, :gen)) +
-                 sum(M[n]*z_shunt[n][i] for (i,shunt) in _PM.ref(pm, n, :shunt)) +
-                 sum(load_weight[n][i]*abs(load["pd"])*z_demand[n][i] for (i,load) in _PM.ref(pm, n, :load))
-             )
-            )
-        for n in nws)
+        coeff[1] + coeff[2] * ieff / ibase + coeff[3] * ieff^2 / ibase^2
     )
 
 end

@@ -534,24 +534,22 @@ end
 
 # ===   THERMAL CONSTRAINTS   === #
 
-##########
-
-
-
-
-
 
 "CONSTRAINT: steady-state temperature state"
 function constraint_temperature_state_ss(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, i)
-    rate_a = branch["rate_a"]
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    f_idx = (i, f_bus, t_bus)
 
     if branch["topoil_time_const"] >= 0
+
+        f_bus = branch["f_bus"]
+        t_bus = branch["t_bus"]
+        f_idx = (i, f_bus, t_bus)
+
+        rate_a = branch["rate_a"]
+
         constraint_temperature_steady_state(pm, nw, i, f_idx, rate_a, branch["topoil_rated"])
+
     end
 
 end
@@ -561,16 +559,21 @@ end
 function constraint_temperature_state(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, i)
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    f_idx = (i, f_bus, t_bus)
 
     if branch["topoil_time_const"] >= 0
 
+        f_bus = branch["f_bus"]
+        t_bus = branch["t_bus"]
+        f_idx = (i, f_bus, t_bus)
+
         if branch["topoil_initialized"] > 0
+
             constraint_temperature_state_initial(pm, nw, i, f_idx, branch["topoil_init"])
+
         else
+
             constraint_temperature_state_initial(pm, nw, i, f_idx)
+
         end
 
     end
@@ -589,9 +592,13 @@ function constraint_temperature_state(pm::_PM.AbstractPowerModel, i::Int, nw_1::
         delta_t = 5
 
         if haskey(_PM.ref(pm, nw_1), :time_elapsed)
+
             delta_t = _PM.ref(pm, nw_1, :time_elapsed)
+
         else
+
             Memento.warn(_LOGGER, "Network data should specify time_elapsed, using $delta_t as a default.")
+
         end
 
         tau = 2 * tau_oil / delta_t
@@ -607,17 +614,23 @@ end
 function constraint_hotspot_temperature_state_ss(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, i)
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    f_idx = (i, f_bus, t_bus)
-    rate_a = branch["rate_a"]
 
     if branch["topoil_time_const"] >= 0
 
+        f_bus = branch["f_bus"]
+        t_bus = branch["t_bus"]
+        f_idx = (i, f_bus, t_bus)
+
+        rate_a = branch["rate_a"]
+
         if "hotspot_coeff" in keys(branch)
+
             Re = branch["hotspot_coeff"]
+
         else
+
             Re = 0.63
+
         end
 
         constraint_hotspot_temperature_steady_state(pm, nw, i, f_idx, rate_a, Re)
@@ -631,12 +644,15 @@ end
 function constraint_hotspot_temperature_state(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, i)
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    f_idx = (i, f_bus, t_bus)
 
     if branch["topoil_time_const"] >= 0
+
+        f_bus = branch["f_bus"]
+        t_bus = branch["t_bus"]
+        f_idx = (i, f_bus, t_bus)
+
         constraint_hotspot_temperature(pm, nw, i, f_idx)
+
     end
 
 end
@@ -646,12 +662,17 @@ end
 function constraint_absolute_hotspot_temperature_state(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, i)
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    f_idx = (i, f_bus, t_bus)
 
     if branch["topoil_time_const"] >= 0
-        constraint_absolute_hotspot_temperature(pm, nw, i, f_idx, branch["temperature_ambient"])
+
+        f_bus = branch["f_bus"]
+        t_bus = branch["t_bus"]
+        f_idx = (i, f_bus, t_bus)
+
+        temp_ambient = branch["temperature_ambient"]
+
+        constraint_absolute_hotspot_temperature(pm, nw, i, f_idx, temp_ambient)
+
     end
 
 end
@@ -661,18 +682,23 @@ end
 function constraint_avg_absolute_hotspot_temperature_state(pm::_PM.AbstractPowerModel, i::Int)
 
     branch = _PM.ref(pm, 1, :branch, i)
-    f_bus = branch["f_bus"]
-    t_bus = branch["t_bus"]
-    f_idx = (i, f_bus, t_bus)
 
     if branch["topoil_time_const"] >= 0
-        constraint_avg_absolute_hotspot_temperature(pm, i, f_idx, branch["hotspot_avg_limit"])
+
+        f_bus = branch["f_bus"]
+        t_bus = branch["t_bus"]
+        f_idx = (i, f_bus, t_bus)
+
+        max_temp = branch["hotspot_avg_limit"]
+
+        constraint_avg_absolute_hotspot_temperature(pm, i, f_idx, max_temp)
+
     end
 
 end
 
 
-"CONSTRAINT: computing thermal protection of transformers"
+"CONSTRAINT: thermal protection of transformers"
 function constraint_thermal_protection(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, i)
