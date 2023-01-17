@@ -46,7 +46,6 @@ const _PMGMD = PowerModelsGMD
     # Add network formulations:
     include("form/acp.jl")
     include("form/dcp.jl")
-    include("form/shared.jl")
     include("form/wr.jl")
     include("form/wrm.jl")
 
