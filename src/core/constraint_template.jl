@@ -264,15 +264,6 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractPowerModel, i::In
 end
 
 
-# ===   DC POWER BALANCE CONSTRAINTS   === #
-
-# TODO:
-# constraint_dc_power_balance_shunt ==> check/udpdate formulation, add shunts [?]
-# constraint_dc_power_balance_blocker_shunt ==> check/udpdate formulation, add shunts [?]
-# check/update constraint formulations in constraint.jl as well
-# both constraint formulations are farily similar to each other... constraint_dc_power_balance_shunt should not have blocker in it at all
-
-
 "CONSTRAINT: nodal power balance for dc circuits with shunts"
 function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
