@@ -78,7 +78,10 @@ function variable_dc_current(pm::_PM.AbstractWRModel; kwargs...)
 end
 
 
-"FUNCTION: reactive loss"
+# ===   QLOSS VARIABLES   === #
+
+
+"FUNCTION: reactive power loss"
 function variable_reactive_loss(pm::_PM.AbstractWRModel; kwargs...)
 
     variable_qloss(pm; kwargs...)

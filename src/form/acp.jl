@@ -43,7 +43,10 @@ function variable_dc_current(pm::_PM.AbstractACPModel; kwargs...)
 end
 
 
-"VARIABLE: reactive loss"
+# ===   QLOSS VARIABLES   === #
+
+
+"VARIABLE: reactive power loss"
 function variable_reactive_loss(pm::_PM.AbstractACPModel; kwargs...)
 
     variable_qloss(pm; kwargs...)
@@ -159,8 +162,6 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractACPModel, n
     JuMP.@NLconstraint(pm.model, ieff == abs(a*is + ic)/(a + 1.0))
 
 end
-
-
 
 
 # ===   POWER BALANCE CONSTRAINTS   === #

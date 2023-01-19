@@ -1,3 +1,361 @@
+##################
+# Data Functions #
+##################
+
+# Tools for working with a PowerModelsGMD data dict structure.
+
+
+# ===   CALCULATIONS FOR VOLTAGE VARIABLES   === #
+
+
+"FUNCTION: calculate the minimum DC voltage at a gmd bus "
+function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+    return -Inf
+end
+
+
+"FUNCTION: calculate the maximum DC voltage at a gmd bus "
+function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+    return Inf
+end
+
+
+"FUNCTION: calculate the maximum dc voltage difference between gmd buses"
+function calc_max_dc_voltage_difference(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+    return 1e6
+end
+
+
+
+# ===   CALCULATIONS FOR CURRENT VARIABLES   === #
+
+
+"FUNCTION: calculate the minimum absolute value AC current on a branch"
+function calc_ac_mag_min(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+    return 0
+end
+
+
+"FUNCTION: calculate the maximum absolute value AC current on a branch"
+function calc_ac_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+
+    branch = _PM.ref(pm, nw, :branch, i)
+    f_bus = _PM.ref(pm, nw, :bus, branch["f_bus"])
+    t_bus = _PM.ref(pm, nw, :bus, branch["t_bus"])
+
+    ac_max = branch["rate_a"] * branch["tap"] / min(f_bus["vmin"], t_bus["vmin"])
+    return ac_max
+
+end
+
+
+"FUNCTION: calculate the maximum DC current on a branch"
+function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+
+    branch = _PM.ref(pm, nw, :branch, i)
+
+    ac_max = -Inf
+    for l in _PM.ids(pm, nw, :branch)
+        ac_max = max(calc_ac_mag_max(pm, l, nw=nw), ac_max)
+    end
+
+    ibase = calc_branch_ibase(pm, i, nw=nw)
+    return 2 * ac_max * ibase
+
+end
+
+
+"FUNCTION: calculate the ibase for a branch"
+function calc_branch_ibase(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+
+    branch = _PM.ref(pm, nw, :branch, i)
+    bus = _PM.ref(pm, nw, :bus, branch["hi_bus"])
+
+    return branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus["base_kv"] * sqrt(3.0))
+
+end
+
+
+# ===   CALCULATIONS FOR QLOSS VARIABLES   === #
+
+
+"FUNCTION: calculate qloss"
+function calculate_qloss(branch, case::Dict{String,Any}, solution::Dict{String,Any})
+
+    @assert !_IM.ismultinetwork(case)
+    @assert !haskey(case, "conductors")
+
+    k = "$(branch["index"])"
+    i = "$(branch["hi_bus"])"
+    j = "$(branch["lo_bus"])"
+    
+    bus = case["bus"][i]
+
+    br_soln = solution["branch"][k]
+    i_dc_mag = abs(br_soln["gmd_idc"])
+
+    if "gmd_k" in keys(branch)
+ 
+        ibase = branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus["base_kv"] * sqrt(3.0))
+        K = branch["gmd_k"] * data["baseMVA"]/ibase  
+            # K is per phase
+
+        return K * i_dc_mag / (3.0 * branch["baseMVA"])
+
+    end
+
+    return 0.0
+
+end
+
+
+"CONSTRAINT: calculate qloss assuming constant ac voltage"
+function qloss_decoupled_vnom(case::Dict{String,Any})
+
+    for (_, bus) in case["bus"]
+        bus["qloss0"] = 0.0
+        bus["qloss"] = 0.0
+    end
+
+    for (_, branch) in case["branch"]
+        branch["qloss0"] = 0.0
+        branch["qloss"] = 0.0
+    end
+
+    for (k, branch) in case["branch"]
+        # qloss is defined in arcs going in both directions
+
+        i = branch["f_bus"]
+        j = branch["t_bus"]
+
+        ckt = "  "
+        if "ckt" in keys(branch)
+            ckt = branch["ckt"]
+        end
+
+        if ( !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || (branch["hi_bus"] == -1) || (branch["lo_bus"] == -1) )
+            Memento.warn(_LOGGER, "Branch $k ($i, $j, $ckt) is missing hi bus/lo bus")
+            continue
+        end
+
+        bus = case["bus"]["$i"]
+        i = branch["hi_bus"]
+        j = branch["lo_bus"]
+
+        if branch["br_status"] == 0
+            # branch is disabled
+            continue
+        end
+
+        if "gmd_k" in keys(branch)
+
+            ibase = (case["baseMVA"] * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
+            ieff = branch["ieff"] / (3 * ibase)
+            qloss = branch["gmd_k"] * ieff
+
+            case["bus"]["$i"]["qloss"] += qloss
+
+            case["branch"][k]["gmd_qloss"] = qloss * case["baseMVA"]
+
+            n = length(case["load"])
+            if qloss >= 1e-3
+                load = Dict{String, Any}()
+                load["source_id"] = ["qloss", branch["index"]]
+                load["load_bus"] = i
+                load["status"] = 1
+                load["pd"] = 0.0
+                load["qd"] = qloss
+                load["index"] = n + 1
+                case["load"]["$(n + 1)"] = load
+                load["weight"] = 100.0
+            end
+
+        else
+
+            Memento.warn(_LOGGER, "Transformer $k ($i,$j) does not have field gmd_k, skipping")
+
+        end
+
+    end
+
+end
+
+
+"FUNCTION: adjust qloss"
+function adjust_gmd_qloss(case::Dict{String,Any}, solution::Dict{String,Any})
+
+    for (i, br) in case["branch"]
+
+        if !(i in keys(solution["branch"]))
+            # branch is disabled
+            continue
+        end
+
+        br_soln = solution["branch"][i]
+        if !("gmd_qloss" in keys(br_soln))
+            continue
+        end
+        if br_soln["gmd_qloss"] === nothing
+            continue
+        end
+
+        if !("hi_bus" in keys(br))
+            continue
+        end
+
+        if  br["f_bus"] == br["hi_bus"]
+            br_soln["qf"] += br_soln["gmd_qloss"]
+        else
+            br_soln["qt"] += br_soln["gmd_qloss"]
+        end
+
+    end
+
+end
+
+
+# ===   CALCULATIONS FOR THERMAL VARIABLES   === #
+
+
+"FUNCTION: calculate steady-state hotspot temperature rise"
+function delta_hotspotrise_ss(branch, result)
+
+    delta_hotspotrise_ss = 0
+
+    Ie = branch["ieff"]
+    delta_hotspotrise_ss = branch["hotspot_coeff"] * Ie
+
+    branch["delta_hotspotrise_ss"] = delta_hotspotrise_ss
+
+end
+
+
+"FUNCTION: calculate hotspot temperature rise"
+function delta_hotspotrise(branch, result, Ie_prev, delta_t)
+
+    delta_hotspotrise = 0
+
+    Ie = branch["ieff"]
+    tau = 2 * branch["hotspot_rated"] / delta_t
+
+    if Ie_prev === nothing
+
+        delta_hotspotrise = branch["hotspot_coeff"] * Ie
+
+    else
+
+        delta_hotspotrise_prev = branch["delta_hotspotrise"]
+        delta_hotspotrise = branch["hotspot_coeff"] * (Ie + Ie_prev) / (1 + tau) - delta_hotspotrise_prev * (1 - tau) / (1 + tau)
+
+    end
+
+    branch["delta_hotspotrise"] = delta_hotspotrise
+
+end
+
+
+"FUNCTION: update hotspot temperature rise in the network"
+function update_hotspotrise(branch, case::Dict{String,Any})
+
+    i = branch["index"]
+
+    case["branch"]["$i"]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
+    case["branch"]["$i"]["delta_hotspotrise"] = branch["delta_hotspotrise"]
+
+end
+
+
+"FUNCTION: calculate steady-state top-oil temperature rise"
+function delta_topoilrise_ss(branch, result, base_mva)
+
+    delta_topoilrise_ss = 0
+
+    if ( (branch["type"] == "xfmr") || (branch["type"] == "xf") || (branch["type"] == "transformer") )
+
+        i = branch["index"]
+        bs = result["solution"]["branch"]["$i"]
+        p = bs["pf"]
+        q = bs["qf"]
+
+        S = sqrt(p^2 + q^2)
+        K = S / (branch["rate_a"] * base_mva)
+
+        # delta_topoilrise_ss = 1  # ==> STEP response
+        delta_topoilrise_ss = branch["topoil_rated"] * K^2
+
+    end
+
+    branch["delta_topoilrise_ss"] = delta_topoilrise_ss
+
+end
+
+
+"FUNCTION: calculate top-oil temperature rise"
+function delta_topoilrise(branch, result, base_mva, delta_t)
+
+    delta_topoilrise_ss = branch["delta_topoilrise_ss"]
+    delta_topoilrise = delta_topoilrise_ss
+
+    if ( ("delta_topoilrise" in keys(branch)) && ("delta_topoilrise_ss" in keys(branch)) )
+
+        delta_topoilrise_prev = branch["delta_topoilrise"]
+        delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"] 
+
+        tau = 2 * (branch["topoil_time_const"] * 60) / delta_t
+        delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev) / (1 + tau) - delta_topoilrise_prev * (1 - tau) / (1 + tau)
+
+    else
+
+        delta_topoilrise = 0
+
+    end
+
+    branch["delta_topoilrise"] = delta_topoilrise
+
+end
+
+
+"FUNCTION: update top-oil temperature rise in the network"
+function update_topoilrise(branch, case::Dict{String,Any})
+
+    i = branch["index"]
+    case["branch"]["$i"]["delta_topoilrise_ss"] = branch["delta_topoilrise_ss"]
+    case["branch"]["$i"]["delta_topoilrise"] = branch["delta_topoilrise"]
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###########################################
+
 # ===   GENERAL FUNCTIONS   === #
 
 
@@ -127,73 +485,6 @@ function fix_gmd_indices!(net)
 end
 
 
-"FUNCTION: calculate Qloss"
-function calculate_qloss(branch, case, solution)
-
-    @assert !InfrastructureModels.ismultinetwork(case)
-    @assert !haskey(case, "conductors")
-
-    k = "$(branch["index"])"
-    i = "$(branch["hi_bus"])"
-    j = "$(branch["lo_bus"])"
-
-    br_soln = solution["branch"][k]
-    bus = case["bus"][i]
-    i_dc_mag = abs(br_soln["gmd_idc"])
-
-    if "gmd_k" in keys(branch)
-
-        ibase = branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
-        K = branch["gmd_k"]*data["baseMVA"]/ibase
-
-        # K is per phase
-        return K*i_dc_mag/(3.0*branch["baseMVA"])
-    end
-
-    return 0.0
-
-end
-
-
-"FUNCTION: compute maximum AC current on a branch"
-function calc_ac_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-
-    branch = _PM.ref(pm, nw, :branch, i)
-    f_bus = _PM.ref(pm, nw, :bus, branch["f_bus"])
-    t_bus = _PM.ref(pm, nw, :bus, branch["t_bus"])
-    ac_max = branch["rate_a"]*branch["tap"] / min(f_bus["vmin"], t_bus["vmin"])
-
-    return ac_max
-
-end
-
-
-"FUNCTION: compute the maximum DC current on a branch"
-function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    
-    branch = _PM.ref(pm, nw, :branch, i)
-
-    ac_max = -Inf
-    for l in _PM.ids(pm, nw, :branch)
-        ac_max = max(calc_ac_mag_max(pm, l, nw=nw), ac_max)
-    end
-    ibase = calc_branch_ibase(pm, i, nw=nw)
-
-    return 2 * ac_max * ibase  # branch["ibase"]
-
-end
-
-
-"FUNCTION: compute the ibase for a branch"
-function calc_branch_ibase(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-
-    branch = _PM.ref(pm, nw, :branch, i)
-    bus = _PM.ref(pm, nw, :bus, branch["hi_bus"])
-    return branch["baseMVA"]*1000.0*sqrt(2.0)/(bus["base_kv"]*sqrt(3.0))
-
-end
-
-
 "FUNCTION: compute the thermal coeffieicents for a branch"
 function calc_branch_thermal_coeff(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 
@@ -266,13 +557,6 @@ function poly_fit(x, y, n)
 end
 
 
-"FUNCTION: computes the maximum dc voltage difference between buses"
-function calc_max_dc_voltage_difference(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    # TODO: actually formally calculate
-    return 1e6
-end
-
-
 "FUNCTION: apply function"
 function apply_func(data::Dict{String,Any}, key::String, func)
 
@@ -282,23 +566,6 @@ function apply_func(data::Dict{String,Any}, key::String, func)
 
 end
 
-
-"FUNCTION: compute the maximum DC voltage at a gmd bus "
-function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return Inf
-end
-
-
-"FUNCTION: compute the maximum DC voltage at a gmd bus "
-function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return -Inf
-end
-
-
-"FUNCTION: compute the minimum absolute value AC current on a branch"
-function calc_ac_mag_min(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return 0
-end
 
 
 "FUNCTION: computing the dc current magnitude"
@@ -331,80 +598,6 @@ function dc_current_mag(branch, case, solution)
 
 end
 
-"CONSTRAINT: computing qloss assuming ac voltage is 1.0 pu"
-function qloss_decoupled_vnom(case)
-
-    # println("Start calculating qloss")
-
-    for (_, bus) in case["bus"]
-        bus["qloss"] = 0.0
-        bus["qloss0"] = 0.0
-    end
-
-    for (_, branch) in case["branch"]
-        branch["qloss"] = 0.0
-        branch["qloss0"] = 0.0
-    end
-
-    for (k, branch) in case["branch"]
-        # Smax = 1000
-        # branchMVA = min(get(branch, "rate_a", Smax), Smax)
-        # using hi/lo bus shouldn't be an issue because qloss is defined in arcs going in both directions
-
-        i = branch["f_bus"]
-        j = branch["t_bus"]
-        ckt = "  "
-
-        if "ckt" in keys(branch)
-          ckt = branch["ckt"]
-        end
-
-        if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
-            Memento.warn(_LOGGER, "Branch $k ($i, $j, $ckt) is missing hi bus/lo bus")
-            continue
-        end
-
-        i = branch["hi_bus"]
-        j = branch["lo_bus"]
-
-        bus = case["bus"]["$i"]
-
-        if branch["br_status"] == 0 
-            continue
-        end
-
-        if "gmd_k" in keys(branch)
-            ibase = (case["baseMVA"] * 1000.0 * sqrt(2.0)) / (bus["base_kv"] * sqrt(3.0))
-            ieff = branch["ieff"]/(3*ibase)
-            qloss = branch["gmd_k"]*ieff
-            # println("Qloss for transformer ($i,$j) = $qloss")
-        
-            case["bus"]["$i"]["qloss"] += qloss
-        
-            # case["branch"][k]["qloss"] = qloss   # OLD value
-            case["branch"][k]["gmd_qloss"] = qloss * case["baseMVA"]
-
-            n = length(case["load"])
-
-            if qloss >= 1e-3
-                load = Dict{String, Any}()
-                load["source_id"] = ["qloss", branch["index"]]
-                load["load_bus"] = i
-                load["status"] = 1
-                load["pd"] = 0.0
-                load["qd"] = qloss
-                load["index"] = n + 1
-                case["load"]["$(n + 1)"] = load
-                load["weight"] = 100.0
-            end
-        else
-            Memento.warn(_LOGGER, "Transformer $k ($i,$j) does not have field gmd_k, skipping")
-        end
-    end
-
-    # println("Done calculating qloss")
-
-end
 
 "FUNCTION: dc current on normal lines"
 function dc_current_mag_line(branch, case, solution)
@@ -545,112 +738,6 @@ function dc_current_mag_3w_xf(branch, case, solution)
 end
 
 
-
-
-# ===   THERMAL MODEL FUNCTIONS   === #
-
-
-"FUNCTION: calculate steady-state top-oil temperature rise"
-function delta_topoilrise_ss(branch, result, base_mva)
-
-    delta_topoilrise_ss = 0
-
-    if (branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
-
-        i = branch["index"]
-        bs = result["solution"]["branch"]["$i"]
-        p = bs["pf"]
-        q = bs["qf"]
-        S = sqrt(p^2 + q^2)
-        K = S / (branch["rate_a"] * base_mva)
-
-        # delta_topoilrise_ss = 1  # ==> STEP response
-        delta_topoilrise_ss = branch["topoil_rated"] * K^2
-
-    end
-
-    branch["delta_topoilrise_ss"] = delta_topoilrise_ss
-
-end
-
-
-"FUNCTION: calculate top-oil temperature rise"
-function delta_topoilrise(branch, result, base_mva, delta_t)
-
-    delta_topoilrise_ss = branch["delta_topoilrise_ss"]
-    delta_topoilrise = delta_topoilrise_ss
-
-    if (("delta_topoilrise" in keys(branch)) && ("delta_topoilrise_ss" in keys(branch)))
-
-        delta_topoilrise_prev = branch["delta_topoilrise"]
-        delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"] 
-
-        tau = 2 * (branch["topoil_time_const"] * 60) / delta_t
-        delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev) / (1 + tau) - delta_topoilrise_prev * (1 - tau) / (1 + tau)
-
-    else
-        delta_topoilrise = 0
-    end
-
-    branch["delta_topoilrise"] = delta_topoilrise
-
-end
-
-
-"FUNCTION: update top-oil temperature rise in the network"
-function update_topoilrise(branch, case)
-
-    i = branch["index"]
-    case["branch"]["$i"]["delta_topoilrise_ss"] = branch["delta_topoilrise_ss"]
-    case["branch"]["$i"]["delta_topoilrise"] = branch["delta_topoilrise"]
-
-end
-
-
-"FUNCTION: calculate steady-state hotspot temperature rise"
-function delta_hotspotrise_ss(branch, result)
-
-    delta_hotspotrise_ss = 0
-
-    Ie = branch["ieff"]
-    delta_hotspotrise_ss = branch["hotspot_coeff"] * Ie
-
-    branch["delta_hotspotrise_ss"] = delta_hotspotrise_ss
-
-end
-
-
-"FUNCTION: calculate hotspot temperature rise"
-function delta_hotspotrise(branch, result, Ie_prev, delta_t)
-
-    delta_hotspotrise = 0
-
-    Ie = branch["ieff"]
-    tau = 2 * branch["hotspot_rated"] / delta_t
-
-    if Ie_prev === nothing
-        delta_hotspotrise = branch["hotspot_coeff"] * Ie
-    else
-        delta_hotspotrise_prev = branch["delta_hotspotrise"]
-        delta_hotspotrise = branch["hotspot_coeff"] * (Ie + Ie_prev) / (1 + tau) - delta_hotspotrise_prev * (1 - tau) / (1 + tau)
-    end
-
-    branch["delta_hotspotrise"] = delta_hotspotrise
-
-end
-
-
-"FUNCTION: update hotspot temperature rise in the network"
-function update_hotspotrise(branch, case)
-
-    i = branch["index"]
-    case["branch"]["$i"]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
-    case["branch"]["$i"]["delta_hotspotrise"] = branch["delta_hotspotrise"]
-
-end
-
-
-
 # ===   RESULT ADJUSTMENT FUNCTIONS   === #
 
 
@@ -672,37 +759,6 @@ function adjust_gmd_phasing(result)
 end
 
 
-"FUNCTION: adjust GMD qloss"
-function adjust_gmd_qloss(case::Dict{String,Any}, solution::Dict{String,Any})
-
-    for (i, br) in case["branch"]
-        if !(i in keys(solution["branch"]))
-            # branch is disabled, skip
-            continue
-        end
-
-        br_soln = solution["branch"][i]
-
-        if !("gmd_qloss" in keys(br_soln))
-            continue
-        end
-
-        if br_soln["gmd_qloss"] === nothing
-            continue
-        end
-
-        if !("hi_bus" in keys(br))
-            continue
-        end
-
-        if  br["f_bus"] == br["hi_bus"]
-            br_soln["qf"] += br_soln["gmd_qloss"]
-        else
-            br_soln["qt"] += br_soln["gmd_qloss"]
-        end
-    end
-
-end
 
 
 
