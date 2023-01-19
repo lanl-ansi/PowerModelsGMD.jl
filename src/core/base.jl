@@ -1,6 +1,11 @@
-#####################################
-# Collection of Universal Functions #
-#####################################
+####################
+# Base Definitions #
+####################
+
+# Collection of universal functions.
+
+
+# ===   STATUS CHECK   === #
 
 
 "FUNCTION: check gmd branch parent status"
