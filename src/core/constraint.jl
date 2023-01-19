@@ -381,13 +381,6 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWConvexModels, n:
 end
 
 
-# ===   DC POWER BALANCE CONSTRAINTS   === #
-
-# TODO:
-# constraint_dc_power_balance_shunt ==> check/udpdate formulation
-# constraint_dc_power_balance_blocker_shunt ==> check/udpdate formulation
-
-
 "CONSTRAINT: nodal power balance for dc circuits with shunts"
 function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
 
