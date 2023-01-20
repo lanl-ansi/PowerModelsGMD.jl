@@ -381,8 +381,8 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWConvexModels, n:
 end
 
 
-"CONSTRAINT: nodal power balance for dc circuits with shunts"
-function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
+"CONSTRAINT: nodal power balance for dc circuits"
+function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
 
     v_dc = _PM.var(pm, n, :v_dc)[i]
 
@@ -412,8 +412,8 @@ function constraint_dc_power_balance_shunt(pm::_PM.AbstractPowerModel, n::Int, i
 end
 
 
-"CONSTRAINT: nodal power balance for dc circuits with GIC blockers and shunts"
-function constraint_dc_power_balance_blocker_shunt(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs)
+"CONSTRAINT: nodal power balance for dc circuits with GIC blockers"
+function constraint_dc_power_balance_blocker(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs)
 
     v_dc = _PM.var(pm, n, :v_dc)[i]
     z = _PM.var(pm, n, :z_blocker)[i]

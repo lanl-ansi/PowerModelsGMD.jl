@@ -27,7 +27,7 @@ function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
     variable_dc_line_flow(pm)
 
     for i in _PM.ids(pm, :gmd_bus)
-        constraint_dc_power_balance_shunt(pm, i)
+        constraint_dc_power_balance(pm, i)
     end
 
     for i in _PM.ids(pm, :gmd_branch)

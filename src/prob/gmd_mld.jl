@@ -113,7 +113,7 @@ function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :gmd_bus)
-        constraint_dc_power_balance_shunt(pm, i)
+        constraint_dc_power_balance(pm, i)
     end
 
     for i in _PM.ids(pm, :gmd_branch)
@@ -182,7 +182,7 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :gmd_bus)
-        constraint_dc_power_balance_shunt(pm, i)
+        constraint_dc_power_balance(pm, i)
     end
 
     for i in _PM.ids(pm, :gmd_branch)

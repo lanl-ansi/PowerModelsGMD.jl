@@ -115,9 +115,9 @@ function build_gmd_mls_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 
     for i in _PM.ids(pm, :gmd_bus)
         if i in _PM.ids(pm, :bus_blockers)
-            constraint_dc_power_balance_blocker_shunt(pm, i)
+            constraint_dc_power_balance_blocker(pm, i)
         else
-            constraint_dc_power_balance_shunt(pm, i)
+            constraint_dc_power_balance(pm, i)
         end
     end
 
@@ -189,9 +189,9 @@ function build_gmd_mld_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 
     for i in _PM.ids(pm, :gmd_bus)
         if i in _PM.ids(pm, :bus_blockers)
-            constraint_dc_power_balance_blocker_shunt(pm, i)
+            constraint_dc_power_balance_blocker(pm, i)
         else
-            constraint_dc_power_balance_shunt(pm, i)
+            constraint_dc_power_balance(pm, i)
         end
     end
 
