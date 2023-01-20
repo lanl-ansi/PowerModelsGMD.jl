@@ -122,9 +122,29 @@ function objective_gmd_min_transformer_heating(pm::_PM.AbstractPowerModel)
 end
 
 
+"Minimize cost of installing GIC blockers"
+function objective_blocker_placement_cost(pm::_PM.AbstractPowerModel)
+    nw = nw_id_default # TODO: extend to multinetwork
+    return JuMP.@objective(pm.model, Min,
+        sum( get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0)*_PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses) )
+    )
+end
+
+
+"Minimize weighted sum of GIC and placement cost"
+function objective_minimize_idc_sum(pm::_PM.AbstractPowerModel)
+    nw = nw_id_default # TODO: extend to multinetwork
+    return JuMP.@objective(pm.model, Min,
+        sum( _PM.var(pm, nw, :dc).^2 )
+            + 1000*sum( get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0)
+            * _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses) 
+        )
+    )
+end
+
+
 "OBJECTIVE: maximizes loadability with generator and bus participation relaxed"
 function objective_max_loadability(pm::_PM.AbstractPowerModel)
-
     nws = _PM.nw_ids(pm)
 
     @assert all(!_PM.ismulticonductor(pm, n) for n in nws)

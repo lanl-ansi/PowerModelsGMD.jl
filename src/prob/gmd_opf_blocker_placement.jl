@@ -79,7 +79,7 @@ function build_gmd_opf_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_ohms(pm, i)
     end
 
+    # objective_blocker_placement_cost(pm)
     objective_minimize_idc_sum(pm)
-    #objective_blocker_placement_cost(pm)
 end
 

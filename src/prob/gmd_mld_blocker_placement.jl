@@ -199,6 +199,9 @@ function build_gmd_mld_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_ohms(pm, i)
     end
 
-    objective_max_loadability(pm)
+    constraint_load_served(pm, 0.95)
+
+    # objective_max_loadability(pm)
+    objective_blocker_placement_cost(pm)
 end
 
