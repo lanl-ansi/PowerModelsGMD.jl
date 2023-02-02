@@ -519,6 +519,9 @@ end
 
 "VARIABLE: block demand factor"
 function variable_block_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+# Reference:
+#   variable is based on "variable_gen_indicator" of PowerModels.jl
+#   (https://github.com/lanl-ansi/PowerModels.jl/blob/31f8273ec18aeea158a2995a0bfe6a31094fe98e/src/core/variable.jl#L1273)
 
     if !relax
         z_demand = _PM.var(pm, nw)[:z_demand_blocks] = _PM.JuMP.@variable(pm.model,
