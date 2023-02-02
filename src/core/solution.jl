@@ -1,78 +1,9 @@
-# ===   SOLUTIONS   === #
+########################
+# Solution Definitions #
+########################
 
 
-"SOLUTION: add quasi-dc power flow solutions"
-function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
-
-    if haskey(solution["it"][pm_it_name], "nw")
-        nws_data = solution["it"][pm_it_name]["nw"]
-    else
-        nws_data = Dict("0" => solution["it"][pm_it_name])
-    end
-
-    # GMD Bus
-    for (nw_id, nw_ref) in nws(pm)
-        nws_data["$(nw_id)"]["gmd_bus"] = pm.data["gmd_bus"]
-        for (n, nw_data) in nws_data
-            if haskey(nw_data, "gmd_bus")
-                for (i, gmd_bus) in nw_data["gmd_bus"]
-                    key = gmd_bus["index"]
-                    gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:v_dc][key])
-                end
-            end
-        end
-    end
-
-    # GMD Branch
-    for (nw_id, nw_ref) in nws(pm)
-        nws_data["$(nw_id)"]["gmd_branch"] = pm.data["gmd_branch"]
-        for (n, nw_data) in nws_data
-            if haskey(nw_data, "gmd_branch")
-                for (i, gmd_branch) in nw_data["gmd_branch"]
-                    if gmd_branch["br_status"] == 0
-                        gmd_branch["gmd_idc"] = 0.0
-                    else
-                        key = (gmd_branch["index"], gmd_branch["f_bus"], gmd_branch["t_bus"])
-                        gmd_branch["gmd_idc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:dc][key])
-                    end
-                end
-            end
-        end
-    end
-
-end
-
-
-"SOLUTION: add quasi-dc power flow solutions"
-function solution_gmd_blocker!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
-
-    if haskey(solution["it"][pm_it_name], "nw")
-        nws_data = solution["it"][pm_it_name]["nw"]
-    else
-        nws_data = Dict("0" => solution["it"][pm_it_name])
-    end
-
-    # GMD Bus
-    for (nw_id, nw_ref) in nws(pm)
-        nws_data["$(nw_id)"]["gmd_bus"] = pm.data["gmd_bus"]
-
-        for (n, nw_data) in nws_data
-            if haskey(nw_data, "gmd_bus")
-                for (i, gmd_bus) in nw_data["gmd_bus"]
-                    if haskey(nw_data, "bus_blockers") && haskey(nw_data["bus_blockers"], i)
-                        key = gmd_bus["index"]
-                        z = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:z_blocker][key])
-                        #gmd_bus["blocker_placed"] = Int64(z)
-                        gmd_bus["blocker_placed"] = z
-                    else
-                        gmd_bus["blocker_placed"] = 0.0
-                    end
-                end
-            end
-        end
-    end
-
-end
+# ===   POWER FLOW SOLUTIONS   === #
 
 
 "SOLUTION: add PowerModels.jl power flow solutions"
@@ -133,6 +64,33 @@ function solution_PM!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 end
 
 
+# ===   GMD SOLUTIONS   === #
+
+
+"SOLUTION: add demand factor solution"
+function solution_gmd_demand!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
+
+    # Load
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "load")
+                for (i, load) in nw_data["load"]
+                    key = (load["index"])
+                    load["demand_served_ratio"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:z_demand][key])
+                end
+            end
+        end
+    end
+
+end
+
+
 "SOLUTION: add gmd qloss solution"
 function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
@@ -175,6 +133,51 @@ function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,A
 end
 
 
+"SOLUTION: add quasi-dc power flow solutions"
+function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
+
+    # GMD Bus
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["gmd_bus"] = pm.data["gmd_bus"]
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "gmd_bus")
+                for (i, gmd_bus) in nw_data["gmd_bus"]
+                    key = gmd_bus["index"]
+                    gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:v_dc][key])
+                end
+            end
+        end
+    end
+
+    # GMD Branch
+    for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["gmd_branch"] = pm.data["gmd_branch"]
+        for (n, nw_data) in nws_data
+            if haskey(nw_data, "gmd_branch")
+                for (i, gmd_branch) in nw_data["gmd_branch"]
+                    if gmd_branch["br_status"] == 0
+                        gmd_branch["gmd_idc"] = 0.0
+                    else
+                        key = (gmd_branch["index"], gmd_branch["f_bus"], gmd_branch["t_bus"])
+                        gmd_branch["gmd_idc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:dc][key])
+                    end
+                end
+            end
+        end
+    end
+
+end
+
+
+# ===   LOAD SHEDDING SOLUTIONS   === #
+
+
 "SOLUTION: add minimum-load-shed solutions"
 function solution_gmd_mls!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
@@ -213,6 +216,9 @@ function solution_gmd_mls!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any
 end
 
 
+# ===   THERMAL SOLUTIONS   === #
+
+
 "SOLUTION: add transformer temperature solutions"
 function solution_gmd_xfmr_temp!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
@@ -241,8 +247,11 @@ function solution_gmd_xfmr_temp!(pm::_PM.AbstractPowerModel, solution::Dict{Stri
 end
 
 
-"SOLUTION: add demand factor solution"
-function solution_gmd_demand!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+# ===   GIC BLOCKER SOLUTIONS   === #
+
+
+"SOLUTION: add quasi-dc power flow solutions"
+function solution_gmd_blocker!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
     if haskey(solution["it"][pm_it_name], "nw")
         nws_data = solution["it"][pm_it_name]["nw"]
@@ -250,13 +259,21 @@ function solution_gmd_demand!(pm::_PM.AbstractPowerModel, solution::Dict{String,
         nws_data = Dict("0" => solution["it"][pm_it_name])
     end
 
-    # Load
+    # GMD Bus
     for (nw_id, nw_ref) in nws(pm)
+        nws_data["$(nw_id)"]["gmd_bus"] = pm.data["gmd_bus"]
+
         for (n, nw_data) in nws_data
-            if haskey(nw_data, "load")
-                for (i, load) in nw_data["load"]
-                    key = (load["index"])
-                    load["demand_served_ratio"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:z_demand][key])
+            if haskey(nw_data, "gmd_bus")
+                for (i, gmd_bus) in nw_data["gmd_bus"]
+                    if haskey(nw_data, "bus_blockers") && haskey(nw_data["bus_blockers"], i)
+                        key = gmd_bus["index"]
+                        z = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:z_blocker][key])
+                        #gmd_bus["blocker_placed"] = Int64(z)
+                        gmd_bus["blocker_placed"] = z
+                    else
+                        gmd_bus["blocker_placed"] = 0.0
+                    end
                 end
             end
         end
