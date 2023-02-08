@@ -49,6 +49,187 @@ function calc_ac_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 end
 
 
+"FUNCTION: calculate dc current magnitude"
+function dc_current_mag(branch, case, solution)
+
+    k = branch["index"]
+    branch["ieff"] = 0.0
+
+    if branch["transformer"] == 0 
+        dc_current_mag_line(branch, case, solution)
+
+    elseif !("config" in keys(branch))
+        Memento.warn(_LOGGER, "No winding configuration for transformer $k, treating as line")
+        dc_current_mag_line(branch, case, solution)
+
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        println("UNGROUNDED CONFIGURATION. IEFF IS CONSTRAINED TO ZERO.")
+        dc_current_mag_grounded_xf(branch, case, solution)
+
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
+        dc_current_mag_gwye_delta_xf(branch, case, solution)
+
+    elseif branch["config"] == "gwye-gwye"
+        dc_current_mag_gwye_gwye_xf(branch, case, solution)
+
+    elseif branch["config"] == "gwye-gwye-auto"
+        dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
+
+    elseif branch["config"] in ["three-winding", "gwye-gwye-delta", "gwye-gwye-gwye", "gywe-delta-delta"]
+        dc_current_mag_3w_xf(branch, case, solution)
+
+    end
+
+end
+
+
+"FUNCTION: dc current on normal lines"
+function dc_current_mag_line(branch, case, solution)
+
+    branch["ieff"] = 0.0
+
+end
+
+
+"FUNCTION: dc current on grounded transformers"
+function dc_current_mag_grounded_xf(branch, case, solution)
+
+    branch["ieff"] = 0.0
+
+end
+
+
+"FUNCTION: dc current on ungrounded gwye-delta transformers"
+function dc_current_mag_gwye_delta_xf(branch, case, solution)
+
+    k = branch["index"]
+
+    khi = branch["gmd_br_hi"]
+
+    if khi == -1 || khi === nothing
+        Memento.warn(_LOGGER, "khi for gwye-delta transformer $k is -1")
+        branch["ieff"] = 0.0
+    else
+        branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+    end
+
+end
+
+
+"FUNCTION: dc current on ungrounded gwye-gwye transformers"
+function dc_current_mag_gwye_gwye_xf(branch, case, solution)
+
+    k = branch["index"]
+    khi = branch["gmd_br_hi"]
+    klo = branch["gmd_br_lo"]
+
+    ihi = 0.0
+    ilo = 0.0
+
+    if khi == -1 || khi === nothing
+        Memento.warn(_LOGGER, "khi for gwye-gwye transformer $k is -1")
+    else
+        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    end
+
+    if klo == -1 || klo === nothing
+        Memento.warn(_LOGGER, "klo for gwye-gwye transformer $k is -1")
+    else
+        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+    end
+
+    jfr = branch["f_bus"]
+    jto = branch["t_bus"]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    a = vhi/vlo
+
+    branch["ieff"] = abs( (a * ihi + ilo) / a )
+
+end
+
+
+"FUNCTION: dc current on ungrounded gwye-gwye auto transformers"
+function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
+
+    k = branch["index"]
+    ks = branch["gmd_br_series"]
+    kc = branch["gmd_br_common"]
+
+    is = 0.0
+    ic = 0.0
+
+    if ks == -1 || ks === nothing
+        Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
+    else
+        is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+    end
+
+    if kc == -1 || kc === nothing
+        Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
+    else
+        ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+    end
+
+    ihi = -is
+    ilo = ic + is
+
+    jfr = branch["f_bus"]
+    jto = branch["t_bus"]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    a = vhi/vlo
+
+    branch["ieff"] = abs( (a * is + ic) / (a + 1.0) )
+
+end
+
+
+"FUNCTION: dc current on three-winding transformers"
+function dc_current_mag_3w_xf(branch, case, solution)
+
+    k = branch["index"]
+    khi = branch["gmd_br_hi"]
+    klo = branch["gmd_br_lo"]
+    kter = branch["gmd_br_ter"]
+
+    ihi = 0.0
+    ilo = 0.0
+    iter = 0.0
+
+    if khi == -1 || khi === nothing
+        Memento.warn(_LOGGER, "khi for three-winding transformer $k is -1")
+    else
+        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    end
+
+    if klo == -1 || klo === nothing
+        Memento.warn(_LOGGER, "klo for three-winding transformer $k is -1")
+    else
+        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+    end
+
+    if kter == -1 || kter === nothing
+        Memento.warn(_LOGGER, "kter for three-winding transformer $k is -1")
+    else
+        iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
+    end
+
+    jfr = branch["source_id"][2]
+    jto = branch["source_id"][3]
+    jter = branch["source_id"][4]
+    vhi = case["bus"]["$jfr"]["base_kv"]
+    vlo = case["bus"]["$jto"]["base_kv"]
+    vter = case["bus"]["$jter"]["base_kv"]
+    a = vhi/vlo
+    b = vhi/vter
+
+    branch["ieff"] = abs( ihi + ilo / a + iter / b )
+        # Boteler 2016, Equation (51)
+
+end
+
+
 "FUNCTION: calculate the maximum DC current on a branch"
 function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 
@@ -325,224 +506,13 @@ function update_topoilrise(branch, case::Dict{String,Any})
 end
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###########################################
-
-# ===   GENERAL FUNCTIONS   === #
-
-
-"FUNCTION: apply a JSON file or a dictionary of mods"
-function apply_mods!(net, modsfile::AbstractString)
-
-    if modsfile !== nothing
-        # println("Applying $modsfile")
-
-        io = open(modsfile)
-        mods = JSON.parse(io)
-        close(io)
-        apply_mods!(net, mods)
-    end
-
-end
-
-
-"FUNCTION: apply a dictionary of mods"
-function apply_mods!(net, mods::AbstractDict{String,Any})
-
-    for (otype, objs) in mods
-        if !isa(objs, Dict)
-            continue
-        end
-
-        if !(otype in keys(net))
-            net[otype] = Dict{String,Any}()
-        end
-    end        
-
-    net_by_sid = create_sid_map(net)     
-
-    if "mods" in keys(mods)
-        mods = mods["mods"]
-    elseif "modifications" in keys(mods)
-        mods = mods["modifications"]
-    end
-
-    for (otype, objs) in mods
-        if !isa(objs, Dict)
-            continue
-        end
-
-        # println("============= $otype =============")
-
-        if !(otype in keys(net))
-            net[otype] = Dict{String,Any}()
-        end
-
-        for (okey, obj) in objs
-            key = okey
-
-            if ("source_id" in keys(obj)) && (obj["source_id"] in keys(net_by_sid[otype]))
-                key = net_by_sid[otype][obj["source_id"]]
-                # print(obj["source_id"])
-                # print(" => ")
-                # print(key)
-            elseif otype == "branch"
-                # println("Skipping branch $key ")
-                if "source_id" in keys(obj)
-                    # print(obj["source_id"])
-                    # print(" ")
-                end
-                # println("without matching source id")
-                continue
-            end
-
-            if !(key in keys(net[otype]))
-                net[otype][key] = Dict{String,Any}()
-            end
-
-            for (fname, fval) in obj
-                # println("case[$otype][$key][$fname] = $fval")
-                net[otype][key][fname] = fval
-            end
-
-        end
-    end
-
-end
-
-
-"FUNCTION: index mods dictionary by source id"
-function create_sid_map(net)
-
-    net_by_sid = Dict()
-
-    for (otype, objs) in net
-        if !isa(objs, Dict)
-            continue
-        end
-
-        if !(otype in keys(net_by_sid))
-            net_by_sid[otype] = Dict()
-        end
-
-        for (okey, obj) in objs
-            if "source_id" in keys(obj)
-                net_by_sid[otype][obj["source_id"]] = okey
-            end
-        end
-    end 
-
-    return net_by_sid
-
-end
-
-
-"FUNCTION: correct parent branches for gmd branches after applying mods"
-function fix_gmd_indices!(net)
-
-    # map branch source ids to indices
-    branch_map = Dict(map(x -> x["source_id"] => x["index"], values(net["branch"])))
-
-    for (i,gbr) in net["gmd_branch"]
-        k = gbr["parent_source_id"]
-
-        if k in keys(branch_map)
-            gbr["parent_index"] = branch_map[k]
-        else
-            # println("Can't find parent branch for gmd branch $k")
-            # delete!(net["gmd_branch"], i)
-        end
-    end
-
-end
-
-
-"FUNCTION: compute the thermal coeffieicents for a branch"
-function calc_branch_thermal_coeff(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-
-    branch = _PM.ref(pm, nw, :branch, i)
-    buses = _PM.ref(pm, nw, :bus)
-
-    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
-        return NaN
-    end
-
-    # TODO: FIX LATER!
-    thermal_cap_x0 = pm.data["thermal_cap_x0"]
-    # since provided values are in [per unit]...
-
-    if isa(thermal_cap_x0, Dict)
-        thermal_cap_x0 = []
-        for (key, value) in sort(pm.data["thermal_cap_x0"]["1"])
-            if key == "index" || key == "source_id"
-                continue
-            end
-            push!(thermal_cap_x0, value)
-        end
-    end
-
-    thermal_cap_y0 = pm.data["thermal_cap_y0"]
-    if isa(thermal_cap_y0, Dict)
-        thermal_cap_y0 = []
-        for (key, value) in sort(pm.data["thermal_cap_y0"]["1"])
-            if key == "index" || key == "source_id"
-                continue
-            end
-            push!(thermal_cap_y0, value)
-        end
-    end
-
-    x0 = thermal_cap_x0./calc_branch_ibase(pm, i, nw=nw)  #branch["ibase"]
-    y0 = thermal_cap_y0./100   # convert to [%]
-
-    y = calc_ac_mag_max(pm, i, nw=nw) .* y0  # branch["ac_mag_max"] .* y0
-    x = x0
-
-    fit = poly_fit(x, y, 2)
-    fit = round.(fit.*1e+5)./1e+5
-    return fit
-
-end
-
-
 "FUNCTION: POLYFIT"
 function poly_fit(x, y, n)
-
-    # Fits a polynomial of degree `n` through a set of points.
-    # Taken from CurveFit.jl by Paul Jabardo
-    # https://github.com/pjabardo/CurveFit.jl/blob/master/src/linfit.jl
-    # Simple algorithm, doesn't use orthogonal polynomials or any such thing
-    # and therefore unconditioned matrices are possible. Use it only for low
-    # degree polynomials.
-    # This function returns a the coefficients of the polynomial.
+# Fits a polynomial of degree `n` through a set of points.
+# Simple algorithm that does not use orthogonal polynomials or any such thing
+# and therefore unconditioned matrices are possible. Use it only for low degree
+# polynomial. This function returns a the coefficients of the polynomial.
+# Reference: https://github.com/pjabardo/CurveFit.jl/blob/master/src/linfit.jl
 
     nx = length(x)
     A = zeros(eltype(x), nx, n+1)
@@ -557,6 +527,63 @@ function poly_fit(x, y, n)
 end
 
 
+"FUNCTION: compute the thermal coeffieicents for a branch"
+function calc_branch_thermal_coeff(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+
+    branch = _PM.ref(pm, nw, :branch, i)
+
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
+        return NaN
+    end
+
+    # TODO: FIX LATER!
+    thermal_cap_x0 = pm.data["thermal_cap_x0"]
+    # since provided values are in [per unit]...
+
+    if isa(thermal_cap_x0, Dict)
+
+        thermal_cap_x0 = []
+
+        for (key, value) in sort(pm.data["thermal_cap_x0"]["1"])
+            if key == "index" || key == "source_id"
+                continue
+            end
+            push!(thermal_cap_x0, value)
+        end
+
+    end
+
+    thermal_cap_y0 = pm.data["thermal_cap_y0"]
+
+    if isa(thermal_cap_y0, Dict)
+
+        thermal_cap_y0 = []
+
+        for (key, value) in sort(pm.data["thermal_cap_y0"]["1"])
+            if key == "index" || key == "source_id"
+                continue
+            end
+            push!(thermal_cap_y0, value)
+        end
+
+    end
+
+    x0 = thermal_cap_x0 ./ calc_branch_ibase(pm, i, nw=nw)
+    y0 = thermal_cap_y0 ./ 100
+
+    x = x0
+    y = calc_ac_mag_max(pm, i, nw=nw) .* y0
+
+    fit = poly_fit(x, y, 2)
+    fit = round.(fit.*1e+5)./1e+5
+    return fit
+
+end
+
+
+# ===   GENERAL SETTINGS AND FUNCTIONS   === #
+
+
 "FUNCTION: apply function"
 function apply_func(data::Dict{String,Any}, key::String, func)
 
@@ -567,178 +594,126 @@ function apply_func(data::Dict{String,Any}, key::String, func)
 end
 
 
+"FUNCTION: apply a JSON file or a dictionary of mods"
+function apply_mods!(net, modsfile::AbstractString)
 
-"FUNCTION: computing the dc current magnitude"
-function dc_current_mag(branch, case, solution)
-    k = branch["index"]
+    if modsfile !== nothing
 
-    branch["ieff"] = 0.0
-    if branch["transformer"] == 0 
-        dc_current_mag_line(branch, case, solution)
-    elseif !("config" in keys(branch))
-        Memento.warn(_LOGGER, "No winding configuration for transformer $k, treating as line")
-        dc_current_mag_line(branch, case, solution)
-    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-        println("UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
-        dc_current_mag_grounded_xf(branch, case, solution)
+        io = open(modsfile)
+        mods = JSON.parse(io)
+        close(io)
 
-    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
-        dc_current_mag_gwye_delta_xf(branch, case, solution)
-
-    elseif branch["config"] == "gwye-gwye"
-        dc_current_mag_gwye_gwye_xf(branch, case, solution)
-
-    elseif branch["config"] == "gwye-gwye-auto"
-        dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
-
-    elseif branch["config"] in ["three-winding", "gwye-gwye-delta", "gwye-gwye-gwye", "gywe-delta-delta"]
-        dc_current_mag_3w_xf(branch, case, solution)
+        apply_mods!(net, mods)
 
     end
 
 end
 
 
-"FUNCTION: dc current on normal lines"
-function dc_current_mag_line(branch, case, solution)
-    branch["ieff"] = 0.0
-end
+"FUNCTION: apply a dictionary of mods"
+function apply_mods!(net, mods::AbstractDict{String,Any})
 
+    for (otype, objs) in mods
 
-"FUNCTION: dc current on grounded transformers"
-function dc_current_mag_grounded_xf(branch, case, solution)
-    branch["ieff"] = 0.0
-end
+        if !isa(objs, Dict)
+            continue
+        end
 
+        if !(otype in keys(net))
+            net[otype] = Dict{String,Any}()
+        end
 
-"FUNCTION: dc current on ungrounded gwye-delta transformers"
-function dc_current_mag_gwye_delta_xf(branch, case, solution)
-    k = branch["index"]
+    end        
 
-    khi = branch["gmd_br_hi"]
+    net_by_sid = create_sid_map(net)     
 
-    if khi == -1 || khi === nothing
-        Memento.warn(_LOGGER, "khi for gwye-delta transformer $k is -1")
-        branch["ieff"] = 0.0
-    else
-        branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
-    end
-end
-
-
-"FUNCTION: dc current on ungrounded gwye-gwye transformers"
-function dc_current_mag_gwye_gwye_xf(branch, case, solution)
-
-    k = branch["index"]
-    khi = branch["gmd_br_hi"]
-    klo = branch["gmd_br_lo"]
-
-    ihi = 0.0
-    ilo = 0.0
-
-    if khi == -1 || khi === nothing
-        Memento.warn(_LOGGER, "khi for gwye-gwye transformer $k is -1")
-    else
-        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+    if "mods" in keys(mods)
+        mods = mods["mods"]
+    elseif "modifications" in keys(mods)
+        mods = mods["modifications"]
     end
 
-    if klo == -1 || klo === nothing
-        Memento.warn(_LOGGER, "klo for gwye-gwye transformer $k is -1")
-    else
-        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+    for (otype, objs) in mods
+
+        if !isa(objs, Dict)
+            continue
+        end
+
+        if !(otype in keys(net))
+            net[otype] = Dict{String,Any}()
+        end
+
+        for (okey, obj) in objs
+
+            key = okey
+
+            if ("source_id" in keys(obj)) && (obj["source_id"] in keys(net_by_sid[otype]))
+                key = net_by_sid[otype][obj["source_id"]]
+            elseif otype == "branch"
+                continue
+            end
+
+            if !(key in keys(net[otype]))
+                net[otype][key] = Dict{String,Any}()
+            end
+
+            for (fname, fval) in obj
+                net[otype][key][fname] = fval
+            end
+
+        end
     end
-
-    jfr = branch["f_bus"]
-    jto = branch["t_bus"]
-    vhi = case["bus"]["$jfr"]["base_kv"]
-    vlo = case["bus"]["$jto"]["base_kv"]
-    a = vhi/vlo
-
-    branch["ieff"] = abs((a*ihi + ilo)/a)
-
-end
-
-
-"FUNCTION: dc current on ungrounded gwye-gwye auto transformers"
-function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
-    k = branch["index"]
-    ks = branch["gmd_br_series"]
-    kc = branch["gmd_br_common"]
-
-    is = 0.0
-    ic = 0.0
-
-    if ks == -1 || ks === nothing
-        Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
-    else
-        is = solution["gmd_branch"]["$ks"]["gmd_idc"]
-    end
-
-    if kc == -1 || kc === nothing
-        Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
-    else
-        ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
-    end
-
-    ihi = -is
-    ilo = ic + is
-
-    jfr = branch["f_bus"]
-    jto = branch["t_bus"]
-    vhi = case["bus"]["$jfr"]["base_kv"]
-    vlo = case["bus"]["$jto"]["base_kv"]
-    a = vhi/vlo
-
-    branch["ieff"] = abs((a*is + ic)/(a + 1.0))
 
 end
 
 
-"FUNCTION: dc current on three-winding transformers"
-function dc_current_mag_3w_xf(branch, case, solution)
+"FUNCTION: correct parent branches for gmd branches after applying mods"
+function fix_gmd_indices!(net)
 
-    k = branch["index"]
-    khi = branch["gmd_br_hi"]
-    klo = branch["gmd_br_lo"]
-    kter = branch["gmd_br_ter"]
+    branch_map = Dict(map(x -> x["source_id"] => x["index"], values(net["branch"])))
 
-    ihi = 0.0
-    ilo = 0.0
-    iter = 0.0
+    for (i,gbr) in net["gmd_branch"]
 
-    if khi == -1 || khi === nothing
-        Memento.warn(_LOGGER, "khi for three-winding transformer $k is -1")
-    else
-        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+        k = gbr["parent_source_id"]
+
+        if k in keys(branch_map)
+            gbr["parent_index"] = branch_map[k]
+        end
+
     end
-
-    if klo == -1 || klo === nothing
-        Memento.warn(_LOGGER, "klo for three-winding transformer $k is -1")
-    else
-        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
-    end
-
-    if kter == -1 || kter === nothing
-        Memento.warn(_LOGGER, "kter for three-winding transformer $k is -1")
-    else
-        iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
-    end
-
-    jfr = branch["source_id"][2]
-    jto = branch["source_id"][3]
-    jter = branch["source_id"][4]
-    vhi = case["bus"]["$jfr"]["base_kv"]
-    vlo = case["bus"]["$jto"]["base_kv"]
-    vter = case["bus"]["$jter"]["base_kv"]
-    a = vhi/vlo
-    b = vhi/vter
-
-    branch["ieff"] = abs(ihi + ilo/a + iter/b)  # Boteler 2016 => Eq. (51)
 
 end
 
 
-# ===   RESULT ADJUSTMENT FUNCTIONS   === #
+"FUNCTION: index mods dictionary by source id"
+function create_sid_map(net)
+
+    net_by_sid = Dict()
+
+    for (otype, objs) in net
+
+        if !isa(objs, Dict)
+            continue
+        end
+
+        if !(otype in keys(net_by_sid))
+            net_by_sid[otype] = Dict()
+        end
+
+        for (okey, obj) in objs
+            if "source_id" in keys(obj)
+                net_by_sid[otype][obj["source_id"]] = okey
+            end
+        end
+
+    end 
+
+    return net_by_sid
+
+end
+
+
+# ===   UNIT CONVERSION FUNCTIONS   === #
 
 
 "FUNCTION: convert effective GIC to PowerWorld to-phase convention"
@@ -759,16 +734,6 @@ function adjust_gmd_phasing(result)
 end
 
 
-
-
-
-
-# ===   UNIT CONVERSION FUNCTIONS   === #
-
-
-# NOTE: these functions are unused and require update
-
-
 "FUNCTION: add GMD data"
 function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
 
@@ -776,11 +741,14 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; deco
     @assert !haskey(case, "conductors")
 
     for (k, bus) in case["bus"]
+
         j = "$(bus["gmd_bus"])"
         bus["gmd_vdc"] = solution["gmd_bus"][j]["gmd_vdc"]
+
     end
 
     for (i, br) in case["branch"]
+
         br_soln = solution["branch"][i]
 
         if br["type"] == "line"
@@ -788,15 +756,19 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; deco
             br["gmd_idc"] = solution["gmd_branch"][k]["gmd_idc"]/3.0
         
         else
-            if decoupled
-                # TODO: add calculations from constraint_dc_current_mag
-                k = br["dc_brid_hi"]  # high-side gmd branch
+            if decoupled  # TODO: add calculations from constraint_dc_current_mag
+                
+                k = br["dc_brid_hi"]
+                    # high-side gmd branch
                 br["gmd_idc"] = 0.0
                 br["ieff"] = abs(br["gmd_idc"])
                 br["qloss"] = calculate_qloss(br, case, solution)
+
             else
+
                 br["ieff"] = br_soln["gmd_idc_mag"]
                 br["qloss"] = br_soln["gmd_qloss"]
+
             end
 
             if br["f_bus"] == br["hi_bus"]
@@ -812,13 +784,6 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; deco
     end
 
 end
-# data to be concerned with:
-# 1. shunt impedances aij
-# 2. equivalent currents Jij?
-# 3. transformer loss factor Ki? NO, UNITLESSS
-# 4. electric field magnitude?
-gmd_not_pu = Set(["gmd_gs","gmd_e_field_mag"])
-gmd_not_rad = Set(["gmd_e_field_dir"])
 
 
 "FUNCTION: make GMD mixed units"
@@ -828,6 +793,7 @@ function make_gmd_mixed_units(solution::Dict{String,Any}, mva_base::Real)
     rescale_dual = x -> (x / mva_base)
 
     if haskey(solution, "bus")
+
         for (i, bus) in solution["bus"]
             apply_func(bus, "pd", rescale)
             apply_func(bus, "qd", rescale)
@@ -837,6 +803,7 @@ function make_gmd_mixed_units(solution::Dict{String,Any}, mva_base::Real)
             apply_func(bus, "lam_kcl_r", rescale_dual)
             apply_func(bus, "lam_kcl_i", rescale_dual)
         end
+
     end
 
     branches = []
@@ -908,12 +875,14 @@ end
 "FUNCTION: make GMD per unit"
 function make_gmd_per_unit!(data::Dict{String,<:Any})
 
-    @assert !InfrastructureModels.ismultinetwork(case)
+    @assert !_IM.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
     if !haskey(data, "GMDperUnit") || data["GMDperUnit"] == false
+
         make_gmd_per_unit(data["baseMVA"], data)
         data["GMDperUnit"] = true
+
     end
 
 end
@@ -922,21 +891,15 @@ end
 "FUNCTION: make GMD per unit"
 function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
 
-    @assert !InfrastructureModels.ismultinetwork(case)
+    @assert !_IM.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
-    # vb = 1e3*data["bus"][1]["base_kv"] # not sure h
-    # data["gmd_e_field_mag"] /= vb
-    # data["gmd_e_field_dir"] *= pi/180.0
-
     for bus in data["bus"]
-        zb = bus["base_kv"]^2/mva_base
 
-        # println("bus: $(bus["index"]), zb: $zb, a(pu): $(bus["gmd_gs"])")
+        zb = bus["base_kv"]^2/mva_base
         bus["gmd_gs"] *= zb
-        # println("-> a(pu): $(bus["gmd_gs"]) \n")
+
     end
 
 end
-
 
