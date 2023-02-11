@@ -5,7 +5,7 @@
 
     @testset "B4GIC case" begin
 
-        wf_path = "../test/data/suppl/b4gic-gmd-b4gic-gmd-wf.json.json"
+        wf_path = "../test/data/suppl/b4gic-gmd-waveform.json"
         h = open(wf_path)
         wf_data = JSON.parse(h)
         close(h)
