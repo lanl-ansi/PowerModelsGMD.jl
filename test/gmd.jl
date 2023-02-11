@@ -18,11 +18,10 @@
 
         b4gic3w_data = PowerModels.parse_file(case_b4gic3w)
 
-        mods_b4gic3w = "../test/data/b4gic3w_mods.json"
+        mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
         f = open(mods_b4gic3w)
         mods = JSON.parse(f)
         close(f)
-
         _PMGMD.apply_mods!(b4gic3w_data, mods)
         _PMGMD.fix_gmd_indices!(b4gic3w_data)
 
