@@ -16,16 +16,16 @@
 
     @testset "B4GIC-3W case" begin
 
-        b4gic3w_data = PowerModels.parse_file(case_b4gic3w)
-
         mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
         f = open(mods_b4gic3w)
         mods = JSON.parse(f)
         close(f)
+
+        b4gic3w_data = _PM.parse_file(case_b4gic3w)
         _PMGMD.apply_mods!(b4gic3w_data, mods)
         _PMGMD.fix_gmd_indices!(b4gic3w_data)
 
-        result = _PMGMD.solve_gmd(case_b4gic3w, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_gmd(b4gic3w_data, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         # DC solution:
