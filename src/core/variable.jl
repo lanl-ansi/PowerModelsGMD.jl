@@ -263,7 +263,7 @@ function variable_dc_line_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default
     dc_expr = Dict{Any,Any}( (l,i,j) => -1.0 * dc[(l,i,j)] for (l,i,j) in _PM.ref(pm, nw, :gmd_arcs_from) )
     dc_expr = merge(dc_expr, Dict( (l,j,i) => 1.0 * dc[(l,i,j)] for (l,i,j) in _PM.ref(pm, nw, :gmd_arcs_from) ))
 
-    report && _PM.sol_component_value_edge(pm, pm_it_sym, nw, :gmd_branch, :dcf, :dct, _PM.ref(pm, nw, :gmd_arcs_from), _PM.ref(pm, nw, :gmd_arcs_to), dc_expr)
+    report && _IM.sol_component_value_edge(pm, pm_it_sym, nw, :gmd_branch, :dcf, :dct, _PM.ref(pm, nw, :gmd_arcs_from), _PM.ref(pm, nw, :gmd_arcs_to), dc_expr)
 
    if !haskey(pm.model.ext, :nw)
         pm.model.ext[:nw] = Dict()
@@ -351,7 +351,7 @@ function variable_qloss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bound
         )
      end
 
-    report && _PM.sol_component_value_edge(pm, pm_it_sym, nw, :branch, :qlossf, :qlosst, _PM.ref(pm, nw, :arcs_from), _PM.ref(pm, nw, :arcs_to), qloss)
+    report && _IM.sol_component_value_edge(pm, pm_it_sym, nw, :branch, :qlossf, :qlosst, _PM.ref(pm, nw, :arcs_from), _PM.ref(pm, nw, :arcs_to), qloss)
 
 end
 
@@ -364,7 +364,7 @@ function variable_iv(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::
         start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "iv_start")
     )
 
-    report && _PM.sol_component_value_edge(pm, pm_it_sym, nw, :branch, :ivf, :ivt, _PM.ref(pm, nw, :arcs_from), _PM.ref(pm, nw, :arcs_to), iv)
+    report && _IM.sol_component_value_edge(pm, pm_it_sym, nw, :branch, :ivf, :ivt, _PM.ref(pm, nw, :arcs_from), _PM.ref(pm, nw, :arcs_to), iv)
 
 end
 
