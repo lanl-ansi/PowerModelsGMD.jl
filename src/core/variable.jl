@@ -265,7 +265,7 @@ function variable_dc_line_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default
 
     report && _IM.sol_component_value_edge(pm, pm_it_sym, nw, :gmd_branch, :dcf, :dct, _PM.ref(pm, nw, :gmd_arcs_from), _PM.ref(pm, nw, :gmd_arcs_to), dc_expr)
 
-   if !haskey(pm.model.ext, :nw)
+    if !haskey(pm.model.ext, :nw)
         pm.model.ext[:nw] = Dict()
     end
 

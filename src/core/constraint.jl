@@ -382,7 +382,8 @@ end
 
 
 "CONSTRAINT: nodal power balance for dc circuits"
-function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
+function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs)
+    # , blocker_status)
 
     v_dc = _PM.var(pm, n, :v_dc)[i]
 
@@ -393,19 +394,20 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_e
             println()
         end
 
-        if blocker_status != 0.0
-            JuMP.@constraint(pm.model,
-                sum(dc_expr[a] for a in gmd_bus_arcs)
-                ==
-                0.0
-            )
-        else
+        # if blocker_status != 0.0
+        #     JuMP.@constraint(pm.model,
+        #         sum(dc_expr[a] for a in gmd_bus_arcs)
+        #         ==
+        #         0.0
+        #     )
+        # else
             JuMP.@constraint(pm.model,
                 sum(dc_expr[a] for a in gmd_bus_arcs)
                 ==
                 (gs * v_dc)
             )
-        end
+        # end
+        return
 
     end
 
