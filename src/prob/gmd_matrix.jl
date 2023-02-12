@@ -1,3 +1,4 @@
+using SparseArrays
 export solve_gmd
 
 
