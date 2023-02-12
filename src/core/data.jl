@@ -10,13 +10,15 @@
 
 "FUNCTION: calculate the minimum DC voltage at a gmd bus "
 function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return -Inf
+    return -1e6
+    # return -Inf
 end
 
 
 "FUNCTION: calculate the maximum DC voltage at a gmd bus "
 function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return Inf
+    return 1e6
+    # return Inf
 end
 
 
