@@ -8,14 +8,14 @@
 # ===   CALCULATIONS FOR VOLTAGE VARIABLES   === #
 
 
-"FUNCTION: calculate the minimum DC voltage at a gmd bus "
+"FUNCTION: calculate the minimum dc voltage at a gmd bus "
 function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return -1e6
     # return -Inf
 end
 
 
-"FUNCTION: calculate the maximum DC voltage at a gmd bus "
+"FUNCTION: calculate the maximum dc voltage at a gmd bus "
 function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return 1e6
     # return Inf
