@@ -10,7 +10,7 @@ const _PMGMD = PowerModelsGMD
     import InfrastructureModels: optimize_model!, @im_fields, nw_id_default
 
     import JSON
-    import JuMP
+    # import JuMP
     import Memento
 
     # Suppressing information and warning messages:
@@ -50,19 +50,19 @@ const _PMGMD = PowerModelsGMD
     include("form/wrm.jl")
 
     # Add problem specifications:
-    include("prob/gmd_matrix.jl")
-    include("prob/gmd_mld_decoupled.jl")
-    include("prob/gmd_mld.jl")
-    include("prob/gmd_msse.jl")
-    include("prob/gmd_opf_decoupled.jl")
-    include("prob/gmd_opf_ts_decoupled.jl")
-    include("prob/gmd_opf_ts.jl")
-    include("prob/gmd_opf.jl")
-    include("prob/gmd_ots_ts.jl")
-    include("prob/gmd_ots.jl")
-    include("prob/gmd_pf_decoupled.jl")
     include("prob/gmd.jl")
-    include("prob/gmd_blocker_placement.jl")
-    include("prob/gmd_opf_blocker_placement.jl")
+    # include("prob/gmd_opf.jl")
+
+
+    # include("prob/gmd_mld_decoupled.jl")
+    # include("prob/gmd_mld.jl")
+    # include("prob/gmd_msse.jl")
+    # include("prob/gmd_opf_ts_decoupled.jl")
+    # include("prob/gmd_opf_ts.jl")
+    # include("prob/gmd_ots_ts.jl")
+    # include("prob/gmd_ots.jl")
+    # include("prob/gmd_pf_decoupled.jl")
+    # include("prob/gmd_blocker_placement.jl")
+    # include("prob/gmd_opf_blocker_placement.jl")
 
 end
