@@ -1,4 +1,6 @@
-export solve_gmd
+##########
+# GIC DC #
+##########
 
 
 # ===   WITH OPTIMIZER   === #
