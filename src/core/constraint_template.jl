@@ -365,11 +365,11 @@ end
 function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
-    bus = _PM.ref(pm, nw, :bus, i)
-
     branchMVA = branch["baseMVA"]
     i = branch["hi_bus"]
     j = branch["lo_bus"]
+
+    bus = _PM.ref(pm, nw, :bus, i)
     busKV = bus["base_kv"]
 
     if "gmd_k" in keys(branch)
@@ -393,11 +393,11 @@ end
 function constraint_qloss_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
-    bus = _PM.ref(pm, nw, :bus, i)
-
     branchMVA = branch["baseMVA"]
     i = branch["hi_bus"]
     j = branch["lo_bus"]
+
+    bus = _PM.ref(pm, nw, :bus, i)
     busKV = bus["base_kv"]
 
     if "gmd_k" in keys(branch)
@@ -420,13 +420,13 @@ end
 function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
-    bus = _PM.ref(pm, nw, :bus, i)
-
     Smax = 1000
     branchMVA = min(get(branch, "rate_a", Smax), Smax)
         # using hi/lo bus (qloss is defined in arcs going in both directions)
     i = branch["hi_bus"]
     j = branch["lo_bus"]
+
+    bus = _PM.ref(pm, nw, :bus, i)
     busKV = bus["base_kv"]
 
     if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
@@ -459,11 +459,11 @@ end
 function constraint_qloss_decoupled(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
-    bus = _PM.ref(pm, nw, :bus, i)
-
     branchMVA = branch["baseMVA"]
     i = branch["hi_bus"]
     j = branch["lo_bus"]
+
+    bus = _PM.ref(pm, nw, :bus, i)
     busKV = bus["base_kv"]
 
     if "gmd_k" in keys(branch)
@@ -488,13 +488,13 @@ end
 function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
-    bus = _PM.ref(pm, nw, :bus, i)
-
     Smax = 1000
     branchMVA = min(get(branch, "rate_a", Smax), Smax)
         # using hi/lo bus (qloss is defined in arcs going in both directions)
     i = branch["hi_bus"]
     j = branch["lo_bus"]
+
+    bus = _PM.ref(pm, nw, :bus, i)
     busKV = bus["base_kv"]
 
     if !("hi_bus" in keys(branch)) || !("lo_bus" in keys(branch)) || branch["hi_bus"] == -1 || branch["lo_bus"] == -1
