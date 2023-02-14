@@ -10,7 +10,7 @@ const _PMGMD = PowerModelsGMD
     import InfrastructureModels: optimize_model!, @im_fields, nw_id_default
 
     import JSON
-    # import JuMP
+    import JuMP
     import Memento
 
     # Suppressing information and warning messages:
@@ -51,7 +51,7 @@ const _PMGMD = PowerModelsGMD
 
     # Add problem specifications:
     include("prob/gmd.jl")
-    # include("prob/gmd_opf.jl")
+    include("prob/gmd_opf.jl")
 
 
     # include("prob/gmd_mld_decoupled.jl")
