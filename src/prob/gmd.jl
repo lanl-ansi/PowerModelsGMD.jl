@@ -5,8 +5,6 @@
 
 using SparseArrays
 
-export run_gmd
-
 
 # ===   WITH OPTIMIZER   === #
 
