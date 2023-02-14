@@ -3,6 +3,9 @@
 ##########
 
 
+using SparseArrays
+
+
 # ===   WITH OPTIMIZER   === #
 
 
@@ -46,7 +49,6 @@ end
 
 
 "FUNCTION: run GIC matrix solve"
-using SparseArrays
 function solve_gmd(file::String; kwargs...)
     data = _PM.parse_file(file)
     return solve_gmd(data; kwargs...)
