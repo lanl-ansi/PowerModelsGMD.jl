@@ -3,6 +3,8 @@
 
     @testset "B4GIC case" begin
 
+        b4gic_data = _PM.parse_file(case_b4gic)
+
 
         # ===   DECOUPLED   === #
 
@@ -76,6 +78,8 @@
 
     @testset "NERC B6GIC case" begin
 
+        b6gic_nerc_data = _PM.parse_file(case_b6gic_nerc)
+
 
         # ===   DECOUPLED   === #
 
@@ -112,9 +116,20 @@
 
     @testset "EPRI21 case" begin
 
-        # result = _PMGMD.solve_ac_gmd_opf(case_epri21, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol = 1e2)
+        epri21_data = _PM.parse_file(case_epri21)
+
+
+        # ===   DECOUPLED   === #
+
+
+
+
+        # ===   COUPLED   === #
+
+
+        result = _PMGMD.solve_ac_gmd_opf(epri21_data, ipopt_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 0; atol = 1e2)
 
         # TODO => FIX ERROR
         # Received Warning Message:
