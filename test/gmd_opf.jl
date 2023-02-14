@@ -3,7 +3,7 @@
 
     @testset "B4GIC case" begin
 
-        b4gic_data = _PM.parse_file(case_b4gic)
+        case_b4gic = _PM.parse_file(data_b4gic)
 
 
         # ===   DECOUPLED   === #
@@ -14,13 +14,13 @@
         # ===   COUPLED   === #
 
 
-        result = _PMGMD.solve_ac_gmd_opf(b4gic_data, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_opf(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         
         @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
         solution = result["solution"]
-        _PMGMD.adjust_gmd_qloss(b4gic_data, solution)
+        _PMGMD.adjust_gmd_qloss(case_b4gic, solution)
 
         # DC solution:
         @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
@@ -42,9 +42,9 @@
         mods = JSON.parse(f)
         close(f)
 
-        b4gic3w_data = _PM.parse_file(case_b4gic3w)
-        _PMGMD.apply_mods!(b4gic3w_data, mods)
-        _PMGMD.fix_gmd_indices!(b4gic3w_data)
+        case_b4gic3w = _PM.parse_file(data_b4gic3w)
+        _PMGMD.apply_mods!(case_b4gic3w, mods)
+        _PMGMD.fix_gmd_indices!(case_b4gic3w)
 
 
         # ===   DECOUPLED   === #
@@ -55,13 +55,13 @@
         # ===   COUPLED   === #
 
 
-        result = _PMGMD.solve_ac_gmd_opf(b4gic3w_data, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_opf(case_b4gic3w, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         
         @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
         solution = result["solution"]
-        _PMGMD.adjust_gmd_qloss(b4gic3w_data, solution)
+        _PMGMD.adjust_gmd_qloss(case_b4gic3w, solution)
 
         # DC solution:
         @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
@@ -78,7 +78,7 @@
 
     @testset "NERC B6GIC case" begin
 
-        b6gic_nerc_data = _PM.parse_file(case_b6gic_nerc)
+        case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
 
 
         # ===   DECOUPLED   === #
@@ -89,13 +89,13 @@
         # ===   COUPLED   === #
 
 
-        result = _PMGMD.solve_ac_gmd_opf(b6gic_nerc_data, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         @test isapprox(result["objective"], 12312.5633; atol = 1e2)
 
         solution = result["solution"]
-        _PMGMD.adjust_gmd_qloss(b6gic_nerc_data, solution)
+        _PMGMD.adjust_gmd_qloss(case_b6gic_nerc, solution)
 
         # DC solution:
         @test isapprox(solution["gmd_bus"]["5"]["gmd_vdc"], -23.0222, atol=1e-1)
@@ -116,7 +116,7 @@
 
     @testset "EPRI21 case" begin
 
-        epri21_data = _PM.parse_file(case_epri21)
+        case_epri21 = _PM.parse_file(data_epri21)
 
 
         # ===   DECOUPLED   === #
@@ -127,9 +127,13 @@
         # ===   COUPLED   === #
 
 
-        result = _PMGMD.solve_ac_gmd_opf(epri21_data, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_opf(case_epri21, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
+
         @test isapprox(result["objective"], 0; atol = 1e2)
+
+        solution = result["solution"]
+        _PMGMD.adjust_gmd_qloss(case_epri21, solution)
 
         # TODO => FIX ERROR
         # Received Warning Message:
