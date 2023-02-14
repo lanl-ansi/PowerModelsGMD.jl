@@ -3,6 +3,14 @@
 ##############
 
 
+export run_ac_opf_qloss, run_ac_opf_qloss_vnom
+export run_opf_qloss, run_opf_qloss_vnom
+export run_ac_gmd_opf_decoupled
+
+export run_ac_gmd_opf
+export run_gmd_opf
+
+
 # ===   DECOUPLED   === #
 
 
