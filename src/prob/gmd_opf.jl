@@ -15,6 +15,7 @@ function solve_ac_opf_qloss_vnom(file, optimizer; kwargs...)
     return solve_opf_qloss_vnom( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
+
 function solve_opf_qloss(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -156,6 +157,7 @@ end
 function solve_ac_gmd_opf(file, optimizer; kwargs...)
     return solve_gmd_opf( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
+
 
 function solve_gmd_opf(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
