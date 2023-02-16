@@ -52,10 +52,9 @@ const _PMGMD = PowerModelsGMD
     # Add problem specifications:
     include("prob/gmd.jl")
     include("prob/gmd_opf.jl")
+    include("prob/gmd_mld.jl")
 
 
-    # include("prob/gmd_mld_decoupled.jl")
-    # include("prob/gmd_mld.jl")
     # include("prob/gmd_msse.jl")
     # include("prob/gmd_opf_ts_decoupled.jl")
     # include("prob/gmd_opf_ts.jl")
