@@ -6,7 +6,7 @@
         case_b4gic = _PM.parse_file(data_b4gic)
 
 
-        # ===   DECOUPLED   === #
+        # ===   DECOUPLED AC-OPF   === #
 
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b4gic, ipopt_solver; setting=setting)
@@ -25,7 +25,7 @@
         @test isapprox(ac_solution["branch"]["3"]["qf"], -4.4491, atol=1e-1)
 
 
-        # ===   COUPLED   === #
+        # ===   COUPLED AC-OPF   === #
 
 
         result = _PMGMD.solve_ac_gmd_opf(case_b4gic, ipopt_solver; setting=setting)
@@ -60,7 +60,7 @@
         _PMGMD.fix_gmd_indices!(case_b4gic3w)
 
 
-        # ===   DECOUPLED   === #
+        # ===   DECOUPLED AC-OPF   === #
 
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b4gic3w, ipopt_solver; setting=setting)
@@ -83,7 +83,7 @@
         @test isapprox(ac_solution["branch"]["5"]["qf"], -2.6997, atol=5e-1)
 
 
-        # ===   COUPLED   === #
+        # ===   COUPLED AC-OPF   === #
 
 
         # NOTE: B4GIC-3W COUPLED tests are disabled due to the missing [baseMVA] values of
@@ -114,7 +114,7 @@
         case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
 
 
-        # ===   DECOUPLED   === #
+        # ===   DECOUPLED AC-OPF   === #
 
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b6gic_nerc, ipopt_solver; setting=setting)
@@ -135,7 +135,7 @@
         @test isapprox(ac_solution["branch"]["5"]["qt"], 0.3236, atol=1e-1)
 
 
-        # ===   COUPLED   === #
+        # ===   COUPLED AC-OPF   === #
 
 
         result = _PMGMD.solve_ac_gmd_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
@@ -165,7 +165,7 @@
         case_epri21 = _PM.parse_file(data_epri21)
 
 
-        # ===   DECOUPLED   === #
+        # ===   DECOUPLED AC-OPF   === #
 
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_epri21, ipopt_solver; setting=setting)
@@ -196,7 +196,7 @@
         @test isapprox(ac_solution["branch"]["30"]["gmd_qloss"], 0.1597, atol=1e-1)
 
 
-        # ===   COUPLED   === #
+        # ===   COUPLED AC-OPF   === #
 
 
         # NOTE: EPRI21 COUPLED tests are disabled due to error.

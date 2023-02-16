@@ -3,10 +3,10 @@
 ##############
 
 
-# ===   DECOUPLED   === #
+# ===   DECOUPLED AC-OPF   === #
 
 
-"FUNCTION: run basic GMD model with nonlinear ac equations"
+"FUNCTION: run basic GMD model with nonlinear ac polar relaxation"
 function solve_ac_opf_qloss(file, optimizer; kwargs...)
     return solve_opf_qloss( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
@@ -150,10 +150,10 @@ function solve_gmd_opf_decoupled(dc_case::Dict{String,Any}, model_type, optimize
 end
 
 
-# ===   COUPLED   === #
+# ===   COUPLED AC-OPF   === #
 
 
-"FUNCTION: run basic GMD model with nonlinear ac equations"
+"FUNCTION: run basic GMD model with nonlinear ac polar relaxation"
 function solve_ac_gmd_opf(file, optimizer; kwargs...)
     return solve_gmd_opf( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
