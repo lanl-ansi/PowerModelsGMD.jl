@@ -285,9 +285,9 @@ function solve_gmd_mls(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_gmd!,
             solution_PM!,
             solution_gmd_qloss!,
+            solution_gmd!,
             solution_gmd_mls!
         ],
         kwargs...,
@@ -377,9 +377,9 @@ function solve_gmd_mld(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_gmd!,
             solution_PM!,
             solution_gmd_qloss!,
+            solution_gmd!,
             solution_gmd_mls!
         ],
         kwargs...,
