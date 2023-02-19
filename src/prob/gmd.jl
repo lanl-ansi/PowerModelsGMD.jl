@@ -9,7 +9,7 @@ using SparseArrays
 # ===   WITH OPTIMIZER   === #
 
 
-"FUNCTION: run GIC current model"
+"FUNCTION: solve GIC current model"
 function solve_gmd(file, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -48,7 +48,7 @@ end
 # ===   WITH MATRIX SOLVE   === #
 
 
-"FUNCTION: run GIC matrix solve"
+"FUNCTION: solve GIC matrix solve"
 function solve_gmd(file::String; kwargs...)
     data = _PM.parse_file(file)
     return solve_gmd(data; kwargs...)
