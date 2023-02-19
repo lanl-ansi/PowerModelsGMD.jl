@@ -1,20 +1,24 @@
-export solve_ac_gmd_mls_ots, solve_qc_gmd_mls_ots, solve_soc_gmd_mls_ots
-export solve_gmd_mls_ots
+##############
+# GIC AC-OTS #
+##############
 
 
-"FUNCTION: run GMD mitigation with nonlinear ac equations"
+# ===   COUPLED GMD AC-MLS-OTS   === #
+
+
+"FUNCTION: solve GMD MLS OTS mitigation with nonlinear ac polar relaxation"
 function solve_ac_gmd_mls_ots(file, optimizer; kwargs...)
     return solve_gmd_mls_ots( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 
-"FUNCTION: run GMD mitigation with qc ac equations"
+"FUNCTION:  solve GMD MLS OTS mitigation with quadratic constrained least squares relaxation"
 function solve_qc_gmd_mls_ots(file, optimizer; kwargs...)
     return solve_gmd_mls_ots( file, _PM.QCLSPowerModel, optimizer; kwargs...)
 end
 
 
-"FUNCTION: run GMD mitigation with second order cone relaxation"
+"FUNCTION:  solve GMD MLS OTS mitigation with second order cone relaxation"
 function solve_soc_gmd_mls_ots(file, optimizer; kwargs...)
     return solve_gmd_mls_ots( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
@@ -31,9 +35,9 @@ function solve_gmd_mls_ots(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_gmd!,
             solution_PM!,
             solution_gmd_qloss!,
+            solution_gmd!,
             solution_gmd_mls!,
             solution_gmd_xfmr_temp!
         ],        
@@ -46,7 +50,7 @@ end
 as a generator dispatch minimization and load shedding problem"
 function build_gmd_mls_ots(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
-#   built minimum loadshed problem specification corresponds to the "Model C4" of
+#   built minimum loadshedding problem specification corresponds to the "Model C4" of
 #   Mowen et al., "Optimal Transmission Line Switching under Geomagnetic Disturbances", 2018.
 
     _PM.variable_bus_voltage_on_off(pm)
