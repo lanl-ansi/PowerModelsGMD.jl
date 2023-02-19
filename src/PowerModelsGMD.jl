@@ -51,6 +51,7 @@ const _PMGMD = PowerModelsGMD
 
     # Add problem specifications:
     include("prob/gmd.jl")
+    include("prob/gmd_pf.jl")
     include("prob/gmd_opf.jl")
     include("prob/gmd_mld.jl")
 
@@ -60,7 +61,6 @@ const _PMGMD = PowerModelsGMD
     # include("prob/gmd_opf_ts.jl")
     # include("prob/gmd_ots_ts.jl")
     # include("prob/gmd_ots.jl")
-    # include("prob/gmd_pf_decoupled.jl")
     # include("prob/gmd_blocker_placement.jl")
     # include("prob/gmd_opf_blocker_placement.jl")
 

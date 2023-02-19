@@ -1,9 +1,12 @@
-export solve_ac_pf_qloss, solve_ac_pf_qloss_vnom
-export solve_pf_qloss, solve_pf_qloss_vnom
-export solve_ac_gmd_pf_decoupled
+#############
+# GIC AC-PF #
+#############
 
 
-"FUNCTION: run basic GMD model with nonlinear ac equations"
+# ===   DECOUPLED AC-PF   === #
+
+
+"FUNCTION: solve basic GMD model with nonlinear ac equations"
 function solve_ac_pf_qloss(file, optimizer; kwargs...)
     return solve_pf_qloss(file, _PM.ACPPowerModel, optimizer; kwargs...,)
 end
@@ -11,6 +14,7 @@ end
 function solve_ac_pf_qloss_vnom(file, optimizer; kwargs...)
     return solve_pf_qloss_vnom(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
+
 
 function solve_pf_qloss(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
@@ -131,10 +135,10 @@ function build_pf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 end
 
 
-"FUNCTION: run the quasi-dc power flow problem followed by the ac-pf problem with qloss constraints"
+"FUNCTION: solve the quasi-dc power flow problem followed by the ac-pf problem with qloss constraints"
 function solve_ac_gmd_pf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
-    return solve_ac_gmd_pf_decoupled(data, _PM.ACPPowerModel, optimizer; kwargs...)
+    return solve_ac_gmd_pf_decoupled(data, optimizer; kwargs...)
 end
 
 function solve_ac_gmd_pf_decoupled(case::Dict{String,Any}, optimizer; setting=Dict(), kwargs...)
