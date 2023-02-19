@@ -6,7 +6,7 @@
 # ===   DECOUPLED GMD MLD   === #
 
 
-"FUNCTION: run GMD MLD mitigation with second order cone relaxation"
+"FUNCTION: solve GMD MLD mitigation with second order cone relaxation"
 function solve_soc_gmd_mld_qloss_vnom(file, solver; kwargs...)
     return solve_gmd_mld_qloss_vnom(file, _PM.SOCWRPowerModel, solver; kwargs...)
 end
@@ -86,7 +86,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: run the quasi-dc power flow problem followed by the maximum loadability problem 
+"FUNCTION: solve the quasi-dc power flow problem followed by the maximum loadability problem 
 with second order cone relaxation"
 function solve_soc_gmd_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
@@ -132,7 +132,7 @@ end
 # ===   DECOUPLED GMD CASCADE MLD   === #
 
 
-"FUNCTION: run GMD CASCADE MLD mitigation with second order cone relaxation"
+"FUNCTION: solve GMD CASCADE MLD mitigation with second order cone relaxation"
 function solve_soc_gmd_cascade_mld_qloss_vnom(file, solver; kwargs...)
     return solve_gmd_cascade_mld_qloss_vnom(file, _PM.SOCWRPowerModel, solver; kwargs...)
 end
@@ -213,7 +213,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: run the quasi-dc power flow problem followed the cascading maximum loadability problem
+"FUNCTION: solve the quasi-dc power flow problem followed the cascading maximum loadability problem
 with second order cone relaxation"
 function solve_soc_gmd_cascade_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
@@ -259,17 +259,17 @@ end
 # ===   COUPLED GMD MLS   === #
 
 
-"FUNCTION: run GMD MLS mitigation with nonlinear ac polar relaxation"
+"FUNCTION: solve GMD MLS mitigation with nonlinear ac polar relaxation"
 function solve_ac_gmd_mls(file, optimizer; kwargs...)
     return solve_gmd_mls(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-"FUNCTION: run GMD MLS mitigation with quadratic constrained least squares relaxation"
+"FUNCTION: solve GMD MLS mitigation with quadratic constrained least squares relaxation"
 function solve_qc_gmd_mls(file, optimizer; kwargs...)
     return solve_gmd_mls(file, _PM.QCLSPowerModel, optimizer; kwargs...)
 end
 
-"FUNCTION: run GMD MLS mitigation with second order cone relaxation"
+"FUNCTION: solve GMD MLS mitigation with second order cone relaxation"
 function solve_soc_gmd_mls(file, optimizer; kwargs...)
     return solve_gmd_mls(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
@@ -355,13 +355,13 @@ end
 # ===   COUPLED MLD   === #
 
 
-"FUNCTION: run GMD MLD mitigation with nonlinear ac equations"
+"FUNCTION: solve GMD MLD mitigation with nonlinear ac equations"
 function solve_ac_gmd_mld(file, optimizer; kwargs...)
     return solve_gmd_mld(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 
-"FUNCTION: run GMD MLD mitigation with second order cone relaxation"
+"FUNCTION: solve GMD MLD mitigation with second order cone relaxation"
 function solve_soc_gmd_mld(file, optimizer; kwargs...)
     return solve_gmd_mld(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
