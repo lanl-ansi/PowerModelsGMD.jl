@@ -6,7 +6,7 @@
 # ===   DECOUPLED AC-OPF   === #
 
 
-"FUNCTION: run basic GMD model with nonlinear ac polar relaxation"
+"FUNCTION: solve basic GMD model with nonlinear ac polar relaxation"
 function solve_ac_opf_qloss(file, optimizer; kwargs...)
     return solve_opf_qloss( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
@@ -103,7 +103,7 @@ function build_opf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 end
 
 
-"FUNCTION: run the quasi-dc power flow problem followed by the ac-opf problem with qloss constraints"
+"FUNCTION: solve the quasi-dc power flow problem followed by the ac-opf problem with qloss constraints"
 function solve_ac_gmd_opf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
     return solve_ac_gmd_opf_decoupled(data, optimizer; kwargs...)
@@ -153,7 +153,7 @@ end
 # ===   COUPLED AC-OPF   === #
 
 
-"FUNCTION: run basic GMD model with nonlinear ac polar relaxation"
+"FUNCTION: solve basic GMD model with nonlinear ac polar relaxation"
 function solve_ac_gmd_opf(file, optimizer; kwargs...)
     return solve_gmd_opf( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
