@@ -13,6 +13,8 @@
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
 
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_mld_decoupled"
+
 
         # ===   DECOUPLED GMD CASCADE MLD   === #
 
@@ -20,6 +22,8 @@
         # result = _PMGMD.solve_soc_gmd_cascade_mld_decoupled(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
+
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_cascade_mld_decoupled"
 
 
         # ===   COUPLED GMD MLS   === #
@@ -39,6 +43,8 @@
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
 
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls"
+
 
         # ===   COUPLED MLD   === #
 
@@ -51,6 +57,8 @@
         # result = _PMGMD.solve_ac_gmd_mld(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
+
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mld"
 
 
     end
@@ -68,6 +76,8 @@
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
 
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_mld_decoupled"
+
 
         # ===   DECOUPLED GMD CASCADE MLD   === #
 
@@ -75,6 +85,8 @@
         # result = _PMGMD.solve_soc_gmd_cascade_mld_decoupled(case_ieee_rts_0, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
+
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_cascade_mld_decoupled"
 
 
         # ===   COUPLED GMD MLS   === #
@@ -94,6 +106,8 @@
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
 
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls"
+
 
         # ===   COUPLED MLD   === #
 
@@ -106,6 +120,8 @@
         # result = _PMGMD.solve_ac_gmd_mld(case_ieee_rts_0, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
+
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mld"
 
 
     end
