@@ -47,9 +47,9 @@ data_otstest = "../test/data/matpower/ots_test.m"
     include("gmd.jl")
     include("gmd_opf.jl")
     include("gmd_mld.jl")
+    include("gmd_ots.jl")
 
 
     # include("gmd_opf_ts_decoupled.jl")
-    # include("gmd_ots.jl")
     # include("gmd_blocker_placement.jl")
 end

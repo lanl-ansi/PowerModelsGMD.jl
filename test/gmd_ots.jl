@@ -23,6 +23,8 @@
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
 
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots"
+
 
     end
 
@@ -48,6 +50,8 @@
         # result = _PMGMD.solve_ac_gmd_mls_ots(case_otstest, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
         # @test isapprox(result["objective"], 0.0000; atol=1e2)
+
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots"
 
 
     end
