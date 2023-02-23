@@ -27,7 +27,7 @@ function solve_gmd(file, optimizer; kwargs...)
 end
 
 
-"FUNCTION: build the quasi-dc power flow problem
+"FUNCTION: build the quasi-dc-pf problem
 as a linear constraint satisfaction problem"
 function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
 
