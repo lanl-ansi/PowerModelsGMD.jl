@@ -30,7 +30,7 @@ function solve_gmd_mld_qloss_vnom(file, model_constructor, solver; kwargs...)
 end
 
 
-"FUNCTION: build the sequential quasi-dc power flow and maximum loadability problem
+"FUNCTION: build the sequential quasi-dc-pf and maximum loadability problem
 as a maximum loadability problem"
 function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
@@ -86,7 +86,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: solve the quasi-dc power flow problem followed by the maximum loadability problem 
+"FUNCTION: solve the quasi-dc-pf problem followed by the maximum loadability problem 
 with second order cone relaxation"
 function solve_soc_gmd_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
@@ -157,7 +157,7 @@ function solve_gmd_cascade_mld_qloss_vnom(file, model_constructor, solver; kwarg
 end
 
 
-"FUNCTION: build the sequential quasi-dc power flow and cascade maximum loadability
+"FUNCTION: build the sequential quasi-dc-pf and cascade maximum loadability
 problem as a maximum loadability problem where line limits are disabled"
 function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 
@@ -213,7 +213,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: solve the quasi-dc power flow problem followed the cascading maximum loadability problem
+"FUNCTION: solve the quasi-dc-pf problem followed the cascading maximum loadability problem
 with second order cone relaxation"
 function solve_soc_gmd_cascade_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
@@ -295,7 +295,7 @@ function solve_gmd_mls(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"FUNCTION: build the ac minimum loadshedding coupled with quasi-dc power flow problem
+"FUNCTION: build the ac minimum loadshedding coupled with quasi-dc-pf problem
 as a generator dispatch minimization and load shedding problem"
 function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
@@ -387,7 +387,7 @@ function solve_gmd_mld(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"FUNCTION: build the ac minimum loadshedding coupled with quasi-dc power flow problem
+"FUNCTION: build the ac minimum loadshedding coupled with quasi-dc-pf problem
 as a maximum loadability problem with relaxed generator and bus participation"
 function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
