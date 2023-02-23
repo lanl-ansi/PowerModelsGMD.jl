@@ -51,7 +51,7 @@ function solve_pf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"FUNCTION: build the sequential quasi-dc power flow and ac power flow problem
+"FUNCTION: build the sequential quasi-dc-pf and ac-pf problem
 as a generator dispatch minimization problem with calculated ieff"
 function build_pf_qloss(pm::_PM.AbstractPowerModel; kwargs...)
     use_vnom = false
@@ -135,7 +135,7 @@ function build_pf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 end
 
 
-"FUNCTION: solve the quasi-dc power flow problem followed by the ac-pf problem with qloss constraints"
+"FUNCTION: solve the quasi-dc-pf problem followed by the ac-pf problem with qloss constraints"
 function solve_ac_gmd_pf_decoupled(file::String, optimizer; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
     return solve_ac_gmd_pf_decoupled(data, optimizer; kwargs...)
