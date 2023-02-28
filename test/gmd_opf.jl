@@ -3,11 +3,11 @@
 
     @testset "B4GIC case" begin
 
-        case_b4gic = _PM.parse_file(data_b4gic)
-
 
         # ===   DECOUPLED AC-OPF   === #
 
+
+        case_b4gic = _PM.parse_file(data_b4gic)
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b4gic, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
@@ -27,6 +27,8 @@
 
         # ===   DECOUPLED AC-OPF-TS   === #
 
+
+        case_b4gic = _PM.parse_file(data_b4gic)
 
         wf_path = "../test/data/suppl/b4gic-gmd-waveform.json"
         h = open(wf_path)
@@ -79,21 +81,23 @@
         # ===   COUPLED AC-OPF   === #
 
 
+        case_b4gic = _PM.parse_file(data_b4gic)
+
         result = _PMGMD.solve_ac_gmd_opf(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 139231.9720; atol = 1e2)
+        @test isapprox(result["objective"], 206311.0172; atol = 1e2)
 
         solution = result["solution"]
         _PMGMD.adjust_gmd_qloss(case_b4gic, solution)
 
         # DC solution:
-        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
-        @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
+        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -63.5513, atol=1e-1)
+        @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 211.8379, atol=1e-1)
     
         # AC solution:
         @test isapprox(solution["bus"]["1"]["vm"], 1.0967, atol=1e-1)
         @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
-        @test isapprox(solution["branch"]["3"]["qf"], -4.5913, atol=1e-1)
+        @test isapprox(solution["branch"]["3"]["qf"], -5.9471, atol=1e-1)
 
 
         # ===   COUPLED AC-OPF-TS   === #
@@ -107,18 +111,18 @@
 
     @testset "B4GIC-3W case" begin
 
+
+        # ===   DECOUPLED AC-OPF   === #
+
+        case_b4gic3w = _PM.parse_file(data_b4gic3w)
+
         mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
         f = open(mods_b4gic3w)
         mods = JSON.parse(f)
         close(f)
 
-        case_b4gic3w = _PM.parse_file(data_b4gic3w)
         _PMGMD.apply_mods!(case_b4gic3w, mods)
         _PMGMD.fix_gmd_indices!(case_b4gic3w)
-
-
-        # ===   DECOUPLED AC-OPF   === #
-
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b4gic3w, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
@@ -148,9 +152,18 @@
 
         # ===   COUPLED AC-OPF   === #
 
-
         # NOTE: B4GIC-3W COUPLED tests are disabled due to the missing [baseMVA] values of
         # branches that cause "function calc_branch_ibase" (scr/core/data.jl) to error out
+
+        # case_b4gic3w = _PM.parse_file(data_b4gic3w)
+
+        # mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
+        # f = open(mods_b4gic3w)
+        # mods = JSON.parse(f)
+        # close(f)
+
+        # _PMGMD.apply_mods!(case_b4gic3w, mods)
+        # _PMGMD.fix_gmd_indices!(case_b4gic3w)
 
         # result = _PMGMD.solve_ac_gmd_opf(case_b4gic3w, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
@@ -180,11 +193,10 @@
 
     @testset "NERC B6GIC case" begin
 
-        case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
-
 
         # ===   DECOUPLED AC-OPF   === #
 
+        case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
@@ -212,6 +224,8 @@
 
         # ===   COUPLED AC-OPF   === #
 
+
+        case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
 
         result = _PMGMD.solve_ac_gmd_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
@@ -243,11 +257,11 @@
 
     @testset "EPRI21 case" begin
 
-        case_epri21 = _PM.parse_file(data_epri21)
-
 
         # ===   DECOUPLED AC-OPF   === #
 
+
+        case_epri21 = _PM.parse_file(data_epri21)
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_epri21, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
@@ -288,6 +302,8 @@
 
         # NOTE: EPRI21 COUPLED tests are disabled due to error.
         # INVALID_MODEL termination status. Potentially caused by DC voltage magnitude taking 0 value.
+
+        # case_epri21 = _PM.parse_file(data_epri21)
 
         # result = _PMGMD.solve_ac_gmd_opf(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
