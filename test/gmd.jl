@@ -3,11 +3,11 @@
 
     @testset "B4GIC case" begin
 
-        case_b4gic = _PM.parse_file(data_b4gic)
-
 
         # ===   WITH OPTIMIZER   === #
 
+
+        case_b4gic = _PM.parse_file(data_b4gic)
 
         result = _PMGMD.solve_gmd(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
@@ -20,6 +20,8 @@
 
         # ===   WITH MATRIX SOLVE   === #
 
+
+        case_b4gic = _PM.parse_file(data_b4gic)
 
         result = _PMGMD.solve_gmd(case_b4gic; setting=setting)
         @test result["status"] == :LocalOptimal
@@ -35,18 +37,19 @@
 
     @testset "B4GIC-3W case" begin
 
+
+        # ===   WITH OPTIMIZER   === #
+
+
+        case_b4gic3w = _PM.parse_file(data_b4gic3w)
+
         mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
         f = open(mods_b4gic3w)
         mods = JSON.parse(f)
         close(f)
 
-        case_b4gic3w = _PM.parse_file(data_b4gic3w)
         _PMGMD.apply_mods!(case_b4gic3w, mods)
         _PMGMD.fix_gmd_indices!(case_b4gic3w)
-
-
-        # ===   WITH OPTIMIZER   === #
-
 
         result = _PMGMD.solve_gmd(case_b4gic3w, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
@@ -59,6 +62,16 @@
 
         # ===   WITH MATRIX SOLVE   === #
 
+
+        case_b4gic3w = _PM.parse_file(data_b4gic3w)
+
+        mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
+        f = open(mods_b4gic3w)
+        mods = JSON.parse(f)
+        close(f)
+
+        _PMGMD.apply_mods!(case_b4gic3w, mods)
+        _PMGMD.fix_gmd_indices!(case_b4gic3w)
 
         result = _PMGMD.solve_gmd(case_b4gic3w; setting=setting)
         @test result["status"] == :LocalOptimal
@@ -74,11 +87,11 @@
 
     @testset "B6GIC-NERC case" begin
 
-        case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
-
 
         # ===   WITH OPTIMIZER   === #
 
+
+        case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
 
         result = _PMGMD.solve_gmd(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
@@ -91,6 +104,8 @@
 
         # ===   WITH MATRIX SOLVE   === #
 
+
+        case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
 
         result = _PMGMD.solve_gmd(case_b6gic_nerc; setting=setting)
         @test result["status"] == :LocalOptimal
@@ -106,11 +121,11 @@
 
     @testset "EPRI21 case" begin
 
-        case_epri21 = _PM.parse_file(data_epri21)
-
 
         # ===   WITH OPTIMIZER   === #
 
+
+        case_epri21 = _PM.parse_file(data_epri21)
 
         result = _PMGMD.solve_gmd(case_epri21, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
@@ -128,6 +143,8 @@
 
         # ===   WITH MATRIX SOLVE   === #
 
+
+        case_epri21 = _PM.parse_file(data_epri21)
 
         result = _PMGMD.solve_gmd(case_epri21; setting=setting)
         @test result["status"] == :LocalOptimal
