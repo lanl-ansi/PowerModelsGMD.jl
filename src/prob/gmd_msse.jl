@@ -1,11 +1,16 @@
-export solve_ac_gmd_msse
-export solve_msse_qloss
+############
+# GIC MSSE #
+############
 
 
-"FUNCTION: run basic GMD model with nonlinear ac equations"
+# ===   COUPLED AC-MSSE   === #
+
+
+"FUNCTION: solve basic GMD model with nonlinear ac polar relaxation"
 function solve_ac_gmd_msse(file, optimizer; kwargs...)
     return solve_msse_qloss(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
+
 
 function solve_msse_qloss(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
@@ -17,9 +22,9 @@ function solve_msse_qloss(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_gmd!,
             solution_PM!,
             solution_gmd_qloss!,
+            solution_gmd!,
             solution_gmd_mls!,
             solution_gmd_demand!
         ],
@@ -64,7 +69,7 @@ function build_msse_qloss(pm::_PM.AbstractPowerModel; kwargs...)
             constraint_qloss(pm, i)
         end
 
-        #constraint_qloss(pm, i) => likely not needed 
+        #constraint_qloss(pm, i)
         constraint_dc_current_mag(pm, i)
 
     end
