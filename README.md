@@ -13,29 +13,30 @@ It solves for quasi-dc line flow and ac power flow problems in a system subjecte
 
 ## PMsGMD Dependencies
 
-PMsGMD directly builds on [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.19.8 - a package for electrical power transmission network modeling and optimization - of the [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.7.5 open-source software ecosystem.
-Additionally, it relies on and was optimized for [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v1.7, and [Memento](https://github.com/invenia/Memento.jl) v1.4 packages.
+PMsGMD directly builds on [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.19.8 - a package for electrical power transmission network modeling and optimization - of the [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.7.6 open-source software ecosystem.
+Additionally, it relies on and was optimized for [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v1.8, and [Memento](https://github.com/invenia/Memento.jl) v1.4 packages.
 
 Automated testing of PMsGMD problem specifications is done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v1.1.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.9.1 packages.
-Alternatively, commercial [KNITRO](https://github.com/jump-dev/KNITRO.jl) or [Gurobi](https://github.com/jump-dev/Gurobi.jl), or open-source [SCS](https://github.com/jump-dev/SCS.jl), [Pajarito](https://github.com/jump-dev/Pajarito.jl), [Pavito](https://github.com/jump-dev/Pavito.jl), or [SCIP](https://github.com/scipopt/SCIP.jl) solvers may be used for specific problems.
+Alternatively, commercial [KNITRO](https://github.com/jump-dev/KNITRO.jl) or [Gurobi](https://github.com/jump-dev/Gurobi.jl), or open-source [SCS](https://github.com/jump-dev/SCS.jl), [Pajarito](https://github.com/jump-dev/Pajarito.jl), [Pavito](https://github.com/jump-dev/Pavito.jl), or [SCIP](https://github.com/scipopt/SCIP.jl) optimizers may be used for specific problems.
 
 
 
 ## Core Problem Specifications
 
-PMsGMD solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (GIC). It also solves for mitigation strategies by treating the transformer overheating problem as an optimal transmission switching problem.
+PMsGMD solves for quasi-dc line flow and ac power flow problems in a network subjected to GIC.
+It also solves for mitigation strategies, such as minimum loadshedding or treating the transformer overheating problem as an optimal transmission switching problem.
 
-Currently the following common industry and academic specifications have been implemented:
+At the moment, the following common industry and academic specifications are implemented:
 * GIC DC: quasi-dc power flow
 * GIC AC-OPF: ac optimal power flow with sequential/coupled quasi-dc power flow
-* GIC AC-OPF-TS: multi-time-series ac optimal power flow with sequential/coupled quasi-dc power flow
-* GIC AC-MLS: ac minimum loadshed with sequential/coupled quasi-dc power flow
-* GIC AC-OTS: ac optimal transmission switching with minimum loadshed coupled with a quasi-dc power flow
-* GIC AC-OTS-TS: multi-time-series ac optimal transmission switching with minimum loadshed coupled with a quasi-dc power flow
+* GIC AC-MLD: ac maximum loadability and minimum loadshedding with sequential/coupled quasi-dc power flow
+* GIC AC-OTS: ac optimal transmission switching with minimum loadshedding coupled with a quasi-dc power flow
 
 
 
 ## Installation
+
+...
 
 After the installation of its dependencies, PMsGMD can be installed from the Julia package manager:
 ```
@@ -51,16 +52,16 @@ test PowerModelsGMD
 
 ## Quick Start
 
-The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers throughout the system.
+The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers throughout the network.
 For example:
 ```
-using PowerModels, PowerModelsGMD, Ipopt
+using PowerModels, PowerModelsGMD, JuMP, Ipopt
 
-network_file = joinpath(dirname(pathof(PowerModelsGMD)), "../test/data/epri21.m")
-case = PowerModels.parse_file(network_file)
-solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
+network_data = joinpath(dirname(pathof(PowerModelsGMD)), "../test/data/matpower/epri21.m")
+network_case = PowerModels.parse_file(network_data)
+optimizer = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
 
-result = PowerModelsGMD.solve_ac_gmd_opf_decoupled(case, solver)
+result = PowerModelsGMD.solve_ac_gmd_opf(network_case, optimizer)
 ```
 
 
@@ -73,19 +74,20 @@ result = PowerModelsGMD.solve_ac_gmd_opf_decoupled(case, solver)
 Solves for steady-state dc currents on lines resulting from induced dc voltages on lines.
 For example:
 ```
-solve_gmd("test/data/b4gic.m", solver)
+network_case = PowerModels.parse_file("test/data/matpower/b4gic.m")
+solve_gmd(network_case, optimizer)
 ```
 
-For large systems (greater than 10,000 buses), the Lehtinen-Pirjola method may be used, which relies on a matrix solve instead of an optimizer.
-This may called by omitting the solver parameter:
+For large networks (greater than 10,000 buses), the Lehtinen-Pirjola method may be used, which relies on a matrix solve instead of an optimizer.
+This may called by omitting the optimizer parameter:
 ```
-solve_gmd("test/data/b4gic.m")
+solve_gmd(network_case)
 ```
 
 To save branch currents in addition to bus voltages:
 ```
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
-solve_gmd("test/data/b4gic.m", solver; setting)
+solve_gmd(network_case, optimizer; setting)
 ```
 
 
@@ -93,81 +95,87 @@ solve_gmd("test/data/b4gic.m", solver; setting)
 
 #### GIC -> AC-OPF
 
-Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-OPF optimal power flow specification in order to calculate the increase in transformer reactive power consumption.
+Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-OPF optimal power flow specification and calculates the increase in transformer reactive power consumption.
+This specification was implemented with nonlinear ac polar relaxation.
 For example:
 ```
-solve_ac_gmd_opf_decoupled(case, solver)
+solve_ac_gmd_opf_decoupled(network_case, optimizer)
 ```
+
+#### GIC -> AC-OPF-TS
+
+Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to a multi-time-series AC-OPF optimal power flow specification and calculates the increase in transformer reactive power consumption.
+This specification was implemented with nonlinear ac polar relaxation.
+For example:
+```
+solve_ac_gmd_opf_ts_decoupled(multi_network_case, optimizer, waveform)
+```
+
+The implemented thermal model is disabled by default.
+To enable thermal calculations and display of results, the `disable_thermal` optional argument can be used:
+
+```
+solve_ac_gmd_opf_ts_decoupled(multi_network_case, optimizer, waveform; setting, disable_thermal=false)
+```
+
 
 #### GIC + AC-OPF
 
-Solves the quasi-dc voltages and currents plus the AC-OPF optimal power flow specification concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
+Solves the quasi-dc voltages and currents plus the AC-OPF optimal power flow specification concurrently.
+The dc network couples to the ac network by means of reactive power loss in the transformers. This specification was implemented with nonlinear ac polar relaxation.
 For example:
 ```
-solve_ac_gmd_opf(case, solver)
+solve_ac_gmd_opf(network_case, optimizer)
 ```
 
 It is advised to adjust qloss in the results:
 ```
-adjust_gmd_qloss(case, solution)
+adjust_gmd_qloss(network_case, result)
 ```
 
-This specification has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages. Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
-
-
-### GIC AC-OPF-TS
-
-#### GIC -> AC-OPF-TS
-
-Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to a multi-time-series AC-OPF optimal power flow specification in order to calculate the increase in transformer reactive power consumption.
-For example:
-```
-solve_ac_gmd_opf_ts_decoupled(case, solver, waveform)
-```
-
-The implemented thermal model is disabled by default. To enable thermal calculations and display of results, the `disable_thermal` optional argument can be used.
-For example:
-```
-solve_ac_gmd_opf_ts_decoupled(case, solver, waveform; setting, disable_thermal=false)
-```
+This specification has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages.
+Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
 
 #### GIC + AC-OPF-TS
 
-Solves the quasi-dc voltages and currents plus the multi-time-series AC-OPF optimal power flow specification concurrently. The dc network couples to the ac network by means of reactive power loss in transformers.
+Solves the quasi-dc voltages and currents plus the multi-time-series AC-OPF optimal power flow specification concurrently.
+The dc network couples to the ac network by means of reactive power loss in the transformers. This specification was implemented with nonlinear ac polar relaxation.
 For example:
 ```
-solve_ac_gmd_opf_ts(multinetworkcase, solver)
+solve_ac_gmd_opf_ts(multi_network_case, optimizer)
 ```
 
 
-### GIC AC-MLS
+### GIC AC-MLD
 
-#### GIC -> AC-MLS
+#### GIC -> AC-MLD
 
-Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLS minimum loadshedding specification in order to calculate the increase in transformer reactive power consumption. The network topology is fixed.
+Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLD maximum loadability specification and calculates the increase in transformer reactive power consumption.
+This specification was implemented with fixed network topology, and with second order cone relaxation.
 For example:
 ```
-solve_ac_gmd_mls_decoupled(case, solver)
+solve_soc_gmd_mld_decoupled(network_case, optimizer)
 ```
 
-Additionally, the decoupled AC-MLS minimum loadshedding specification was implemented as a decoupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
+Additionally, to model and analyze cascading failure impact, a decoupled Cascade AC-MLD maximum loadability specification was implemented - based on the the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification of [PowerModelsRestoration.jl](https://github.com/lanl-ansi/PowerModelsRestoration.jl) - with relaxed generator and bus participations, and with second order cone relaxation.
 For example:
 ```
-solve_soc_gmd_mld_decoupled(case, solver)
+solve_soc_gmd_cascade_mld_decoupled(network_case, optimizer)
 ```
 
-#### GIC + AC-MLS
-
-Solves the quasi-dc voltages and currents plus the AC-MLS minimum loadshedding specification concurrently. The network topology is fixed.
+#### GIC + AC-MLD
+ 
+Solves the quasi-dc voltages and currents plus the AC-MLS minimum loadshedding - based on the work of [Mowen et al.](https://ieeexplore.ieee.org/document/8064715) - problem specification concurrently.
+This specification was implemented with fixed network topology, and with nonlinear ac polar, quadratic constrained least squares, and second order cone relaxations.
 For example:
 ```
-solve_ac_gmd_mls(case, solver)
+solve_soc_gmd_mls(network_case, optimizer)
 ```
 
-Additionally, the sequential AC-MLS minimum loadshedding specification was implemented as a sequential [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation.
+Additionally, the coupled AC-MLS minimum loadshedding specification was implemented as a coupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation, and with nonlinear ac polar and second order cone relaxations.
 For example:
 ```
-solve_soc_gmd_mld(case, solver)
+solve_soc_gmd_mld(network_case, optimizer)
 ```
 
 
@@ -175,24 +183,23 @@ solve_soc_gmd_mld(case, solver)
 
 #### GIC + AC-OTS
 
-Solves the AC-MLS minimum loadshedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
+Solves the quasi-dc voltages and currents plus the AC-OTS optimal transmission switching - where transformers and transmission lines can be openned or closed - problem specification concurrently.
+This specification is an extension of the coupled AC-MLS minimum loadshedding specification: it uses transmission switching to protect the network from GIC-induced voltage collapse and transformer overheating, and was implemented with nonlinear ac polar, quadratic constrained least squares, and second order cone relaxations.
 For example:
 ```
-solve_ac_gmd_mls_ots(case, solver)
+solve_soc_gmd_mls_ots(network_case, optimizer)
 ```
-
-
-### GIC AC-OTS-TS
 
 #### GIC + AC-OTS-TS
 
-Solves the multi-time-series AC-MLS minimum loadshedding specification for a system subjected to geomagnetically induced currents, where lines and transformers can be opened or closed. It uses transmission-switching to protect the system from GIC-induced voltage collapse and transformer overheating.
+Actual observed GMDs show time-varying behavior in ground electric fields both in magnitude and direction. This could cause different transformer heating than observed in the field peak magnitude. Consequently, the GIC AC-OTS need to be extended to a multi-time-series specification, in which the physics of transformer heating over time are modeled and used to inform a new optimization model that mitigates the effects of heating in terms of the thermal degradation of the transformer winding insulation.
+
+Solves the quasi-dc voltages and currents plus the multi-time-series AC-OTS optimal transmission switching - where transformers and transmission lines can be openned or closed - and AC-MLS minimum loadshedding problem specifications concurrently.
+This specification is an extension of the coupled AC-OTS optimal transmission switching specification: it uses transmission switching to protect the network from GIC-induced voltage collapse and transformer overheating, and was implemented with nonlinear ac polar and second order cone relaxations.
 For example:
 ```
-solve_ac_gmd_mls_ots_ts(multinetworkcase, solver)
+solve_ac_gmd_mls_ots_ts(multi_network_case, optimizer)
 ```
-
-Actual observed GMDs show time-varying behavior in ground electric fields both in magnitude and direction. This could cause different transformer heating than observed in the field peak magnitude. Consequently, the GIC AC-OTS specification need to be extended to a multi-time-series specification as well, in which the physics of transformer heating over time are modeled and used to inform a new optimization model that mitigates the effects of heating in terms of the thermal degradation of the transformer winding insulation.
 
 
 
@@ -205,9 +212,9 @@ The primary developers are [Arthur Barnes](https://github.com/bluejuniper) and [
 * [David Fobes](https://github.com/pseudocubic)
 
 Special thanks to:
-* Mowen Lu and Russell Bent for developing and implementing the MLS and OTS problem specifications, which are used in the GIC AC-OPF and GIC AC-MLS problem specifications
-* Noah Rhodes and Carleton Coffrin for developing and implementing the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification, which is used in the GIC AC-MLS problem specification
-* Michael Rivera for a reference implementation of the Latingen-Pijirola matrix solver
+* Mowen Lu and Russell Bent for developing and implementing the MLS and OTS problem specifications, which are used in the GIC AC-OPF and GIC AC-MLS problem specifications;
+* Noah Rhodes and Carleton Coffrin for developing and implementing the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification, which is used in the GIC AC-MLS problem specification;
+* Michael Rivera for a reference implementation of the Latingen-Pijirola matrix optimizer.
 
 
 ### Development Funding Sources
