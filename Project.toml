@@ -2,7 +2,7 @@ name = "PowerModelsGMD"
 uuid = "c92a0612-66bb-11e9-0491-518d0d864356"
 keywords = ["GMD", "EMP", "simulation", "analysis", "mitigation", "optimization"]
 authors = ["Arthur Barnes <abarnes@lanl.gov>, Adam Mate <amate@lanl.gov>"]
-repo = "https://github.com/lanl-ansi/PowerModels.jl"
+repo = "https://github.com/lanl-ansi/PowerModelsGMD.jl"
 version = "0.5.0"
 
 [deps]
