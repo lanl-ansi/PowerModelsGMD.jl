@@ -58,7 +58,6 @@ const _PMGMD = PowerModelsGMD
 
 
     # include("prob/gmd_msse.jl")
-    # include("prob/gmd_ots_ts.jl")
     # include("prob/gmd_blocker_placement.jl")
     # include("prob/gmd_opf_blocker_placement.jl")
 
