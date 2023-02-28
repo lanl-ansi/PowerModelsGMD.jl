@@ -43,7 +43,7 @@ data_otstest = "../test/data/matpower/ots_test.m"
 
 # Perform automated testing of PMsGMD problem specifications:
 @testset "PowerModelsGMD" begin
-    include("data_ac.jl")
+    include("ac_data.jl")
     include("gmd.jl")
     include("gmd_opf.jl")
     include("gmd_mld.jl")
