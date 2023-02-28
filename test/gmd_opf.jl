@@ -85,19 +85,19 @@
 
         result = _PMGMD.solve_ac_gmd_opf(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 206311.0172; atol = 1e2)
+        @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
         solution = result["solution"]
         _PMGMD.adjust_gmd_qloss(case_b4gic, solution)
 
         # DC solution:
-        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -63.5513, atol=1e-1)
-        @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 211.8379, atol=1e-1)
+        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
+        @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
     
         # AC solution:
         @test isapprox(solution["bus"]["1"]["vm"], 1.0967, atol=1e-1)
         @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
-        @test isapprox(solution["branch"]["3"]["qf"], -5.9471, atol=1e-1)
+        @test isapprox(solution["branch"]["3"]["qf"], -4.5914, atol=1e-1)
 
 
         # ===   COUPLED AC-OPF-TS   === #
