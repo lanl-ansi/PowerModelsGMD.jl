@@ -60,7 +60,7 @@
         @test isapprox(ac_solution["bus"]["2"]["va"], -0.0306, atol=1e-1)
         @test isapprox(ac_solution["branch"]["2"]["pf"], -10.0093, atol=1e-1)
         @test isapprox(ac_solution["branch"]["3"]["pf"], -10.0641, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["3"]["qf"], -8.0159, atol=1e-1)        
+        @test isapprox(ac_solution["branch"]["3"]["qf"], -8.0159, atol=1e-1)
         @test isapprox(ac_solution["gen"]["1"]["pg"], 10.0773, atol=1e-1)
         @test isapprox(ac_solution["gen"]["1"]["qg"], 8.5438, atol=1e-1)
 
@@ -76,7 +76,7 @@
         @test isapprox(ac_solution["branch"]["3"]["delta_topoilrise_ss"], 0.0025, atol=1e-1)
         @test isapprox(ac_solution["branch"]["3"]["delta_hotspotrise_ss"], 257.3844, atol=1e-1)
         @test isapprox(ac_solution["branch"]["3"]["actual_hotspot"], 282.3869, atol=1e-1)
-    
+
 
         # ===   COUPLED AC-OPF   === #
 
@@ -88,12 +88,11 @@
         @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
         solution = result["solution"]
-        _PMGMD.adjust_gmd_qloss(case_b4gic, solution)
 
         # DC solution:
         @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
         @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
-    
+
         # AC solution:
         @test isapprox(solution["bus"]["1"]["vm"], 1.0967, atol=1e-1)
         @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
@@ -170,12 +169,11 @@
         # @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
         # solution = result["solution"]
-        # _PMGMD.adjust_gmd_qloss(case_b4gic3w, solution)
 
         # # DC solution:
         # @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
         # @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
-    
+
         # # AC solution:
         # @test isapprox(solution["bus"]["1"]["vm"], 1.0967, atol=1e-1)
         # @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
@@ -232,7 +230,6 @@
         @test isapprox(result["objective"], 12312.5633; atol = 1e2)
 
         solution = result["solution"]
-        _PMGMD.adjust_gmd_qloss(case_b6gic_nerc, solution)
 
         # DC solution:
         @test isapprox(solution["gmd_bus"]["5"]["gmd_vdc"], -23.0222, atol=1e-1)
@@ -310,7 +307,6 @@
         # @test isapprox(result["objective"], 0; atol = 1e2)
 
         # solution = result["solution"]
-        # _PMGMD.adjust_gmd_qloss(case_epri21, solution)
 
 
         # ===   COUPLED AC-OPF-TS   === #

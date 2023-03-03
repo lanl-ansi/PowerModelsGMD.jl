@@ -86,7 +86,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: solve the quasi-dc-pf problem followed by the maximum loadability problem 
+"FUNCTION: solve the quasi-dc-pf problem followed by the maximum loadability problem
 with second order cone relaxation"
 function solve_soc_gmd_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
@@ -115,11 +115,10 @@ function solve_gmd_mld_decoupled(dc_case::Dict{String,Any}, model_constructor, s
     for branch in values(ac_case["branch"])
         dc_current_mag(branch, ac_case, dc_solution)
     end
-    
+
     qloss_decoupled_vnom(ac_case)
     ac_result = solve_gmd_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting)
     ac_solution = ac_result["solution"]
-    adjust_gmd_qloss(ac_case, ac_solution)
 
     data = Dict()
     data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
@@ -201,7 +200,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        # constraint_qloss_decoupled_vnom_mld(pm, i)  
+        # constraint_qloss_decoupled_vnom_mld(pm, i)
     end
 
     for i in _PM.ids(pm, :dcline)
@@ -242,11 +241,14 @@ function solve_gmd_cascade_mld_decoupled(dc_case::Dict{String,Any}, model_constr
     for branch in values(ac_case["branch"])
         dc_current_mag(branch, ac_case, dc_solution)
     end
-    
+
     qloss_decoupled_vnom(ac_case)
-    ac_result = solve_gmd_cascade_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting)
+    ac_result = solve_gmd_cascade_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting;
+    solution_processors = [
+        solution_PM!,
+        solution_gmd_qloss_decoupled!
+    ])
     ac_solution = ac_result["solution"]
-    adjust_gmd_qloss(ac_case, ac_solution)
 
     data = Dict()
     data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
@@ -454,4 +456,3 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     objective_max_loadability(pm)
 
 end
-

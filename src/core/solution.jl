@@ -124,7 +124,7 @@ function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,A
                     Memento.warn(_LOGGER, "Qloss key $key not found, setting qloss for branch to zero")
                     continue
                 end
-                
+
                 branch["gmd_qloss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss][key])
             end
         end
@@ -192,7 +192,7 @@ function solution_gmd_mls!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any
         for (n, nw_data) in nws_data
             if haskey(nw_data, "branch")
                 for (i, branch) in nw_data["branch"]
-                    key = (branch["index"])               
+                    key = (branch["index"])
                     branch["gmd_idc_mag"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:i_dc_mag][key])
                 end
             end
@@ -233,7 +233,7 @@ function solution_gmd_xfmr_temp!(pm::_PM.AbstractPowerModel, solution::Dict{Stri
         for (n, nw_data) in nws_data
             if haskey(nw_data, "branch")
                 for (i, branch) in nw_data["branch"]
-                    key = (branch["index"])               
+                    key = (branch["index"])
                     branch["topoil_rise_ss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:ross][key])
                     branch["topoil_rise"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:ro][key])
                     branch["hotspot_rise_ss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:hsss][key])
@@ -281,3 +281,26 @@ function solution_gmd_blocker!(pm::_PM.AbstractPowerModel, solution::Dict{String
 
 end
 
+
+"SOLUTION: add gmd qloss solution from a decoupled model"
+function solution_gmd_qloss_decoupled!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+
+    if haskey(solution["it"][pm_it_name], "nw")
+        nws_data = solution["it"][pm_it_name]["nw"]
+    else
+        nws_data = Dict("0" => solution["it"][pm_it_name])
+    end
+
+    # Branch
+    for (nw_id, nw_ref) in nws(pm)
+        for (n, nw_data) in nws_data
+            if !haskey(nw_data, "branch")
+                continue
+            end
+
+            for (i, branch) in nw_data["branch"]
+                branch["gmd_qloss"] = haskey(_PM.ref(pm,nw_id,:branch, parse(Int64,i)),"gmd_qloss") ? _PM.ref(pm,nw_id,:branch, parse(Int64,i),"gmd_qloss") / nw_ref[:baseMVA] : nothing
+            end
+        end
+    end
+end

@@ -41,7 +41,7 @@ function solve_pf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
         build_pf_qloss_vnom;
         ref_extensions = [
             ref_add_gmd!
-        ],        
+        ],
         solution_processors = [
             solution_PM!,
             solution_gmd_qloss!
@@ -166,7 +166,6 @@ function solve_gmd_pf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer
 
     ac_result = solve_pf_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
     ac_solution = ac_result["solution"]
-    adjust_gmd_qloss(ac_case, ac_solution)
 
     data = Dict()
     data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
@@ -174,4 +173,3 @@ function solve_gmd_pf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer
     return data
 
 end
-

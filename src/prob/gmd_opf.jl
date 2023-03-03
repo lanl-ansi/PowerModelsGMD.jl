@@ -133,9 +133,12 @@ function solve_gmd_opf_decoupled(dc_case::Dict{String,Any}, model_type, optimize
 
     qloss_decoupled_vnom(ac_case)
     # ac_result = solve_opf_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
-    ac_result = _PM.solve_opf(ac_case, model_type, optimizer, setting=setting)
+    ac_result = _PM.solve_opf(ac_case, model_type, optimizer, setting=setting;
+        solution_processors = [
+            solution_PM!,
+            solution_gmd_qloss_decoupled!
+        ])
     ac_solution = ac_result["solution"]
-    adjust_gmd_qloss(ac_case, ac_solution)
 
     data = Dict()
     data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
@@ -158,7 +161,7 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
 
         base_mva = case["baseMVA"]
         delta_t = wf_time[2] - wf_time[1]
-    
+
         Ie_prev = Dict()
         for (i, br) in case["branch"]
             Ie_prev[i] = nothing
@@ -171,12 +174,12 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
 
         if (waveform !== nothing && waveform["waveforms"] !== nothing)
             for (k, wf) in waveform["waveforms"]
-    
+
                 otype = wf["parent_type"]
                 field  = wf["parent_field"]
-    
+
                 case[otype][k][field] = wf["values"][i]
-    
+
             end
         end
 
@@ -424,4 +427,3 @@ function build_gmd_opf_ts(pm::_PM.AbstractPowerModel; kwargs...)
     objective_gmd_min_transformer_heating(pm)
 
 end
-

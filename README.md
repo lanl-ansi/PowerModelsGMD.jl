@@ -128,11 +128,6 @@ For example:
 solve_ac_gmd_opf(network_case, optimizer)
 ```
 
-It is advised to adjust qloss in the results:
-```
-adjust_gmd_qloss(network_case, result)
-```
-
 This specification has limitations in that it does not model increase in transformer reactive power consumption resulting from changes in the ac terminal voltages.
 Additionally, it may report higher reactive power consumption than reality on account of relaxing the "effective" transformer quasi-dc winding current magnitude.
 
@@ -164,7 +159,7 @@ solve_soc_gmd_cascade_mld_decoupled(network_case, optimizer)
 ```
 
 #### GIC + AC-MLD
- 
+
 Solves the quasi-dc voltages and currents plus the AC-MLS minimum loadshedding - based on the work of [Mowen et al.](https://ieeexplore.ieee.org/document/8064715) - problem specification concurrently.
 This specification was implemented with fixed network topology, and with nonlinear ac polar, quadratic constrained least squares, and second order cone relaxations.
 For example:
@@ -243,5 +238,3 @@ If you find PMsGMD useful in your work, we kindly request that you cite the foll
 ## License
 
 This code is provided under a [BSD license](https://github.com/lanl-ansi/PowerModelsGMD.jl/blob/master/LICENSE.md) as part of the Multi-Infrastructure Control and Optimization Toolkit (MICOT) project, LA-CC-13-108.
-
-

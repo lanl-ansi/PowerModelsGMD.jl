@@ -57,7 +57,7 @@ function dc_current_mag(branch, case, solution)
     k = branch["index"]
     branch["ieff"] = 0.0
 
-    if branch["transformer"] == 0 
+    if branch["transformer"] == 0
         dc_current_mag_line(branch, case, solution)
 
     elseif !("config" in keys(branch))
@@ -271,16 +271,16 @@ function calculate_qloss(branch, case::Dict{String,Any}, solution::Dict{String,A
     k = "$(branch["index"])"
     i = "$(branch["hi_bus"])"
     j = "$(branch["lo_bus"])"
-    
+
     bus = case["bus"][i]
 
     br_soln = solution["branch"][k]
     i_dc_mag = abs(br_soln["gmd_idc"])
 
     if "gmd_k" in keys(branch)
- 
+
         ibase = branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus["base_kv"] * sqrt(3.0))
-        K = branch["gmd_k"] * data["baseMVA"]/ibase  
+        K = branch["gmd_k"] * data["baseMVA"]/ibase
             # K is per phase
 
         return K * i_dc_mag / (3.0 * branch["baseMVA"])
@@ -363,42 +363,7 @@ function qloss_decoupled_vnom(case::Dict{String,Any})
 
 end
 
-
-"FUNCTION: adjust qloss"
-function adjust_gmd_qloss(case::Dict{String,Any}, solution::Dict{String,Any})
-
-    for (i, br) in case["branch"]
-
-        if !(i in keys(solution["branch"]))
-            # branch is disabled
-            continue
-        end
-
-        br_soln = solution["branch"][i]
-        if !("gmd_qloss" in keys(br_soln))
-            continue
-        end
-        if br_soln["gmd_qloss"] === nothing
-            continue
-        end
-
-        if !("hi_bus" in keys(br))
-            continue
-        end
-
-        if  br["f_bus"] == br["hi_bus"]
-            br_soln["qf"] += br_soln["gmd_qloss"]
-        else
-            br_soln["qt"] += br_soln["gmd_qloss"]
-        end
-
-    end
-
-end
-
-
 # ===   CALCULATIONS FOR THERMAL VARIABLES   === #
-
 
 "FUNCTION: calculate steady-state hotspot temperature rise"
 function delta_hotspotrise_ss(branch, result)
@@ -482,7 +447,7 @@ function delta_topoilrise(branch, result, base_mva, delta_t)
     if ( ("delta_topoilrise" in keys(branch)) && ("delta_topoilrise_ss" in keys(branch)) )
 
         delta_topoilrise_prev = branch["delta_topoilrise"]
-        delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"] 
+        delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"]
 
         tau = 2 * (branch["topoil_time_const"] * 60) / delta_t
         delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev) / (1 + tau) - delta_topoilrise_prev * (1 - tau) / (1 + tau)
@@ -625,9 +590,9 @@ function apply_mods!(net, mods::AbstractDict{String,Any})
             net[otype] = Dict{String,Any}()
         end
 
-    end        
+    end
 
-    net_by_sid = create_sid_map(net)     
+    net_by_sid = create_sid_map(net)
 
     if "mods" in keys(mods)
         mods = mods["mods"]
@@ -708,7 +673,7 @@ function create_sid_map(net)
             end
         end
 
-    end 
+    end
 
     return net_by_sid
 
@@ -756,10 +721,10 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; deco
         if br["type"] == "line"
             k = "$(br["gmd_br"])"
             br["gmd_idc"] = solution["gmd_branch"][k]["gmd_idc"]/3.0
-        
+
         else
             if decoupled  # TODO: add calculations from constraint_dc_current_mag
-                
+
                 k = br["dc_brid_hi"]
                     # high-side gmd branch
                 br["gmd_idc"] = 0.0
@@ -904,4 +869,3 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
     end
 
 end
-
