@@ -14,7 +14,6 @@ function solve_gmd_blocker_placement(file, optimizer; kwargs...)
         ],
         solution_processors = [
             solution_gmd!,
-            solution_gmd_blocker!
         ],
         kwargs...,
     )
@@ -44,4 +43,3 @@ function build_gmd_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     objective_blocker_placement_cost(pm)
 
 end
-

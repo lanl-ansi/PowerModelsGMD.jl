@@ -21,7 +21,6 @@ function run_gmd_opf_blocker_placement(file, model_type::Type, optimizer; kwargs
             solution_PM!,
             solution_gmd_qloss!,
             solution_gmd_mls!,
-            solution_gmd_blocker!,
         ],
         kwargs...,
     )
@@ -82,4 +81,3 @@ function build_gmd_opf_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     # objective_blocker_placement_cost(pm)
     objective_minimize_idc_sum(pm)
 end
-
