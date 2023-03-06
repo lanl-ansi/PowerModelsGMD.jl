@@ -42,7 +42,6 @@ function run_gmd_mls_blocker_placement(file, model_type::Type, optimizer; kwargs
             solution_gmd!,
             solution_PM!,
             solution_gmd_qloss!,
-            solution_gmd_mls!
         ],
         kwargs...,
     )
@@ -61,7 +60,6 @@ function run_gmd_mld_blocker_placement(file, model_type::Type, optimizer; kwargs
             solution_gmd!,
             solution_PM!,
             solution_gmd_qloss!,
-            solution_gmd_mls!
         ],
         kwargs...,
     )
@@ -204,4 +202,3 @@ function build_gmd_mld_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     # objective_max_loadability(pm)
     objective_blocker_placement_cost(pm)
 end
-

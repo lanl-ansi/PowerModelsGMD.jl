@@ -175,50 +175,6 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 end
 
 
-# ===   LOAD SHEDDING SOLUTIONS   === #
-
-
-"SOLUTION: add minimum-load-shed solutions"
-function solution_gmd_mls!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
-
-    if haskey(solution["it"][pm_it_name], "nw")
-        nws_data = solution["it"][pm_it_name]["nw"]
-    else
-        nws_data = Dict("0" => solution["it"][pm_it_name])
-    end
-
-    # Branch
-    for (nw_id, nw_ref) in nws(pm)
-        for (n, nw_data) in nws_data
-            if haskey(nw_data, "branch")
-                for (i, branch) in nw_data["branch"]
-                    key = (branch["index"])
-                    branch["gmd_idc_mag"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:i_dc_mag][key])
-                end
-            end
-        end
-    end
-
-    # Load
-    for (nw_id, nw_ref) in nws(pm)
-        for (n, nw_data) in nws_data
-            if haskey(nw_data, "load")
-                for (i, load) in nw_data["load"]
-                    add = ["source_id", "load_bus", "status", "index"]
-                    for a in add
-                        load["$(a)"] = pm.data["load"]["$(i)"]["$(a)"]
-                    end
-                end
-            end
-        end
-    end
-
-end
-
-
-# ===   THERMAL SOLUTIONS   === #
-
-
 "SOLUTION: add gmd qloss solution from a decoupled model.
 
  Decoupled models solve the quasi DC flows first and then the AC flows.  The gmd_qloss is a value that is calculated in between

@@ -164,7 +164,7 @@ function variable_dc_current_mag(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defau
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :i_dc_mag, _PM.ids(pm, nw, :branch), i_dc_mag)
+    report && _PM.sol_component_value(pm, nw, :branch, :gmd_idc_mag, _PM.ids(pm, nw, :branch), i_dc_mag)
 
 end
 

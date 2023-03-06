@@ -25,7 +25,6 @@ function solve_msse_qloss(file, model_type::Type, optimizer; kwargs...)
             solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
-            solution_gmd_mls!,
             solution_gmd_demand!
         ],
         kwargs...,
@@ -77,4 +76,3 @@ function build_msse_qloss(pm::_PM.AbstractPowerModel; kwargs...)
     objective_gmd_min_error(pm)
 
 end
-

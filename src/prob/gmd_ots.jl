@@ -38,7 +38,6 @@ function solve_gmd_mls_ots(file, model_type::Type, optimizer; kwargs...)
             solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
-            solution_gmd_mls!,
         ],
         kwargs...,
     )
@@ -150,7 +149,6 @@ function solve_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
             solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
-            solution_gmd_mls!,
         ],
         kwargs...,
     )

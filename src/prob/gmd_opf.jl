@@ -255,7 +255,6 @@ function solve_gmd_opf(file, model_type::Type, optimizer; kwargs...)
             solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
-            solution_gmd_mls!
         ],
         kwargs...,
     )
@@ -337,7 +336,6 @@ function solve_gmd_opf_ts(file, model_type::Type, optimizer; kwargs...)
             solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
-            solution_gmd_mls!,
         ],
         kwargs...,
     )
