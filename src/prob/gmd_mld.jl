@@ -245,7 +245,6 @@ function solve_gmd_cascade_mld_decoupled(dc_case::Dict{String,Any}, model_constr
     qloss_decoupled_vnom(ac_case)
     ac_result = solve_gmd_cascade_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting;
     solution_processors = [
-        solution_PM!,
         solution_gmd_qloss_decoupled!
     ])
     ac_solution = ac_result["solution"]

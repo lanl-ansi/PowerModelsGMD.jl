@@ -135,7 +135,6 @@ function solve_gmd_opf_decoupled(dc_case::Dict{String,Any}, model_type, optimize
     # ac_result = solve_opf_qloss_vnom(ac_case, model_type, optimizer, setting=setting)
     ac_result = _PM.solve_opf(ac_case, model_type, optimizer, setting=setting;
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss_decoupled!
         ])
     ac_solution = ac_result["solution"]
