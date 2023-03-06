@@ -219,37 +219,6 @@ end
 # ===   THERMAL SOLUTIONS   === #
 
 
-"SOLUTION: add transformer temperature solutions"
-function solution_gmd_xfmr_temp!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
-
-    if haskey(solution["it"][pm_it_name], "nw")
-        nws_data = solution["it"][pm_it_name]["nw"]
-    else
-        nws_data = Dict("0" => solution["it"][pm_it_name])
-    end
-
-    # Branch
-    for (nw_id, nw_ref) in nws(pm)
-        for (n, nw_data) in nws_data
-            if haskey(nw_data, "branch")
-                for (i, branch) in nw_data["branch"]
-                    key = (branch["index"])
-                    branch["topoil_rise_ss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:ross][key])
-                    branch["topoil_rise"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:ro][key])
-                    branch["hotspot_rise_ss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:hsss][key])
-                    branch["hotspot_rise"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:hs][key])
-                    branch["actual_hotspot"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:hsa][key])
-                end
-            end
-        end
-    end
-
-end
-
-
-# ===   GIC BLOCKER SOLUTIONS   === #
-
-
 "SOLUTION: add gmd qloss solution from a decoupled model.
 
  Decoupled models solve the quasi DC flows first and then the AC flows.  The gmd_qloss is a value that is calculated in between

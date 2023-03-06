@@ -338,7 +338,6 @@ function solve_gmd_opf_ts(file, model_type::Type, optimizer; kwargs...)
             solution_gmd_qloss!,
             solution_gmd!,
             solution_gmd_mls!,
-            solution_gmd_xfmr_temp!
         ],
         kwargs...,
     )

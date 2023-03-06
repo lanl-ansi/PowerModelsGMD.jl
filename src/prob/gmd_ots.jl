@@ -39,8 +39,7 @@ function solve_gmd_mls_ots(file, model_type::Type, optimizer; kwargs...)
             solution_gmd_qloss!,
             solution_gmd!,
             solution_gmd_mls!,
-            solution_gmd_xfmr_temp!
-        ],        
+        ],
         kwargs...,
     )
 end
@@ -152,7 +151,6 @@ function solve_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
             solution_gmd_qloss!,
             solution_gmd!,
             solution_gmd_mls!,
-            solution_gmd_xfmr_temp!
         ],
         kwargs...,
     )
@@ -221,7 +219,7 @@ function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
             constraint_dc_current_mag(pm, i, nw=n)
             constraint_dc_current_mag_on_off(pm, i, nw=n)
 
-            constraint_temperature_state_ss(pm, i, nw=n) 
+            constraint_temperature_state_ss(pm, i, nw=n)
             constraint_hotspot_temperature_state_ss(pm, i, nw=n)
             constraint_hotspot_temperature_state(pm, i, nw=n)
             constraint_absolute_hotspot_temperature_state(pm, i, nw=n)
@@ -257,4 +255,3 @@ function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.objective_min_fuel_and_flow_cost(pm)
 
 end
-

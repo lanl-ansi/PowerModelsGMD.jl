@@ -389,7 +389,7 @@ function variable_hotspot(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bou
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :hotspot, _PM.ids(pm, nw, :branch), hotspot)
+    report && _PM.sol_component_value(pm, nw, :branch, :actual_hotspot, _PM.ids(pm, nw, :branch), hotspot)
 
 end
 
@@ -413,7 +413,7 @@ function variable_delta_hotspot_ss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_def
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :delta_hotspot_ss, _PM.ids(pm, nw, :branch), delta_hotspot_ss)
+    report && _PM.sol_component_value(pm, nw, :branch, :hotspot_rise_ss, _PM.ids(pm, nw, :branch), delta_hotspot_ss)
 
 end
 
@@ -437,7 +437,7 @@ function variable_delta_hotspot(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defaul
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :delta_hotspot, _PM.ids(pm, nw, :branch), delta_hotspot)
+    report && _PM.sol_component_value(pm, nw, :branch, :hotspot_rise, _PM.ids(pm, nw, :branch), delta_hotspot)
 
 end
 
@@ -459,7 +459,7 @@ function variable_delta_oil_ss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :delta_oil_ss, _PM.ids(pm, nw, :branch), delta_oil_ss)
+    report && _PM.sol_component_value(pm, nw, :branch, :topoil_rise_ss, _PM.ids(pm, nw, :branch), delta_oil_ss)
 
 end
 
@@ -481,7 +481,7 @@ function variable_delta_oil(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, b
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :delta_oil, _PM.ids(pm, nw, :branch), delta_oil)
+    report && _PM.sol_component_value(pm, nw, :branch, :topoil_rise, _PM.ids(pm, nw, :branch), delta_oil)
 
 end
 
