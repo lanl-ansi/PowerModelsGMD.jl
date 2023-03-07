@@ -30,18 +30,6 @@ end
 function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
     nws_data = haskey(solution["it"][pm_it_name], "nw") ? solution["it"][pm_it_name]["nw"] : nws_data = Dict("0" => solution["it"][pm_it_name])
 
-    # GMD Bus
-    for (n, nw_data) in nws_data
-        nw_id = parse(Int64, n)
-        nws_data["$(nw_id)"]["gmd_bus"] = pm.data["gmd_bus"]
-        if haskey(nw_data, "gmd_bus")
-            for (i, gmd_bus) in nw_data["gmd_bus"]
-                key = gmd_bus["index"]
-                gmd_bus["gmd_vdc"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][nw_id][:v_dc][key])
-            end
-        end
-    end
-
     # GMD Branch
     for (n, nw_data) in nws_data
         nw_id = parse(Int64, n)

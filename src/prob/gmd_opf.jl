@@ -168,7 +168,6 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
 
     solution = []
     for i in 1:length(wf_time)
-
         if (waveform !== nothing && waveform["waveforms"] !== nothing)
             for (k, wf) in waveform["waveforms"]
 
@@ -180,7 +179,11 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
             end
         end
 
-        result = solve_ac_gmd_opf_decoupled(case, optimizer; setting=setting)
+        result = solve_ac_gmd_opf_decoupled(case, optimizer; setting=setting,
+        solution_processors = [
+            solution_gmd!,
+            solution_gmd_qloss_decoupled!
+        ])
 
         result["time_index"] = i
         result["time"] = wf_time[i]
@@ -200,7 +203,6 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
                 if !(br["type"] == "xfmr" || br["type"] == "xf" || br["type"] == "transformer")
                     continue
                 else
-
                     delta_topoilrise_ss(br, ac_result, base_mva)
                     delta_topoilrise(br, ac_result, base_mva, delta_t)
                     update_topoilrise(br, case)
@@ -215,16 +217,12 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
                     # xfmr_temp["delta_hotspotrise"] =  br["delta_hotspotrise"]
                     xfmr_temp["delta_hotspotrise_ss"] = br["delta_hotspotrise_ss"]
                     xfmr_temp["actual_hotspot"] = (br["temperature_ambient"] + br["delta_topoilrise_ss"] + br["delta_hotspotrise_ss"])
-
                 end
 
                 merge!(ac_result["solution"]["branch"]["$k"], xfmr_temp)
-
             end
-
         end
         push!(solution, result)
-
     end
     return solution
 

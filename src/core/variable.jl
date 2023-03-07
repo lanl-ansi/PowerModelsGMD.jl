@@ -78,7 +78,7 @@ function variable_dc_voltage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, 
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :gmd_bus, :v_dc, _PM.ids(pm, nw, :gmd_bus), v_dc)
+    report && _PM.sol_component_value(pm, nw, :gmd_bus, :gmd_vdc, _PM.ids(pm, nw, :gmd_bus), v_dc)
 
 end
 
