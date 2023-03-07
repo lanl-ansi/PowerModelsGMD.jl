@@ -50,7 +50,7 @@ function build_gmd_mls_ots(pm::_PM.AbstractPowerModel; kwargs...)
 #   built minimum loadshedding problem specification corresponds to the "Model C4" of
 #   Mowen et al., "Optimal Transmission Line Switching under Geomagnetic Disturbances", 2018.
 
-    _PM.variable_bus_voltage_on_off(pm)
+    _PMR.variable_bus_voltage_on_off(pm)
     _PM.variable_gen_indicator(pm)
     _PM.variable_gen_power(pm)
     _PM.variable_branch_indicator(pm)
@@ -164,7 +164,7 @@ function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
 
     for (n, network) in _PM.nws(pm)
 
-        _PM.variable_bus_voltage_on_off(pm, nw=n)
+        _PMR.variable_bus_voltage_on_off(pm, nw=n)
         _PM.variable_gen_indicator(pm, nw=n)
         _PM.variable_gen_power(pm, nw=n)
         _PM.variable_branch_indicator(pm, nw=n)

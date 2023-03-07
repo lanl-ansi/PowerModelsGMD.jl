@@ -37,7 +37,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 #   (https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl)
 
     _PMR.variable_bus_voltage_indicator(pm, relax=true)
-    variable_bus_voltage_on_off(pm)
+    _PMR.variable_bus_voltage_on_off(pm)
 
     _PM.variable_gen_indicator(pm, relax=true)
     _PM.variable_gen_power_on_off(pm)
@@ -159,7 +159,7 @@ problem as a maximum loadability problem where line limits are disabled"
 function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 
     _PMR.variable_bus_voltage_indicator(pm, relax=true)
-    variable_bus_voltage_on_off(pm)
+    _PMR.variable_bus_voltage_on_off(pm)
 
     # _PM.variable_gen_indicator(pm, relax=true)
     variable_block_gen_indicator(pm, relax=true)
@@ -390,7 +390,7 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
 #   (https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl)
 
     _PMR.variable_bus_voltage_indicator(pm, relax=true)
-    variable_bus_voltage_on_off(pm)
+    _PMR.variable_bus_voltage_on_off(pm)
 
     _PM.variable_gen_indicator(pm, relax=true)
     _PM.variable_gen_power_on_off(pm)

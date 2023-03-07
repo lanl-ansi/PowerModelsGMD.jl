@@ -135,7 +135,7 @@ function build_gmd_mld_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 
     variable_blocker_indicator(pm; relax=false)
     _PMR.variable_bus_voltage_indicator(pm, relax=true)
-    variable_bus_voltage_on_off(pm)
+    _PMR.variable_bus_voltage_on_off(pm)
 
     _PM.variable_gen_indicator(pm, relax=true)
     _PM.variable_gen_power_on_off(pm)
