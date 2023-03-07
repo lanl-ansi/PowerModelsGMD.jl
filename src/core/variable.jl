@@ -352,7 +352,6 @@ function variable_qloss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bound
      end
 
     report && _IM.sol_component_value_edge(pm, pm_it_sym, nw, :branch, :qlossf, :qlosst, _PM.ref(pm, nw, :arcs_from), _PM.ref(pm, nw, :arcs_to), qloss)
-
 end
 
 
@@ -390,7 +389,6 @@ function variable_hotspot(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bou
     end
 
     report && _PM.sol_component_value(pm, nw, :branch, :actual_hotspot, _PM.ids(pm, nw, :branch), hotspot)
-
 end
 
 

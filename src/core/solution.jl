@@ -91,45 +91,25 @@ function solution_gmd_demand!(pm::_PM.AbstractPowerModel, solution::Dict{String,
 end
 
 
-"SOLUTION: add gmd qloss solution"
-function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+"SOLUTION: add gmd qloss solution
 
-    if haskey(solution["it"][pm_it_name], "nw")
-        nws_data = solution["it"][pm_it_name]["nw"]
-    else
-        nws_data = Dict("0" => solution["it"][pm_it_name])
-    end
+ Adds an explict gmd_qloss term for each branch
+"
+function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+    nws_data = haskey(solution["it"][pm_it_name], "nw") ? solution["it"][pm_it_name]["nw"] : nws_data = Dict("0" => solution["it"][pm_it_name])
 
     # Branch
-    for (nw_id, nw_ref) in nws(pm)
-        for (n, nw_data) in nws_data
-            if !haskey(nw_data, "branch")
-                continue
-            end
+    for (n, nw_data) in nws_data
+        nw_id = parse(Int64, n)
+        indices = keys(JuMP.value.(pm.var[:it][pm_it_sym][:nw][nw_id][:qloss]))
 
-            for (i, branch) in nw_data["branch"]
-                branch["gmd_qloss"] = 0.0
+        for (l, branch) in _PM.ref(pm,nw_id,:branch)
+            key             = (branch["index"], branch["hi_bus"], branch["lo_bus"])
+            branch_solution = nw_data["branch"][string(l)]
 
-                if !("hi_bus" in keys(branch) && "lo_bus" in keys(branch))
-                    continue
-                end
-
-                key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
-
-                if !(:qloss in keys(pm.var[:it][pm_it_sym][:nw][0]))
-                    continue
-                end
-
-                if !(key in keys(JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss])))
-                    Memento.warn(_LOGGER, "Qloss key $key not found, setting qloss for branch to zero")
-                    continue
-                end
-
-                branch["gmd_qloss"] = JuMP.value.(pm.var[:it][pm_it_sym][:nw][0][:qloss][key])
-            end
+            branch_solution["gmd_qloss"] = key in indices ? JuMP.value.(pm.var[:it][pm_it_sym][:nw][nw_id][:qloss][key]) : 0.0
         end
     end
-
 end
 
 
