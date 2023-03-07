@@ -7,23 +7,6 @@
 
 # ===   VOLTAGE VARIABLES   === #
 
-
-
-"VARIABLE: squared bus voltage magnitude on/off"
-function variable_bus_voltage_magnitude_sqr_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
-
-    w = _PM.var(pm, nw)[:w] = JuMP.@variable(pm.model,
-        [i in _PM.ids(pm, nw, :bus)], base_name="$(nw)_w",
-        lower_bound = 0,
-        upper_bound = _PM.ref(pm, nw, :bus, i, "vmax")^2,
-        start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "w_start", 1.001)
-    )
-
-    report && _PM.sol_component_value(pm, pm_it_sym, nw, :bus, :w, _PM.ids(pm, nw, :bus), w)
-
-end
-
-
 "VARIABLE: bus dc voltage"
 function variable_dc_voltage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 

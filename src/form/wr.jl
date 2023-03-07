@@ -6,15 +6,6 @@
 # ===   VOLTAGE VARIABLES   === #
 
 
-"VARIABLE: bus voltage on/off"
-function variable_bus_voltage_on_off(pm::_PM.AbstractWRModel; kwargs...)
-
-    variable_bus_voltage_magnitude_sqr_on_off(pm; kwargs...)
-    variable_bus_voltage_product_on_off(pm; kwargs...)
-
-end
-
-
 "VARIABLE: bus voltage product on/off"
 function variable_bus_voltage_product_on_off(pm::_PM.AbstractWRModel; nw::Int=nw_id_default)
 
@@ -509,4 +500,3 @@ function constraint_thermal_protection(pm::_PM.AbstractWRModel, n::Int, i::Int, 
     _IM.relaxation_sqr(pm.model, ieff, ieff_sqr)
 
 end
-
