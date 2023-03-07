@@ -11,17 +11,10 @@ function variable_bus_voltage_on_off(pm::_PM.AbstractDCPModel; kwargs...)
 
     _PM.variable_bus_voltage_angle(pm; kwargs...)
 
-    variable_bus_voltage_magnitude_on_off(pm; kwargs...)
+    _PMR.variable_bus_voltage_magnitude_on_off(pm; kwargs...)
 
 end
 
-
-"VARIABLE: bus voltage magnitude on/off"
-function variable_bus_voltage_magnitude_on_off(pm::_PM.AbstractDCPModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
-
-    report && _IM.sol_component_fixed(pm, pm_it_sym, nw, :bus, :vm, _PM.ids(pm, nw, :bus), 1.0)
-
-end
 
 
 # ===   CURRENT CONSTRAINTS   === #
