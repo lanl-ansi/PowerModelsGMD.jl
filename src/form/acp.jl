@@ -457,4 +457,3 @@ function constraint_thermal_protection(pm::_PM.AbstractACPModel, n::Int, i::Int,
     )
 
 end
-

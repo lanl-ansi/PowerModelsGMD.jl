@@ -6,14 +6,6 @@
 # ===   VOLTAGE VARIABLES   === #
 
 
-"VARIABLE: bus voltage indicator"
-function variable_bus_voltage_indicator(pm::_PM.AbstractDCPModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
-
-    report && _IM.sol_component_fixed(pm, pm_it_sym, nw, :bus, :status, _PM.ids(pm, nw, :bus), 1.0)
-
-end
-
-
 "VARIABLE: bus voltage on/off"
 function variable_bus_voltage_on_off(pm::_PM.AbstractDCPModel; kwargs...)
 
@@ -226,4 +218,3 @@ function constraint_thermal_protection(pm::_PM.AbstractDCPModel, n::Int, i::Int,
     )
 
 end
-

@@ -134,7 +134,7 @@ function build_gmd_mld_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 #   PowerModelsRestoration.jl (https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl)
 
     variable_blocker_indicator(pm; relax=false)
-    variable_bus_voltage_indicator(pm, relax=true)
+    _PMR.variable_bus_voltage_indicator(pm, relax=true)
     variable_bus_voltage_on_off(pm)
 
     _PM.variable_gen_indicator(pm, relax=true)

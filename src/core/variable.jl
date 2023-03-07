@@ -8,29 +8,6 @@
 # ===   VOLTAGE VARIABLES   === #
 
 
-"VARIABLE: bus voltage indicator"
-function variable_bus_voltage_indicator(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
-
-    if !relax
-        z_voltage = _PM.var(pm, nw)[:z_voltage] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :bus)], base_name="$(nw)_z_voltage",
-            binary = true,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "z_voltage_start")
-        )
-    else
-        z_voltage = _PM.var(pm, nw)[:z_voltage] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :bus)], base_name="$(nw)_z_voltage",
-            lower_bound = 0,
-            upper_bound = 1,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "z_voltage_start")
-        )
-    end
-
-    report && _PM.sol_component_value(pm, pm_it_sym, nw, :bus, :bus_voltate_status, _PM.ids(pm, nw, :bus), z_voltage)
-
-end
-
-
 "VARIABLE: bus voltage magnitude on/off"
 function variable_bus_voltage_magnitude_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
 
