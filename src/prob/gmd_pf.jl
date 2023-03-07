@@ -26,7 +26,6 @@ function solve_pf_qloss(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!
         ],
         kwargs...,
@@ -43,7 +42,6 @@ function solve_pf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!
         ],
         kwargs...,

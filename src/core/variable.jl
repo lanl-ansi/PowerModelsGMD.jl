@@ -226,7 +226,7 @@ function variable_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defaul
         start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "z_demand_start", 1.0)
     )
 
-    report && _PM.sol_component_value(pm, nw, :bus, :z_demand, _PM.ids(pm, nw, :bus), z_demand)
+    report && _PM.sol_component_value(pm, nw, :bus, :demand_served_ratio, _PM.ids(pm, nw, :bus), z_demand)
 end
 
 

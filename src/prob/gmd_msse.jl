@@ -22,10 +22,8 @@ function solve_msse_qloss(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
-            solution_gmd_demand!
         ],
         kwargs...,
     )

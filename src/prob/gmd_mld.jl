@@ -22,7 +22,6 @@ function solve_gmd_mld_qloss_vnom(file, model_constructor, solver; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!
         ],
         kwargs...,
@@ -148,7 +147,6 @@ function solve_gmd_cascade_mld_qloss_vnom(file, model_constructor, solver; kwarg
             #ref_add_load_block!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!
         ],
         kwargs...,
@@ -286,7 +284,6 @@ function solve_gmd_mls(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
         ],
@@ -377,7 +374,6 @@ function solve_gmd_mld(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
         ],

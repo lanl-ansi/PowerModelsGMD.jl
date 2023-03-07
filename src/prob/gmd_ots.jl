@@ -35,7 +35,6 @@ function solve_gmd_mls_ots(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
         ],
@@ -146,7 +145,6 @@ function solve_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
             _PM.ref_add_on_off_va_bounds!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
         ],

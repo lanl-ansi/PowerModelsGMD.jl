@@ -23,7 +23,6 @@ function solve_opf_qloss(file, model_type::Type, optimizer; kwargs...)
         optimizer,
         build_opf_qloss;
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!
         ],
         kwargs...,
@@ -37,7 +36,6 @@ function solve_opf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
         optimizer,
         build_opf_qloss_vnom;
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!
         ],
         kwargs...,
@@ -252,7 +250,6 @@ function solve_gmd_opf(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
         ],
@@ -333,7 +330,6 @@ function solve_gmd_opf_ts(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_PM!,
             solution_gmd_qloss!,
             solution_gmd!,
         ],
