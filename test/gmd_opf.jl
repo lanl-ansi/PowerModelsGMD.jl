@@ -43,11 +43,11 @@
         # DC solution:
         dc_solution = result[5]["dc"]["result"]["solution"]
         @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -27.3598, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 211.8379, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 91.1995, atol=1e-1)
 
         dc_solution = result[13]["dc"]["result"]["solution"]
         @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -122.5639, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 211.8379, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 408.54665, atol=1e-1)
 
         # AC solution:
         @test isapprox(result[1]["ac"]["result"]["objective"], 116408.3098; atol = 1e4)
