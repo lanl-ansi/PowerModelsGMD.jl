@@ -1,5 +1,5 @@
 ##############
-# GIC AC-MLS #
+# GIC AC-MLD #
 ##############
 
 
@@ -251,101 +251,6 @@ function solve_gmd_cascade_mld_decoupled(dc_case::Dict{String,Any}, model_constr
     data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
     data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
     return data
-
-end
-
-
-# ===   COUPLED GMD MLS   === #
-
-
-"FUNCTION: solve GMD MLS mitigation with nonlinear ac polar relaxation"
-function solve_ac_gmd_mls(file, optimizer; kwargs...)
-    return solve_gmd_mls(file, _PM.ACPPowerModel, optimizer; kwargs...)
-end
-
-"FUNCTION: solve GMD MLS mitigation with quadratic constrained least squares relaxation"
-function solve_qc_gmd_mls(file, optimizer; kwargs...)
-    return solve_gmd_mls(file, _PM.QCLSPowerModel, optimizer; kwargs...)
-end
-
-"FUNCTION: solve GMD MLS mitigation with second order cone relaxation"
-function solve_soc_gmd_mls(file, optimizer; kwargs...)
-    return solve_gmd_mls(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
-end
-
-
-function solve_gmd_mls(file, model_type::Type, optimizer; kwargs...)
-    return _PM.solve_model(
-        file,
-        model_type,
-        optimizer,
-        build_gmd_mls;
-        ref_extensions = [
-            ref_add_gmd!
-        ],
-        solution_processors = [
-            solution_gmd_qloss!,
-            solution_gmd!,
-        ],
-        kwargs...,
-    )
-end
-
-
-"FUNCTION: build the ac minimum loadshedding coupled with quasi-dc-pf problem
-as a generator dispatch minimization and load shedding problem"
-function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
-# Reference:
-#   built minimum loadshedding problem specification corresponds to the "Model C4" of
-#   Mowen et al., "Optimal Transmission Line Switching under Geomagnetic Disturbances", 2018.
-
-    _PM.variable_bus_voltage(pm)
-    _PM.variable_gen_power(pm)
-    _PM.variable_branch_power(pm)
-    _PM.variable_dcline_power(pm)
-
-    _PM.variable_load_power_factor(pm, relax=true)
-    _PM.variable_shunt_admittance_factor(pm, relax=true)
-
-    variable_dc_voltage(pm)
-    variable_dc_current_mag(pm)
-    variable_dc_line_flow(pm)
-    variable_qloss(pm)
-
-    _PM.constraint_model_voltage(pm)
-
-    for i in _PM.ids(pm, :ref_buses)
-        _PM.constraint_theta_ref(pm, i)
-    end
-
-    for i in _PM.ids(pm, :bus)
-        constraint_power_balance_gmd_shunt_ls(pm, i)
-    end
-
-    for i in _PM.ids(pm, :branch)
-
-        _PM.constraint_ohms_yt_from(pm, i)
-        _PM.constraint_ohms_yt_to(pm, i)
-
-        _PM.constraint_voltage_angle_difference(pm, i)
-
-        _PM.constraint_thermal_limit_from(pm, i)
-        _PM.constraint_thermal_limit_to(pm, i)
-
-        constraint_qloss_vnom(pm, i)
-        constraint_dc_current_mag(pm, i)
-
-    end
-
-    for i in _PM.ids(pm, :gmd_bus)
-        constraint_dc_power_balance(pm, i)
-    end
-
-    for i in _PM.ids(pm, :gmd_branch)
-        constraint_dc_ohms(pm, i)
-    end
-
-    objective_gmd_min_mls(pm)
 
 end
 
