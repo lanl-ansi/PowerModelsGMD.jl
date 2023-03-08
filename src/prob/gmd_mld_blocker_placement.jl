@@ -76,7 +76,8 @@ function build_gmd_mls_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_branch_power(pm)
     _PM.variable_dcline_power(pm)
 
-    variable_load(pm)
+    _PM.variable_load_power_factor(pm, relax=true)
+    _PM.variable_shunt_admittance_factor(pm, relax=true)
 
     variable_blocker_indicator(pm; relax=false)
     variable_dc_voltage(pm)

@@ -115,7 +115,7 @@ function solve_gmd_mld_decoupled(dc_case::Dict{String,Any}, model_constructor, s
         dc_current_mag(branch, ac_case, dc_solution)
     end
 
-    qloss_decoupled_vnom(ac_case)
+    update_qloss_decoupled_vnom!(ac_case)
     ac_result = solve_gmd_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting)
     ac_solution = ac_result["solution"]
 
@@ -240,7 +240,7 @@ function solve_gmd_cascade_mld_decoupled(dc_case::Dict{String,Any}, model_constr
         dc_current_mag(branch, ac_case, dc_solution)
     end
 
-    qloss_decoupled_vnom(ac_case)
+    update_qloss_decoupled_vnom!(ac_case)
     ac_result = solve_gmd_cascade_mld_qloss_vnom(ac_case, model_constructor, solver, setting=setting;
     solution_processors = [
         solution_gmd_qloss_decoupled!

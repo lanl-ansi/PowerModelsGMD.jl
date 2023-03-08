@@ -199,15 +199,6 @@ function variable_dc_line_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default
 end
 
 
-"VARIABLE: active and reactive load"
-function variable_load(pm::_PM.AbstractPowerModel; kwargs...)
-
-    variable_active_load(pm; kwargs...)
-    variable_reactive_load(pm; kwargs...)
-
-end
-
-
 "VARIABLE: active load"
 function variable_active_load(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 

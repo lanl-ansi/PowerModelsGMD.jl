@@ -59,7 +59,9 @@ function build_gmd_mls_ots(pm::_PM.AbstractPowerModel; kwargs...)
 
     variable_ac_current_on_off(pm)
     variable_active_generation_sqr_cost(pm)
-    variable_load(pm)
+
+    _PM.variable_load_power_factor(pm, relax=true)
+    _PM.variable_shunt_admittance_factor(pm, relax=true)
 
     variable_dc_voltage_on_off(pm)
     variable_dc_line_flow(pm, bounded=false)
@@ -171,7 +173,8 @@ function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.variable_branch_power(pm, nw=n)
         _PM.variable_dcline_power(pm, nw=n)
 
-        variable_load(pm, nw=n)
+        _PM.variable_load_power_factor(pm, relax=true)
+        _PM.variable_shunt_admittance_factor(pm, relax=true)
 
         variable_dc_voltage_on_off(pm, nw=n)
         variable_dc_line_flow(pm, nw=n, bounded=false)

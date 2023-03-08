@@ -140,7 +140,6 @@ function calc_dc_current_mag_gwye_gwye_xf(branch, case, solution)
     vlo = case["bus"]["$jto"]["base_kv"]
     a = vhi/vlo
 
-#    branch["ieff"] = abs( (a * ihi + ilo) / a )
     return abs( (a * ihi + ilo) / a )
 
 end
@@ -177,7 +176,6 @@ function calc_dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
     vlo = case["bus"]["$jto"]["base_kv"]
     a = vhi/vlo
 
-    #branch["ieff"] = abs( (a * is + ic) / (a + 1.0) )
     return branch["ieff"] = abs( (a * is + ic) / (a + 1.0) )
 end
 
@@ -221,9 +219,8 @@ function calc_dc_current_mag_3w_xf(branch, case, solution)
     a = vhi/vlo
     b = vhi/vter
 
-    #branch["ieff"] = abs( ihi + ilo / a + iter / b )
+    # Boteler 2016, Equation (51)
     return abs( ihi + ilo / a + iter / b )
-        # Boteler 2016, Equation (51)
 
 end
 
@@ -265,7 +262,7 @@ end
 
 
 "FUNCTION: calculate qloss"
-function calculate_qloss(branch, case::Dict{String,Any}, solution::Dict{String,Any})
+function calc_qloss(branch, case::Dict{String,Any}, solution::Dict{String,Any})
 
     @assert !_IM.ismultinetwork(case)
     @assert !haskey(case, "conductors")
@@ -295,7 +292,7 @@ end
 
 
 "CONSTRAINT: calculate qloss assuming constant ac voltage"
-function qloss_decoupled_vnom(case::Dict{String,Any})
+function update_qloss_decoupled_vnom!(case::Dict{String,Any})
 
     for (_, bus) in case["bus"]
         bus["qloss0"] = 0.0
@@ -368,20 +365,19 @@ end
 # ===   CALCULATIONS FOR THERMAL VARIABLES   === #
 
 "FUNCTION: calculate steady-state hotspot temperature rise"
-function delta_hotspotrise_ss(branch, result)
+function calc_delta_hotspotrise_ss(branch, result)
 
     delta_hotspotrise_ss = 0
 
     Ie = branch["ieff"]
     delta_hotspotrise_ss = branch["hotspot_coeff"] * Ie
 
-    branch["delta_hotspotrise_ss"] = delta_hotspotrise_ss
-
+    return delta_hotspotrise_ss
 end
 
 
 "FUNCTION: calculate hotspot temperature rise"
-function delta_hotspotrise(branch, result, Ie_prev, delta_t)
+function calc_delta_hotspotrise(branch, result, Ie_prev, delta_t)
 
     delta_hotspotrise = 0
 
@@ -399,13 +395,13 @@ function delta_hotspotrise(branch, result, Ie_prev, delta_t)
 
     end
 
-    branch["delta_hotspotrise"] = delta_hotspotrise
+    return delta_hotspotrise
 
 end
 
 
 "FUNCTION: update hotspot temperature rise in the network"
-function update_hotspotrise(branch, case::Dict{String,Any})
+function update_hotspotrise!(branch, case::Dict{String,Any})
 
     i = branch["index"]
 
@@ -416,7 +412,7 @@ end
 
 
 "FUNCTION: calculate steady-state top-oil temperature rise"
-function delta_topoilrise_ss(branch, result, base_mva)
+function calc_delta_topoilrise_ss(branch, result, base_mva)
 
     delta_topoilrise_ss = 0
 
@@ -430,18 +426,17 @@ function delta_topoilrise_ss(branch, result, base_mva)
         S = sqrt(p^2 + q^2)
         K = S / (branch["rate_a"] * base_mva)
 
-        # delta_topoilrise_ss = 1  # ==> STEP response
         delta_topoilrise_ss = branch["topoil_rated"] * K^2
 
     end
 
-    branch["delta_topoilrise_ss"] = delta_topoilrise_ss
+    return delta_topoilrise_ss
 
 end
 
 
 "FUNCTION: calculate top-oil temperature rise"
-function delta_topoilrise(branch, result, base_mva, delta_t)
+function calc_delta_topoilrise(branch, result, base_mva, delta_t)
 
     delta_topoilrise_ss = branch["delta_topoilrise_ss"]
     delta_topoilrise = delta_topoilrise_ss
@@ -460,13 +455,13 @@ function delta_topoilrise(branch, result, base_mva, delta_t)
 
     end
 
-    branch["delta_topoilrise"] = delta_topoilrise
+    return delta_topoilrise
 
 end
 
 
 "FUNCTION: update top-oil temperature rise in the network"
-function update_topoilrise(branch, case::Dict{String,Any})
+function update_topoilrise!(branch, case::Dict{String,Any})
 
     i = branch["index"]
     case["branch"]["$i"]["delta_topoilrise_ss"] = branch["delta_topoilrise_ss"]
@@ -686,7 +681,7 @@ end
 
 
 "FUNCTION: convert effective GIC to PowerWorld to-phase convention"
-function adjust_gmd_phasing(result)
+function adjust_gmd_phasing!(result)
 
     gmd_buses = result["solution"]["gmd_bus"]
     for bus in values(gmd_buses)
@@ -704,7 +699,7 @@ end
 
 
 "FUNCTION: add GMD data"
-function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
+function add_gmd_data!(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
 
     @assert !_IM.ismultinetwork(case)
     @assert !haskey(case, "conductors")
@@ -731,7 +726,7 @@ function add_gmd_data(case::Dict{String,Any}, solution::Dict{String,<:Any}; deco
                     # high-side gmd branch
                 br["gmd_idc"] = 0.0
                 br["ieff"] = abs(br["gmd_idc"])
-                br["qloss"] = calculate_qloss(br, case, solution)
+                br["qloss"] = calc_qloss(br, case, solution)
 
             else
 
@@ -756,7 +751,7 @@ end
 
 
 "FUNCTION: make GMD mixed units"
-function make_gmd_mixed_units(solution::Dict{String,Any}, mva_base::Real)
+function make_gmd_mixed_units!(solution::Dict{String,Any}, mva_base::Real)
 
     rescale = x -> (x * mva_base)
     rescale_dual = x -> (x / mva_base)
