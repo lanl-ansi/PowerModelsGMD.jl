@@ -871,3 +871,20 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
     end
 
 end
+
+"calculate load shedding cost"
+function calc_load_shed_cost(pm::_PM.AbstractPowerModel)
+    max_cost = 0
+    for (n, nw_ref) in _PM.nws(pm)
+        for (i, gen) in nw_ref[:gen]
+            if gen["pmax"] != 0
+                cost_mw = (
+                    get(gen["cost"], 1, 0.0) * gen["pmax"]^2 +
+                    get(gen["cost"], 2, 0.0) * gen["pmax"]
+                    ) / gen["pmax"] + get(gen["cost"], 3, 0.0)
+                max_cost = max(max_cost, cost_mw)
+            end
+        end
+    end
+    return max_cost * 2.0
+end

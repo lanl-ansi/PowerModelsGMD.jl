@@ -269,6 +269,10 @@ function solve_soc_gmd_mld(file, optimizer; kwargs...)
     return solve_gmd_mld(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
+"FUNCTION: solve GMD MLD mitigation with nonlinear ac equations"
+function solve_qc_gmd_mld(file, optimizer; kwargs...)
+    return solve_gmd_mld(file, _PM.QCRMPowerModel , optimizer; kwargs...)
+end
 
 function solve_gmd_mld(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
@@ -352,5 +356,5 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_ohms(pm, i)
     end
 
-    _PMR.objective_max_loadability(pm)
+    _PM.objective_max_loadability(pm)
 end

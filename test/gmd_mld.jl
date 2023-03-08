@@ -33,23 +33,25 @@
 
          case_epri21 = _PM.parse_file(data_epri21)
 
-#         result = _PMGMD.solve_soc_gmd_mld(case_epri21, ipopt_solver; setting=setting)
+         result = _PMGMD.solve_soc_gmd_mld(case_epri21, ipopt_solver; setting=setting)
+         @test result["termination_status"] == _PM.LOCALLY_SOLVED
+         @test isapprox(result["objective"], 490.0; atol=1e-2)
+
+
+         case_epri21 = _PM.parse_file(data_epri21)
+
+# FIXME: QC model not currently supported in PowerModelsRestoration
+
+#         result = _PMGMD.solve_qc_gmd_mld(case_epri21, ipopt_solver; setting=setting)
 #         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 #         @test isapprox(result["objective"], 0.0000; atol=1e2)
 
 
          case_epri21 = _PM.parse_file(data_epri21)
 
-#         result = _PMGMD.solve_qc_gmd_mls(case_epri21, ipopt_solver; setting=setting)
-#         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-#         @test isapprox(result["objective"], 0.0000; atol=1e2)
-
-
-         case_epri21 = _PM.parse_file(data_epri21)
-
-#         result = _PMGMD.solve_ac_gmd_mls(case_epri21, ipopt_solver; setting=setting)
-#         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-#         @test isapprox(result["objective"], 0.0000; atol=1e2)
+         result = _PMGMD.solve_ac_gmd_mld(case_epri21, ipopt_solver; setting=setting)
+         @test result["termination_status"] == _PM.LOCALLY_SOLVED
+         @test isapprox(result["objective"], 490.0; atol=1e2)
 
         # FIXME: add actual fully automated testing for "solve_ac_gmd_mls"
 
