@@ -164,31 +164,6 @@ end
 
 # ===   POWER BALANCE VARIABLES   === #
 
-
-"VARIABLE: demand factor"
-function variable_demand_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
-    z_demand = _PM.var(pm, nw)[:z_demand] = JuMP.@variable(pm.model,
-        0 <= z_demand[i in _PM.ids(pm, nw, :bus)] <= 1,
-        start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "z_demand_start", 1.0)
-    )
-
-    report && _PM.sol_component_value(pm, nw, :bus, :demand_served_ratio, _PM.ids(pm, nw, :bus), z_demand)
-end
-
-
-"VARIABLE: shunt factor"
-function variable_shunt_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
-
-    z_shunt = _PM.var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
-        0 <= z_shunt[i in _PM.ids(pm, nw, :bus)] <= 1,
-        start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "z_shunt_nstart", 1.0)
-    )
-
-    report && _PM.sol_component_value(pm, nw, :bus, :z_shunt, _PM.ids(pm, nw, :bus), z_shunt)
-
-end
-
-
 "VARIABLE: dc line flow"
 function variable_dc_line_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 

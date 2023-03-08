@@ -81,7 +81,7 @@ function build_gmd_mls_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     variable_blocker_indicator(pm; relax=false)
     variable_dc_voltage(pm)
     variable_dc_line_flow(pm)
-    variable_reactive_loss(pm)
+    variable_qloss(pm)
     variable_dc_current(pm)
 
     _PM.constraint_model_voltage(pm)
@@ -148,7 +148,7 @@ function build_gmd_mld_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 
     variable_dc_voltage(pm)
     variable_dc_line_flow(pm)
-    variable_reactive_loss(pm)
+    variable_qloss(pm)
     variable_dc_current(pm)
 
     constraint_bus_voltage_on_off(pm)
@@ -197,6 +197,6 @@ function build_gmd_mld_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 
     constraint_load_served(pm, 0.95)
 
-    # objective_max_loadability(pm)
+    # _PMR.objective_max_loadability(pm)
     objective_blocker_placement_cost(pm)
 end

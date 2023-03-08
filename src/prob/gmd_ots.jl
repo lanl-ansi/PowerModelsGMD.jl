@@ -63,7 +63,7 @@ function build_gmd_mls_ots(pm::_PM.AbstractPowerModel; kwargs...)
 
     variable_dc_voltage_on_off(pm)
     variable_dc_line_flow(pm, bounded=false)
-    variable_reactive_loss(pm)
+    variable_qloss(pm)
     variable_dc_current(pm)
 
     _PM.constraint_model_voltage_on_off(pm)

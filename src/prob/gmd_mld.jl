@@ -48,7 +48,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_load_power_factor(pm, relax=true)
     _PM.variable_shunt_admittance_factor(pm, relax=true)
 
-    # variable_reactive_loss(pm)
+    variable_qloss(pm)
 
     constraint_bus_voltage_on_off(pm)
 
@@ -80,7 +80,7 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_dcline_power_losses(pm, i)
     end
 
-    objective_max_loadability(pm)
+    _PMR.objective_max_loadability(pm)
 
 end
 
@@ -173,7 +173,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
     variable_block_shunt_admittance_factor(pm, relax=true)
     variable_block_demand_factor(pm, relax=true)
 
-    variable_reactive_loss(pm)
+    variable_qloss(pm)
 
     constraint_bus_voltage_on_off(pm)
 
@@ -205,7 +205,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_dcline_power_losses(pm, i)
     end
 
-    objective_max_loadability(pm)
+    _PMR.objective_max_loadability(pm)
 
 end
 
@@ -304,12 +304,13 @@ function build_gmd_mls(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_branch_power(pm)
     _PM.variable_dcline_power(pm)
 
-    variable_load(pm)
+    _PM.variable_load_power_factor(pm, relax=true)
+    _PM.variable_shunt_admittance_factor(pm, relax=true)
 
     variable_dc_voltage(pm)
+    variable_dc_current_mag(pm)
     variable_dc_line_flow(pm)
-    variable_reactive_loss(pm)
-    variable_dc_current(pm)
+    variable_qloss(pm)
 
     _PM.constraint_model_voltage(pm)
 
@@ -385,6 +386,7 @@ end
 "FUNCTION: build the ac minimum loadshedding coupled with quasi-dc-pf problem
 as a maximum loadability problem with relaxed generator and bus participation"
 function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
+
 # Reference:
 #   built problem specification corresponds to the "MLD" specification of  PowerModelsRestoration.jl
 #   (https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl)
@@ -402,11 +404,11 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_shunt_admittance_factor(pm, relax=true)
 
     variable_dc_voltage(pm)
+    variable_dc_current_mag(pm)
     variable_dc_line_flow(pm)
-    variable_reactive_loss(pm)
-    variable_dc_current(pm)
+    variable_qloss(pm)
 
-    constraint_bus_voltage_on_off(pm)
+    _PMR.constraint_bus_voltage_on_off(pm)
 
     for i in _PM.ids(pm, :ref_buses)
         _PM.constraint_theta_ref(pm, i)
@@ -431,7 +433,6 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
 
         constraint_qloss_vnom(pm, i)
         constraint_dc_current_mag(pm, i)
-
     end
 
     for i in _PM.ids(pm, :dcline)
@@ -446,6 +447,5 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_ohms(pm, i)
     end
 
-    objective_max_loadability(pm)
-
+    _PMR.objective_max_loadability(pm)
 end

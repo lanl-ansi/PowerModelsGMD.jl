@@ -30,17 +30,6 @@ function variable_dc_current(pm::_PM.AbstractACPModel; kwargs...)
 end
 
 
-# ===   QLOSS VARIABLES   === #
-
-
-"VARIABLE: reactive power loss"
-function variable_reactive_loss(pm::_PM.AbstractACPModel; kwargs...)
-
-    variable_qloss(pm; kwargs...)
-
-end
-
-
 # ===   VOLTAGE CONSTRAINTS   === #
 
 "CONSTRAINT: bus voltage on/off"

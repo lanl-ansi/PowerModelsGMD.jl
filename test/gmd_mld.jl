@@ -19,7 +19,7 @@
         # ===   DECOUPLED GMD CASCADE MLD   === #
 
 
-        # case_epri21 = _PM.parse_file(data_epri21)
+        #case_epri21 = _PM.parse_file(data_epri21)
 
         # result = _PMGMD.solve_soc_gmd_cascade_mld_decoupled(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
@@ -31,25 +31,25 @@
         # ===   COUPLED GMD MLS   === #
 
 
-        # case_epri21 = _PM.parse_file(data_epri21)
+         case_epri21 = _PM.parse_file(data_epri21)
 
-        # result = _PMGMD.solve_soc_gmd_mls(case_epri21, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0.0000; atol=1e2)
-
-
-        # case_epri21 = _PM.parse_file(data_epri21)
-
-        # result = _PMGMD.solve_qc_gmd_mls(case_epri21, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0.0000; atol=1e2)
+#         result = _PMGMD.solve_soc_gmd_mld(case_epri21, ipopt_solver; setting=setting)
+#         @test result["termination_status"] == _PM.LOCALLY_SOLVED
+#         @test isapprox(result["objective"], 0.0000; atol=1e2)
 
 
-        # case_epri21 = _PM.parse_file(data_epri21)
+         case_epri21 = _PM.parse_file(data_epri21)
 
-        # result = _PMGMD.solve_ac_gmd_mls(case_epri21, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0.0000; atol=1e2)
+#         result = _PMGMD.solve_qc_gmd_mls(case_epri21, ipopt_solver; setting=setting)
+#         @test result["termination_status"] == _PM.LOCALLY_SOLVED
+#         @test isapprox(result["objective"], 0.0000; atol=1e2)
+
+
+         case_epri21 = _PM.parse_file(data_epri21)
+
+#         result = _PMGMD.solve_ac_gmd_mls(case_epri21, ipopt_solver; setting=setting)
+#         @test result["termination_status"] == _PM.LOCALLY_SOLVED
+#         @test isapprox(result["objective"], 0.0000; atol=1e2)
 
         # FIXME: add actual fully automated testing for "solve_ac_gmd_mls"
 

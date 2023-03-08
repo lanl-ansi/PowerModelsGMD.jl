@@ -159,7 +159,7 @@ function solve_gmd_pf_decoupled(dc_case::Dict{String,Any}, model_type, optimizer
 
     ac_case = deepcopy(dc_case)
     for (k, branch) in ac_case["branch"]
-        dc_current_mag(branch, ac_case, dc_solution)
+        branch["ieff"] = calc_dc_current_mag(branch, ac_case, dc_solution)
     end
 
     ac_result = solve_pf_qloss_vnom(ac_case, model_type, optimizer, setting=setting)

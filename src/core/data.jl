@@ -11,14 +11,12 @@
 "FUNCTION: calculate the minimum dc voltage at a gmd bus "
 function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return -1e6
-    # return -Inf
 end
 
 
 "FUNCTION: calculate the maximum dc voltage at a gmd bus "
 function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return 1e6
-    # return Inf
 end
 
 
@@ -26,8 +24,6 @@ end
 function calc_max_dc_voltage_difference(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return 1e6
 end
-
-
 
 # ===   CALCULATIONS FOR CURRENT VARIABLES   === #
 
@@ -52,74 +48,72 @@ end
 
 
 "FUNCTION: calculate dc current magnitude"
-function dc_current_mag(branch, case, solution)
-
-    k = branch["index"]
-    branch["ieff"] = 0.0
+function calc_dc_current_mag(branch, case, solution)
 
     if branch["transformer"] == 0
-        dc_current_mag_line(branch, case, solution)
+        return calc_dc_current_mag_line(branch, case, solution)
 
     elseif !("config" in keys(branch))
+        k = branch["index"]
         Memento.warn(_LOGGER, "No winding configuration for transformer $k, treating as line")
-        dc_current_mag_line(branch, case, solution)
+        return calc_dc_current_mag_line(branch, case, solution)
 
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
         println("UNGROUNDED CONFIGURATION. IEFF IS CONSTRAINED TO ZERO.")
-        dc_current_mag_grounded_xf(branch, case, solution)
+        return calc_dc_current_mag_grounded_xf(branch, case, solution)
 
     elseif branch["config"] in ["delta-gwye", "gwye-delta"]
-        dc_current_mag_gwye_delta_xf(branch, case, solution)
+        return calc_dc_current_mag_gwye_delta_xf(branch, case, solution)
 
     elseif branch["config"] == "gwye-gwye"
-        dc_current_mag_gwye_gwye_xf(branch, case, solution)
+        return calc_dc_current_mag_gwye_gwye_xf(branch, case, solution)
 
     elseif branch["config"] == "gwye-gwye-auto"
-        dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
+        return calc_dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
 
     elseif branch["config"] in ["three-winding", "gwye-gwye-delta", "gwye-gwye-gwye", "gywe-delta-delta"]
-        dc_current_mag_3w_xf(branch, case, solution)
+         return calc_dc_current_mag_3w_xf(branch, case, solution)
 
     end
 
+    return 0.0
 end
 
 
 "FUNCTION: dc current on normal lines"
-function dc_current_mag_line(branch, case, solution)
+function calc_dc_current_mag_line(branch, case, solution)
 
-    branch["ieff"] = 0.0
+    return 0.0
 
 end
 
 
 "FUNCTION: dc current on grounded transformers"
-function dc_current_mag_grounded_xf(branch, case, solution)
+function calc_dc_current_mag_grounded_xf(branch, case, solution)
 
-    branch["ieff"] = 0.0
+    return 0.0
 
 end
 
 
 "FUNCTION: dc current on ungrounded gwye-delta transformers"
-function dc_current_mag_gwye_delta_xf(branch, case, solution)
+function calc_dc_current_mag_gwye_delta_xf(branch, case, solution)
 
-    k = branch["index"]
-
+    k   = branch["index"]
     khi = branch["gmd_br_hi"]
 
     if khi == -1 || khi === nothing
         Memento.warn(_LOGGER, "khi for gwye-delta transformer $k is -1")
-        branch["ieff"] = 0.0
+        return 0.0
     else
-        branch["ieff"] = abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+        return abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
     end
 
 end
 
 
 "FUNCTION: dc current on ungrounded gwye-gwye transformers"
-function dc_current_mag_gwye_gwye_xf(branch, case, solution)
+function calc_dc_current_mag_gwye_gwye_xf(branch, case, solution)
 
     k = branch["index"]
     khi = branch["gmd_br_hi"]
@@ -146,13 +140,14 @@ function dc_current_mag_gwye_gwye_xf(branch, case, solution)
     vlo = case["bus"]["$jto"]["base_kv"]
     a = vhi/vlo
 
-    branch["ieff"] = abs( (a * ihi + ilo) / a )
+#    branch["ieff"] = abs( (a * ihi + ilo) / a )
+    return abs( (a * ihi + ilo) / a )
 
 end
 
 
 "FUNCTION: dc current on ungrounded gwye-gwye auto transformers"
-function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
+function calc_dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
 
     k = branch["index"]
     ks = branch["gmd_br_series"]
@@ -182,13 +177,13 @@ function dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
     vlo = case["bus"]["$jto"]["base_kv"]
     a = vhi/vlo
 
-    branch["ieff"] = abs( (a * is + ic) / (a + 1.0) )
-
+    #branch["ieff"] = abs( (a * is + ic) / (a + 1.0) )
+    return branch["ieff"] = abs( (a * is + ic) / (a + 1.0) )
 end
 
 
 "FUNCTION: dc current on three-winding transformers"
-function dc_current_mag_3w_xf(branch, case, solution)
+function calc_dc_current_mag_3w_xf(branch, case, solution)
 
     k = branch["index"]
     khi = branch["gmd_br_hi"]
@@ -226,7 +221,8 @@ function dc_current_mag_3w_xf(branch, case, solution)
     a = vhi/vlo
     b = vhi/vter
 
-    branch["ieff"] = abs( ihi + ilo / a + iter / b )
+    #branch["ieff"] = abs( ihi + ilo / a + iter / b )
+    return abs( ihi + ilo / a + iter / b )
         # Boteler 2016, Equation (51)
 
 end
@@ -243,7 +239,13 @@ function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     end
 
     ibase = calc_branch_ibase(pm, i, nw=nw)
-    return 2 * ac_max * ibase
+    dc_mag_max = 2 * ac_max * ibase
+
+    if dc_mag_max < 0
+        Memento.warn(_LOGGER, "No DC current max for line $i, is calculated as < 0")
+    end
+
+    return dc_mag_max
 
 end
 

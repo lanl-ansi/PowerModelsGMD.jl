@@ -6,7 +6,7 @@ const _PMGMD = PowerModelsGMD
     import PowerModels
     const _PM = PowerModels
     import PowerModelsRestoration
-    const _PMR = PowerModels
+    const _PMR = PowerModelsRestoration
 
 
     import PowerModels: pm_it_name, pm_it_sym, nw_ids, nws, ismultinetwork
@@ -56,9 +56,11 @@ const _PMGMD = PowerModelsGMD
     include("prob/gmd.jl")
     include("prob/gmd_pf.jl")
     include("prob/gmd_opf.jl")
+    include("prob/gmd_opf_ts.jl")
     include("prob/gmd_mld.jl")
     include("prob/gmd_ots.jl")
 
+    include("algo/seq/gmd_opf.jl")
 
     # include("prob/gmd_msse.jl")
     # include("prob/gmd_blocker_placement.jl")

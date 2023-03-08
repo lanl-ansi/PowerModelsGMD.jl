@@ -42,7 +42,7 @@ function build_msse_qloss(pm::_PM.AbstractPowerModel; kwargs...)
     variable_dc_current_mag(pm)
     variable_dc_line_flow(pm)
     variable_qloss(pm)
-    variable_demand_factor(pm)
+    _PM.variable_load_power_factor(pm)
 
     _PM.constraint_model_voltage(pm)
 
