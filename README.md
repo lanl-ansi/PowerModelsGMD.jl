@@ -13,10 +13,10 @@ It solves for quasi-dc line flow and ac power flow problems in a system subjecte
 
 ## PMsGMD Dependencies
 
-PMsGMD directly builds on [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.19.8 - a package for electrical power transmission network modeling and optimization - of the [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.7.6 open-source software ecosystem.
-Additionally, it relies on and was optimized for [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v1.8, and [Memento](https://github.com/invenia/Memento.jl) v1.4 packages.
+PMsGMD directly builds on [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.19 - a package for electrical power transmission network modeling and optimization - of the [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.7 open-source software ecosystem.
+Additionally, it relies on and was optimized for [PowerModelsRestoration](https://github.com/lanl-ansi/PowerModelsRestoration.jl) v0.7, [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v1.9, and [Memento](https://github.com/invenia/Memento.jl) v1.4 packages.
 
-Automated testing of PMsGMD problem specifications is done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v1.1.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.9.1 packages.
+Automated testing of PMsGMD problem specifications is done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v1.2.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.9.1 packages.
 Alternatively, commercial [KNITRO](https://github.com/jump-dev/KNITRO.jl) or [Gurobi](https://github.com/jump-dev/Gurobi.jl), or open-source [SCS](https://github.com/jump-dev/SCS.jl), [Pajarito](https://github.com/jump-dev/Pajarito.jl), [Pavito](https://github.com/jump-dev/Pavito.jl), or [SCIP](https://github.com/scipopt/SCIP.jl) optimizers may be used for specific problems.
 
 
@@ -102,23 +102,6 @@ For example:
 solve_ac_gmd_opf_decoupled(network_case, optimizer)
 ```
 
-#### GIC -> AC-OPF-TS
-
-Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to a multi-time-series AC-OPF optimal power flow specification and calculates the increase in transformer reactive power consumption.
-This specification was implemented with nonlinear ac polar relaxation.
-For example:
-```
-solve_ac_gmd_opf_ts_decoupled(multi_network_case, optimizer, waveform)
-```
-
-The implemented thermal model is disabled by default.
-To enable thermal calculations and display of results, the `disable_thermal` optional argument can be used:
-
-```
-solve_ac_gmd_opf_ts_decoupled(multi_network_case, optimizer, waveform; setting, disable_thermal=false)
-```
-
-
 #### GIC + AC-OPF
 
 Solves the quasi-dc voltages and currents plus the AC-OPF optimal power flow specification concurrently.
@@ -160,14 +143,8 @@ solve_soc_gmd_cascade_mld_decoupled(network_case, optimizer)
 
 #### GIC + AC-MLD
 
-Solves the quasi-dc voltages and currents plus the AC-MLS minimum loadshedding - based on the work of [Mowen et al.](https://ieeexplore.ieee.org/document/8064715) - problem specification concurrently.
-This specification was implemented with fixed network topology, and with nonlinear ac polar, quadratic constrained least squares, and second order cone relaxations.
-For example:
-```
-solve_soc_gmd_mls(network_case, optimizer)
-```
-
-Additionally, the coupled AC-MLS minimum loadshedding specification was implemented as a coupled [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification as well, with relaxed generator and bus participation, and with nonlinear ac polar and second order cone relaxations.
+Solves the quasi-dc voltages and currents plus the AC-MLD maximum loadability - based on the the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification of [PowerModelsRestoration.jl](https://github.com/lanl-ansi/PowerModelsRestoration.jl) - problem specification concurrently.
+This specification was implemented relaxed generator and bus participation, and with nonlinear ac polar and second order cone relaxations.
 For example:
 ```
 solve_soc_gmd_mld(network_case, optimizer)
