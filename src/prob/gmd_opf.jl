@@ -101,7 +101,7 @@ function build_opf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 end
 
 
-# ===   DECOUPLED AC-OPF-TS   === #
+# ===   COUPLED AC-OPF   === #
 
 
 "FUNCTION: solve basic GMD model with nonlinear ac polar relaxation"
@@ -179,5 +179,3 @@ function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
 
 end
 
-
-# ===   COUPLED AC-OPF-TS   === #

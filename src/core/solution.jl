@@ -2,6 +2,7 @@
 # Solution Definitions #
 ########################
 
+
 "SOLUTION: add gmd qloss solution
 
  Adds an explict gmd_qloss term for each branch
@@ -61,3 +62,4 @@ function solution_gmd_qloss_decoupled!(pm::_PM.AbstractPowerModel, solution::Dic
         end
     end
 end
+

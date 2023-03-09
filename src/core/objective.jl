@@ -5,6 +5,7 @@
 
 # ===   GMD OBJECTIVES   === #
 
+
 "OBJECTIVE: minimize fuel"
 function objective_gmd_min_fuel(pm::_PM.AbstractPowerModel)
 
@@ -47,11 +48,7 @@ function objective_gmd_min_error(pm::_PM.AbstractPowerModel)
 end
 
 
-
 # ===   LOAD SHEDDING AND LOADABILITY OBJECTIVES   === #
-
-
-
 
 
 "OBJECTIVE: minimize load shedding and fuel cost"
@@ -100,6 +97,7 @@ function objective_gmd_min_mls(pm::_PM.AbstractPowerModel)
     ))
 
 end
+
 
 # ===   THERMAL OBJECTIVES   === #
 
@@ -156,3 +154,4 @@ function objective_minimize_idc_sum(pm::_PM.AbstractPowerModel)
         )
 
 end
+

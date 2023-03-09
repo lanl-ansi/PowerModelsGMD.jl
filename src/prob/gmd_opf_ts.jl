@@ -1,3 +1,11 @@
+#################
+# GIC AC-OPF-TS #
+#################
+
+
+# ===   COUPLED AC-OPF-TS   === #
+
+
 "FUNCTION: solve the multi-time-series GMD model with nonlinear ac polar relaxation"
 function solve_ac_gmd_opf_ts(file, optimizer; kwargs...)
     return solve_gmd_opf_ts(file, _PM.ACPPowerModel, optimizer; kwargs...)
@@ -104,3 +112,4 @@ function build_gmd_opf_ts(pm::_PM.AbstractPowerModel; kwargs...)
     objective_gmd_min_transformer_heating(pm)
 
 end
+
