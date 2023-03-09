@@ -144,7 +144,7 @@ solve_soc_gmd_cascade_mld_decoupled(network_case, optimizer)
 #### GIC + AC-MLD
 
 Solves the quasi-dc voltages and currents plus the AC-MLD maximum loadability - based on the the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification of [PowerModelsRestoration.jl](https://github.com/lanl-ansi/PowerModelsRestoration.jl) - problem specification concurrently.
-This specification was implemented relaxed generator and bus participation, and with nonlinear ac polar and second order cone relaxations.
+This specification was implemented relaxed generator and bus participation, and with nonlinear ac polar, quadratic constrained least squares, and second order cone relaxations.
 For example:
 ```
 solve_soc_gmd_mld(network_case, optimizer)

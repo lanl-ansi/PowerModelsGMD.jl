@@ -12,15 +12,15 @@ function solve_ac_gmd_mls_ots(file, optimizer; kwargs...)
 end
 
 
-"FUNCTION:  solve GMD MLS OTS mitigation with quadratic constrained least squares relaxation"
-function solve_qc_gmd_mls_ots(file, optimizer; kwargs...)
-    return solve_gmd_mls_ots( file, _PM.QCLSPowerModel, optimizer; kwargs...)
-end
-
-
 "FUNCTION:  solve GMD MLS OTS mitigation with second order cone relaxation"
 function solve_soc_gmd_mls_ots(file, optimizer; kwargs...)
     return solve_gmd_mls_ots( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
+end
+
+
+"FUNCTION:  solve GMD MLS OTS mitigation with quadratic constrained least squares relaxation"
+function solve_qc_gmd_mls_ots(file, optimizer; kwargs...)
+    return solve_gmd_mls_ots( file, _PM.QCLSPowerModel, optimizer; kwargs...)
 end
 
 
