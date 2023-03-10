@@ -174,6 +174,8 @@ function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
         constraint_dc_current_mag_gwye_gwye_auto_xf(pm, k, nw=n)
 
     elseif branch["config"] == "three-winding"
+        # TODO: need to support 3W transformers in optimization problems
+
         ieff = _PM.var(pm, n, :i_dc_mag)
         JuMP.@constraint(pm.model,
             ieff[k]
