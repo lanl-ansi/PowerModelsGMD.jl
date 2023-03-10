@@ -81,11 +81,11 @@ mpc.gmd_branch = {
 %% branch_gmd data
 %column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
 mpc.branch_gmd = {
-	2	1	1	-1	1.8	-1	-1	100	 'xfmr'	'gwye-delta'
-	4	3	-1	-1	1.8	2	3	100	'xfmr'	'gwye-gwye-auto'
-	5	6	4	-1	1.8	-1	-1	100	'xfmr'	'gwye-delta'
-	2	3	-1	-1	-1	-1	-1	100	'line'	'none'
-	4	5	-1	-1	-1	-1	-1	100	'line'	'none'
+	2	1	1	  -1	 1.8	-1	-1	100	'xfmr'	'gwye-delta'
+	4	3	-1	-1	 1.8	 2	 3	100	'xfmr'	'gwye-gwye-auto'
+	5	6	4	  -1  1.8	  -1	-1	100	'xfmr'	'gwye-delta'
+	2	3	-1	-1	-1	  -1	-1	100	'line'	'none'
+	4	5	-1	-1	-1	  -1	-1	100	'line'	'none'
 };
 
 
@@ -126,7 +126,7 @@ mpc.thermal_cap_x0 = [
 % thermal_cap_y0 ([percent per unit])
 %column_names% A B C D E F G H I J K
 mpc.thermal_cap_y0 = [
-	100.0 93.94 90.0 85.42 80.0 74.73 70.0 64.94 59.97 56.92 50.0 
+	100.0 93.94 90.0 85.42 80.0 74.73 70.0 64.94 59.97 56.92 50.0
 ];
 % Values are from Fig.2. of https://arxiv.org/pdf/1701.01469.pdf paper
 
@@ -161,5 +161,3 @@ mpc.branch_sourceid = [
 	2 3 '4 ';
 	4 5 '5 ';
 ];
-
-
