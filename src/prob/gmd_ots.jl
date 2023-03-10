@@ -178,7 +178,6 @@ function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
 
         variable_dc_voltage_on_off(pm, nw=n)
         variable_dc_line_flow(pm, nw=n, bounded=false)
-        variable_dc_current(pm, nw=n)
         variable_dc_current_mag(pm, nw=n)
         variable_qloss(pm, nw=n)
 

@@ -152,7 +152,7 @@ function build_gmd_mld_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     variable_qloss(pm)
     variable_dc_current(pm)
 
-    constraint_bus_voltage_on_off(pm)
+    _PMR.constraint_bus_voltage_on_off(pm)
 
     for i in _PM.ids(pm, :ref_buses)
         _PM.constraint_theta_ref(pm, i)

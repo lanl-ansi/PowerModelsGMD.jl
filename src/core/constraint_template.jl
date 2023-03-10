@@ -14,9 +14,15 @@
 
 # ===   VOLTAGE CONSTRAINTS   === #
 
+"
+  Constraint: constraints on modeling bus voltages that is primarly a pass through to _PM.constraint_model_voltage
+  There are a few situations where the GMD problem formulations have additional voltage modeling than what _PM provides.
+  This adds connection between w and vm variables in the WR formulation space
+"
+function constraint_model_voltage(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default)
+    _PM.constraint_model_voltage(pm; nw=nw)
+end
 
-"CONSTRAINT: bus voltage on/off constraint"
-constraint_bus_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, kwargs...) = constraint_bus_voltage_on_off(pm, nw; kwargs...)
 
 
 "CONSTRAINT: voltage magnitude on/off constraint"
@@ -277,7 +283,7 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, i::Int; nw::Int
     blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
         # assume by default that the blocker is active
         # if 0.0, then the dc blocker is bypassed
-    
+
     constraint_dc_power_balance(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
 
 end
@@ -434,7 +440,7 @@ function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, k; nw::Int=
         return
     end
 
-    if branch["br_status"] == 0 
+    if branch["br_status"] == 0
         return
     end
 
@@ -502,7 +508,7 @@ function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, k; nw::
         return
     end
 
-    if branch["br_status"] == 0 
+    if branch["br_status"] == 0
         return
     end
 
@@ -593,7 +599,7 @@ function constraint_temperature_state(pm::_PM.AbstractPowerModel, i::Int, nw_1::
         end
 
         tau = 2 * tau_oil / delta_t
-        
+
         constraint_temperature_state(pm, nw_1, nw_2, i, tau)
 
     end
@@ -703,4 +709,3 @@ function constraint_thermal_protection(pm::_PM.AbstractPowerModel, i::Int; nw::I
     constraint_thermal_protection(pm, nw, i, coeff, ibase)
 
 end
-
