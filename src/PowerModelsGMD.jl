@@ -60,6 +60,8 @@ const _PMGMD = PowerModelsGMD
     include("prob/gmd_mld.jl")
     include("prob/gmd_ots.jl")
 
+    include("prob/gmd_opf_staged.jl")
+
     include("algo/seq/gmd_opf.jl")
 
     # include("prob/gmd_msse.jl")

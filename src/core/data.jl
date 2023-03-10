@@ -239,7 +239,7 @@ function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     dc_mag_max = 2 * ac_max * ibase
 
     if dc_mag_max < 0
-        Memento.warn(_LOGGER, "No DC current max for line $i, is calculated as < 0")
+        Memento.warn(_LOGGER, "DC current max for branch $i has been calculated as < 0. This will cause many things to break")
     end
 
     return dc_mag_max

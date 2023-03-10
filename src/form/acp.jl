@@ -30,20 +30,6 @@ function variable_dc_current(pm::_PM.AbstractACPModel; kwargs...)
 end
 
 
-# ===   VOLTAGE CONSTRAINTS   === #
-
-"CONSTRAINT: bus voltage on/off"
-function constraint_bus_voltage_on_off(pm::_PM.AbstractACPModel; nw::Int=nw_id_default, kwargs...)
-
-    for (i,bus) in _PM.ref(pm, nw, :bus)
-
-        constraint_voltage_magnitude_on_off(pm, i; nw=nw)
-
-    end
-
-end
-
-
 # ===   CURRENT CONSTRAINTS   === #
 
 

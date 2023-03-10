@@ -96,8 +96,12 @@
         # AC solution:
         @test isapprox(solution["bus"]["1"]["vm"], 1.0967, atol=1e-1)
         @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
-        @test isapprox(solution["branch"]["3"]["qf"], -4.5914, atol=1e-1)
+        @test isapprox(solution["branch"]["3"]["qf"], -4.4492, atol=1e-1)
 
+
+        result = _PMGMD.solve_soc_gmd_opf(case_b4gic, ipopt_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
         # ===   COUPLED AC-OPF-TS   === #
 
@@ -154,30 +158,30 @@
         # NOTE: B4GIC-3W COUPLED tests are disabled due to the missing [baseMVA] values of
         # branches that cause "function calc_branch_ibase" (scr/core/data.jl) to error out
 
-        # case_b4gic3w = _PM.parse_file(data_b4gic3w)
+#        case_b4gic3w = _PM.parse_file(data_b4gic3w)
 
-        # mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
-        # f = open(mods_b4gic3w)
-        # mods = JSON.parse(f)
-        # close(f)
+#        mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
+#        f = open(mods_b4gic3w)
+#        mods = JSON.parse(f)
+#        close(f)
 
-        # _PMGMD.apply_mods!(case_b4gic3w, mods)
-        # _PMGMD.fix_gmd_indices!(case_b4gic3w)
+#        _PMGMD.apply_mods!(case_b4gic3w, mods)
+#         _PMGMD.fix_gmd_indices!(case_b4gic3w)
 
-        # result = _PMGMD.solve_ac_gmd_opf(case_b4gic3w, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 139231.9720; atol = 1e2)
+#        result = _PMGMD.solve_ac_gmd_opf(case_b4gic3w, ipopt_solver; setting=setting)
+#        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+#        @test isapprox(result["objective"], 139231.9720; atol = 1e2)
 
-        # solution = result["solution"]
+#        solution = result["solution"]
 
         # # DC solution:
-        # @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
-        # @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
+#        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
+#        @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
 
         # # AC solution:
-        # @test isapprox(solution["bus"]["1"]["vm"], 1.0967, atol=1e-1)
-        # @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
-        # @test isapprox(solution["branch"]["3"]["qf"], -4.5913, atol=1e-1)
+#        @test isapprox(solution["bus"]["1"]["vm"], 1.0967, atol=1e-1)
+#        @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
+#        @test isapprox(solution["branch"]["3"]["qf"], -4.5913, atol=1e-1)
 
 
         # ===   COUPLED AC-OPF-TS   === #
@@ -242,6 +246,10 @@
         @test isapprox(solution["branch"]["5"]["qf"], -0.4864, atol=1e-1)
         @test isapprox(solution["branch"]["5"]["qt"], 0.4246, atol=1e-1)
 
+
+        result = _PMGMD.solve_soc_gmd_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 12312.5633; atol = 1e2)
 
         # ===   COUPLED AC-OPF-TS   === #
 

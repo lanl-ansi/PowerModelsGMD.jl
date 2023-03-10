@@ -4,6 +4,21 @@
 
 # Commonly used variables are defined here.
 
+"
+  Declaration of the bus voltage variables. This is a pass through to _PM.variable_bus_voltage except for those forms where vm is not
+  created and it is needed for the GIC.  For example, the WR models are formulated in the space of V^2, so there is no vm variable,
+  so those variables need to be created
+"
+function variable_bus_voltage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    _PM.variable_bus_voltage(pm;nw=nw,bounded=bounded,report=report)
+end
+
+"
+VARIABLE: Declaration of variables associated with modeling of injected GIC
+"
+function variable_gic_current(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    variable_dc_current_mag(pm; nw=nw, bounded=bounded,report=report)
+end
 
 # ===   VOLTAGE VARIABLES   === #
 
@@ -267,7 +282,7 @@ function variable_qloss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bound
 end
 
 
-"VARIABLE: iv"
+#"VARIABLE: iv"
 function variable_iv(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
 
     iv = _PM.var(pm, nw)[:iv] = JuMP.@variable(pm.model,

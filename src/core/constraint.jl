@@ -2,11 +2,10 @@
 # Constraint Definitions #
 ##########################
 
-# Commonly used constraints are defined here. 
+# Commonly used constraints are defined here.
 
 
 # ===   VOLTAGE CONSTRAINTS   === #
-
 
 "CONSTRAINT: voltage magnitude on/off constraint"
 function constraint_voltage_magnitude_on_off(pm::_PM.AbstractPowerModel, n::Int, i::Int, vmin, vmax)
@@ -155,7 +154,7 @@ function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
 
     # correct equation is ieff = |a*ihi + ilo|/a
     # just use ihi for now
-    
+
     branch = _PM.ref(pm, n, :branch, k)
 
     if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
@@ -164,13 +163,13 @@ function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
         Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
         constraint_dc_current_mag_grounded_xf(pm, k, nw=n)
-    
+
     elseif branch["config"] in ["delta-gwye", "gwye-delta"]
         constraint_dc_current_mag_gwye_delta_xf(pm, k, nw=n)
 
     elseif branch["config"] == "gwye-gwye"
         constraint_dc_current_mag_gwye_gwye_xf(pm, k, nw=n)
-    
+
     elseif branch["config"] == "gwye-gwye-auto"
         constraint_dc_current_mag_gwye_gwye_auto_xf(pm, k, nw=n)
 
@@ -400,11 +399,12 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_e
                 0.0
             )
         else
-            JuMP.@constraint(pm.model,
+            con = JuMP.@constraint(pm.model,
                 sum(dc_expr[a] for a in gmd_bus_arcs)
                 ==
                 (gs * v_dc)
             )
+
         end
 
     end
@@ -467,7 +467,7 @@ function constraint_dc_ohms_on_off(pm::_PM.AbstractPowerModel, n::Int, i, f_bus,
     v_dc_diff = _PM.var(pm, n, :v_dc_diff)[i]
     vfr = _PM.var(pm, n, :v_dc)[f_bus]
     vto = _PM.var(pm, n, :v_dc)[t_bus]
-    
+
     dc = _PM.var(pm, n, :dc)[(i,f_bus,t_bus)]
     vz = _PM.var(pm, n, :vz)[i]
     z = _PM.var(pm, n, :z_branch)[ac_branch]
@@ -534,7 +534,7 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA
 end
 
 
-"CONSTRAINT: qloss assuming constant dc voltage"
+"CONSTRAINT: qloss assuming constant 1.0 dc voltage"
 function constraint_qloss_vnom(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA, K)
 
     qloss = _PM.var(pm, n, :qloss)
@@ -564,7 +564,7 @@ function constraint_qloss_decoupled_vnom(pm::_PM.AbstractPowerModel, n::Int, k, 
     JuMP.@constraint(pm.model,
         qloss[(k,i,j)]
         ==
-        (K * ieff) / (3.0 * branchMVA)            
+        (K * ieff) / (3.0 * branchMVA)
             # K is per phase
     )
 
@@ -645,7 +645,7 @@ end
 function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i, f_idx)
 
     delta_oil_ss = _PM.var(pm, n, :ross, i)
-    delta_oil = _PM.var(pm, n, :ro, i) 
+    delta_oil = _PM.var(pm, n, :ro, i)
 
     JuMP.@constraint(pm.model,
         delta_oil
@@ -659,7 +659,7 @@ end
 "CONSTRAINT: initial temperature state"
 function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i, f_idx, delta_oil_init)
 
-    delta_oil = _PM.var(pm, n, :ro, i) 
+    delta_oil = _PM.var(pm, n, :ro, i)
 
     JuMP.@constraint(pm.model,
         delta_oil
@@ -674,9 +674,9 @@ end
 function constraint_temperature_state(pm::_PM.AbstractPowerModel, n_1::Int, n_2::Int, i, tau)
 
     delta_oil_ss_prev = _PM.var(pm, n_1, :ross, i)
-    delta_oil_ss = _PM.var(pm, n_2, :ross, i) 
+    delta_oil_ss = _PM.var(pm, n_2, :ross, i)
     delta_oil_prev = _PM.var(pm, n_1, :ro, i)
-    delta_oil = _PM.var(pm, n_2, :ro, i) 
+    delta_oil = _PM.var(pm, n_2, :ro, i)
 
     JuMP.@constraint(pm.model,
         (1 + tau) * delta_oil
@@ -705,8 +705,8 @@ end
 "CONSTRAINT: hot-spot temperature state"
 function constraint_hotspot_temperature(pm::_PM.AbstractPowerModel, n::Int, i, f_idx)
 
-    delta_hotspot_ss = _PM.var(pm, n, :hsss, i) 
-    delta_hotspot = _PM.var(pm, n, :hs, i) 
+    delta_hotspot_ss = _PM.var(pm, n, :hsss, i)
+    delta_hotspot = _PM.var(pm, n, :hs, i)
     oil_temp = _PM.var(pm, n, :ro, i)
 
     JuMP.@constraint(pm.model,
@@ -714,7 +714,7 @@ function constraint_hotspot_temperature(pm::_PM.AbstractPowerModel, n::Int, i, f
         ==
         delta_hotspot_ss
     )
- 
+
 end
 
 
@@ -774,7 +774,7 @@ function constraint_blocker_placement_cost(pm::_PM.AbstractPowerModel, max_cost)
 
     JuMP.@constraint(pm.model,
         sum(get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0) * _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses))
-        <= 
+        <=
         max_cost
     )
 
@@ -790,7 +790,7 @@ function constraint_blocker_count(pm::_PM.AbstractPowerModel, blocker_count)
 
         JuMP.@constraint(pm.model,
             sum(get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0) * _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses))
-            == 
+            ==
             blocker_count
         )
 
@@ -836,7 +836,7 @@ function constraint_load_shed(pm::_PM.AbstractPowerModel, max_load_shed)
     # z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)
     # z_gen = Dict(n => _PM.var(pm, n, :z_gen) for n in nws)
     # z_voltage = Dict(n => _PM.var(pm, n, :z_voltage) for n in nws)
-    
+
     time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
     load_weight = Dict(n => Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load)) for n in nws)
     for n in nws
@@ -848,9 +848,8 @@ function constraint_load_shed(pm::_PM.AbstractPowerModel, max_load_shed)
 
     JuMP.@constraint(pm.model,
         sum((time_elapsed[n]*(sum(load_weight[n][i]*abs(load["pd"])*(1 - z_demand[n][i]) for (i,load) in _PM.ref(pm, n, :load)))) for n in nws)
-        <= 
+        <=
         max_load_shed
     )
 
 end
-
