@@ -57,7 +57,7 @@ function constraint_dc_current_mag_line(pm::_PM.AbstractPowerModel, n::Int, k)
 
     JuMP.@constraint(pm.model,
         ieff[k]
-        >=
+        ==
         0.0
     )
 
