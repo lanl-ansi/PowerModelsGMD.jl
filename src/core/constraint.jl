@@ -82,21 +82,8 @@ constraint_dc_current_mag_grounded_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_
 
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, n::Int, k, kh, ih, jh)
-
-    ieff = _PM.var(pm, n, :i_dc_mag)[k]
-    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
-
-    JuMP.@constraint(pm.model,
-        ieff
-        >=
-        ihi
-    )
-    JuMP.@constraint(pm.model,
-        ieff
-        >=
-        -ihi
-    )
-
+    type = typeof(pm)
+    Memento.error(_LOGGER, "Error: Function constraint_dc_current_mag_gwye_delta_xf needs to be implemented for PowerModel of type $type")
 end
 
 
