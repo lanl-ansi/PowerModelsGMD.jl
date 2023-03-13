@@ -179,7 +179,7 @@ function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
         ieff = _PM.var(pm, n, :i_dc_mag)
         JuMP.@constraint(pm.model,
             ieff[k]
-            >=
+            ==
             0.0
         )
 

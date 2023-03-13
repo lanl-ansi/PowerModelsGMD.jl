@@ -53,45 +53,6 @@ function constraint_current_on_off(pm::_PM.AbstractACPModel, n::Int, i::Int, ac_
 end
 
 
-#"CONSTRAINT: dc current magnitude"
-#function constraint_dc_current_mag(pm::_PM.AbstractACPModel, n::Int, k)
-
-    # correct equation is ieff = |a*ihi + ilo|/a
-    # just use ihi for now
-#    branch = _PM.ref(pm, n, :branch, k)
-
-#    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
-
-#        constraint_dc_current_mag_line(pm, k, nw=n)
-#
-#    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-
-#        Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
-#
-#        constraint_dc_current_mag_grounded_xf(pm, k, nw=n)
-
-#    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
-
-#        constraint_dc_current_mag_gwye_delta_xf(pm, k, nw=n)
-
-#    elseif branch["config"] == "gwye-gwye"
-
-#        constraint_dc_current_mag_gwye_gwye_xf(pm, k, nw=n)
-
-#    elseif branch["config"] == "gwye-gwye-auto"
-#
-#        constraint_dc_current_mag_gwye_gwye_auto_xf(pm, k, nw=n)
-
-#    elseif branch["config"] == "three-winding"
-
-        # TODO: need to support 3W transformers in optimization problems
-#        ieff = _PM.var(pm, n, :i_dc_mag)
-#        JuMP.@constraint(pm.model, ieff[k] >= 0.0)
-
-#    end
-
-#end
-
 
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh)
