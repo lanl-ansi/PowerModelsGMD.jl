@@ -72,7 +72,7 @@ function constraint_dc_current_mag_grounded_xf(pm::_PM.AbstractPowerModel, n::In
 
     JuMP.@constraint(pm.model,
         ieff[k]
-        >=
+        ==
         0.0
     )
 
