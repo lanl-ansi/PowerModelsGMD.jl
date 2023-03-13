@@ -99,25 +99,8 @@ end
 "CONSTRAINT: dc current on ungrounded gwye-gwye auto transformers"
 function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel, n::Int, k, ks, is, js, kc, ic, jc, a)
 
-    ieff = _PM.var(pm, n, :i_dc_mag)[k]
-    is = _PM.var(pm, n, :dc)[(ks,is,js)]
-    ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
-
-    JuMP.@constraint(pm.model,
-        ieff
-        >=
-        (a * is + ic) / (a + 1.0)
-    )
-    JuMP.@constraint(pm.model,
-        ieff
-        >=
-        - ( a * is + ic) / (a + 1.0)
-    )
-    JuMP.@constraint(pm.model,
-        ieff
-        >=
-        0.0
-    )
+    type = typeof(pm)
+    Memento.error(_LOGGER, "Error: Function constraint_dc_current_mag_gwye_gwye_auto_xf needs to be implemented for PowerModel of type $type")
 
 end
 
