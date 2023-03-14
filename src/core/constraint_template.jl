@@ -367,7 +367,7 @@ end
 # ===   QLOSS CONSTRAINTS   === #
 
 
-"CONSTRAINT: qloss assuming constant ac voltage"
+"CONSTRAINT: qloss assuming"
 function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
@@ -382,9 +382,8 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
         ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
         K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
-        V = 1.0
 
-        constraint_qloss(pm, nw, k, i, j, branchMVA, K, V)
+        constraint_qloss(pm, nw, k, i, j, branchMVA, K)
 
     else
 

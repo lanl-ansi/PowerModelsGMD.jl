@@ -63,3 +63,32 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractWRMModel, n
     )
 
 end
+
+"CONSTRAINT: qloss assuming constant ac primary voltage"
+function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, branchMVA, K)
+
+    qloss = _PM.var(pm, n, :qloss)
+    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
+
+    iv = _PM.var(pm, n, :iv)[(k,i,j)]
+    vm = _PM.var(pm, n, :vm)[i]
+
+    if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
+        Memento.warn(_LOGGER, "DC voltage magnitude cannot take a 0 value. In OTS applications, this may result in incorrect results.")
+    end
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        ((K * iv) / (3.0 * branchMVA))
+            # K is per phase
+    )
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+    _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
+
+end

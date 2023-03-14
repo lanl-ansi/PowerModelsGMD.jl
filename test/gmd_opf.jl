@@ -96,7 +96,7 @@
         # AC solution:
         @test isapprox(solution["bus"]["1"]["vm"], 1.0967, atol=1e-1)
         @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
-        @test isapprox(solution["branch"]["3"]["qf"], -4.4492, atol=1e-1)
+        @test isapprox(solution["branch"]["3"]["qf"], -4.5913, atol=1e-1)
 
 
         result = _PMGMD.solve_soc_gmd_opf(case_b4gic, ipopt_solver; setting=setting)

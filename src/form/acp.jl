@@ -380,3 +380,26 @@ function constraint_thermal_protection(pm::_PM.AbstractACPModel, n::Int, i::Int,
     )
 
 end
+
+
+"CONSTRAINT: qloss calculcated from ac voltage and dc current"
+function constraint_qloss(pm::_PM.AbstractACPModel, n::Int, k, i, j, branchMVA, K)
+
+    qloss = _PM.var(pm, n, :qloss)
+    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
+    vm = _PM.var(pm, n, :vm)[i]
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        (K * vm * i_dc_mag) / (3.0 * branchMVA)
+            # K is per phase
+    )
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+end

@@ -470,26 +470,15 @@ function constraint_zero_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j)
 end
 
 
-"CONSTRAINT: qloss assuming constant ac voltage"
-function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA, K, V)
+"CONSTRAINT: qloss calculcated from ac voltage and dc current"
+function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA, K)
 
-    qloss = _PM.var(pm, n, :qloss)
-    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        (K * V * i_dc_mag) / (3.0 * branchMVA)
-            # K is per phase
-    )
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
+    type = typeof(pm)
+    Memento.error(_LOGGER, "Error: Function constraint_qloss needs to be implemented for PowerModel of type $type")
 
 end
+
+
 
 
 "CONSTRAINT: qloss assuming constant 1.0 dc voltage"

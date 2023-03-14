@@ -355,7 +355,7 @@ end
 
 
 "CONSTRAINT: qloss assuming constant ac primary voltage"
-function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, branchMVA, K, V)
+function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, branchMVA, K)
 
     qloss = _PM.var(pm, n, :qloss)
     i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]

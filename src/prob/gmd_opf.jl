@@ -2,16 +2,17 @@
 # GIC AC-OPF #
 ##############
 
-
-"FUNCTION: solve basic GMD model with nonlinear ac polar relaxation"
+"FUNCTION: solve basic GMD OPF model with nonlinear ac polar"
 function solve_ac_gmd_opf(file, optimizer; kwargs...)
     return solve_gmd_opf( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
+"FUNCTION: solve basic GMD OPF model with second order cone ac polar relaxation"
 function solve_soc_gmd_opf(file, optimizer; kwargs...)
     return solve_gmd_opf( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
+"FUNCTION: solve basic GMD OPF model"
 function solve_gmd_opf(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -86,7 +87,6 @@ function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_ohms(pm, i) # variation of constraint 2c of [1] w/o switching variable
     end
 
-    #objective_gmd_min_fuel(pm)
     _PM.objective_min_fuel_cost(pm)
 
 end
