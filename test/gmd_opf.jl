@@ -85,7 +85,7 @@
 
         result = _PMGMD.solve_ac_gmd_opf(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 139231.9720; atol = 1e2)
+        @test isapprox(result["objective"], 116444.9156; atol = 1e2)
 
         solution = result["solution"]
 
@@ -101,7 +101,7 @@
 
         result = _PMGMD.solve_soc_gmd_opf(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 139231.9720; atol = 1e2)
+        @test isapprox(result["objective"], 116444.9156; atol = 1e2)
 
         # ===   COUPLED AC-OPF-TS   === #
 
@@ -231,7 +231,7 @@
 
         result = _PMGMD.solve_ac_gmd_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 12312.5633; atol = 1e2)
+        @test isapprox(result["objective"], 978.3412; atol = 1e2)
 
         solution = result["solution"]
 
@@ -249,7 +249,7 @@
 
         result = _PMGMD.solve_soc_gmd_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 12312.5633; atol = 1e2)
+        @test isapprox(result["objective"], 978.3412; atol = 1e2)
 
         # ===   COUPLED AC-OPF-TS   === #
 

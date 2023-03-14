@@ -86,8 +86,7 @@ function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_ohms(pm, i) # variation of constraint 2c of [1] w/o switching variable
     end
 
-    objective_gmd_min_fuel(pm)
-    #_PM.objective_min_fuel_cost(pm)
+    #objective_gmd_min_fuel(pm)
+    _PM.objective_min_fuel_cost(pm)
 
 end
-
