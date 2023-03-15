@@ -15,6 +15,15 @@ function variable_bus_voltage(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bo
 end
 
 
+"
+  Declaration of the bus voltage variables. This is a pass through to _PM.variable_bus_voltage except for those forms where vm is not
+  created and it is needed for the GIC.  This function creates the vm variables to add to the WR formulation
+"
+function variable_bus_voltage_on_off(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    _PMR.variable_bus_voltage_on_off(pm;nw=nw)
+    _PMR.variable_bus_voltage_magnitude_on_off(pm;nw=nw,report=report)
+end
+
 
 "
   Constraint: constraints on modeling bus voltages that is primarly a pass through to _PM.constraint_model_voltage
@@ -32,6 +41,42 @@ function constraint_model_voltage(pm::_PM.AbstractWRModel; nw::Int=_PM.nw_id_def
     end
 end
 
+"
+  Constraint: constraints on modeling bus voltages that is primarly a pass through to _PMR.constraint_bus_voltage_on_off
+  There are a few situations where the GMD problem formulations have additional voltage modeling than what _PMR provides.
+  For example, many of the GMD problem formulations need explict vm variables, which the WR formulations do not provide
+"
+function constraint_bus_voltage_on_off(pm::_PM.AbstractWRModel; nw::Int=_PM.nw_id_default)
+    _PMR.constraint_bus_voltage_on_off(pm; nw=nw)
+    for (i,bus) in _PM.ref(pm, nw, :bus)
+        _PMR.constraint_voltage_magnitude_on_off(pm, i; nw=nw)
+    end
+
+    w  = _PM.var(pm, nw,  :w)
+    vm = _PM.var(pm, nw,  :vm)
+
+    for i in _PM.ids(pm, nw, :bus)
+        _IM.relaxation_sqr(pm.model, vm[i], w[i])
+    end
+
+end
+
+
+"
+  Constraint: constraints on modeling bus voltages that is primarly a pass through to _PM.constraint_model_voltage
+  There are a few situations where the GMD problem formulations have additional voltage modeling than what _PM provides.
+  For example, many of the GMD problem formulations need explict vm variables, which the WR formulations do not provide
+"
+function constraint_model_voltage(pm::_PM.AbstractWRModel; nw::Int=_PM.nw_id_default)
+    _PM.constraint_model_voltage(pm; nw=nw)
+
+    w  = _PM.var(pm, nw,  :w)
+    vm = _PM.var(pm, nw,  :vm)
+
+    for i in _PM.ids(pm, nw, :bus)
+        _IM.relaxation_sqr(pm.model, vm[i], w[i])
+    end
+end
 
 # ===   CURRENT VARIABLES   === #
 

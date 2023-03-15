@@ -31,6 +31,7 @@ function solve_gmd_opf_decoupled(dc_case::Dict{String,Any}, model_type, optimize
         solution_processors = [
             solution_gmd_qloss_decoupled!
         ])
+#    ac_result   = solve_gmd_opf_temp(ac_case, model_type, optimizer, setting=setting;)
     ac_solution = ac_result["solution"]
 
     data = Dict()

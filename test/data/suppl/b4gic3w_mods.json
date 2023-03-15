@@ -69,6 +69,7 @@
       "gmd_br_common": -1,
       "type": "line",
       "config": "none",
+      "baseMVA": 100.0,
       "trace": "branch.Branch.gmd_data()",
       "otype": "<class 'branch.Line'>"
     },
@@ -99,6 +100,7 @@
       "gmd_br_common": -1,
       "type": "xf",
       "config": "gwye-delta-delta",
+      "baseMVA": 100.0,
       "name": "xf1-3-5",
       "trace": "branch.ThreeWindingTransformer.gmd_data()",
       "otype": "<class 'branch.ThreeWindingTransformer'>"
@@ -127,6 +129,7 @@
       "gmd_br_common": -1,
       "type": "xf",
       "config": "gwye-delta",
+      "baseMVA": 100.0,
       "name": "xf2-4",
       "trace": "branch.Transformer.gmd_data()",
       "otype": "<class 'branch.GWyeDeltaTransformer'>"
@@ -242,6 +245,9 @@
       ],
       "f_bus": 3,
       "t_bus": 4,
+      "hi_bus": 3,
+      "lo_bus": 4,
+      "baseMVA": 100.0,
       "br_v": 170.788589
     },
     "2": {
@@ -263,6 +269,9 @@
       ],
       "f_bus": 3,
       "t_bus": 1,
+      "hi_bus": 3,
+      "lo_bus": 1,
+      "baseMVA": 100.0,
       "br_v": 0.0
     },
     "3": {
@@ -284,6 +293,9 @@
       ],
       "f_bus": 4,
       "t_bus": 2,
+      "hi_bus": 4,
+      "lo_bus": 2,
+      "baseMVA": 100.0,
       "br_v": 0.0
     }
   }

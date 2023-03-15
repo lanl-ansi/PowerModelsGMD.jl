@@ -13,6 +13,16 @@ function variable_bus_voltage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default,
     _PM.variable_bus_voltage(pm;nw=nw,bounded=bounded,report=report)
 end
 
+
+"
+  Declaration of the bus voltage variables. This is a pass through to _PMR.variable_bus_voltage_on_off except for those forms where vm is not
+  created and it is needed for the GIC.  For example, the WR models are formulated in the space of V^2, so there is no vm variable,
+  so those variables need to be created
+"
+function variable_bus_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    _PMR.variable_bus_voltage_on_off(pm;nw=nw, report=report)
+end
+
 "
 VARIABLE: Declaration of variables associated with modeling of injected GIC
 "

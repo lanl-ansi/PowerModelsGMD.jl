@@ -24,6 +24,16 @@ function constraint_model_voltage(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_
 end
 
 
+"
+  Constraint: constraints on modeling bus voltages that is primarly a pass through to _PMR.constraint_bus_voltage_on_off(
+  There are a few situations where the GMD problem formulations have additional voltage modeling than what _PM provides.
+  This adds connection between w and vm variables in the WR formulation space
+"
+function constraint_bus_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default)
+    _PMR.constraint_bus_voltage_on_off(pm; nw=nw)
+end
+
+
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
@@ -215,25 +225,38 @@ end
 "CONSTRAINT: Calculation of qloss on a per edge basis"
 function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
-    branch = _PM.ref(pm, nw, :branch, k)
+    branch    = _PM.ref(pm, nw, :branch, k)
     branchMVA = branch["baseMVA"]
-    i = branch["hi_bus"]
-    j = branch["lo_bus"]
+    i         = branch["hi_bus"]
+    j         = branch["lo_bus"]
 
-    bus = _PM.ref(pm, nw, :bus, i)
-    busKV = bus["base_kv"]
+    bus       = _PM.ref(pm, nw, :bus, i)
+    busKV     = bus["base_kv"]
 
-    if "gmd_k" in keys(branch)
+    ibase     = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
+    K         = haskey(branch, "gmd_k") ? (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase) : 0.0
 
-        ibase = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
-        K = (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase)
+    constraint_qloss(pm, nw, k, i, j, branchMVA, K)
 
-        constraint_qloss(pm, nw, k, i, j, branchMVA, K)
+end
 
-    else
 
-        constraint_zero_qloss(pm, nw, k, i, j)
+"CONSTRAINT: Calculation of qloss on a per edge basis where ieff is a constant"
 
-    end
+function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch    = _PM.ref(pm, nw, :branch, k)
+    branchMVA = branch["baseMVA"]
+    ieff      = branch["ieff"]
+    i         = branch["hi_bus"]
+    j         = branch["lo_bus"]
+
+    bus       = _PM.ref(pm, nw, :bus, i)
+    busKV     = bus["base_kv"]
+
+    ibase     = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
+    K         = haskey(branch, "gmd_k") ? (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase) : 0.0
+
+    constraint_qloss_constant_ieff(pm, nw, k, i, j, branchMVA, K, ieff)
 
 end
