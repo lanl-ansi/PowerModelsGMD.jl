@@ -43,15 +43,11 @@ as a maximum loadability problem with relaxed generator and bus participation"
 function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
 
 # Reference:
-#   built problem specification corresponds to the "MLD" specification of  PowerModelsRestoration.jl
-#   (https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl)
+#   built problem specification corresponds to the "MLD" specification outlined in PowerModels.jl
+#   (https://github.com/lanl-ansi/PowerModels.jl/blob/master/src/prob/test.jl)
 
-    _PMR.variable_bus_voltage_indicator(pm, relax=true)
-    variable_bus_voltage_on_off(pm)
-
-    _PM.variable_gen_indicator(pm, relax=true)
-    _PM.variable_gen_power_on_off(pm)
-
+    variable_bus_voltage(pm)
+    _PM.variable_gen_power(pm)
     _PM.variable_branch_power(pm)
     _PM.variable_dcline_power(pm)
 
@@ -63,18 +59,16 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     variable_dc_line_flow(pm)
     variable_qloss(pm)
 
-    constraint_bus_voltage_on_off(pm)
+    constraint_model_voltage(pm)
 
     for i in _PM.ids(pm, :ref_buses)
         _PM.constraint_theta_ref(pm, i)
     end
 
-    for i in _PM.ids(pm, :gen)
-        _PM.constraint_gen_power_on_off(pm, i)
-    end
 
     for i in _PM.ids(pm, :bus)
         constraint_power_balance_gmd_shunt_ls(pm, i)
+#        _PM.constraint_power_balance_ls(pm, i)
     end
 
     for i in _PM.ids(pm, :branch)

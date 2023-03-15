@@ -406,31 +406,31 @@ function constraint_load_served(pm::_PM.AbstractPowerModel, min_ratio_load_serve
 end
 
 
-"CONSTRAINT: weighted load shed is below a specified ratio"
-function constraint_load_shed(pm::_PM.AbstractPowerModel, max_load_shed)
+#"CONSTRAINT: weighted load shed is below a specified ratio"
+#function constraint_load_shed(pm::_PM.AbstractPowerModel, max_load_shed)
 
-    nws = _PM.nw_ids(pm)
+#    nws = _PM.nw_ids(pm)
 
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
+#    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
 
-    z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
+#    z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
     # z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)
     # z_gen = Dict(n => _PM.var(pm, n, :z_gen) for n in nws)
     # z_voltage = Dict(n => _PM.var(pm, n, :z_voltage) for n in nws)
 
-    time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
-    load_weight = Dict(n => Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load)) for n in nws)
-    for n in nws
-        scaled_weight = [load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]
-        if isempty(scaled_weight)
-            scaled_weight = [1.0]
-        end
-    end
+#    time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
+#    load_weight = Dict(n => Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load)) for n in nws)
+#    for n in nws
+#        scaled_weight = [load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]
+#        if isempty(scaled_weight)
+#            scaled_weight = [1.0]
+#        end
+#    end
 
-    JuMP.@constraint(pm.model,
-        sum((time_elapsed[n]*(sum(load_weight[n][i]*abs(load["pd"])*(1 - z_demand[n][i]) for (i,load) in _PM.ref(pm, n, :load)))) for n in nws)
-        <=
-        max_load_shed
-    )
+#    JuMP.@constraint(pm.model,
+#        sum((time_elapsed[n]*(sum(load_weight[n][i]*abs(load["pd"])*(1 - z_demand[n][i]) for (i,load) in _PM.ref(pm, n, :load)))) for n in nws)
+#        <=
+#        max_load_shed
+#    )
 
-end
+#end

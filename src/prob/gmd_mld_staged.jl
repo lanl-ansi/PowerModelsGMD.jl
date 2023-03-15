@@ -91,6 +91,10 @@ function solve_soc_gmd_mld_decoupled(case::Dict{String,Any}, solver; setting=Dic
     return solve_gmd_mld_decoupled(case, _PM.SOCWRPowerModel, solver; kwargs...)
 end
 
+function solve_ac_gmd_mld_decoupled(case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
+    return solve_gmd_mld_decoupled(case, _PM.ACPPowerModel, solver; kwargs...)
+end
+
 function solve_gmd_mld_decoupled(file::String, model_constructor, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)
     return solve_gmd_mld_decoupled(data, model_constructor, solver; kwargs...)
@@ -107,7 +111,7 @@ function solve_gmd_mld_decoupled(dc_case::Dict{String,Any}, model_constructor, s
 
     ac_case = deepcopy(dc_case)
     for branch in values(ac_case["branch"])
-        dc_current_mag(branch, ac_case, dc_solution)
+        branch["ieff"] = calc_dc_current_mag(branch, ac_case, dc_solution)
     end
 
     update_qloss_decoupled_vnom!(ac_case)
