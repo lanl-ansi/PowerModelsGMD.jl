@@ -39,7 +39,9 @@ const _PMGMD = PowerModelsGMD
     # Add core functions:
     include("core/base.jl")
     include("core/constraint_template.jl")
+    include("core/constraint_template_staged.jl")
     include("core/constraint.jl")
+    include("core/constraint_staged.jl")
     include("core/data.jl")
     include("core/objective.jl")
     include("core/ref.jl")
