@@ -80,54 +80,9 @@ function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: solve the quasi-dc-pf problem followed by the maximum loadability problem
-with second order cone relaxation"
-function solve_soc_gmd_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
-    data = _PM.parse_file(file)
-    return solve_soc_gmd_mld_decoupled(data, solver; kwargs...)
-end
-
-function solve_soc_gmd_mld_decoupled(case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
-    return solve_gmd_mld_decoupled(case, _PM.SOCWRPowerModel, solver; kwargs...)
-end
-
-function solve_ac_gmd_mld_decoupled(case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
-    return solve_gmd_mld_decoupled(case, _PM.ACPPowerModel, solver; kwargs...)
-end
-
-function solve_gmd_mld_decoupled(file::String, model_constructor, solver; setting=Dict(), kwargs...)
-    data = _PM.parse_file(file)
-    return solve_gmd_mld_decoupled(data, model_constructor, solver; kwargs...)
-end
 
 
-function solve_gmd_mld_decoupled(dc_case::Dict{String,Any}, model_constructor, solver; setting=Dict{String,Any}(), kwargs...)
 
-    branch_setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
-    merge!(setting, branch_setting)
-
-    dc_result = solve_gmd(dc_case, solver)
-    dc_solution = dc_result["solution"]
-
-    ac_case = deepcopy(dc_case)
-    for branch in values(ac_case["branch"])
-        branch["ieff"] = calc_dc_current_mag(branch, ac_case, dc_solution)
-    end
-
-#    update_qloss_decoupled_vnom!(ac_case)
-
-    ac_result = solve_gmd_mld_uncoupled(ac_case, model_constructor, solver, setting=setting; solution_processors = [
-        solution_gmd_qloss!,
-    ],
-    )
-    ac_solution = ac_result["solution"]
-
-    data = Dict()
-    data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
-    data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
-    return data
-
-end
 
 
 # ===   DECOUPLED GMD CASCADE MLD   === #
