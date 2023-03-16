@@ -11,7 +11,7 @@
 
         result = _PMGMD.solve_ac_gmd_mld_decoupled(case_epri21, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 298970.0027; atol=1e-2)
+        @test isapprox(result["ac"]["result"]["objective"], 490.0; atol=1e-2)
 
         # FIXME: add actual fully automated testing for "solve_soc_gmd_mld_decoupled"
 
@@ -104,7 +104,7 @@
 
         result = _PMGMD.solve_ac_gmd_mld_decoupled(case_b4gic, ipopt_solver; setting=setting)
         @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 41100; atol = 1e2)
+        @test isapprox(result["ac"]["result"]["objective"], 100.0; atol = 1e-1)
 
         # DC solution:
         dc_solution = result["dc"]["result"]["solution"]
@@ -115,7 +115,10 @@
         ac_solution = result["ac"]["result"]["solution"]
         @test isapprox(ac_solution["bus"]["1"]["vm"], 0.941, atol=1e-1)
         @test isapprox(ac_solution["branch"]["3"]["pf"], -10.0551, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["3"]["qf"], -4.2708, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["3"]["qf"], -4.7661, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["3"]["gmd_qloss"], 0.6159, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["1"]["gmd_qloss"], 0.5902, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["2"]["gmd_qloss"], 0.0, atol=1e-1)
 
 
 
@@ -191,7 +194,7 @@
 
         result = _PMGMD.solve_soc_gmd_mld(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 100.0; atol = 1e2)
+        @test isapprox(result["objective"], 100.0; atol = 1e-1)
 
 
 

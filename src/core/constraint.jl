@@ -260,7 +260,6 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_e
 
         if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
             Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
-            println()
         end
 
         if blocker_status != 0.0
@@ -295,7 +294,6 @@ function constraint_dc_power_balance_blocker(pm::_PM.AbstractPowerModel, n::Int,
 
         if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
             Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
-            println()
         end
 
         JuMP.@NLconstraint(pm.model,
@@ -375,6 +373,7 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i
         (K * vm * ieff) / (3.0 * branchMVA)
             # K is per phase
     )
+
 
     JuMP.@constraint(pm.model,
         qloss[(k,j,i)]

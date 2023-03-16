@@ -18,7 +18,8 @@ function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,A
         for (l, branch) in _PM.ref(pm,nw_id,:branch)
             key             = (branch["index"], branch["hi_bus"], branch["lo_bus"])
             branch_solution = nw_data["branch"][string(l)]
-            branch_solution["gmd_qloss"] = key in indices ? JuMP.value.(_PM.var(pm,nw_id,:qloss,key)) : 0.0
+#            branch_solution["gmd_qloss"] = key in indices ? JuMP.value.(_PM.var(pm,nw_id,:qloss,key)) : 0.0
+            branch_solution["gmd_qloss"] = JuMP.value.(_PM.var(pm,nw_id,:qloss,key))
         end
     end
 end
@@ -62,4 +63,3 @@ function solution_gmd_qloss_decoupled!(pm::_PM.AbstractPowerModel, solution::Dic
         end
     end
 end
-

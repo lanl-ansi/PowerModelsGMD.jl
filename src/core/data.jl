@@ -59,7 +59,6 @@ function calc_dc_current_mag(branch, case, solution)
         return calc_dc_current_mag_line(branch, case, solution)
 
     elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
-        println("UNGROUNDED CONFIGURATION. IEFF IS CONSTRAINED TO ZERO.")
         return calc_dc_current_mag_grounded_xf(branch, case, solution)
 
     elseif branch["config"] in ["delta-gwye", "gwye-delta"]
