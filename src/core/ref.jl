@@ -25,7 +25,7 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         nw_ref[:gmd_arcs_from] = [(i,branch["f_bus"],branch["t_bus"]) for (i,branch) in nw_ref[:gmd_branch]]
         nw_ref[:gmd_arcs_to] = [(i,branch["t_bus"],branch["f_bus"]) for (i,branch) in nw_ref[:gmd_branch]]
         nw_ref[:gmd_arcs] = [nw_ref[:gmd_arcs_from]; nw_ref[:gmd_arcs_to]]
-        
+
         gmd_bus_arcs = Dict([(i, []) for (i,bus) in nw_ref[:gmd_bus]])
         for (l,i,j) in nw_ref[:gmd_arcs]
            push!(gmd_bus_arcs[i], (l,i,j))
@@ -53,32 +53,3 @@ function ref_add_gmd!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     end
 
 end
-
-
-"REF: add gmd blockers to ref dict structures"
-function ref_add_gmd_blockers!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-
-    for (nw, nw_ref) in ref[:it][pm_it_sym][:nw]
-        nw_ref[:blocker_buses] = Dict(i=>gmd_bus for (i,gmd_bus) in nw_ref[:gmd_bus] if get(gmd_bus, "blocker", 0.0) != 0.0)
-    end
-
-end
-
-
-# "REF: add load blocks to dict structures"
-# function ref_add_load_blocks!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-#
-#     ref[:load_blocks] = Dict{Int,Set}(i => block for (i,block) in enumerate(PMD.identify_load_blocks(data)))
-#
-#     load_block_map = Dict{Int,Int}()
-#     for (l,load) in get(data, "load", Dict())
-#         for (b,block) in ref[:load_blocks]
-#             if load["load_bus"] in block
-#                 load_block_map[parse(Int,l)] = b
-#             end
-#         end
-#     end
-#     ref[:load_block_map] = load_block_map
-#
-# end
-

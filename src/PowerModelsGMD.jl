@@ -38,29 +38,38 @@ const _PMGMD = PowerModelsGMD
 
     # Add core functions:
     include("core/base.jl")
+    include("core/base_staged.jl")
     include("core/constraint_template.jl")
     include("core/constraint_template_staged.jl")
     include("core/constraint.jl")
     include("core/constraint_staged.jl")
     include("core/data.jl")
+    include("core/data_staged.jl")
     include("core/objective.jl")
+    include("core/objective_staged.jl")
     include("core/ref.jl")
+    include("core/ref_staged.jl")
     include("core/solution.jl")
+    include("core/solution_staged.jl")
     include("core/variable.jl")
+    include("core/variable_staged.jl")
 
     # Add network formulations:
     include("form/acp.jl")
+    include("form/acp_staged.jl")
     include("form/dcp.jl")
+    include("form/dcp_staged.jl")
     include("form/wr.jl")
+    include("form/wr_staged.jl")
     include("form/wrm.jl")
 
     # Add problem specifications:
     include("prob/gmd.jl")
-    include("prob/gmd_pf.jl")
+    include("prob/gmd_pf_staged.jl")
     include("prob/gmd_opf.jl")
-    include("prob/gmd_opf_ts.jl")
+    include("prob/gmd_opf_ts_staged.jl")
     include("prob/gmd_mld.jl")
-    include("prob/gmd_ots.jl")
+    include("prob/gmd_ots_staged.jl")
 
     include("prob/gmd_opf_staged.jl")
     include("prob/gmd_mld_staged.jl")

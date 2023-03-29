@@ -3,9 +3,6 @@
 ##########
 
 
-using SparseArrays
-
-
 # ===   WITH OPTIMIZER   === #
 
 
@@ -97,26 +94,26 @@ function solve_gmd(case::Dict{String,Any}; kwargs...)
 
             J[m] -= (1.00 / branch["br_r"]) * branch["br_v"]
             J[n] += (1.00 / branch["br_r"]) * branch["br_v"]
-            
+
             z += 2
             mm[z] = m
             nn[z] = n
             matVals[z] = -(1.00 / branch["br_r"])
-            
+
             mm[z+1] = n
             nn[z+1] = m
             matVals[z+1] = matVals[z]
-            
+
             YY[m] += (1.00 / branch["br_r"])
             YY[n] += (1.00 / branch["br_r"])
 
         end
-        
+
     end
 
     # Y matix:
 
-    Y = sparse(vcat(mmm,mm), vcat(nnn,nn), vcat(YY,matVals))
+    Y = SparseArrays.sparse(vcat(mmm,mm), vcat(nnn,nn), vcat(YY,matVals))
 
     zmm = zeros(Int64,numBus)
     znn = zeros(Int64,numBus)
@@ -137,9 +134,9 @@ function solve_gmd(case::Dict{String,Any}; kwargs...)
 
     # Z matix:
 
-    Z = sparse(zmm, znn, zmatVals)
+    Z = SparseArrays.sparse(zmm, znn, zmatVals)
 
-    I = sparse(SparseArrays.I, numBus, numBus)
+    I = SparseArrays.sparse(SparseArrays.I, numBus, numBus)
 
     MM = Y * Z
 
@@ -171,10 +168,9 @@ function solve_gmd(case::Dict{String,Any}; kwargs...)
         vf = solution["gmd_bus"]["$nf"]["gmd_vdc"]
         vt = solution["gmd_bus"]["$nt"]["gmd_vdc"]
         solution["gmd_branch"]["$n"] = Dict()
-        solution["gmd_branch"]["$n"]["gmd_idc"] = g * (vf - vt) 
+        solution["gmd_branch"]["$n"]["gmd_idc"] = g * (vf - vt)
     end
 
     return result
 
 end
-

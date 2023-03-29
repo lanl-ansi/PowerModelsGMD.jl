@@ -40,8 +40,10 @@ constraint_dc_current_mag_grounded_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_
 
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, n::Int, k, kh, ih, jh)
+
     type = typeof(pm)
     Memento.error(_LOGGER, "Error: Function constraint_dc_current_mag_gwye_delta_xf needs to be implemented for PowerModel of type $type")
+
 end
 
 
@@ -98,13 +100,6 @@ function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
 
 end
 constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag(pm, nw, k)
-
-
-
-# ===   GENERATOR CONSTRAINTS   === #
-
-
-
 
 
 # ===   POWER BALANCE CONSTRAINTS   === #
@@ -282,30 +277,6 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_e
 end
 
 
-"CONSTRAINT: nodal power balance for dc circuits with GIC blockers"
-function constraint_dc_power_balance_blocker(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs)
-
-    v_dc = _PM.var(pm, n, :v_dc)[i]
-    z = _PM.var(pm, n, :z_blocker)[i]
-
-    println("Adding blocking dc power balance constraint for gmd bus $i with admittance $gs")
-
-    if length(gmd_bus_arcs) > 0
-
-        if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
-            Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
-        end
-
-        JuMP.@NLconstraint(pm.model,
-            sum(dc_expr[a] for a in gmd_bus_arcs)
-            ==
-            (gs * v_dc)*(1 - z)
-        )
-
-    end
-
-end
-
 
 # ===   OHM'S LAW CONSTRAINTS   === #
 
@@ -328,29 +299,7 @@ function constraint_dc_ohms(pm::_PM.AbstractPowerModel, n::Int, i, f_bus, t_bus,
 end
 
 
-
-
 # ===   QLOSS CONSTRAINTS   === #
-
-
-"CONSTRAINT: zero qloss"
-function constraint_zero_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j)
-
-    qloss = _PM.var(pm, n, :qloss)
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        0.0
-    )
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-end
 
 
 "CONSTRAINT: qloss calculcated from ac voltage and dc current"
