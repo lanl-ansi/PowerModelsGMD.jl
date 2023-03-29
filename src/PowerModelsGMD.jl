@@ -67,8 +67,6 @@ const _PMGMD = PowerModelsGMD
 
     include("algo/decoupled.jl")
 
-    include("algo/seq/gmd_opf.jl")
-
     # include("prob/gmd_msse.jl")
     # include("prob/gmd_blocker_placement.jl")
     # include("prob/gmd_opf_blocker_placement.jl")

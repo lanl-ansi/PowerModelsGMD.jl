@@ -89,7 +89,7 @@
       "gmd_index": 2,
       "sub_id": 1,
       "hi_bus": 1,
-      "lo_bus": 3,
+      "lo_bus": 11,
       "ter_bus": 5,
       "star_bus": 6,
       "gmd_br_hi": 2,
@@ -108,11 +108,11 @@
     "3": {
       "source_id": [
         "transformer",
-        2,
-        4,
-        0,
+        1,
+        3,
+        5,
         "1 ",
-        0
+        2
       ],
       "source_bus_1": 2,
       "source_bus_2": 4,
@@ -120,8 +120,8 @@
       "ckt": "1 ",
       "gmd_index": 3,
       "sub_id": 2,
-      "hi_bus": 2,
-      "lo_bus": 4,
+      "hi_bus": 3,
+      "lo_bus": 11,
       "gmd_br_hi": 3,
       "gmd_br_lo": -1,
       "gmd_k": 1.8,
@@ -133,6 +133,32 @@
       "name": "xf2-4",
       "trace": "branch.Transformer.gmd_data()",
       "otype": "<class 'branch.GWyeDeltaTransformer'>"
+    },
+    "4": {
+      "source_id": [
+        "transformer",
+        1,
+        3,
+        5,
+        "1 ",
+        3
+      ],
+      "hi_bus": 5,
+      "lo_bus": 11,
+      "baseMVA": 100.0
+    },
+    "5": {
+      "source_id": [
+        "transformer",
+        2,
+        4,
+        0,
+        "1 ",
+        0
+      ],
+      "hi_bus": 2,
+      "lo_bus": 4,
+      "baseMVA": 100.0
     }
   },
   "gmd_bus": {

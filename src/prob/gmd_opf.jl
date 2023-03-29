@@ -90,3 +90,75 @@ function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.objective_min_fuel_cost(pm)
 
 end
+
+
+
+
+
+"FUNCTION: solve basic GMD OPF model with nonlinear ac polar where the gic is an input parameter (uncoupled)"
+function solve_ac_gmd_opf_uncoupled(file, optimizer; kwargs...)
+    return solve_gmd_opf_uncoupled( file, _PM.ACPPowerModel, optimizer; kwargs...)
+end
+
+"FUNCTION: solve basic GMD OPF model with second order cone ac polar relaxation"
+function solve_soc_gmd_opf_uncoupled(file, optimizer; kwargs...)
+    return solve_gmd_opf_uncoupled( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
+end
+
+"FUNCTION: solve basic GMD OPF model"
+function solve_gmd_opf_uncoupled(file, model_type::Type, optimizer; kwargs...)
+    return _PM.solve_model(
+        file,
+        model_type,
+        optimizer,
+        build_gmd_opf_uncoupled;
+        ref_extensions = [
+            ref_add_gmd!
+        ],
+        solution_processors = [
+            solution_gmd_qloss!,
+            solution_gmd!,
+        ],
+        kwargs...,
+    )
+end
+
+
+"FUNCTION: build the coupled quasi-dc-pf and ac-opf problem
+as generator dispatch minimization problem
+"
+function build_gmd_opf_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
+
+    variable_bus_voltage(pm)
+    _PM.variable_gen_power(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
+
+    variable_qloss(pm) # variable for representing k * v * I_eff of constraint 2e in in [1]
+
+    constraint_model_voltage(pm)
+
+    for i in _PM.ids(pm, :ref_buses)
+        _PM.constraint_theta_ref(pm, i)
+    end
+
+    for i in _PM.ids(pm, :bus)
+        constraint_power_balance_gmd(pm, i) # constraint 1b of [1]
+    end
+
+    for i in _PM.ids(pm, :branch)
+
+        _PM.constraint_ohms_yt_from(pm, i)
+        _PM.constraint_ohms_yt_to(pm, i)
+
+        _PM.constraint_voltage_angle_difference(pm, i)
+
+        _PM.constraint_thermal_limit_from(pm, i)
+        _PM.constraint_thermal_limit_to(pm, i)
+
+        constraint_qloss_constant_ieff(pm, i)
+    end
+
+    _PM.objective_min_fuel_cost(pm)
+
+end
