@@ -1,65 +1,11 @@
-"VARIABLE: bus dc voltage difference"
-function variable_dc_voltage_difference(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
-    if bounded
-        v_dc_diff = _PM.var(pm, nw)[:v_dc_diff] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :gmd_branch)], base_name="$(nw)_v_dc_diff",
-            lower_bound = -calc_max_dc_voltage_difference(pm, i, nw=nw),
-            upper_bound = calc_max_dc_voltage_difference(pm, i, nw=nw),
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_branch, i), "v_dc_start_diff")
-        )
-    else
-        v_dc_diff = _PM.var(pm, nw)[:v_dc_diff] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :gmd_branch)], base_name="$(nw)_v_dc_diff",
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_branch, i), "v_dc_start_diff")
-        )
-    end
-
-    report && _PM.sol_component_value(pm, nw, :gmd_branch, :v_dc_diff, _PM.ids(pm, nw, :gmd_branch), v_dc_diff)
-
-end
 
 
-"VARIABLE: bus dc voltage on/off"
-function variable_dc_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
-    variable_dc_voltage(pm; nw=nw, bounded=bounded)
-    variable_dc_voltage_difference(pm; nw=nw, bounded=bounded)
-
-    # McCormick variable:
-    vz = _PM.var(pm, nw)[:vz] = JuMP.@variable(pm.model,
-          [i in _PM.ids(pm, nw, :gmd_branch)], base_name="$(nw)_vz",
-          start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_branch, i), "v_vz_start")
-    )
-
-    report && _PM.sol_component_value(pm, nw, :gmd_branch, :vz, _PM.ids(pm, nw, :gmd_branch), vz)
-
-end
 
 
 # ===   CURRENT VARIABLES   === #
 
 
-"VARIABLE: ac current magnitude"
-function variable_ac_current_mag(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 
-    if bounded
-        i_ac_mag = _PM.var(pm, nw)[:i_ac_mag] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_ac_mag",
-            lower_bound = calc_ac_mag_min(pm, i, nw=nw),
-            upper_bound = calc_ac_mag_max(pm, i, nw=nw),
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_ac_mag_start")
-        )
-    else
-        i_ac_mag = _PM.var(pm, nw)[:i_ac_mag] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_ac_mag",
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_ac_mag_start")
-        )
-    end
-
-    report && _PM.sol_component_value(pm, nw, :branch, :i_ac_mag, _PM.ids(pm, nw, :branch), i_ac_mag)
-
-end
 
 
 "VARIABLE: dc current magnitude squared"
@@ -87,26 +33,26 @@ end
 # ===   GENERATOR VARIABLES   === #
 
 
-"VARIABLE: active generation squared cost"
-function variable_active_generation_sqr_cost(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+#"VARIABLE: active generation squared cost"
+#function variable_active_generation_sqr_cost(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 
-    if bounded
-        pg_sqr = _PM.var(pm, nw)[:pg_sqr] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :gen)], base_name="$(nw)_pg_sqr",
-            lower_bound = 0,
-            upper_bound = _PM.ref(pm, nw, :gen, i)["cost"][1] * _PM.ref(pm, nw, :gen, i)["pmax"]^2,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :gen, i), "pg_sqr_start")
-        )
-    else
-        pg_sqr = _PM.var(pm, nw)[:pg_sqr] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :gen)], base_name="$(nw)_pg_sqr",
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :gen, i), "pg_sqr_start")
-        )
-    end
+#    if bounded
+#        pg_sqr = _PM.var(pm, nw)[:pg_sqr] = JuMP.@variable(pm.model,
+#            [i in _PM.ids(pm, nw, :gen)], base_name="$(nw)_pg_sqr",
+#            lower_bound = 0,
+#            upper_bound = _PM.ref(pm, nw, :gen, i)["cost"][1] * _PM.ref(pm, nw, :gen, i)["pmax"]^2,
+#            start = _PM.comp_start_value(_PM.ref(pm, nw, :gen, i), "pg_sqr_start")
+#        )
+#    else
+#        pg_sqr = _PM.var(pm, nw)[:pg_sqr] = JuMP.@variable(pm.model,
+#            [i in _PM.ids(pm, nw, :gen)], base_name="$(nw)_pg_sqr",
+#            start = _PM.comp_start_value(_PM.ref(pm, nw, :gen, i), "pg_sqr_start")
+#        )
+#    end
 
-    report && _PM.sol_component_value(pm, nw, :gen, :pg_sqr, _PM.ids(pm, nw, :gen), pg_sqr)
+#    report && _PM.sol_component_value(pm, nw, :gen, :pg_sqr, _PM.ids(pm, nw, :gen), pg_sqr)
 
-end
+#end
 
 
 "VARIABLE: active load"

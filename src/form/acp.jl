@@ -7,27 +7,15 @@
 
 
 "VARIABLE: ac current"
-function variable_ac_current(pm::_PM.AbstractACPModel; kwargs...)
+function variable_ac_positive_current(pm::_PM.AbstractACPModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 
-    variable_ac_current_mag(pm; kwargs...)
-
-end
-
-
-"VARIABLE: ac current on/off"
-function variable_ac_current_on_off(pm::_PM.AbstractACPModel; kwargs...)
-
-    variable_ac_current_mag(pm; bounded=false, kwargs...)
+    variable_ac_positive_current_mag(pm; nw=nw, bounded=bounded, report=report)
 
 end
 
 
-"VARIABLE: dc current"
-function variable_dc_current(pm::_PM.AbstractACPModel; kwargs...)
 
-    variable_dc_current_mag(pm; kwargs...)
 
-end
 
 
 # ===   CURRENT CONSTRAINTS   === #

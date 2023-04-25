@@ -11,7 +11,10 @@
 "
 function variable_bus_voltage(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     _PM.variable_bus_voltage(pm;nw=nw,bounded=bounded,report=report)
-    _PM.variable_bus_voltage_magnitude(pm;nw=nw,bounded=bounded,report=report)
+    # make sure the voltage magntiude variable is created since some WR models don't need it, but GMD does
+    if !haskey(_PM.var(pm,nw),:vm)
+        _PM.variable_bus_voltage_magnitude(pm;nw=nw,bounded=bounded,report=report)
+    end
 end
 
 
@@ -20,8 +23,12 @@ end
   created and it is needed for the GIC.  This function creates the vm variables to add to the WR formulation
 "
 function variable_bus_voltage_on_off(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    _PMR.variable_bus_voltage_on_off(pm;nw=nw)
-    _PMR.variable_bus_voltage_magnitude_on_off(pm;nw=nw,report=report)
+    _PM.variable_bus_voltage_on_off(pm;nw=nw,report=report)
+
+    # make sure the voltage magntiude variable is created since some WR models don't need it, but GMD does
+    if !haskey(_PM.var(pm,nw),:vm)
+        _PM.variable_bus_voltage_magnitude(pm;nw=nw,bounded=bounded,report=report)
+    end
 end
 
 
@@ -67,24 +74,19 @@ function variable_gic_current(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bo
 end
 
 
+"FUNCTION: ac current"
+function variable_ac_positive_current(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 
-"FUNCTION: ac current on/off"
-function variable_ac_current_on_off(pm::_PM.AbstractWRModel; kwargs...)
-
-   variable_ac_current_mag(pm; bounded=false, kwargs...)
-
-end
-
-
-
-
-"FUNCTION: dc current"
-function variable_dc_current(pm::_PM.AbstractWRModel; kwargs...)
-
-    variable_dc_current_mag(pm; kwargs...)
-    variable_dc_current_mag_sqr(pm; kwargs...)
+    variable_ac_positive_current_mag(pm; nw=nw, bounded=bounded, report=report)
+    variable_ac_current_mag_sqr(pm; nw=nw, bounded=bounded, report=report)
 
 end
+
+
+
+
+
+
 
 
 # ===   CURRENT CONSTRAINTS   === #
@@ -183,5 +185,23 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractWRModel, n:
         >=
         - ( a * is + ic) / (a + 1.0)
     )
+
+end
+
+
+"
+  Constraint: constraints on modeling bus voltages that is primarly a pass through to _PMR.constraint_bus_voltage_on_off
+  There are a few situations where the GMD problem formulations have additional voltage modeling than what _PMR provides.
+  For example, many of the GMD problem formulations need explict vm variables, which the WR formulations do not provide
+"
+function constraint_model_voltage_on_off(pm::_PM.AbstractWRModel; nw::Int=_PM.nw_id_default)
+    _PM.constraint_model_voltage_on_off(pm; nw=nw)
+
+    w  = _PM.var(pm, nw,  :w)
+    vm = _PM.var(pm, nw,  :vm)
+
+    for i in _PM.ids(pm, nw, :bus)
+        _IM.relaxation_sqr(pm.model, vm[i], w[i])
+    end
 
 end

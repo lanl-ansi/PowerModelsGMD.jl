@@ -20,7 +20,7 @@ end
   so those variables need to be created
 "
 function variable_bus_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    _PMR.variable_bus_voltage_on_off(pm;nw=nw, report=report)
+    _PM.variable_bus_voltage_on_off(pm;nw=nw, report=report)
 end
 
 "
@@ -150,6 +150,88 @@ function variable_iv(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::
     )
 
     report && _IM.sol_component_value_edge(pm, pm_it_sym, nw, :branch, :ivf, :ivt, _PM.ref(pm, nw, :arcs_from), _PM.ref(pm, nw, :arcs_to), iv)
+
+end
+
+
+"VARIABLE: ac current magnitude"
+function variable_ac_positive_current_mag(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+
+    if bounded
+        i_ac_mag = _PM.var(pm, nw)[:i_ac_mag] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_ac_mag",
+            lower_bound = calc_ac_positive_current_mag_min(pm, i, nw=nw),
+            upper_bound = calc_ac_current_mag_max(pm, i, nw=nw),
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_ac_mag_start")
+        )
+    else
+        i_ac_mag = _PM.var(pm, nw)[:i_ac_mag] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_ac_mag",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_ac_mag_start")
+        )
+    end
+
+    report && _PM.sol_component_value(pm, nw, :branch, :i_ac_mag, _PM.ids(pm, nw, :branch), i_ac_mag)
+
+end
+
+
+"VARIABLE: dc current magnitude squared"
+function variable_ac_current_mag_sqr(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+
+    if bounded
+        i_ac_mag_sqr = _PM.var(pm, nw)[:i_ac_mag_sqr] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_ac_mag_sqr",
+            lower_bound = 0,
+            upper_bound = calc_ac_current_mag_max(pm, i, nw=nw)^2,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_ac_mag_sqr_start")
+        )
+    else
+        i_ac_mag_sqr = _PM.var(pm, nw)[:i_ac_mag_sqr] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_ac_mag_sqr",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_ac_mag_sqr_start")
+        )
+    end
+
+    report && _PM.sol_component_value(pm, nw, :branch, :i_ac_mag_sqr, _PM.ids(pm, nw, :branch), i_ac_mag_sqr)
+
+end
+
+
+"VARIABLE: bus dc voltage difference"
+function variable_dc_voltage_difference(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+
+    if bounded
+        v_dc_diff = _PM.var(pm, nw)[:v_dc_diff] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :gmd_branch)], base_name="$(nw)_v_dc_diff",
+            lower_bound = -calc_max_dc_voltage_difference(pm, i, nw=nw),
+            upper_bound = calc_max_dc_voltage_difference(pm, i, nw=nw),
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_branch, i), "v_dc_start_diff")
+        )
+    else
+        v_dc_diff = _PM.var(pm, nw)[:v_dc_diff] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :gmd_branch)], base_name="$(nw)_v_dc_diff",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_branch, i), "v_dc_start_diff")
+        )
+    end
+
+    report && _PM.sol_component_value(pm, nw, :gmd_branch, :v_dc_diff, _PM.ids(pm, nw, :gmd_branch), v_dc_diff)
+
+end
+
+"VARIABLE: bus dc voltage on/off"
+function variable_dc_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+
+    variable_dc_voltage(pm; nw=nw, bounded=bounded)
+    variable_dc_voltage_difference(pm; nw=nw, bounded=bounded)
+
+    # McCormick variable:
+    vz = _PM.var(pm, nw)[:vz] = JuMP.@variable(pm.model,
+          [i in _PM.ids(pm, nw, :gmd_branch)], base_name="$(nw)_vz",
+          start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_branch, i), "v_vz_start")
+    )
+
+    report && _PM.sol_component_value(pm, nw, :gmd_branch, :vz, _PM.ids(pm, nw, :gmd_branch), vz)
 
 end
 

@@ -29,13 +29,13 @@ end
 
 
 "FUNCTION: calculate the minimum absolute value AC current on a branch"
-function calc_ac_mag_min(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+function calc_ac_positive_current_mag_min(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return 0
 end
 
 
 "FUNCTION: calculate the maximum absolute value AC current on a branch"
-function calc_ac_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+function calc_ac_current_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus = _PM.ref(pm, nw, :bus, branch["f_bus"])
@@ -231,7 +231,7 @@ function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 
     ac_max = -Inf
     for l in _PM.ids(pm, nw, :branch)
-        ac_max = max(calc_ac_mag_max(pm, l, nw=nw), ac_max)
+        ac_max = max(calc_ac_current_mag_max(pm, l, nw=nw), ac_max)
     end
 
     ibase = calc_branch_ibase(pm, i, nw=nw)

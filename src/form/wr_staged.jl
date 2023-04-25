@@ -1,43 +1,24 @@
-"
-  Constraint: constraints on modeling bus voltages that is primarly a pass through to _PMR.constraint_bus_voltage_on_off
-  There are a few situations where the GMD problem formulations have additional voltage modeling than what _PMR provides.
-  For example, many of the GMD problem formulations need explict vm variables, which the WR formulations do not provide
-"
-function constraint_bus_voltage_on_off(pm::_PM.AbstractWRModel; nw::Int=_PM.nw_id_default)
-    _PMR.constraint_bus_voltage_on_off(pm; nw=nw)
-    for (i,bus) in _PM.ref(pm, nw, :bus)
-        _PMR.constraint_voltage_magnitude_on_off(pm, i; nw=nw)
-    end
-
-    w  = _PM.var(pm, nw,  :w)
-    vm = _PM.var(pm, nw,  :vm)
-
-    for i in _PM.ids(pm, nw, :bus)
-        _IM.relaxation_sqr(pm.model, vm[i], w[i])
-    end
-
-end
 
 
 "FUNCTION: ac current"
-function variable_ac_current(pm::_PM.AbstractWRModel; kwargs...)
+#function variable_ac_current(pm::_PM.AbstractWRModel; kwargs...)
 
-    nw = nw_id_default
+#    nw = nw_id_default
 
-    variable_ac_current_mag(pm; kwargs...)
+#    variable_ac_current_mag(pm; kwargs...)
 
-    parallel_branch = Dict(x for x in _PM.ref(pm, nw, :branch) if _PM.ref(pm, nw, :buspairs)[(x.second["f_bus"], x.second["t_bus"])]["branch"] != x.first)
-    cm_min = Dict((l, 0) for l in keys(parallel_branch))
-    cm_max = Dict((l, (branch["rate_a"]*branch["tap"]/_PM.ref(pm, nw, :bus)[branch["f_bus"]]["vmin"])^2) for (l, branch) in parallel_branch)
+#    parallel_branch = Dict(x for x in _PM.ref(pm, nw, :branch) if _PM.ref(pm, nw, :buspairs)[(x.second["f_bus"], x.second["t_bus"])]["branch"] != x.first)
+#    cm_min = Dict((l, 0) for l in keys(parallel_branch))
+#    cm_max = Dict((l, (branch["rate_a"]*branch["tap"]/_PM.ref(pm, nw, :bus)[branch["f_bus"]]["vmin"])^2) for (l, branch) in parallel_branch)
 
-    _PM.var(pm, nw)[:cm_p] = JuMP.@variable(pm.model,
-        [l in keys(parallel_branch)], base_name="$(nw)_cm_p",
-        lower_bound = cm_min[l],
-        upper_bound = cm_max[l],
-        start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "cm_p_start")
-    )
+#    _PM.var(pm, nw)[:cm_p] = JuMP.@variable(pm.model,
+#        [l in keys(parallel_branch)], base_name="$(nw)_cm_p",
+#        lower_bound = cm_min[l],
+#        upper_bound = cm_max[l],
+#        start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "cm_p_start")
+#    )
 
-end
+#end
 
 
 "CONSTRAINT: relating current to power flow on_off"
@@ -323,5 +304,21 @@ function constraint_thermal_protection(pm::_PM.AbstractWRModel, n::Int, i::Int, 
     )
 
     _IM.relaxation_sqr(pm.model, ieff, ieff_sqr)
+
+end
+
+
+"FUNCTION: ac current on/off"
+function variable_ac_current_on_off(pm::_PM.AbstractWRModel; kwargs...)
+
+   variable_ac_current_mag(pm; bounded=false, kwargs...)
+
+end
+
+"FUNCTION: dc current"
+function variable_dc_current(pm::_PM.AbstractWRModel; kwargs...)
+
+    variable_dc_current_mag(pm; kwargs...)
+    variable_dc_current_mag_sqr(pm; kwargs...)
 
 end

@@ -305,3 +305,19 @@ function constraint_thermal_protection(pm::_PM.AbstractACPModel, n::Int, i::Int,
     )
 
 end
+
+
+"VARIABLE: ac current on/off"
+function variable_ac_current_on_off(pm::_PM.AbstractACPModel; kwargs...)
+
+    variable_ac_current_mag(pm; bounded=false, kwargs...)
+
+end
+
+
+"VARIABLE: dc current"
+function variable_dc_current(pm::_PM.AbstractACPModel; kwargs...)
+
+    variable_dc_current_mag(pm; kwargs...)
+
+end

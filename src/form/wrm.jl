@@ -92,3 +92,12 @@ function constraint_qloss(pm::_PM.AbstractWRMModel, n::Int, k, i, j, branchMVA, 
     _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
 
 end
+
+
+"FUNCTION: ac current"
+function variable_ac_positive_current(pm::_PM.AbstractWRMModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+
+    variable_ac_positive_current_mag(pm; nw=nw, bounded=bounded, report=report)
+    variable_ac_current_mag_sqr(pm; nw=nw, bounded=bounded, report=report)
+
+end

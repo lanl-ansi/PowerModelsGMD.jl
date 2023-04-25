@@ -29,8 +29,8 @@ end
   There are a few situations where the GMD problem formulations have additional voltage modeling than what _PM provides.
   This adds connection between w and vm variables in the WR formulation space
 "
-function constraint_bus_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default)
-    _PMR.constraint_bus_voltage_on_off(pm; nw=nw)
+function constraint_model_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default)
+    _PM.constraint_model_voltage_on_off(pm; nw=nw)
 end
 
 
