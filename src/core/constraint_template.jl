@@ -260,3 +260,21 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=n
     constraint_qloss_constant_ieff(pm, nw, k, i, j, branchMVA, K, ieff)
 
 end
+
+"CONSTRAINT: more than a specified percentage of load is served"
+
+function constraint_load_served(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default)
+
+    load_ratio = _PM.ref(pm, nw, :load_served_ratio)
+
+    total_load = 0
+    for (i,load) in _PM.ref(pm, nw, :load)
+        total_load += abs(load["pd"])
+    end
+    min_load_served = total_load * load_ratio
+
+    pd = Dict(k => abs(_PM.ref(pm, nw, :load, k, "pd")) for (k,load) in _PM.ref(pm, nw, :load))
+
+    constraint_load_served(pm, nw, pd, min_load_served)
+
+end

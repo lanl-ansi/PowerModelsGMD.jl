@@ -40,6 +40,7 @@ data_b6gic_nerc = "../test/data/matpower/b6gic_nerc.m"
 data_epri21 = "../test/data/matpower/epri21.m"
 data_ieee_rts_0 = "../test/data/matpower/ieee_rts_0.m"
 data_otstest = "../test/data/matpower/ots_test.m"
+data_b4gic_ne_blocker = "../test/data/matpower/b4gic_ne_blocker.m"
 
 # Perform automated testing of PMsGMD problem specifications:
 @testset "PowerModelsGMD" begin

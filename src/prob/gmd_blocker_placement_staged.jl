@@ -26,11 +26,11 @@ function build_gmd_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     variable_dc_line_flow(pm; bounded=true)
 
     for i in _PM.ids(pm, :gmd_bus)
-        if i in _PM.ids(pm, :bus_blockers)
-            constraint_dc_power_balance_blocker(pm, i)
-        else
-            constraint_dc_power_balance(pm, i)
-        end
+#        if i in _PM.ids(pm, :bus_blockers)
+#            constraint_dc_power_balance_blocker(pm, i)
+#        else
+#            constraint_dc_power_balance(pm, i)
+#        end
     end
 
     for i in _PM.ids(pm, :gmd_branch)

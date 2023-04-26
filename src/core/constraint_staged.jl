@@ -353,11 +353,11 @@ function constraint_blocker_placement_cost(pm::_PM.AbstractPowerModel, max_cost)
     nw = nw_id_default
         # TODO: extend to multinetwork
 
-    JuMP.@constraint(pm.model,
-        sum(get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0) * _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses))
-        <=
-        max_cost
-    )
+#    JuMP.@constraint(pm.model,
+#        sum(get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0) * _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses))
+#        <=
+#        max_cost
+#    )
 
 end
 
@@ -369,41 +369,17 @@ function constraint_blocker_count(pm::_PM.AbstractPowerModel, blocker_count)
 
     for n in nws
 
-        JuMP.@constraint(pm.model,
-            sum(get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0) * _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses))
-            ==
-            blocker_count
-        )
+#        JuMP.@constraint(pm.model,
+#            sum(get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0) * _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses))
+#            ==
+#            blocker_count
+#        )
 
     end
 
 end
 
 
-"CONSTRAINT: more than a specified percentage of load is served"
-function constraint_load_served(pm::_PM.AbstractPowerModel, min_ratio_load_served)
-
-    nws = _PM.nw_ids(pm)
-
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
-
-    total_load = 0
-    for n in nws
-        for (i,load) in _PM.ref(pm, n, :load)
-            total_load += abs(load["pd"])
-        end
-    end
-
-    min_load_served = total_load * min_ratio_load_served
-    z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
-
-    JuMP.@constraint(pm.model,
-        sum(sum(abs(load["pd"])*z_demand[n][i] for (i,load) in _PM.ref(pm, n, :load)) for n in nws)
-        >=
-        min_load_served
-    )
-
-end
 
 
 #"CONSTRAINT: weighted load shed is below a specified ratio"

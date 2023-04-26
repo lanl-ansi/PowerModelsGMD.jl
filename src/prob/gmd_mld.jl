@@ -65,7 +65,6 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_theta_ref(pm, i)
     end
 
-
     for i in _PM.ids(pm, :bus)
         constraint_power_balance_gmd_shunt_ls(pm, i)
     end

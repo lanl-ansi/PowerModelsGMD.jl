@@ -236,4 +236,23 @@ function variable_dc_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_de
 end
 
 
-# ===   THERMAL VARIABLES   === #
+"VARIABLE: gic ne_blocker indicator"
+function variable_ne_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default, relax::Bool=false, report::Bool=true)
+
+    if !relax
+        z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :gmd_ne_blocker)], base_name="$(nw)_z_blocker",
+            binary = true,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_ne_blocker, i), "z_blocker_start", 1.0)
+        )
+    else
+        z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :gmd_ne_blocker)], base_name="$(nw)_z_blocker",
+            lower_bound = 0,
+            upper_bound = 1,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_ne_blocker, i), "z_blocker_start", 1.0)
+        )
+    end
+
+    report && _PM.sol_component_value(pm, nw, :gmd_ne_blocker, :blocker_placed, _PM.ids(pm, nw, :gmd_ne_blocker), z_gic_blocker)
+end

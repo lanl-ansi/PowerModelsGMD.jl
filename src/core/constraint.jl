@@ -331,3 +331,18 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i
     )
 
 end
+
+
+"CONSTRAINT: more than a specified percentage of load is served"
+function constraint_load_served(pm::_PM.AbstractPowerModel, n::Int, pds, min_load_served)
+
+    z_demand = _PM.var(pm, n, :z_demand)
+
+    c = JuMP.@constraint(pm.model,
+        sum(pd*z_demand[i] for (i,pd) in pds)
+        >=
+        min_load_served
+    )
+
+    println(c)
+end
