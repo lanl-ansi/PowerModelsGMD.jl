@@ -1,4 +1,3 @@
-
 "FUNCTION: run GMD mitigation with nonlinear ac equations"
 function solve_ac_blocker_placement(file, optimizer; kwargs...)
     return solve_blocker_placement(file, _PM.ACPPowerModel, optimizer; kwargs...)
@@ -11,7 +10,7 @@ end
 
 
 function solve_blocker_placement(file, model_type::Type, optimizer; kwargs...)
-    return _PM.run_model(
+    return _PM.solve_model(
         file,
         model_type,
         optimizer,
@@ -78,7 +77,7 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :gmd_bus)
-        #constraint_dc_power_balance(pm, i)
+        constraint_dc_power_balance_ne_blocker(pm,i)
     end
 
     for i in _PM.ids(pm, :gmd_branch)

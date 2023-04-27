@@ -254,5 +254,12 @@ function variable_ne_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.n
         )
     end
 
+    zv_dc = _PM.var(pm, nw)[:zv_dc] = JuMP.@variable(pm.model,
+        [i in _PM.ids(pm, nw, :gmd_bus)], base_name="$(nw)_v_dc",
+        lower_bound = min(calc_min_dc_voltage(pm, i, nw=nw), 0.0),
+        upper_bound = max(calc_max_dc_voltage(pm, i, nw=nw), 0.0),
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_bus, i), "v_dc_start")
+    )
+
     report && _PM.sol_component_value(pm, nw, :gmd_ne_blocker, :blocker_placed, _PM.ids(pm, nw, :gmd_ne_blocker), z_gic_blocker)
 end

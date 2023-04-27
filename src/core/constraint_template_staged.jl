@@ -104,27 +104,7 @@ end
 
 
 
-"CONSTRAINT: nodal power balance for dc circuits with GIC blockers and shunts"
-function constraint_dc_power_balance_blocker(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
-    dc_expr = pm.model.ext[:nw][nw][:dc_expr]
-    gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
-    gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
-
-    gs = gmd_bus["g_gnd"]
-    has_blocker = get(gmd_bus, "blocker", 0.0)
-        # assume by default that blocker is not present
-    blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
-        # assume by default that the blocker is active
-        # if 0.0, then the dc blocker is bypassed
-
-    if has_blocker != 0.0
-        constraint_dc_power_balance_blocker(pm, nw, i, dc_expr, gmd_bus_arcs, gs)
-    else
-        constraint_dc_power_balance(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
-    end
-
-end
 
 "CONSTRAINT: ohms on/off constraint for dc circuits"
 function constraint_dc_ohms_on_off(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)

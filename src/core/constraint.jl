@@ -338,11 +338,37 @@ function constraint_load_served(pm::_PM.AbstractPowerModel, n::Int, pds, min_loa
 
     z_demand = _PM.var(pm, n, :z_demand)
 
-    c = JuMP.@constraint(pm.model,
+    JuMP.@constraint(pm.model,
         sum(pd*z_demand[i] for (i,pd) in pds)
         >=
         min_load_served
     )
 
-    println(c)
+end
+
+
+"CONSTRAINT: nodal power balance for dc circuits with GIC blockers"
+function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, n::Int, i, j, dc_expr, gmd_bus_arcs, gs)
+
+    v_dc = _PM.var(pm, n, :v_dc)[i]
+    zv_dc = _PM.var(pm, n, :zv_dc)[i]
+    z = _PM.var(pm, n, :z_blocker)[j]
+
+    if length(gmd_bus_arcs) > 0
+
+        if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
+            Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
+        end
+
+        _IM.relaxation_product(pm.model, z, v_dc, zv_dc)
+
+        JuMP.@constraint(pm.model,
+            sum(dc_expr[a] for a in gmd_bus_arcs)
+            ==
+            (gs * v_dc) - z*gs - zv_dc
+#            (gs * v_dc)*(1 - z)
+        )
+
+    end
+
 end

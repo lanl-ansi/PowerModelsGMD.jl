@@ -180,11 +180,13 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, i::Int; nw::Int
     gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
 
     gs = gmd_bus["g_gnd"]
-    has_blocker = get(gmd_bus, "blocker", 0.0)
+#    has_blocker = get(gmd_bus, "blocker", 0.0)
         # assume by default that blocker is not present
-    blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
+#    blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
         # assume by default that the blocker is active
         # if 0.0, then the dc blocker is bypassed
+
+    blocker_status = 0
 
     constraint_dc_power_balance(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
 
@@ -276,5 +278,32 @@ function constraint_load_served(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defaul
     pd = Dict(k => abs(_PM.ref(pm, nw, :load, k, "pd")) for (k,load) in _PM.ref(pm, nw, :load))
 
     constraint_load_served(pm, nw, pd, min_load_served)
+
+end
+
+
+"CONSTRAINT: nodal power balance for dc circuits with GIC blockers and shunts"
+function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+
+    dc_expr = pm.model.ext[:nw][nw][:dc_expr]
+    gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
+    gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
+    gmd_bus_ne_blockers = _PM.ref(pm,nw,:gmd_bus_ne_blockers)
+
+    gs = gmd_bus["g_gnd"]
+    #has_blocker = get(gmd_bus, "blocker", 0.0)
+    #blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
+    blocker_status = 0
+
+    if blocker_status == 0 && haskey(gmd_bus_ne_blockers, i)
+        blockers = gmd_bus_ne_blockers[i]
+        if (length(blockers) > 1)
+            Memento.warn(_LOGGER, "Bus ", i, " has more than one expansion blocker defined for it. Only using one of them")
+        end
+
+        constraint_dc_power_balance_ne_blocker(pm, nw, i, blockers[1], dc_expr, gmd_bus_arcs, gs)
+    else
+        constraint_dc_power_balance(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
+    end
 
 end
