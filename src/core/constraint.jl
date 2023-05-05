@@ -264,16 +264,12 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_e
                 0.0
             )
 
-            print(con)
-
         else
             con = JuMP.@constraint(pm.model,
                 sum(dc_expr[a] for a in gmd_bus_arcs)
                 ==
                 (gs * v_dc)
             )
-
-            print(con)
 
         end
 
@@ -371,13 +367,9 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, n::I
         con = JuMP.@constraint(pm.model,
             sum(dc_expr[a] for a in gmd_bus_arcs)
             ==
-    #        (gs * v_dc) - z*gs - zv_dc
             (gs * v_dc) - gs * zv_dc
 #            (gs * v_dc)*(1 - z)
         )
-
-        print(con)
-
     end
 
 end

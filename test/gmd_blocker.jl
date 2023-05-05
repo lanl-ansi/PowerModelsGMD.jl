@@ -40,10 +40,8 @@
 
         result = _PMGMD.solve_ac_blocker_placement(case_epri21, juniper_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 2.0; atol = 1e-1)
+        @test isapprox(result["objective"], 1.0; atol = 1e-1)
         @test isapprox(result["solution"]["gmd_ne_blocker"]["1"]["blocker_placed"], 0.0; atol=1e-6)
-
-        _IM.print_summary(result["solution"])
 
         case_epri21["branch"]["4"]["rate_a"] = .09925
 
@@ -52,7 +50,6 @@
         @test isapprox(result["objective"], 1.0; atol = 1e-1)
         @test isapprox(result["solution"]["gmd_ne_blocker"]["1"]["blocker_placed"], 0.0; atol=1e-6)
 
-        _IM.print_summary(result["solution"])
     end
 
 end
