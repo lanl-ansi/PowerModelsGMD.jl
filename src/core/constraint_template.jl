@@ -295,7 +295,9 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, i::I
     #blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
     blocker_status = 0
 
-    if blocker_status == 0 && haskey(gmd_bus_ne_blockers, i)
+    print(i, ": ")
+
+    if blocker_status == 0 && haskey(gmd_bus_ne_blockers, i) && length(gmd_bus_ne_blockers[i]) > 0
         blockers = gmd_bus_ne_blockers[i]
         if (length(blockers) > 1)
             Memento.warn(_LOGGER, "Bus ", i, " has more than one expansion blocker defined for it. Only using one of them")
@@ -306,4 +308,5 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, i::I
         constraint_dc_power_balance(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
     end
 
+    println()
 end

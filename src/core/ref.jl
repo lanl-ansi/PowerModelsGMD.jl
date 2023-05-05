@@ -75,5 +75,5 @@ function ref_add_ne_blocker!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         end
         nw_ref[:gmd_bus_ne_blockers] = gmd_bus_ne_blockers
     end
-    
+
 end

@@ -24,11 +24,35 @@
         @test isapprox(result["objective"], 0.0; atol = 1e-1)
         @test isapprox(result["solution"]["gmd_ne_blocker"]["1"]["blocker_placed"], 0.0; atol=1e-6)
 
+
         result = _PMGMD.solve_soc_blocker_placement(case_b4gic, juniper_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["objective"], 0.0; atol = 1e-1)
         @test isapprox(result["solution"]["gmd_ne_blocker"]["1"]["blocker_placed"], 0.0; atol=1e-6)
 
+    end
+
+    @testset "EPRI 21 case" begin
+
+        case_epri21 = _PM.parse_file(data_epri21_ne_blocker)
+
+        case_epri21["branch"]["4"]["rate_a"] = 3.7
+
+        result = _PMGMD.solve_ac_blocker_placement(case_epri21, juniper_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 2.0; atol = 1e-1)
+        @test isapprox(result["solution"]["gmd_ne_blocker"]["1"]["blocker_placed"], 0.0; atol=1e-6)
+
+        _IM.print_summary(result["solution"])
+
+        case_epri21["branch"]["4"]["rate_a"] = .09925
+
+        result = _PMGMD.solve_soc_blocker_placement(case_epri21, juniper_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 1.0; atol = 1e-1)
+        @test isapprox(result["solution"]["gmd_ne_blocker"]["1"]["blocker_placed"], 0.0; atol=1e-6)
+
+        _IM.print_summary(result["solution"])
     end
 
 end

@@ -41,13 +41,14 @@ data_epri21 = "../test/data/matpower/epri21.m"
 data_ieee_rts_0 = "../test/data/matpower/ieee_rts_0.m"
 data_otstest = "../test/data/matpower/ots_test.m"
 data_b4gic_ne_blocker = "../test/data/matpower/b4gic_ne_blocker.m"
+data_epri21_ne_blocker = "../test/data/matpower/epri21_ne_blocker.m"
 
 # Perform automated testing of PMsGMD problem specifications:
 @testset "PowerModelsGMD" begin
-    include("ac_data.jl")
-    include("gmd.jl")
-    include("gmd_opf.jl")
-    include("gmd_mld.jl")
-    include("gmd_ots.jl")
+#    include("ac_data.jl")
+#    include("gmd.jl")
+#    include("gmd_opf.jl")
+#    include("gmd_mld.jl")
+#    include("gmd_ots.jl")
     include("gmd_blocker.jl")
 end

@@ -258,17 +258,22 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_e
         end
 
         if blocker_status != 0.0
-            JuMP.@constraint(pm.model,
+            con = JuMP.@constraint(pm.model,
                 sum(dc_expr[a] for a in gmd_bus_arcs)
                 ==
                 0.0
             )
+
+            print(con)
+
         else
             con = JuMP.@constraint(pm.model,
                 sum(dc_expr[a] for a in gmd_bus_arcs)
                 ==
                 (gs * v_dc)
             )
+
+            print(con)
 
         end
 
@@ -295,6 +300,7 @@ function constraint_dc_ohms(pm::_PM.AbstractPowerModel, n::Int, i, f_bus, t_bus,
         ==
         gs * (vfr + vs - vto)
     )
+
 
 end
 
@@ -351,7 +357,7 @@ end
 function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, n::Int, i, j, dc_expr, gmd_bus_arcs, gs)
 
     v_dc = _PM.var(pm, n, :v_dc)[i]
-    zv_dc = _PM.var(pm, n, :zv_dc)[i]
+    zv_dc = _PM.var(pm, n, :zv_dc)[j]
     z = _PM.var(pm, n, :z_blocker)[j]
 
     if length(gmd_bus_arcs) > 0
@@ -362,12 +368,15 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, n::I
 
         _IM.relaxation_product(pm.model, z, v_dc, zv_dc)
 
-        JuMP.@constraint(pm.model,
+        con = JuMP.@constraint(pm.model,
             sum(dc_expr[a] for a in gmd_bus_arcs)
             ==
-            (gs * v_dc) - z*gs - zv_dc
+    #        (gs * v_dc) - z*gs - zv_dc
+            (gs * v_dc) - gs * zv_dc
 #            (gs * v_dc)*(1 - z)
         )
+
+        print(con)
 
     end
 
