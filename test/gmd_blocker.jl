@@ -38,6 +38,10 @@
 
         case_epri21["branch"]["4"]["rate_a"] = 3.7
 
+        for (i, gmd_bus) in case_epri21["gmd_bus"]
+            gmd_bus["g_gnd"] = gmd_bus["g_gnd"] * 1000.0
+        end
+
         result = _PMGMD.solve_ac_blocker_placement(case_epri21, juniper_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["objective"], 1.0; atol = 1e-1)
