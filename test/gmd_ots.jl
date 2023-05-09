@@ -1,124 +1,84 @@
-@testset "TEST AC GMD OTS" begin
+@testset "TEST GMD MLS OTS" begin
 
-
-    # ===   EPRI21   === #
 
     @testset "EPRI21 case" begin
 
-        # result = _PMGMD.run_ac_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
 
-        # TODO => FIX ERROR
-        # Received Warning Message:
-        # [warn | InfrastructureModels]: model has no results, solution cannot be built
-        # ["termination_status"] = LOCALLY_INFEASIBLE
+        # ===   COUPLED AC-MLS-OTS   === #
+
+
+        case_epri21 = _PM.parse_file(data_epri21)
+
+        result = _PMGMD.solve_soc_gmd_ots(case_epri21, juniper_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 0.0000; atol=1e-2)
+
+
+        case_epri21 = _PM.parse_file(data_epri21)
+
+        result = _PMGMD.solve_qc_gmd_ots(case_epri21, juniper_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 0.0000; atol=1e-2)
+
+
+        case_epri21 = _PM.parse_file(data_epri21)
+
+        result = _PMGMD.solve_ac_gmd_ots(case_epri21, juniper_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 0.0000; atol=1e-2)
+
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots"
+
+
+        # ===   COUPLED AC-MLS-OTS-TS   === #
+
+
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_mls_ots_ts"
+
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots_ts"
+
 
     end
 
-
-
-    # ===   OTS-TEST   === #
 
     @testset "OTS-TEST case" begin
 
-        # result = _PMGMD.run_ac_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
 
-        # TODO => FIX ERROR
-        # Received Warning Message:
-        # [warn | InfrastructureModels]: model has no results, solution cannot be built
-        # ["termination_status"] = LOCALLY_INFEASIBLE
+        # ===   COUPLED AC-MLS-OTS   === #
+
+
+        case_otstest = _PM.parse_file(data_otstest)
+
+        result = _PMGMD.solve_soc_gmd_ots(case_otstest, juniper_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 0.0000; atol=1e-2)
+
+
+        case_otstest = _PM.parse_file(data_otstest)
+
+        result = _PMGMD.solve_qc_gmd_ots(case_otstest, juniper_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 0.0000; atol=1e-2)
+
+
+        case_otstest = _PM.parse_file(data_otstest)
+
+        result = _PMGMD.solve_ac_gmd_ots(case_otstest, juniper_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 0.0000; atol=1e-2)
+
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots"
+
+
+        # ===   COUPLED AC-MLS-OTS-TS   === #
+
+
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_mls_ots_ts"
+
+        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots_ts"
+
 
     end
-
-
-
-end
-
-
-
-
-
-@testset "TEST QC GMD OTS" begin
-
-
-    # ===   EPRI21   === #
-
-    @testset "EPRI21 case" begin
-
-        # result = _PMGMD.run_qc_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
-
-        # TODO => FIX ERROR
-        # Received Warning Message:
-        # [warn | InfrastructureModels]: model has no results, solution cannot be built
-        # ["termination_status"] = LOCALLY_INFEASIBLE
-
-    end
-
-
-
-    # ===   OTS-TEST   === #
-
-    @testset "OTS-TEST case" begin
-
-        # result = _PMGMD.run_qc_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
-
-        # TODO => FIX ERROR
-        # Received Warning Message:
-        # [warn | InfrastructureModels]: model has no results, solution cannot be built
-        # ["termination_status"] = LOCALLY_INFEASIBLE
-
-    end
-
-
-
-end
-
-
-
-
-
-@testset "TEST SOC GMD OTS" begin
-
-
-    # ===   EPRI21   === #
-
-    @testset "EPRI21 case" begin
-
-        # result = _PMGMD.run_soc_gmd_mls_ots(case_epri21, juniper_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
-
-        # TODO => FIX ERROR
-        # Received Warning Message:
-        # [warn | InfrastructureModels]: model has no results, solution cannot be built
-        # ["termination_status"] = LOCALLY_INFEASIBLE
-
-    end
-
-
-
-    # ===   OTS-TEST   === #
-
-    @testset "OTS-TEST case" begin
-
-        # result = _PMGMD.run_soc_gmd_mls_ots(case_otstest, juniper_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
-
-        # TODO => FIX ERROR
-        # Received Warning Message:
-        # [warn | InfrastructureModels]: model has no results, solution cannot be built
-        # ["termination_status"] = LOCALLY_INFEASIBLE
-
-    end
-
 
 
 end

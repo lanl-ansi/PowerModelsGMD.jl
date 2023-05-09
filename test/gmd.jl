@@ -1,120 +1,166 @@
 @testset "TEST GMD" begin
 
 
-    # ===   B4GIC   === #
-
     @testset "B4GIC case" begin
 
-        result = _PMGMD.run_gmd(case_b4gic, ipopt_solver; setting=setting)
+
+        # ===   WITH OPTIMIZER   === #
+
+
+        case_b4gic = _PM.parse_file(data_b4gic)
+
+        result = _PMGMD.solve_gmd(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
-        # - DC solution - %
-
+        # DC solution:
         dc_solution = result["solution"]
-
         @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
-
         @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
 
+
+        # ===   WITH MATRIX SOLVE   === #
+
+
+        case_b4gic = _PM.parse_file(data_b4gic)
+
+        result = _PMGMD.solve_gmd(case_b4gic; setting=setting)
+        @test result["status"] == :LocalOptimal
+
+        # DC solution:
+        dc_solution = result["solution"]
+        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], -63.9691, atol=1e-1)
+
+
     end
 
 
+    @testset "B4GIC-3W case" begin
 
-    # ===   NERC B6GIC   === #
 
-    @testset "NERC B6GIC case" begin
+        # ===   WITH OPTIMIZER   === #
 
-        result = _PMGMD.run_gmd(case_b6gic_nerc, ipopt_solver; setting=setting)
+
+        case_b4gic3w = _PM.parse_file(data_b4gic3w)
+
+        mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
+        f = open(mods_b4gic3w)
+        mods = JSON.parse(f)
+        close(f)
+
+        _PMGMD.apply_mods!(case_b4gic3w, mods)
+        _PMGMD.fix_gmd_indices!(case_b4gic3w)
+
+        result = _PMGMD.solve_gmd(case_b4gic3w, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
-        # - DC solution - %
-
+        # DC solution:
         dc_solution = result["solution"]
+        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -35.9637, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], -103.8494, atol=1e-1)
 
-        @test isapprox(dc_solution["gmd_bus"]["5"]["gmd_vdc"], -23.0222, atol=1e-1)
 
-        @test isapprox(dc_solution["gmd_branch"]["3"]["gmd_idc"], -13.5072, atol=1e-1)
+        # ===   WITH MATRIX SOLVE   === #
+
+
+        case_b4gic3w = _PM.parse_file(data_b4gic3w)
+
+        mods_b4gic3w = "../test/data/suppl/b4gic3w_mods.json"
+        f = open(mods_b4gic3w)
+        mods = JSON.parse(f)
+        close(f)
+
+        _PMGMD.apply_mods!(case_b4gic3w, mods)
+        _PMGMD.fix_gmd_indices!(case_b4gic3w)
+
+        result = _PMGMD.solve_gmd(case_b4gic3w; setting=setting)
+        @test result["status"] == :LocalOptimal
+
+        # DC solution:
+        dc_solution = result["solution"]
+        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -35.9637, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], -103.8494, atol=1e-1)
+
 
     end
 
 
+    @testset "B6GIC-NERC case" begin
 
-    # ===   EPRI21   === #
+
+        # ===   WITH OPTIMIZER   === #
+
+
+        case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
+
+        result = _PMGMD.solve_gmd(case_b6gic_nerc, ipopt_solver; setting=setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+
+        # DC solution:
+        dc_solution = result["solution"]
+        @test isapprox(dc_solution["gmd_bus"]["5"]["gmd_vdc"], -23.0222, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["3"]["gmd_idc"], -13.5072, atol=1e-1)
+
+
+        # ===   WITH MATRIX SOLVE   === #
+
+
+        case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
+
+        result = _PMGMD.solve_gmd(case_b6gic_nerc; setting=setting)
+        @test result["status"] == :LocalOptimal
+
+        # DC solution:
+        dc_solution = result["solution"]
+        @test isapprox(dc_solution["gmd_bus"]["5"]["gmd_vdc"], -23.0222, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["3"]["gmd_idc"], -13.5072, atol=1e-1)
+
+
+    end
+
 
     @testset "EPRI21 case" begin
 
-        result = _PMGMD.run_gmd(case_epri21, ipopt_solver; setting=setting)
+
+        # ===   WITH OPTIMIZER   === #
+
+
+        case_epri21 = _PM.parse_file(data_epri21)
+
+        result = _PMGMD.solve_gmd(case_epri21, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
-        # - DC solution - %
-
+        # DC solution:
         dc_solution = result["solution"]
-
         @test isapprox(dc_solution["gmd_bus"]["5"]["gmd_vdc"], -6.5507, atol=1e-1)
         @test isapprox(dc_solution["gmd_bus"]["14"]["gmd_vdc"], 44.2630, atol=1e-1)
         @test isapprox(dc_solution["gmd_bus"]["17"]["gmd_vdc"], -40.6570, atol=1e-1)
-    
         @test isapprox(dc_solution["gmd_branch"]["5"]["gmd_idc"], 140.6257, atol=1e-1)
         @test isapprox(dc_solution["gmd_branch"]["13"]["gmd_idc"], 53.3282, atol=1e-1)
         @test isapprox(dc_solution["gmd_branch"]["29"]["gmd_idc"], 177.0521, atol=1e-1)
         @test isapprox(dc_solution["gmd_branch"]["35"]["gmd_idc"], -54.5694, atol=1e-1)
 
-    end
+
+        # ===   WITH MATRIX SOLVE   === #
 
 
+        case_epri21 = _PM.parse_file(data_epri21)
 
-    # ===   UIUC150   === #
+        result = _PMGMD.solve_gmd(case_epri21; setting=setting)
+        @test result["status"] == :LocalOptimal
 
-    @testset "UIUC150 case" begin
-
-        result = _PMGMD.run_gmd(case_uiuc150, ipopt_solver; setting=setting)
-        @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        
-        # - DC solution - %
-
+        # DC solution:
         dc_solution = result["solution"]
+        @test isapprox(dc_solution["gmd_bus"]["5"]["gmd_vdc"], -6.5507, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["14"]["gmd_vdc"], 44.2630, atol=1e-1)
+        @test isapprox(dc_solution["gmd_bus"]["17"]["gmd_vdc"], -40.6569, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["5"]["gmd_idc"], -51.9651, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["13"]["gmd_idc"], -15.0549, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["29"]["gmd_idc"], 177.0521, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["35"]["gmd_idc"], -54.5694, atol=1e-1)
 
-        @test isapprox(dc_solution["gmd_bus"]["13"]["gmd_vdc"], 0.6851, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["57"]["gmd_vdc"], 0.0, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["131"]["gmd_vdc"], 3.8044, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["190"]["gmd_vdc"], 6.9636, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["197"]["gmd_vdc"], -32.6745, atol=1e-1)
-
-        @test isapprox(dc_solution["gmd_branch"]["7"]["gmd_idc"], 23.9444, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["45"]["gmd_idc"], -6.2589, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["91"]["gmd_idc"], -23.0147, atol=1e-1)
 
     end
-
-
-
-    # ===   RTS-GMLC-GIC   === #
-
-    @testset "RTS-GMLC-GIC case" begin
-
-        result = _PMGMD.run_gmd(case_rtsgmlcgic, ipopt_solver; setting=setting)
-        @test result["termination_status"] == _PM.LOCALLY_SOLVED
-
-        # - DC solution - %
-
-        dc_solution = result["solution"]
-
-        # NOTE: currently PMsGMD always gives gmd_vdc=0 on the delta side of generator transformers
-        @test isapprox(dc_solution["gmd_bus"]["68"]["gmd_vdc"], 16.9618, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["84"]["gmd_vdc"], -6.6351, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["96"]["gmd_vdc"], 13.5894, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["121"]["gmd_vdc"], -9.6450, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["122"]["gmd_vdc"], -7.9706, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["155"]["gmd_vdc"], 0.0, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["186"]["gmd_vdc"], 0.0, atol=1e-1)
-
-        @test isapprox(dc_solution["gmd_branch"]["13"]["gmd_idc"], -23.4737, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["38"]["gmd_idc"], 30.5395, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["67"]["gmd_idc"], -0.3426, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["81"]["gmd_idc"], -1.4860, atol=1e-1)
-
-    end
-
 
 
 end

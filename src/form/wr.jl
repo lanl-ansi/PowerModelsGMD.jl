@@ -1,293 +1,115 @@
-# ===   WR   === #
+####################################################
+# Quadratic Relaxations in the Rectangular W-Space #
+####################################################
 
 
-"VARIABLE: bus voltage on/off"
-function variable_bus_voltage_on_off(pm::_PM.AbstractWRModel; kwargs...)
-    variable_bus_voltage_magnitude_sqr_on_off(pm; kwargs...)
-    variable_bus_voltage_product_on_off(pm; kwargs...)
+# ===   VOLTAGE VARIABLES   === #
+
+"
+  Declaration of the bus voltage variables. This is a pass through to _PM.variable_bus_voltage except for those forms where vm is not
+  created and it is needed for the GIC.  This function creates the vm variables to add to the WR formulation
+"
+function variable_bus_voltage(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    _PM.variable_bus_voltage(pm;nw=nw,bounded=bounded,report=report)
+    # make sure the voltage magntiude variable is created since some WR models don't need it, but GMD does
+    if !haskey(_PM.var(pm,nw),:vm)
+        _PM.variable_bus_voltage_magnitude(pm;nw=nw,bounded=bounded,report=report)
+    end
 end
 
 
-"VARIABLE: bus voltage product on/off"
-function variable_bus_voltage_product_on_off(pm::_PM.AbstractWRModel; nw::Int=nw_id_default)
+"
+  Declaration of the bus voltage variables. This is a pass through to _PM.variable_bus_voltage except for those forms where vm is not
+  created and it is needed for the GIC.  This function creates the vm variables to add to the WR formulation
+"
+function variable_bus_voltage_on_off(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    _PM.variable_bus_voltage_on_off(pm;nw=nw,report=report)
 
-    wr_min, wr_max, wi_min, wi_max = _PM.ref_calc_voltage_product_bounds(_PM.ref(pm, nw, :buspairs))
-
-    _PM.var(pm, nw)[:wr] = JuMP.@variable(pm.model,
-        [bp in _PM.ids(pm, nw, :buspairs)], base_name="$(nw)_wr",
-        lower_bound = min(0,wr_min[bp]),
-        upper_bound = max(0,wr_max[bp]),
-        start = _PM.comp_start_value(_PM.ref(pm, nw, :buspairs, bp), "wr_start", 1.0)
-    )
-    _PM.var(pm, nw)[:wi] = JuMP.@variable(pm.model,
-        [bp in _PM.ids(pm, nw, :buspairs)], base_name="$(nw)_wi",
-        lower_bound = min(0,wi_min[bp]),
-        upper_bound = max(0,wi_max[bp]),
-        start = _PM.comp_start_value(_PM.ref(pm, nw, :buspairs, bp), "wi_start")
-    )
-
+    # make sure the voltage magntiude variable is created since some WR models don't need it, but GMD does
+    if !haskey(_PM.var(pm,nw),:vm)
+        _PM.variable_bus_voltage_magnitude(pm;nw=nw,bounded=bounded,report=report)
+    end
 end
 
 
-"FUNCTION: ac current on/off"
-function variable_ac_current_on_off(pm::_PM.AbstractWRModel; kwargs...)
-   variable_ac_current_mag(pm; bounded=false, kwargs...)
+"
+  Constraint: constraints on modeling bus voltages that is primarly a pass through to _PM.constraint_model_voltage
+  There are a few situations where the GMD problem formulations have additional voltage modeling than what _PM provides.
+  For example, many of the GMD problem formulations need explict vm variables, which the WR formulations do not provide
+"
+function constraint_model_voltage(pm::_PM.AbstractWRModel; nw::Int=_PM.nw_id_default)
+    _PM.constraint_model_voltage(pm; nw=nw)
+
+    w  = _PM.var(pm, nw,  :w)
+    vm = _PM.var(pm, nw,  :vm)
+
+    for i in _PM.ids(pm, nw, :bus)
+        _IM.relaxation_sqr(pm.model, vm[i], w[i])
+    end
+end
+
+
+
+"
+  Constraint: constraints on modeling bus voltages that is primarly a pass through to _PM.constraint_model_voltage
+  There are a few situations where the GMD problem formulations have additional voltage modeling than what _PM provides.
+  For example, many of the GMD problem formulations need explict vm variables, which the WR formulations do not provide
+"
+function constraint_model_voltage(pm::_PM.AbstractWRModel; nw::Int=_PM.nw_id_default)
+    _PM.constraint_model_voltage(pm; nw=nw)
+
+    w  = _PM.var(pm, nw,  :w)
+    vm = _PM.var(pm, nw,  :vm)
+
+    for i in _PM.ids(pm, nw, :bus)
+        _IM.relaxation_sqr(pm.model, vm[i], w[i])
+    end
+end
+
+# ===   CURRENT VARIABLES   === #
+
+function variable_gic_current(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    variable_dc_current_mag(pm; nw=nw, bounded=bounded,report=report)
+    variable_iv(pm; nw=nw, report=report)
 end
 
 
 "FUNCTION: ac current"
-function variable_ac_current(pm::_PM.AbstractWRModel; kwargs...)
+function variable_ac_positive_current(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 
-    nw = nw_id_default
-
-    variable_ac_current_mag(pm; kwargs...)
-
-    parallel_branch = Dict(x for x in _PM.ref(pm, nw, :branch) if _PM.ref(pm, nw, :buspairs)[(x.second["f_bus"], x.second["t_bus"])]["branch"] != x.first)
-    cm_min = Dict((l, 0) for l in keys(parallel_branch))
-    cm_max = Dict((l, (branch["rate_a"]*branch["tap"]/_PM.ref(pm, nw, :bus)[branch["f_bus"]]["vmin"])^2) for (l, branch) in parallel_branch)
-
-    _PM.var(pm, nw)[:cm_p] = JuMP.@variable(pm.model,
-        [l in keys(parallel_branch)], base_name="$(nw)_cm_p",
-        lower_bound = cm_min[l],
-        upper_bound = cm_max[l],
-        start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "cm_p_start")
-    )
+    variable_ac_positive_current_mag(pm; nw=nw, bounded=bounded, report=report)
+    variable_ac_current_mag_sqr(pm; nw=nw, bounded=bounded, report=report)
 
 end
 
 
-"FUNCTION: dc current"
-function variable_dc_current(pm::_PM.AbstractWRModel; kwargs...)
-    variable_dc_current_mag(pm; kwargs...)
-    variable_dc_current_mag_sqr(pm; kwargs...)
-end
 
 
-"FUNCTION: reactive loss"
-function variable_reactive_loss(pm::_PM.AbstractWRModel; kwargs...)
-    variable_qloss(pm; kwargs...)
-    variable_iv(pm; kwargs...)
-end
 
 
-"CONSTRAINT: bus voltage product on/off"
-function constraint_bus_voltage_product_on_off(pm::_PM.AbstractWRModels; nw::Int=nw_id_default)
-
-    wr_min, wr_max, wi_min, wi_max = _PM.ref_calc_voltage_product_bounds(_PM.ref(pm, nw, :buspairs))
-
-    wr = _PM.var(pm, nw, :wr)
-    wi = _PM.var(pm, nw, :wi)
-    z_voltage = _PM.var(pm, nw, :z_voltage)
-
-    for bp in _PM.ids(pm, nw, :buspairs)
-        (i,j) = bp
-        z_fr = z_voltage[i]
-        z_to = z_voltage[j]
-
-        JuMP.@constraint(pm.model,
-            wr[bp]
-            <=
-            z_fr * wr_max[bp]
-        )
-        JuMP.@constraint(pm.model,
-            wr[bp]
-            >=
-            z_fr * wr_min[bp]
-        )
-        JuMP.@constraint(pm.model,
-            wi[bp]
-            <=
-            z_fr * wi_max[bp]
-        )
-        JuMP.@constraint(pm.model,
-            wi[bp]
-            >=
-            z_fr * wi_min[bp]
-        )
-
-        JuMP.@constraint(pm.model,
-            wr[bp]
-            <=
-            z_to*wr_max[bp]
-        )
-        JuMP.@constraint(pm.model,
-            wr[bp]
-            >=
-            z_to*wr_min[bp]
-        )
-        JuMP.@constraint(pm.model,
-            wi[bp]
-            <=
-            z_to*wi_max[bp]
-        )
-        JuMP.@constraint(pm.model,
-            wi[bp]
-            >=
-            z_to*wi_min[bp]
-        )
-
-    end
-end
 
 
-"CONSTRAINT: bus voltage on/off"
-function constraint_bus_voltage_on_off(pm::_PM.AbstractWRModels, n::Int; kwargs...)
-
-    for (i,bus) in _PM.ref(pm, n, :bus)
-        constraint_voltage_magnitude_sqr_on_off(pm, i; nw=n)
-    end
-
-    constraint_bus_voltage_product_on_off(pm; nw=n)
-
-    w = _PM.var(pm, n, :w)
-    wr = _PM.var(pm, n, :wr)
-    wi = _PM.var(pm, n, :wi)
-
-    for (i,j) in _PM.ids(pm, n, :buspairs)
-        _IM.relaxation_complex_product(pm.model, w[i], w[j], wr[(i,j)], wi[(i,j)])
-    end
-
-end
+# ===   CURRENT CONSTRAINTS   === #
 
 
-"CONSTRAINT: power balance with shunts for load shedding"
-function constraint_power_balance_shunt_gmd_mls(pm::_PM.AbstractWRModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+"CONSTRAINT: qloss assuming constant ac primary voltage"
+function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, branchMVA, K)
 
-    w = _PM.var(pm, n, :w)[i]
-    pg = _PM.var(pm, n, :pg)
-    qg = _PM.var(pm, n, :qg)
-    p = _PM.var(pm, n, :p)
-    q = _PM.var(pm, n, :q)
     qloss = _PM.var(pm, n, :qloss)
-    pd_mls = _PM.var(pm, n, :pd)
-    qd_mls = _PM.var(pm, n, :qd)
-
-    if length(bus_arcs) > 0 || length(bus_gens) > 0 || length(bus_pd) > 0 || length(bus_gs) > 0
-        JuMP.@constraint(pm.model,
-            sum(p[a] for a in bus_arcs)
-            ==
-            sum(pg[g] for g in bus_gens)
-            - sum(pd - pd_mls[i] for (i, pd) in bus_pd)
-            - sum(gs for (i, gs) in bus_gs) * w
-        )
-    end
-
-    if length(bus_arcs) > 0 || length(bus_gens) > 0 || length(bus_qd) > 0 || length(bus_bs) > 0
-        JuMP.@constraint(pm.model,
-            sum(q[a] + qloss[a] for a in bus_arcs)
-            ==
-            sum(qg[g] for g in bus_gens)
-            - sum(qd - qd_mls[i] for (i, qd) in bus_qd)
-            + sum(bs for (i, bs) in bus_bs) * w
-        )
-    end
-
-end
-
-
-"CONSTRAINT: power balance without shunts and load shedding"
-function constraint_power_balance_gmd(pm::_PM.AbstractWRModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd)
-
-    p = _PM.var(pm, n, :p)
-    q = _PM.var(pm, n, :q)
-    pg = _PM.var(pm, n, :pg)
-    qg = _PM.var(pm, n, :qg)
-    qloss = _PM.var(pm, n, :qloss)
-
-    JuMP.@constraint(pm.model,
-        sum(p[a] for a in bus_arcs)
-        ==
-        sum(pg[g] for g in bus_gens)
-        - sum(pd for (i, pd) in bus_pd)
-    )
-    JuMP.@constraint(pm.model,
-        sum(q[a] + qloss[a] for a in bus_arcs)
-        ==
-        sum(qg[g] for g in bus_gens)
-        - sum(qd for (i, qd) in bus_qd)
-    )
-
-end
-
-
-"CONSTRAINT: relating current to power flow on_off"
-function constraint_current_on_off(pm::_PM.AbstractWRModel, n::Int, i::Int, ac_max)
-
-    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
-    z = _PM.var(pm, n, :z_branch)[i]
-
-    JuMP.@constraint(pm.model,
-        i_ac_mag
-        <=
-        z * ac_max
-    )
-    JuMP.@constraint(pm.model,
-        i_ac_mag
-        >=
-        0
-    )
-
-end
-
-
-"CONSTRAINT: computing thermal protection of transformers"
-function constraint_thermal_protection(pm::_PM.AbstractWRModel, n::Int, i::Int, coeff, ibase)
-
-    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
-    ieff = _PM.var(pm, n, :i_dc_mag)[i]
-    ieff_sqr = _PM.var(pm, n, :i_dc_mag_sqr)[i]
-
-    JuMP.@constraint(pm.model,
-        i_ac_mag
-        <=
-        coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff_sqr/(ibase^2)
-    )
-
-    _IM.relaxation_sqr(pm.model, ieff, ieff_sqr)
-
-end
-
-
-"CONSTRAINT: computing qloss"
-function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j)
-
     i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
-    qloss = _PM.var(pm, n, :qloss)
-    iv = _PM.var(pm, n, :iv)[(k,i,j)]
-    vm = _PM.var(pm, n, :vm)[i]
 
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        0.0
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
-    _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
-
-end
-
-
-"CONSTRAINT: computing qloss"
-function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, K, branchMVA)
-
-    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
-    qloss = _PM.var(pm, n, :qloss)
     iv = _PM.var(pm, n, :iv)[(k,i,j)]
     vm = _PM.var(pm, n, :vm)[i]
 
     if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
-        Memento.warn(_LOGGER, "DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.")
+        Memento.warn(_LOGGER, "DC voltage magnitude cannot take a 0 value. In OTS applications, this may result in incorrect results.")
     end
 
     JuMP.@constraint(pm.model,
         qloss[(k,i,j)]
         ==
-        ((K * iv) / (3.0 * branchMVA))  # 'K' is per phase
+        ((K * iv) / (3.0 * branchMVA))
+            # K is per phase
     )
     JuMP.@constraint(pm.model,
         qloss[(k,j,i)]
@@ -299,3 +121,87 @@ function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, K, branchMVA
 
 end
 
+
+# ===   THERMAL CONSTRAINTS   === #
+
+
+"CONSTRAINT: dc current on ungrounded gwye-delta transformers"
+function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractWRModel, n::Int, k, kh, ih, jh)
+
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        ihi
+    )
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        -ihi
+    )
+
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
+function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractWRModel, n::Int, k, kh, ih, jh, kl, il, jl, a)
+
+    Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+    ilo = _PM.var(pm, n, :dc)[(kl,il,jl)]
+
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        (a * ihi + ilo) / a
+    )
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        - (a * ihi + ilo) / a
+    )
+
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye auto transformers"
+function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractWRModel, n::Int, k, ks, is, js, kc, ic, jc, a)
+
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    is = _PM.var(pm, n, :dc)[(ks,is,js)]
+    ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
+
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        (a * is + ic) / (a + 1.0)
+    )
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        - ( a * is + ic) / (a + 1.0)
+    )
+
+end
+
+
+"
+  Constraint: constraints on modeling bus voltages that is primarly a pass through to _PMR.constraint_bus_voltage_on_off
+  There are a few situations where the GMD problem formulations have additional voltage modeling than what _PMR provides.
+  For example, many of the GMD problem formulations need explict vm variables, which the WR formulations do not provide
+"
+function constraint_model_voltage_on_off(pm::_PM.AbstractWRModel; nw::Int=_PM.nw_id_default)
+    _PM.constraint_model_voltage_on_off(pm; nw=nw)
+
+    w  = _PM.var(pm, nw,  :w)
+    vm = _PM.var(pm, nw,  :vm)
+
+    for i in _PM.ids(pm, nw, :bus)
+        _IM.relaxation_sqr(pm.model, vm[i], w[i])
+    end
+
+end

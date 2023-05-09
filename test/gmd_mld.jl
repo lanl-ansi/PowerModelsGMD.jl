@@ -1,179 +1,204 @@
-@testset "TEST AC GMD MINIMUM LOADSHED" begin
+@testset "TEST GMD MLD" begin
 
-
-    # ===   CASE-24 IEEE RTS-0   === #
-
-    @testset "CASE24-IEEE-RTS-0 case" begin
-
-        result = _PMGMD.run_ac_gmd_mls(case24_ieee_rts_0, ipopt_solver; setting=setting)
-        @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 108817.4779; atol=1e2)
-
-    end
-
-
-
-    # ===   EPRI21   === #
 
     @testset "EPRI21 case" begin
 
-        # result = _PMGMD.run_ac_gmd_mls(case_epri21, ipopt_solver; setting=setting)
+
+        # ===   DECOUPLED GMD MLD   === #
+
+
+        case_epri21 = _PM.parse_file(data_epri21)
+
+        result = _PMGMD.solve_ac_gmd_mld_decoupled(case_epri21, ipopt_solver; setting=setting)
+        @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["ac"]["result"]["objective"], 490.0; atol=1e-2)
+
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_mld_decoupled"
+
+
+        # ===   DECOUPLED GMD CASCADE MLD   === #
+
+
+        #case_epri21 = _PM.parse_file(data_epri21)
+
+        # result = _PMGMD.solve_soc_gmd_cascade_mld_decoupled(case_epri21, ipopt_solver; setting=setting)
         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
+        # @test isapprox(result["objective"], 0.0000; atol=1e2)
 
-        # TODO => FIX ERROR
-        # Received Warning Message:
-        # DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.
-        # ["termination_status"] = LOCALLY_INFEASIBLE
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_cascade_mld_decoupled"
 
+
+        # ===   COUPLED GMD MLS   === #
+
+
+         case_epri21 = _PM.parse_file(data_epri21)
+
+         result = _PMGMD.solve_soc_gmd_mld(case_epri21, ipopt_solver; setting=setting)
+         @test result["termination_status"] == _PM.LOCALLY_SOLVED
+         @test isapprox(result["objective"], 490.0; atol=1e-2)
+
+
+         case_epri21 = _PM.parse_file(data_epri21)
+
+# FIXME: QC model not currently supported in PowerModelsRestoration (breaks on the call to constraint_theta_ref)
+
+#         result = _PMGMD.solve_qc_gmd_mld(case_epri21, ipopt_solver; setting=setting)
+#         @test result["termination_status"] == _PM.LOCALLY_SOLVED
+#         @test isapprox(result["objective"], 0.0000; atol=1e2)
+
+
+         case_epri21 = _PM.parse_file(data_epri21)
+
+         result = _PMGMD.solve_ac_gmd_mld(case_epri21, ipopt_solver; setting=setting)
+         @test result["termination_status"] == _PM.LOCALLY_SOLVED
+         @test isapprox(result["objective"], 490.0; atol=1e-2)
     end
 
 
-
-end
-
+    @testset "IEEE-RTS-0 case" begin
 
 
+        # ===   DECOUPLED GMD MLD   === #
 
 
-@testset "TEST AC GMD MAXIMUM LOADABILITY" begin
+        # case_ieee_rts_0 = _PM.parse_file(data_ieee_rts_0)
+
+        # result = _PMGMD.solve_soc_gmd_mld_decoupled(case_ieee_rts_0, ipopt_solver; setting=setting)
+        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        # @test isapprox(result["objective"], 0.0000; atol=1e2)
+
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_mld_decoupled"
 
 
-    # ===   CASE-24 IEEE RTS-0   === #
+        # ===   DECOUPLED GMD CASCADE MLD   === #
 
-    @testset "CASE24-IEEE-RTS-0 case" begin
 
-        result = _PMGMD.run_ac_gmd_mld(case24_ieee_rts_0, ipopt_solver; setting=setting)
+        # case_ieee_rts_0 = _PM.parse_file(data_ieee_rts_0)
+
+        # result = _PMGMD.solve_soc_gmd_cascade_mld_decoupled(case_ieee_rts_0, ipopt_solver; setting=setting)
+        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        # @test isapprox(result["objective"], 0.0000; atol=1e2)
+
+        # FIXME: add actual fully automated testing for "solve_soc_gmd_cascade_mld_decoupled"
+
+
+        # ===   COUPLED GMD MLS   === #
+
+        case_ieee_rts_0 = _PM.parse_file(data_ieee_rts_0)
+        result = _PMGMD.solve_soc_gmd_mld(case_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 201417.0020; atol=1e2)
+        @test isapprox(result["objective"], 266.8092; atol=1e-2)
 
-    end
-
-
-
-    # ===   EPRI21   === #
-
-    @testset "EPRI21 case" begin
-
-        # result = _PMGMD.run_ac_gmd_mld(case_epri21, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
-
-        # TODO => FIX ERROR
-        # Received Warning Message:
-        # DC voltage magnitude cannot take a 0 value. In ots applications, this may result in incorrect results.
-        # ["termination_status"] = LOCALLY_INFEASIBLE
-
-    end
-
-
-
-end
-
-
-
-
-
-@testset "TEST QC GMD MINIMUM LOADSHED" begin
-
-
-    # ===   CASE-24 IEEE RTS-0   === #
-
-    @testset "CASE24-IEEE-RTS-0 case" begin
-
-        result = _PMGMD.run_qc_gmd_mls(case24_ieee_rts_0, ipopt_solver; setting=setting)
+        case_ieee_rts_0 = _PM.parse_file(data_ieee_rts_0)
+        result = _PMGMD.solve_ac_gmd_mld(case_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 110689.1477; atol=1e2)
+        @test isapprox(result["objective"], 264.8798, atol=1e-2)
 
     end
 
 
 
-    # ===   EPRI21   === #
+    @testset "B4GIC case" begin
 
-    @testset "EPRI21 case" begin
+        case_b4gic = _PM.parse_file(data_b4gic)
 
-        # result = _PMGMD.run_qc_gmd_mls(case_epri21, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
+        result = _PMGMD.solve_ac_gmd_mld_decoupled(case_b4gic, ipopt_solver; setting=setting)
+        @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["ac"]["result"]["objective"], 100.0; atol = 1e-1)
 
-        # TODO => FIX ERROR
-        # ["termination_status"] = LOCALLY_INFEASIBLE
+        # DC solution:
+        dc_solution = result["dc"]["result"]["solution"]
+        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
+        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
 
-    end
+        # AC solution:
+        ac_solution = result["ac"]["result"]["solution"]
+        @test isapprox(ac_solution["bus"]["1"]["vm"], 0.941, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["3"]["pf"], -10.0551, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["3"]["qf"], -4.7661, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["3"]["gmd_qloss"], 0.6159, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["1"]["gmd_qloss"], 0.5902, atol=1e-1)
+        @test isapprox(ac_solution["branch"]["2"]["gmd_qloss"], 0.0, atol=1e-1)
 
 
 
-end
+#        case_b4gic = _PM.parse_file(data_b4gic)
+
+#        wf_path = "../test/data/suppl/b4gic-gmd-waveform.json"
+#        h = open(wf_path)
+#        wf_data = JSON.parse(h)
+#        close(h)
+
+#        result = _PMGMD.solve_ac_gmd_mld_ts_decoupled(case_b4gic, ipopt_solver, wf_data; setting=setting, disable_thermal=true)
+#        for period in 1:length(wf_data["time"])
+#            @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+#        end
+
+        # DC solution:
+#        dc_solution = result[5]["dc"]["result"]["solution"]
+#        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -27.3598, atol=1e-1)
+#        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 91.1995, atol=1e-1)
+
+#        dc_solution = result[13]["dc"]["result"]["solution"]
+#        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -122.5639, atol=1e-1)
+#        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 408.54665, atol=1e-1)
+
+        # AC solution:
+#        @test isapprox(result[1]["ac"]["result"]["objective"], 116408.3098; atol = 1e4)
+#        @test isapprox(result[9]["ac"]["result"]["objective"], 116536.1993; atol = 1e4)
+
+#        ac_solution = result[13]["ac"]["result"]["solution"]
+#        @test isapprox(ac_solution["bus"]["1"]["vm"], 1.0677, atol=1e-1)
+#        @test isapprox(ac_solution["bus"]["1"]["va"], -0.1124, atol=1e-1)
+#        @test isapprox(ac_solution["bus"]["2"]["vm"], 1.1199, atol=1e-1)
+#        @test isapprox(ac_solution["bus"]["2"]["va"], -0.0306, atol=1e-1)
+#        @test isapprox(ac_solution["branch"]["2"]["pf"], -10.0093, atol=1e-1)
+#        @test isapprox(ac_solution["branch"]["3"]["pf"], -10.0641, atol=1e-1)
+#        @test isapprox(ac_solution["branch"]["3"]["qf"], -8.0159, atol=1e-1)
+#        @test isapprox(ac_solution["gen"]["1"]["pg"], 10.0773, atol=1e-1)
+#        @test isapprox(ac_solution["gen"]["1"]["qg"], 8.5438, atol=1e-1)
+
+        # THERMAL solution:
+
+#        result = _PMGMD.solve_ac_gmd_mld_ts_decoupled(case_b4gic, ipopt_solver, wf_data; setting=setting, disable_thermal=false)
+#        for period in 1:length(wf_data["time"])
+#            @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+#        end
+
+#        ac_solution = result[13]["ac"]["result"]["solution"]
+#        @test isapprox(ac_solution["branch"]["3"]["Ieff"], 408.5467, atol=1e-1)
+#        @test isapprox(ac_solution["branch"]["3"]["delta_topoilrise_ss"], 0.0025, atol=1e-1)
+#        @test isapprox(ac_solution["branch"]["3"]["delta_hotspotrise_ss"], 257.3844, atol=1e-1)
+#        @test isapprox(ac_solution["branch"]["3"]["actual_hotspot"], 282.3869, atol=1e-1)
 
 
+        case_b4gic = _PM.parse_file(data_b4gic)
 
-
-
-@testset "TEST SOC GMD MINIMUM LOADSHED" begin
-
-
-    # ===   CASE-24 IEEE RTS-0   === #
-
-    @testset "CASE24-IEEE-RTS-0 case" begin
-
-        result = _PMGMD.run_soc_gmd_mls(case24_ieee_rts_0, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_ac_gmd_mld(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 110656.0578; atol=1e2)
+        @test isapprox(result["objective"], 100.0; atol = 1e2)
 
-    end
+        solution = result["solution"]
 
+        # DC solution:
+        @test isapprox(solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
+        @test isapprox(solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
 
-
-    # ===   EPRI21   === #
-
-    @testset "EPRI21 case" begin
-
-        # result = _PMGMD.run_soc_gmd_mls(case_epri21, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
-
-        # TODO => FIX ERROR
-        # ["termination_status"] = LOCALLY_INFEASIBLE
-
-    end
+        # AC solution:
+        @test isapprox(solution["bus"]["1"]["vm"], 0.9851, atol=1e-1)
+        @test isapprox(solution["branch"]["3"]["pf"], -10.0554, atol=1e-1)
+        @test isapprox(solution["branch"]["3"]["qf"], -4.7661, atol=1e-1)
+        @test isapprox(solution["load"]["1"]["status"], 1.0, atol=1e-1)
+        @test isapprox(solution["load"]["1"]["pd"], 10.0, atol=1e-1)
 
 
-
-end
-
-
-
-
-
-@testset "TEST SOC GMD MAXIMUM LOADABILITY" begin
-
-
-    # ===   CASE-24 IEEE RTS-0   === #
-
-    @testset "CASE24-IEEE-RTS-0 case" begin
-
-        result = _PMGMD.run_soc_gmd_mld(case24_ieee_rts_0, ipopt_solver; setting=setting)
+        result = _PMGMD.solve_soc_gmd_mld(case_b4gic, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 200859.4045; atol=1e3)
+        @test isapprox(result["objective"], 100.0; atol = 1e-1)
+
+
 
     end
-
-
-
-    # ===   EPRI21   === #
-
-    @testset "EPRI21 case" begin
-
-        # result = _PMGMD.run_soc_gmd_mld(case_epri21, ipopt_solver; setting=setting)
-        # @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        # @test isapprox(result["objective"], 0; atol=1e2)
-
-        # TODO => FIX ERROR
-        # ["termination_status"] = LOCALLY_INFEASIBLE
-
-    end
-
 
 
 end

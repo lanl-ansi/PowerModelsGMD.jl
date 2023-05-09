@@ -1,81 +1,103 @@
-# ===   WRM   === #
+##############################################
+# SDP Relaxations in the Rectangular W-Space #
+##############################################
 
+"CONSTRAINT: dc current on ungrounded gwye-delta transformers"
+function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractWRMModel, n::Int, k, kh, ih, jh)
 
-"VARIABLE: bus voltage on/off"
-function variable_bus_voltage_on_off(pm::_PM.AbstractWRMModel, nw::Int=nw_id_default; bounded = true, kwargs...)
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
 
-    wr_min, wr_max, wi_min, wi_max = _PM.ref_calc_voltage_product_bounds(_PM.ref(pm, nw, :buspairs))
-
-    bus_count = length(_PM.ref(pm, nw, :bus))
-    w_index = 1:bus_count
-    lookup_w_index = Dict([(bi, i) for (i,bi) in enumerate(keys(_PM.ref(pm, nw, :bus)))])
-
-    WR = _PM.var(pm, nw)[:WR] = JuMP.@variable(pm.model, [1:bus_count, 1:bus_count], Symmetric, base_name="$(nw)_WR")
-    WI = _PM.var(pm, nw)[:WI] = JuMP.@variable(pm.model, [1:bus_count, 1:bus_count], base_name="$(nw)_WI")
-
-    for (i, bus) in _PM.ref(pm, nw, :bus)
-        w_idx = lookup_w_index[i]
-        wr_ii = WR[w_idx,w_idx]
-        wi_ii = WR[w_idx,w_idx]
-
-        if bounded
-            JuMP.set_lower_bound(wr_ii, min(0, bus["vmin"]^2))
-            JuMP.set_upper_bound(wr_ii, max(0, bus["vmax"]^2))
-        else
-            JuMP.set_lower_bound(wr_ii, 0)
-        end
-    end
-
-    for (i,j) in _PM.ids(pm, nw, :buspairs)
-        wi_idx = lookup_w_index[i]
-        wj_idx = lookup_w_index[j]
-
-        if bounded
-            JuMP.set_upper_bound(WR[wi_idx, wj_idx], max(0, wr_max[(i,j)]))
-            JuMP.set_lower_bound(WR[wi_idx, wj_idx], min(0, wr_min[(i,j)]))
-
-            JuMP.set_upper_bound(WI[wi_idx, wj_idx], max(0, wi_max[(i,j)]))
-            JuMP.set_lower_bound(WI[wi_idx, wj_idx], min(0, wi_min[(i,j)]))
-        end
-    end
-
-    _PM.var(pm, nw)[:w] = Dict{Int,Any}()
-    for (i, bus) in _PM.ref(pm, nw, :bus)
-        w_idx = lookup_w_index[i]
-        _PM.var(pm, nw, :w)[i] = WR[w_idx,w_idx]
-    end
-
-    _PM.var(pm, nw)[:wr] = Dict{Tuple{Int,Int},Any}()
-    _PM.var(pm, nw)[:wi] = Dict{Tuple{Int,Int},Any}()
-    for (i,j) in _PM.ids(pm, nw, :buspairs)
-        w_fr_index = lookup_w_index[i]
-        w_to_index = lookup_w_index[j]
-
-        _PM.var(pm, nw, :wr)[(i,j)] = WR[w_fr_index, w_to_index]
-        _PM.var(pm, nw, :wi)[(i,j)] = WI[w_fr_index, w_to_index]
-    end
-
-end
-
-
-"CONSTRAINT: bus voltage on/off"
-function constraint_bus_voltage_on_off(pm::_PM.AbstractWRMModel, n::Int)
-
-    WR = _PM.var(pm, n, :WR)
-    WI = _PM.var(pm, n, :WI)
-    z_voltage = _PM.var(pm, n, :z_voltage)
-
-    JuMP.@SDconstraint(pm.model,
-        [WR WI; -WI WR]
+    JuMP.@constraint(pm.model,
+        ieff
         >=
-        0
+        ihi
+    )
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        -ihi
     )
 
-    for (i,bus) in _PM.ref(pm, n, :bus)
-        constraint_voltage_magnitude_sqr_on_off(pm, i; nw=n)
-    end
+end
 
-    constraint_bus_voltage_product_on_off(pm; nw=n)
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
+function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractWRMModel, n::Int, k, kh, ih, jh, kl, il, jl, a)
+
+    Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+    ilo = _PM.var(pm, n, :dc)[(kl,il,jl)]
+
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        (a * ihi + ilo) / a
+    )
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        - (a * ihi + ilo) / a
+    )
 
 end
 
+"CONSTRAINT: dc current on ungrounded gwye-gwye auto transformers"
+function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractWRMModel, n::Int, k, ks, is, js, kc, ic, jc, a)
+
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    is = _PM.var(pm, n, :dc)[(ks,is,js)]
+    ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
+
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        (a * is + ic) / (a + 1.0)
+    )
+    JuMP.@constraint(pm.model,
+        ieff
+        >=
+        - ( a * is + ic) / (a + 1.0)
+    )
+
+end
+
+"CONSTRAINT: qloss assuming constant ac primary voltage"
+function constraint_qloss(pm::_PM.AbstractWRMModel, n::Int, k, i, j, branchMVA, K)
+
+    qloss = _PM.var(pm, n, :qloss)
+    i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
+
+    iv = _PM.var(pm, n, :iv)[(k,i,j)]
+    vm = _PM.var(pm, n, :vm)[i]
+
+    if JuMP.lower_bound(i_dc_mag) > 0.0 || JuMP.upper_bound(i_dc_mag) < 0.0
+        Memento.warn(_LOGGER, "DC voltage magnitude cannot take a 0 value. In OTS applications, this may result in incorrect results.")
+    end
+
+    JuMP.@constraint(pm.model,
+        qloss[(k,i,j)]
+        ==
+        ((K * iv) / (3.0 * branchMVA))
+            # K is per phase
+    )
+    JuMP.@constraint(pm.model,
+        qloss[(k,j,i)]
+        ==
+        0.0
+    )
+
+    _IM.relaxation_product(pm.model, i_dc_mag, vm, iv)
+
+end
+
+
+"FUNCTION: ac current"
+function variable_ac_positive_current(pm::_PM.AbstractWRMModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+
+    variable_ac_positive_current_mag(pm; nw=nw, bounded=bounded, report=report)
+    variable_ac_current_mag_sqr(pm; nw=nw, bounded=bounded, report=report)
+
+end
