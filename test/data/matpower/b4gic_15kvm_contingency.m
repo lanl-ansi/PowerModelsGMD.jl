@@ -22,7 +22,7 @@ mpc.bus = [
 %% generator data
 %    bus    Pg    Qg    Qmax    Qmin    Vg    mBase    status    Pmax    Pmin    Pc1    Pc2    Qc1min    Qc1max    Qc2min    Qc2max    ramp_agc    ramp_10    ramp_30    ramp_q    apf
 mpc.gen = [
-	4	0.0	0.0	2000.0	-2000.0	1.1	100	1	2000.0	0.0	0	0	0	0	0	0	0	0	0	-1000	0
+	4	0.0	0.0	675.0	-675.0	1.1	100	1	1500.0	0.0	0	0	0	0	0	0	0	0	0	-1000	0
 ];
 
 
@@ -63,7 +63,7 @@ mpc.gmd_bus = {
 %column_names% f_bus t_bus parent_index br_status br_r br_v len_km name
 mpc.gmd_branch = {
 	3	1	1	1	0.1	0	0	'dc_xf1_hi'
-	3	4	2	1	1.00073475	170.78806587354	170.78806587354	'dc_br1'
+	3	4	2	1	1.00073475	2561.82886	170.78806587354	'dc_br1'
 	4	2	3	1	0.1	0	0	'dc_xf2_hi'
 };
 
