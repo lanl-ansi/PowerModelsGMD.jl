@@ -323,29 +323,12 @@ end
 "FUNCTION: apply a dictionary of mods"
 function apply_mods!(net, mods::AbstractDict{String,Any})
 
-    for (otype, objs) in mods
-
-        if !isa(objs, Dict)
-            continue
-        end
-
-        if !(otype in keys(net))
-            net[otype] = Dict{String,Any}()
-        end
-
-    end
-
     net_by_sid = create_sid_map(net)
 
-    if "mods" in keys(mods)
-        mods = mods["mods"]
-    elseif "modifications" in keys(mods)
-        mods = mods["modifications"]
-    end
-
     for (otype, objs) in mods
 
         if !isa(objs, Dict)
+            net[otype] = objs
             continue
         end
 

@@ -347,41 +347,6 @@ end
 # ===   GIC BLOCKER CONSTRAINTS   === #
 
 
-"CONSTRAINT: maximum cost of installing gic blockers"
-function constraint_blocker_placement_cost(pm::_PM.AbstractPowerModel, max_cost)
-
-    nw = nw_id_default
-        # TODO: extend to multinetwork
-
-#    JuMP.@constraint(pm.model,
-#        sum(get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0) * _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses))
-#        <=
-#        max_cost
-#    )
-
-end
-
-
-"CONSTRAINT: cost of installing gic blockers"
-function constraint_blocker_count(pm::_PM.AbstractPowerModel, blocker_count)
-
-    nws = _PM.nw_ids(pm)
-
-    for n in nws
-
-#        JuMP.@constraint(pm.model,
-#            sum(get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0) * _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses))
-#            ==
-#            blocker_count
-#        )
-
-    end
-
-end
-
-
-
-
 #"CONSTRAINT: weighted load shed is below a specified ratio"
 #function constraint_load_shed(pm::_PM.AbstractPowerModel, max_load_shed)
 

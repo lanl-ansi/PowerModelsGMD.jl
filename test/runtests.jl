@@ -42,6 +42,10 @@ data_ieee_rts_0 = "../test/data/matpower/ieee_rts_0.m"
 data_otstest = "../test/data/matpower/ots_test.m"
 data_b4gic_ne_blocker = "../test/data/matpower/b4gic_ne_blocker.m"
 data_epri21_ne_blocker = "../test/data/matpower/epri21_ne_blocker.m"
+data_b4gic_15kvm_contingency = "../test/data/matpower/b4gic_15kvm_contingency.m"
+data_epri21_15kvm_contingency = "../test/data/matpower/epri21_15kvm_contingency.m"
+data_uiuc_150bus = "../test/data/pti/uiuc-150bus.raw"
+data_uiuc_150bus_contigency_mods = "../test/data/suppl/uiuc-150bus_15kvm_contigency_mods.json"
 
 # Perform automated testing of PMsGMD problem specifications:
 @testset "PowerModelsGMD" begin

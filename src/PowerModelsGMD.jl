@@ -48,7 +48,6 @@ const _PMGMD = PowerModelsGMD
     include("core/objective.jl")
     include("core/objective_staged.jl")
     include("core/ref.jl")
-    include("core/ref_staged.jl")
     include("core/solution.jl")
     include("core/solution_staged.jl")
     include("core/variable.jl")
