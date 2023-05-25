@@ -321,7 +321,9 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i
     JuMP.@constraint(pm.model,
         qloss[(k,i,j)]
         ==
-        (K * vm * ieff) / (3.0 * branchMVA)
+        # Use this if we implement piecewise K
+        # (pm.data["baseMVA"]) / branchMVA ) * (K * vm * ieff) / (3.0 * branchMVA)
+        (K * vm * ieff) / (3.0 * pm.data["baseMVA"])
             # K is per phase
     )
 
