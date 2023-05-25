@@ -178,18 +178,12 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, i::Int; nw::Int
     dc_expr = pm.model.ext[:nw][nw][:dc_expr]
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
+    blockers = get(_PM.ref(pm,nw,:gmd_bus_blockers),i,Dict())
 
     gs = gmd_bus["g_gnd"]
-#    has_blocker = get(gmd_bus, "blocker", 0.0)
-        # assume by default that blocker is not present
-#    blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
-        # assume by default that the blocker is active
-        # if 0.0, then the dc blocker is bypassed
-
-    blocker_status = 0
+    blocker_status = length(blockers) > 0 ? 1 : 0
 
     constraint_dc_power_balance(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
-
 end
 
 
@@ -288,20 +282,21 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, i::I
     dc_expr = pm.model.ext[:nw][nw][:dc_expr]
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
-    gmd_bus_ne_blockers = _PM.ref(pm,nw,:gmd_bus_ne_blockers)
+    ne_blockers = get(_PM.ref(pm,nw,:gmd_bus_ne_blockers),i, Dict())
+    blockers = get(_PM.ref(pm,nw,:gmd_bus_blockers),i,Dict())
 
     gs = gmd_bus["g_gnd"]
+    blocker_status = length(blockers) > 0 ? 1 : 0
     #has_blocker = get(gmd_bus, "blocker", 0.0)
     #blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
-    blocker_status = 0
+    #blocker_status = 0
 
-    if blocker_status == 0 && haskey(gmd_bus_ne_blockers, i) && length(gmd_bus_ne_blockers[i]) > 0
-        blockers = gmd_bus_ne_blockers[i]
-        if (length(blockers) > 1)
+    if blocker_status == 0 && length(ne_blockers) > 0
+        if (length(ne_blockers) > 1)
             Memento.warn(_LOGGER, "Bus ", i, " has more than one expansion blocker defined for it. Only using one of them")
         end
 
-        constraint_dc_power_balance_ne_blocker(pm, nw, i, blockers[1], dc_expr, gmd_bus_arcs, gs)
+        constraint_dc_power_balance_ne_blocker(pm, nw, i, ne_blockers[1], dc_expr, gmd_bus_arcs, gs)
     else
         constraint_dc_power_balance(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
     end

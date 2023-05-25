@@ -108,28 +108,3 @@ function objective_gmd_min_transformer_heating(pm::_PM.AbstractPowerModel)
         ))
 
 end
-
-
-# ===   GIC BLOCKER OBJECTIVES   === #
-
-
-
-
-
-"OBJECTIVE: minimize weighted sum of GIC and placement cost"
-function objective_minimize_idc_sum(pm::_PM.AbstractPowerModel)
-
-    # TODO: extend to multinetwork
-    # nws = _PM.nw_ids(pm)
-
-    nw = nw_id_default
-#    return JuMP.@objective(pm.model, Min,
-#        sum(
-#            _PM.var(pm, nw, :dc).^2
-#        ) + 1000 * sum(
-#                        get(_PM.ref(pm, nw, :blocker_buses, i), "blocker_cost", 1.0) *
-#                        _PM.var(pm, nw, :z_blocker, i) for i in _PM.ids(pm, :blocker_buses)
-#                    )
-#        )
-
-end
