@@ -120,10 +120,10 @@ mpc.thermal_cap_y0 = [
 %% bus_sourceid data
 %column_names% bus_sid
 mpc.bus_sourceid = [
-	'1 ';
-	'2 ';
-	'3 ';
-	'4 ';
+	1;
+	2;
+	3;
+	4;
 ];
 
 
