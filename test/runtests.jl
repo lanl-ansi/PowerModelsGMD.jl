@@ -48,10 +48,13 @@ data_uiuc_150bus = "../test/data/pti/uiuc-150bus.raw"
 data_uiuc_150bus_contigency_mods = "../test/data/suppl/uiuc-150bus_15kvm_contigency_mods.json"
 data_blocker_test = "../test/data/matpower/blocker_test.m"
 
+data_b4gic_verification = "../test/data/verification/B4GIC_Slack_Only_GICXformer_1Vkm.csv"
+
 # Perform automated testing of PMsGMD problem specifications:
 @testset "PowerModelsGMD" begin
     include("ac_data.jl")
     include("gmd.jl")
+    include("gmd_pf.jl")
     include("gmd_opf.jl")
     include("gmd_mld.jl")
     include("gmd_ots.jl")
