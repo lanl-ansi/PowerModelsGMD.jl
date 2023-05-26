@@ -21,18 +21,12 @@
             found = false
             # Line circuit number doesn't get tracked in PowerModels... so, a bit of a hack here
             # There are a lot of equivelent solutions in the voltage magnitude space, which impact the qloss term.  So, we have a looser tolerance there
-
-            k_prime = 1
             for (b, branch) in case_epri21["branch"]
-                if (branch["f_bus"] == i && branch["t_bus"] == j) || (branch["f_bus"] == j && branch["t_bus"] == i)
-
-                    if k == k_prime
-                        @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
-                        @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
-                        found = true
-                        println(i, " ", j, " ", k, " ", result["solution"]["branch"][b]["gmd_idc_mag"], " ", i_eff*3.0)
-                    end
-                    k_prime = k_prime+1
+                if branch["fbus"] == i && branch["tbus"] == j && k == parse(Int64,branch["branch_sid"])
+                    @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    found = true
+                    break
                 end
             end
             @test found == true
@@ -60,19 +54,12 @@
             found = false
             # Line circuit number doesn't get tracked in PowerModels... so, a bit of a hack here
             # There are a lot of equivelent solutions in the voltage magnitude space, which impact the qloss term.  So, we have a looser tolerance there
-            k_prime = 1
             for (b, branch) in case_b4gic["branch"]
-                if branch["f_bus"] == i && branch["t_bus"] == j
-
-                    if k == k_prime
-                        @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
-                        @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
-                        found = true
-                        continue
-                    else
-                        k_prime = k_prime+1
-                    end
-
+                if branch["fbus"] == i && branch["tbus"] == j && k == parse(Int64,branch["branch_sid"])
+                    @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    found = true
+                    break
                 end
             end
             @test found == true

@@ -313,7 +313,7 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA
 end
 
 "CONSTRAINT: qloss calculcated from ac voltage and constant ieff"
-function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA, K, ieff)
+function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i, j, baseMVA, K, ieff)
 
     qloss = _PM.var(pm, n, :qloss)
     vm    = _PM.var(pm, n, :vm)[i]
@@ -321,7 +321,7 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i
     JuMP.@constraint(pm.model,
         qloss[(k,i,j)]
         ==
-        (K * vm * ieff) / (3.0 * branchMVA)
+        (K * vm * ieff) / (3.0 * baseMVA)
             # K is per phase
     )
 

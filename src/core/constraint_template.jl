@@ -222,7 +222,7 @@ end
 function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch    = _PM.ref(pm, nw, :branch, k)
-    branchMVA = branch["baseMVA"]
+    baseMVA   = _PM.ref(pm, :baseMVA)
     i         = branch["hi_bus"]
     j         = branch["lo_bus"]
 
@@ -231,7 +231,7 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     K         = calc_branch_K(pm,k;nw=nw)
 
-    constraint_qloss(pm, nw, k, i, j, branchMVA, K)
+    constraint_qloss(pm, nw, k, i, j, baseMVA, K)
 
 end
 
@@ -241,7 +241,7 @@ end
 function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch    = _PM.ref(pm, nw, :branch, k)
-    branchMVA = branch["baseMVA"]
+    baseMVA   = _PM.ref(pm, :baseMVA)
     ieff      = branch["ieff"]
     i         = branch["hi_bus"]
     j         = branch["lo_bus"]
@@ -249,9 +249,9 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=n
     bus       = _PM.ref(pm, nw, :bus, i)
     busKV     = bus["base_kv"]
 
-    K         = calc_branch_K(pm,k;nw=nw) 
+    K         = calc_branch_K(pm,k;nw=nw)
 
-    constraint_qloss_constant_ieff(pm, nw, k, i, j, branchMVA, K, ieff)
+    constraint_qloss_constant_ieff(pm, nw, k, i, j, baseMVA, K, ieff)
 
 end
 

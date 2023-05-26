@@ -290,7 +290,7 @@ function calc_qloss(k, case::Dict{String,Any}, solution::Dict{String,Any})
 
             # K is per phase
 
-        return K * i_dc_mag / (3.0 * branch["baseMVA"])
+        return K * i_dc_mag / (3.0 * data["baseMVA"])
 
     end
 

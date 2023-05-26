@@ -156,8 +156,8 @@ mpc.gen_sourceid = [
 %column_names% fbus tbus branch_sid
 mpc.branch_sourceid = [
 	2 1 '1 ';
-	3 4 '2 ';
-	5 6 '3 ';
-	2 3 '4 ';
-	4 5 '5 ';
+	3 4 '1 ';
+	5 6 '1 ';
+	2 3 '1 ';
+	4 5 '1 ';
 ];
