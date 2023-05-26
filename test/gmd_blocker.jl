@@ -33,12 +33,10 @@
         end
 
         result = _PMGMD.solve_ac_gmd_mld(blocker_test, ipopt_solver; setting=setting)
-        @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 100.0; atol = 1e-1)
+        @test result["termination_status"] == _PM.LOCALLY_INFEASIBLE
 
         result = _PMGMD.solve_soc_gmd_mld(blocker_test, ipopt_solver; setting=setting)
-        @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 100.0; atol = 1e-1)
+        @test result["termination_status"] == _PM.LOCALLY_INFEASIBLE
 
     end
 

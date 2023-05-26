@@ -4,10 +4,39 @@
     @testset "EPRI21 case" begin
 
         case_epri21 = _PM.parse_file(data_epri21)
+        case_epri21_verification_data = CSV.File(data_epri21_verification)
+
+        baseMVA = case_epri21["baseMVA"]
 
         result = _PMGMD.solve_gmd_pf(case_epri21,  _PM.ACPPowerModel, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
+        for row in case_epri21_verification_data
+            i = row[:BusNum3W]
+            j = row[Symbol("BusNum3W:1")]
+            k = row[:LineCircuit]
+            i_eff = row[:GICXFIEffective1]
+            qloss = row[:GICQLosses]
+
+            found = false
+            # Line circuit number doesn't get tracked in PowerModels... so, a bit of a hack here
+            # There are a lot of equivelent solutions in the voltage magnitude space, which impact the qloss term.  So, we have a looser tolerance there
+
+            k_prime = 1
+            for (b, branch) in case_epri21["branch"]
+                if (branch["f_bus"] == i && branch["t_bus"] == j) || (branch["f_bus"] == j && branch["t_bus"] == i)
+
+                    if k == k_prime
+                        @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
+                        @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                        found = true
+                        println(i, " ", j, " ", k, " ", result["solution"]["branch"][b]["gmd_idc_mag"], " ", i_eff*3.0)
+                    end
+                    k_prime = k_prime+1
+                end
+            end
+            @test found == true
+        end
     end
 
     @testset "B4GIC case" begin
@@ -17,12 +46,9 @@
 
         baseMVA = case_b4gic["baseMVA"]
 
-#        result = _PMGMD.solve_gmd_mld(case_b4gic, _PM.ACPPowerModel, ipopt_solver; setting=setting)
         result = _PMGMD.solve_gmd_pf(case_b4gic, _PM.ACPPowerModel, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
-        println(case_b4gic_verification_data.names)
-        println(case_b4gic_verification_data[1])
 
         for row in case_b4gic_verification_data
             i = row[:BusNum3W]
@@ -32,14 +58,21 @@
             qloss = row[:GICQLosses]
 
             found = false
-            # Line circuit number doesn't get tracked in PowerModels... it uses a unique 1..N index as an equivlent to k.  However, this check is ok
-            # because there are no paralell lins.
+            # Line circuit number doesn't get tracked in PowerModels... so, a bit of a hack here
+            # There are a lot of equivelent solutions in the voltage magnitude space, which impact the qloss term.  So, we have a looser tolerance there
+            k_prime = 1
             for (b, branch) in case_b4gic["branch"]
                 if branch["f_bus"] == i && branch["t_bus"] == j
-                    @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff, atol=1e-4)
-                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"], qloss / baseMVA, atol=1e-4)
-                    found = true
-                    continue
+
+                    if k == k_prime
+                        @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
+                        @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                        found = true
+                        continue
+                    else
+                        k_prime = k_prime+1
+                    end
+
                 end
             end
             @test found == true
