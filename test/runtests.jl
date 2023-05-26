@@ -19,7 +19,6 @@ _PMGMD.logger_config!("error")
 const TESTLOG = Memento.getlogger(_PMGMD)
 Memento.setlevel!(TESTLOG, "error")
 
-
 import Ipopt
 import Juniper
 
@@ -28,9 +27,11 @@ ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "p
 juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => _PM.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes"), "log_levels" => [])
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
-
 import LinearAlgebra
 import SparseArrays
+
+import CSV
+
 using Test
 
 # Parse test cases:
