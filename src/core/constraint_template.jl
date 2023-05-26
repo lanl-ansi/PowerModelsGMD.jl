@@ -229,8 +229,8 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
     bus       = _PM.ref(pm, nw, :bus, i)
     busKV     = bus["base_kv"]
 
-    ibase     = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
-    K         = haskey(branch, "gmd_k") ? (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase) : 0.0
+    #ibase     = calc_branch_ibase(pm, k, nw=nw)
+    K         = calc_branch_K(pm,k;nw=nw) #haskey(branch, "gmd_k") ? (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase) : 0.0
 
     constraint_qloss(pm, nw, k, i, j, branchMVA, K)
 
@@ -250,8 +250,8 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=n
     bus       = _PM.ref(pm, nw, :bus, i)
     busKV     = bus["base_kv"]
 
-    ibase     = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
-    K         = haskey(branch, "gmd_k") ? (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase) : 0.0
+#    ibase     = calc_branch_ibase(pm, k, nw=nw)
+    K         = calc_branch_K(pm,k;nw=nw) # haskey(branch, "gmd_k") ? (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase) : 0.0
 
     constraint_qloss_constant_ieff(pm, nw, k, i, j, branchMVA, K, ieff)
 
@@ -287,9 +287,6 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, i::I
 
     gs = gmd_bus["g_gnd"]
     blocker_status = length(blockers) > 0 ? 1 : 0
-    #has_blocker = get(gmd_bus, "blocker", 0.0)
-    #blocker_status = min(get(gmd_bus, "blocker_status", 1.0), has_blocker)
-    #blocker_status = 0
 
     if blocker_status == 0 && length(ne_blockers) > 0
         if (length(ne_blockers) > 1)

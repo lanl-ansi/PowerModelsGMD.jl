@@ -22,7 +22,7 @@ end
 
 "FUNCTION: calculate the maximum dc voltage difference between gmd buses"
 function calc_max_dc_voltage_difference(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return 1e6
+    return calc_max_dc_voltage(pm, i; nw=nw) - calc_min_dc_voltage(pm, i; nw=nw)
 end
 
 # ===   CALCULATIONS FOR CURRENT VARIABLES   === #
@@ -259,14 +259,22 @@ end
 
 # ===   CALCULATIONS FOR QLOSS VARIABLES   === #
 
+function calc_branch_K(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+     branch = _PM.ref(pm, nw, :branch, i)
+     ibase = calc_branch_ibase(pm,i;nw=nw)
+
+     return haskey(branch, "gmd_k") ? (branch["gmd_k"] * pm.data["baseMVA"]) / (ibase) : 0.0
+end
+
 
 "FUNCTION: calculate qloss"
-function calc_qloss(branch, case::Dict{String,Any}, solution::Dict{String,Any})
+function calc_qloss(k, case::Dict{String,Any}, solution::Dict{String,Any})
 
     @assert !_IM.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
-    k = "$(branch["index"])"
+    branch = case["branch"][k]
+
     i = "$(branch["hi_bus"])"
     j = "$(branch["lo_bus"])"
 
@@ -279,6 +287,7 @@ function calc_qloss(branch, case::Dict{String,Any}, solution::Dict{String,Any})
 
         ibase = branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus["base_kv"] * sqrt(3.0))
         K = branch["gmd_k"] * data["baseMVA"]/ibase
+
             # K is per phase
 
         return K * i_dc_mag / (3.0 * branch["baseMVA"])
@@ -455,7 +464,7 @@ function add_gmd_data!(case::Dict{String,Any}, solution::Dict{String,<:Any}; dec
                     # high-side gmd branch
                 br["gmd_idc"] = 0.0
                 br["ieff"] = abs(br["gmd_idc"])
-                br["qloss"] = calc_qloss(br, case, solution)
+                br["qloss"] = calc_qloss(i, case, solution)
 
             else
 
