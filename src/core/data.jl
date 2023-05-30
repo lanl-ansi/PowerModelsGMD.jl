@@ -175,7 +175,7 @@ function calc_dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
     vlo = case["bus"]["$jto"]["base_kv"]
     a = vhi/vlo
 
-    return branch["ieff"] = abs( (a * is + ic) / (a + 1.0) )
+    return branch["ieff"] = abs(a * is + ic) / (a + 1.0)
 end
 
 
