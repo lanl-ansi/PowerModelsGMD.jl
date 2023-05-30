@@ -146,10 +146,10 @@ mpc.branch_sourceid = [
 %% gmd_blocker data
 %column_names% gmd_bus status
 mpc.gmd_blocker = {
-	1	1 10.0
-	2	1	20.0
-	3	1	30.0
-	4	1	40.0
-	5	1	50.0
-	6	1	100.0
+	1	1
+	2	1
+	3	1
+	4	1
+	5	1
+	6	1
 };
