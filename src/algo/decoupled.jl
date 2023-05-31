@@ -22,12 +22,38 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
         ac_result["solution"]["branch"][i]["gmd_idc_mag"] = branch["ieff"]
     end
 
-    ac_solution = ac_result["solution"]
 
-    data = Dict()
-    data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
-    data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
-    return data
+    for (asset, indicies) in dc_solution
+        if typeof(indicies) != Dict{String,Any}
+            continue
+        end
+
+
+        if !haskey(ac_result["solution"], asset)
+            ac_result["solution"][asset] = Dict{String,Any}()
+        end
+
+        for (i, variables) in indicies
+            if !haskey(ac_result["solution"][asset], i)
+                ac_result["solution"][asset][i] = Dict{String,Any}()
+            end
+
+            for (variable, assignment) in variables
+                ac_result["solution"][asset][i][variable] = assignment
+            end
+
+        end
+
+    end
+
+    return ac_result
+
+#    ac_solution = ac_result["solution"]
+
+#    data = Dict()
+#    data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
+#    data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
+#    return data
 
 end
 

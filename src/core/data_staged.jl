@@ -112,11 +112,11 @@ end
 # ===   CALCULATIONS FOR THERMAL VARIABLES   === #
 
 "FUNCTION: calculate steady-state hotspot temperature rise"
-function calc_delta_hotspotrise_ss(branch, result)
+function calc_delta_hotspotrise_ss(branch, k, result)
 
     delta_hotspotrise_ss = 0
 
-    Ie = branch["ieff"]
+    Ie = result["solution"]["branch"][k]["gmd_idc_mag"] #branch["ieff"]
     delta_hotspotrise_ss = branch["hotspot_coeff"] * Ie
 
     return delta_hotspotrise_ss
@@ -124,11 +124,11 @@ end
 
 
 "FUNCTION: calculate hotspot temperature rise"
-function calc_delta_hotspotrise(branch, result, Ie_prev, delta_t)
+function calc_delta_hotspotrise(branch, result, k, Ie_prev, delta_t)
 
     delta_hotspotrise = 0
 
-    Ie = branch["ieff"]
+    Ie = result["solution"]["branch"][k]["gmd_idc_mag"] #branch["ieff"]
     tau = 2 * branch["hotspot_rated"] / delta_t
 
     if Ie_prev === nothing

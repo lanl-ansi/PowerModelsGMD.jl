@@ -79,7 +79,7 @@
 
         result = _PMGMD.solve_ac_gmd_pf_decoupled(case_b4gic, ipopt_solver; setting=setting)
 
-        @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
 
         for row in case_b4gic_verification_data
@@ -94,8 +94,8 @@
             # There are a lot of equivelent solutions in the voltage magnitude space, which impact the qloss term.  So, we have a looser tolerance there
             for (b, branch) in case_b4gic["branch"]
                 if branch["fbus"] == i && branch["tbus"] == j && k == parse(Int64,branch["branch_sid"])
-                    @test isapprox(result["ac"]["result"]["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
-                    @test isapprox(result["ac"]["result"]["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
                     found = true
                     break
                 end
@@ -114,7 +114,7 @@
 
         result = _PMGMD.solve_ac_gmd_pf_decoupled(case_epri21, ipopt_solver; setting=setting)
 
-        @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
 
         for row in case_epri21_verification_data
@@ -129,8 +129,8 @@
             # There are a lot of equivelent solutions in the voltage magnitude space, which impact the qloss term.  So, we have a looser tolerance there
             for (b, branch) in case_epri21["branch"]
                 if branch["fbus"] == i && branch["tbus"] == j && k == parse(Int64,branch["branch_sid"])
-                    @test isapprox(result["ac"]["result"]["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
-                    @test isapprox(result["ac"]["result"]["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
                     found = true
                     break
                 end
