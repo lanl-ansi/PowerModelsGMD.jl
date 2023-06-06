@@ -251,7 +251,7 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=n
     busKV     = bus["base_kv"]
 
     ibase     = (branchMVA * 1000.0 * sqrt(2.0)) / (busKV * sqrt(3.0))
-    K         = haskey(branch, "gmd_k") ? (branch["gmd_k"] / (ibase) : 0.0
+    K         = haskey(branch, "gmd_k") ? branch["gmd_k"] / (ibase) : 0.0
 
     constraint_qloss_constant_ieff(pm, nw, k, i, j, branchMVA, K, ieff)
 
