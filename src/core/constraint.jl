@@ -313,7 +313,7 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA
 end
 
 "CONSTRAINT: qloss calculcated from ac voltage and constant ieff"
-function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA, K, ieff)
+function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i, j, baseMVA, K, ieff)
 
     qloss = _PM.var(pm, n, :qloss)
     vm    = _PM.var(pm, n, :vm)[i]
@@ -323,7 +323,7 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i
         ==
         # Use this if we implement piecewise K
         # (pm.data["baseMVA"]) / branchMVA ) * (K * vm * ieff) / (3.0 * branchMVA)
-        (K * vm * ieff) / (3.0 * pm.data["baseMVA"])
+        (K * vm * ieff) / (3.0 * baseMVA)
             # K is per phase
     )
 
@@ -369,8 +369,9 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, n::I
         con = JuMP.@constraint(pm.model,
             sum(dc_expr[a] for a in gmd_bus_arcs)
             ==
-            (gs * v_dc) - gs * zv_dc
-#            (gs * v_dc)*(1 - z)
+            gs * v_dc - gs * zv_dc
+#            gs * v_dc  - gs * v_dc * z
+#             (gs * v_dc)*(1 - z)
         )
     end
 

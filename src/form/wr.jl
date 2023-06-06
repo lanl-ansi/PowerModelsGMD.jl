@@ -93,7 +93,7 @@ end
 
 
 "CONSTRAINT: qloss assuming constant ac primary voltage"
-function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, branchMVA, K)
+function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, baseMVA, K)
 
     qloss = _PM.var(pm, n, :qloss)
     i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
@@ -108,7 +108,7 @@ function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, branchMVA, K
     JuMP.@constraint(pm.model,
         qloss[(k,i,j)]
         ==
-        ((K * iv) / (3.0 * branchMVA))
+        ((K * iv) / (3.0 * baseMVA))
             # K is per phase
     )
     JuMP.@constraint(pm.model,

@@ -18,12 +18,42 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
         solution_gmd_qloss!,
     ],
     )
-    ac_solution = ac_result["solution"]
+    for (i, branch) in ac_case["branch"]
+        ac_result["solution"]["branch"][i]["gmd_idc_mag"] = branch["ieff"]
+    end
 
-    data = Dict()
-    data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
-    data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
-    return data
+
+    for (asset, indicies) in dc_solution
+        if typeof(indicies) != Dict{String,Any}
+            continue
+        end
+
+
+        if !haskey(ac_result["solution"], asset)
+            ac_result["solution"][asset] = Dict{String,Any}()
+        end
+
+        for (i, variables) in indicies
+            if !haskey(ac_result["solution"][asset], i)
+                ac_result["solution"][asset][i] = Dict{String,Any}()
+            end
+
+            for (variable, assignment) in variables
+                ac_result["solution"][asset][i][variable] = assignment
+            end
+
+        end
+
+    end
+
+    return ac_result
+
+#    ac_solution = ac_result["solution"]
+
+#    data = Dict()
+#    data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
+#    data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
+#    return data
 
 end
 
@@ -63,4 +93,23 @@ end
 
 function solve_gmd_opf_decoupled(case::Dict{String,Any}, model_constructor, solver; setting=Dict(), kwargs...)
     return solve_gmd_decoupled(case, model_constructor, solver, _PMGMD.solve_gmd, _PMGMD.solve_gmd_opf_uncoupled; kwargs...)
+end
+
+
+"Helper functions for using the decoupled algorithm for the PF problem"
+function solve_soc_gmd_pf_decoupled(case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
+    return solve_gmd_pf_decoupled(case, _PM.SOCWRPowerModel, solver; kwargs...)
+end
+
+function solve_ac_gmd_pf_decoupled(case::Dict{String,Any}, solver; setting=Dict(), kwargs...)
+    return solve_gmd_pf_decoupled(case, _PM.ACPPowerModel, solver; kwargs...)
+end
+
+function solve_gmd_pf_decoupled(file::String, model_constructor, solver; setting=Dict(), kwargs...)
+    data = _PM.parse_file(file)
+    return solve_gmd_pf_decoupled(data, model_constructor, solver; kwargs...)
+end
+
+function solve_gmd_pf_decoupled(case::Dict{String,Any}, model_constructor, solver; setting=Dict(), kwargs...)
+    return solve_gmd_decoupled(case, model_constructor, solver, _PMGMD.solve_gmd, _PMGMD.solve_gmd_pf_uncoupled; kwargs...)
 end

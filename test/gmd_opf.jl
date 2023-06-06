@@ -10,19 +10,17 @@
         case_b4gic = _PM.parse_file(data_b4gic)
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b4gic, ipopt_solver; setting=setting)
-        @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 116456.6409; atol = 1e2)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 116456.6409; atol = 1e2)
 
         # DC solution:
-        dc_solution = result["dc"]["result"]["solution"]
-        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_bus"]["3"]["gmd_vdc"], -32.0081, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_branch"]["2"]["gmd_idc"], 106.6935, atol=1e-1)
 
         # AC solution:
-        ac_solution = result["ac"]["result"]["solution"]
-        @test isapprox(ac_solution["bus"]["1"]["vm"], 1.0978, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["3"]["pf"], -10.0551, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["3"]["qf"], -4.5914, atol=1e-1)
+        @test isapprox(result["solution"]["bus"]["1"]["vm"], 1.0978, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["3"]["pf"], -10.0551, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["3"]["qf"], -4.5914, atol=1e-1)
 
 
         # ===   DECOUPLED AC-OPF-TS   === #
@@ -37,23 +35,23 @@
 
         result = _PMGMD.solve_ac_gmd_opf_ts_decoupled(case_b4gic, ipopt_solver, wf_data; setting=setting, disable_thermal=true)
         for period in 1:length(wf_data["time"])
-            @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+            @test result[period]["termination_status"] == _PM.LOCALLY_SOLVED
         end
 
         # DC solution:
-        dc_solution = result[5]["dc"]["result"]["solution"]
+        dc_solution = result[5]["solution"]
         @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -27.3598, atol=1e-1)
         @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 91.1995, atol=1e-1)
 
-        dc_solution = result[13]["dc"]["result"]["solution"]
+        dc_solution = result[13]["solution"]
         @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -122.5639, atol=1e-1)
         @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], 408.54665, atol=1e-1)
 
         # AC solution:
-        @test isapprox(result[1]["ac"]["result"]["objective"], 116408.3098; atol = 1e4)
-        @test isapprox(result[9]["ac"]["result"]["objective"], 116536.1993; atol = 1e4)
+        @test isapprox(result[1]["objective"], 116408.3098; atol = 1e4)
+        @test isapprox(result[9]["objective"], 116536.1993; atol = 1e4)
 
-        ac_solution = result[13]["ac"]["result"]["solution"]
+        ac_solution = result[13]["solution"]
         @test isapprox(ac_solution["bus"]["1"]["vm"], 1.0677, atol=1e-1)
         @test isapprox(ac_solution["bus"]["1"]["va"], -0.1124, atol=1e-1)
         @test isapprox(ac_solution["bus"]["2"]["vm"], 1.1199, atol=1e-1)
@@ -68,10 +66,10 @@
 
         result = _PMGMD.solve_ac_gmd_opf_ts_decoupled(case_b4gic, ipopt_solver, wf_data; setting=setting, disable_thermal=false)
         for period in 1:length(wf_data["time"])
-            @test result[period]["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
+            @test result[period]["termination_status"] == _PM.LOCALLY_SOLVED
         end
 
-        ac_solution = result[13]["ac"]["result"]["solution"]
+        ac_solution = result[13]["solution"]
         @test isapprox(ac_solution["branch"]["3"]["Ieff"], 408.5467, atol=1e-1)
         @test isapprox(ac_solution["branch"]["3"]["delta_topoilrise_ss"], 0.0025, atol=1e-1)
         @test isapprox(ac_solution["branch"]["3"]["delta_hotspotrise_ss"], 257.3844, atol=1e-1)
@@ -128,23 +126,21 @@
         _PMGMD.fix_gmd_indices!(case_b4gic3w)
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b4gic3w, ipopt_solver; setting=setting)
-        @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 1006.35; atol = 1e2)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 1006.35; atol = 1e2)
 
         # DC solution:
-        dc_solution = result["dc"]["result"]["solution"]
-        @test isapprox(dc_solution["gmd_bus"]["3"]["gmd_vdc"], -35.9637, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["2"]["gmd_idc"], -103.849  , atol=1e-1)
+        @test isapprox(result["solution"]["gmd_bus"]["3"]["gmd_vdc"], -35.9637, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_branch"]["2"]["gmd_idc"], -103.849  , atol=1e-1)
 
         # AC solution:
-        ac_solution = result["ac"]["result"]["solution"]
-        @test isapprox(ac_solution["bus"]["1"]["vm"], 1.0636, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["3"]["pf"], -10.0000, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["3"]["qf"], -2.0, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["4"]["pf"], 0.0000, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["4"]["qf"], 0.0000, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["5"]["pf"], -10.0546, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["5"]["qf"], -3.3498, atol=1e-1)
+        @test isapprox(result["solution"]["bus"]["1"]["vm"], 1.0636, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["3"]["pf"], -10.0000, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["3"]["qf"], -2.0, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["4"]["pf"], 0.0000, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["4"]["qf"], 0.0000, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["5"]["pf"], -10.0546, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["5"]["qf"], -3.3498, atol=1e-1)
 
 
         # ===   DECOUPLED AC-OPF-TS   === #
@@ -201,21 +197,19 @@
         case_b6gic_nerc = _PM.parse_file(data_b6gic_nerc)
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_b6gic_nerc, ipopt_solver; setting=setting)
-        @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 978.3884; atol = 1e2)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 978.3884; atol = 1e2)
 
         # DC solution:
-        dc_solution = result["dc"]["result"]["solution"]
-        @test isapprox(dc_solution["gmd_bus"]["5"]["gmd_vdc"], -23.0222, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["3"]["gmd_idc"], -13.5072, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_bus"]["5"]["gmd_vdc"], -23.0222, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_branch"]["3"]["gmd_idc"], -13.5072, atol=1e-1)
 
         # AC solution:
-        ac_solution = result["ac"]["result"]["solution"]
-        @test isapprox(ac_solution["bus"]["2"]["vm"], 1.0992, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["5"]["pf"], -1.0028, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["5"]["pt"], 1.0042, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["5"]["qf"], -0.3910, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["5"]["qt"], 0.3236, atol=1e-1)
+        @test isapprox(result["solution"]["bus"]["2"]["vm"], 1.0992, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["5"]["pf"], -1.0028, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["5"]["pt"], 1.0042, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["5"]["qf"], -0.3910, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["5"]["qt"], 0.3236, atol=1e-1)
 
 
         # ===   DECOUPLED AC-OPF-TS   === #
@@ -269,31 +263,29 @@
         case_epri21 = _PM.parse_file(data_epri21)
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_epri21, ipopt_solver; setting=setting)
-        @test result["ac"]["result"]["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["ac"]["result"]["objective"], 399334.3747; atol = 1e2)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        @test isapprox(result["objective"], 399334.3747; atol = 1e2)
 
         # DC solution:
-        dc_solution = result["dc"]["result"]["solution"]
-        @test isapprox(dc_solution["gmd_bus"]["5"]["gmd_vdc"], -6.5507, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["14"]["gmd_vdc"], 44.2630, atol=1e-1)
-        @test isapprox(dc_solution["gmd_bus"]["17"]["gmd_vdc"], -40.6570, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["5"]["gmd_idc"], 140.6257, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["13"]["gmd_idc"], 53.3282, atol=1e-1)
-        @test isapprox(dc_solution["gmd_branch"]["35"]["gmd_idc"], -54.5694, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_bus"]["5"]["gmd_vdc"], -6.5507, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_bus"]["14"]["gmd_vdc"], 44.2630, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_bus"]["17"]["gmd_vdc"], -40.6570, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_branch"]["5"]["gmd_idc"], 140.6257, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_branch"]["13"]["gmd_idc"], 53.3282, atol=1e-1)
+        @test isapprox(result["solution"]["gmd_branch"]["35"]["gmd_idc"], -54.5694, atol=1e-1)
 
         # AC solution:
-        ac_solution = result["ac"]["result"]["solution"]
-        @test isapprox(ac_solution["bus"]["5"]["vm"], 1.193, atol=1e-1)
-        @test isapprox(ac_solution["bus"]["13"]["va"], -0.0413, atol=1e-1)
-        @test isapprox(ac_solution["gen"]["5"]["pg"], 5.0394, atol=1e-1)
-        @test isapprox(ac_solution["gen"]["5"]["qg"], -0.1061, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["13"]["pf"], 4.5151, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["13"]["qf"], -0.6707, atol=5e-1)
+        @test isapprox(result["solution"]["bus"]["5"]["vm"], 1.193, atol=1e-1)
+        @test isapprox(result["solution"]["bus"]["13"]["va"], -0.0413, atol=1e-1)
+        @test isapprox(result["solution"]["gen"]["5"]["pg"], 5.0394, atol=1e-1)
+        @test isapprox(result["solution"]["gen"]["5"]["qg"], -0.1061, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["13"]["pf"], 4.5151, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["13"]["qf"], -0.6707, atol=5e-1)
 
-        @test isapprox(ac_solution["branch"]["24"]["pt"], 8.9500, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["24"]["qt"], -0.5656, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["24"]["gmd_qloss"], 0.2891, atol=1e-1)
-        @test isapprox(ac_solution["branch"]["30"]["gmd_qloss"], 0.1597, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["24"]["pt"], 8.9500, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["24"]["qt"], -0.5656, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["24"]["gmd_qloss"], 0.2891, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["30"]["gmd_qloss"], 0.1597, atol=1e-1)
 
 
         # ===   DECOUPLED AC-OPF-TS   === #

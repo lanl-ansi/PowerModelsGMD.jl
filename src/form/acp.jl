@@ -65,7 +65,7 @@ end
 
 
 "CONSTRAINT: qloss calculcated from ac voltage and dc current"
-function constraint_qloss(pm::_PM.AbstractACPModel, n::Int, k, i, j, branchMVA, K)
+function constraint_qloss(pm::_PM.AbstractACPModel, n::Int, k, i, j, baseMVA, K)
 
     qloss = _PM.var(pm, n, :qloss)
     i_dc_mag = _PM.var(pm, n, :i_dc_mag)[k]
@@ -74,7 +74,7 @@ function constraint_qloss(pm::_PM.AbstractACPModel, n::Int, k, i, j, branchMVA, 
     JuMP.@constraint(pm.model,
         qloss[(k,i,j)]
         ==
-        (K * vm * i_dc_mag) / (3.0 * branchMVA)
+        (K * vm * i_dc_mag) / (3.0 * baseMVA)
             # K is per phase
     )
 

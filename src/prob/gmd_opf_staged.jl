@@ -221,22 +221,21 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
                 delta_t = wf_time[i] - wf_time[i-1]
             end
 
-            for (k, br) in result["ac"]["case"]["branch"]
-
-                ac_result = result["ac"]["result"]
+            #for (k, br) in result["ac"]["case"]["branch"]
+            for (k, br) in case["branch"]
 
                 if !(br["type"] == "xfmr" || br["type"] == "xf" || br["type"] == "transformer")
                     continue
                 else
-                    br["delta_topoilrise_ss"] = calc_delta_topoilrise_ss(br, ac_result, base_mva)
-                    br["delta_topoilrise"] = calc_delta_topoilrise(br, ac_result, base_mva, delta_t)
+                    br["delta_topoilrise_ss"] = calc_delta_topoilrise_ss(br, result, base_mva)
+                    br["delta_topoilrise"] = calc_delta_topoilrise(br, result, base_mva, delta_t)
                     update_topoilrise!(br, case)
 
-                    br["delta_hotspotrise_ss"] = calc_delta_hotspotrise_ss(br, ac_result)
-                    br["delta_hotspotrise"] = calc_delta_hotspotrise(br, ac_result, Ie_prev[k], delta_t)
+                    br["delta_hotspotrise_ss"] = calc_delta_hotspotrise_ss(br, k, result)
+                    br["delta_hotspotrise"] = calc_delta_hotspotrise(br, result, k, Ie_prev[k], delta_t)
                     update_hotspotrise!(br, case)
 
-                    xfmr_temp["Ieff"] = br["ieff"]
+                    xfmr_temp["Ieff"] = result["solution"]["branch"][k]["gmd_idc_mag"] #br["ieff"]
                     # xfmr_temp["delta_topoilrise"] = br["delta_topoilrise"]
                     xfmr_temp["delta_topoilrise_ss"] = br["delta_topoilrise_ss"]
                     # xfmr_temp["delta_hotspotrise"] =  br["delta_hotspotrise"]
@@ -244,7 +243,7 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
                     xfmr_temp["actual_hotspot"] = (br["temperature_ambient"] + br["delta_topoilrise_ss"] + br["delta_hotspotrise_ss"])
                 end
 
-                merge!(ac_result["solution"]["branch"]["$k"], xfmr_temp)
+                merge!(result["solution"]["branch"]["$k"], xfmr_temp)
             end
         end
         push!(solution, result)

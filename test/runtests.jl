@@ -19,18 +19,19 @@ _PMGMD.logger_config!("error")
 const TESTLOG = Memento.getlogger(_PMGMD)
 Memento.setlevel!(TESTLOG, "error")
 
-
 import Ipopt
 import Juniper
 
 # Setup default optimizers:
-ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-3, "print_level" => 0, "sb" => "yes")
-juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => _PM.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-3, "print_level" => 0, "sb" => "yes"), "log_levels" => [])
+ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes")
+juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => _PM.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes"), "log_levels" => [])
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
-
 
 import LinearAlgebra
 import SparseArrays
+
+import CSV
+
 using Test
 
 # Parse test cases:
@@ -46,11 +47,18 @@ data_b4gic_15kvm_contingency = "../test/data/matpower/b4gic_15kvm_contingency.m"
 data_epri21_15kvm_contingency = "../test/data/matpower/epri21_15kvm_contingency.m"
 data_uiuc_150bus = "../test/data/pti/uiuc-150bus.raw"
 data_uiuc_150bus_contigency_mods = "../test/data/suppl/uiuc-150bus_15kvm_contigency_mods.json"
+data_blocker_test = "../test/data/matpower/blocker_test.m"
+
+data_b4gic_verification = "../test/data/verification/B4GIC_Slack_Only_GICXformer_1Vkm.csv" 
+data_epri21_verification = "../test/data/verification/EpriCase_Mar2012_GICXformer_1Vkm.csv"
+
+
 
 # Perform automated testing of PMsGMD problem specifications:
 @testset "PowerModelsGMD" begin
     include("ac_data.jl")
     include("gmd.jl")
+    include("gmd_pf.jl")
     include("gmd_opf.jl")
     include("gmd_mld.jl")
     include("gmd_ots.jl")
