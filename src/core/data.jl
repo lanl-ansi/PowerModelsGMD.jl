@@ -135,8 +135,8 @@ function calc_dc_current_mag_gwye_gwye_xf(branch, case, solution)
 
     jfr = branch["f_bus"]
     jto = branch["t_bus"]
-    vhi = case["bus"]["$jfr"]["base_kv"]
-    vlo = case["bus"]["$jto"]["base_kv"]
+    vhi = max(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
+    vlo = min(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
     a = vhi/vlo
 
     return abs( (a * ihi + ilo) / a )
@@ -171,8 +171,8 @@ function calc_dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
 
     jfr = branch["f_bus"]
     jto = branch["t_bus"]
-    vhi = case["bus"]["$jfr"]["base_kv"]
-    vlo = case["bus"]["$jto"]["base_kv"]
+    vhi = max(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
+    vlo = min(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
     a = vhi/vlo
 
     return branch["ieff"] = abs(a * is + ic) / (a + 1.0)
@@ -212,8 +212,8 @@ function calc_dc_current_mag_3w_xf(branch, case, solution)
     jfr = branch["source_id"][2]
     jto = branch["source_id"][3]
     jter = branch["source_id"][4]
-    vhi = case["bus"]["$jfr"]["base_kv"]
-    vlo = case["bus"]["$jto"]["base_kv"]
+    vhi = max(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
+    vlo = min(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
     vter = case["bus"]["$jter"]["base_kv"]
     a = vhi/vlo
     b = vhi/vter

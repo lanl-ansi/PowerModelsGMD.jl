@@ -209,7 +209,7 @@
         @test isapprox(result["solution"]["branch"]["5"]["pf"], -1.0028, atol=1e-1)
         @test isapprox(result["solution"]["branch"]["5"]["pt"], 1.0042, atol=1e-1)
         @test isapprox(result["solution"]["branch"]["5"]["qf"], -0.3910, atol=1e-1)
-        @test isapprox(result["solution"]["branch"]["5"]["qt"], 0.3236, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["5"]["qt"], 0.42458, atol=1e-1)
 
 
         # ===   DECOUPLED AC-OPF-TS   === #
