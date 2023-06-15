@@ -92,8 +92,8 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel,
     ic = br_com["f_bus"]
     jc = br_com["t_bus"]
 
-    ihi = -is
-    ilo = ic + is
+#    ihi = -is
+#    ilo = ic + is
 
     vlo = _PM.ref(pm, nw, :bus, i, "base_kv")
     vhi = _PM.ref(pm, nw, :bus, j, "base_kv")

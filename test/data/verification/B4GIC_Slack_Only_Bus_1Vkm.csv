@@ -1,0 +1,5 @@
+Number,Name,AreaName,NomkV,Vpu,kV,Vangle,LoadMW,LoadMvar,GenMW,GenMvar,ShuntMvar,ActG,ActB,AreaNumber,ZoneNumber
+1,Bus 1,Home,765.00,0.93431,714.746,-8.52,,,,,,0.00,0.00,1,1
+2,Bus 2,Home,765.00,0.97814,748.278,-2.33,,,,,,0.00,0.00,1,1
+3,Bus 3,Home,20.00,0.92357,18.471,-11.17,1000.00,200.00,0.00,0.00,,0.00,0.00,1,1
+4,Bus 4,Home,20.00,1.00000,20.000,0.00,,,1008.97,541.53,,0.00,0.00,1,1
