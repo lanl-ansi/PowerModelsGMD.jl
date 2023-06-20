@@ -26,7 +26,7 @@
                     # there are discpreancies here
                     @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
                     @test isapprox(_PMGMD.calc_dc_current_mag(branch, case_epri21,result["solution"]), i_eff*3.0, atol=0.5) # test if ieffecitive calculations are same as the constraint
-#                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=0.3)
                     found = true
                     break
                 end
@@ -157,7 +157,7 @@
             for (b, branch) in case_epri21["branch"]
                 if branch["fbus"] == i && branch["tbus"] == j && k == parse(Int64,branch["branch_sid"])
                     @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
-#                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=0.3)
                     found = true
                     break
                 end

@@ -94,7 +94,7 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel,
 
     vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
     vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
-    a = vhi / vlo
+    a = (vhi / vlo) - 1.0
 
     constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, k, ks, is, js, kc, ic, jc, a)
 

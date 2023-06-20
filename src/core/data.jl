@@ -166,14 +166,14 @@ function calc_dc_current_mag_gwye_gwye_auto_xf(branch, case, solution)
         ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
     end
 
-    ihi = -is
-    ilo = ic + is
+#    ihi = -is
+#    ilo = ic + is
 
     jfr = branch["f_bus"]
     jto = branch["t_bus"]
     vhi = max(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
     vlo = min(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
-    a = vhi/vlo
+    a = vhi/vlo - 1
 
     return branch["ieff"] = abs(a * is + ic) / (a + 1.0)
 end

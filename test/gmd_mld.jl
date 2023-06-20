@@ -87,12 +87,12 @@
         case_ieee_rts_0 = _PM.parse_file(data_ieee_rts_0)
         result = _PMGMD.solve_soc_gmd_mld(case_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 266.8092; atol=1e-2)
+        @test isapprox(result["objective"], 275.427; atol=1e-2)
 
         case_ieee_rts_0 = _PM.parse_file(data_ieee_rts_0)
         result = _PMGMD.solve_ac_gmd_mld(case_ieee_rts_0, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 264.8798, atol=1e-2)
+        @test isapprox(result["objective"], 273.819, atol=1e-2)
 
     end
 

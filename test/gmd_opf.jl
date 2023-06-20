@@ -209,7 +209,7 @@
         @test isapprox(result["solution"]["branch"]["5"]["pf"], -1.0028, atol=1e-1)
         @test isapprox(result["solution"]["branch"]["5"]["pt"], 1.0042, atol=1e-1)
         @test isapprox(result["solution"]["branch"]["5"]["qf"], -0.3910, atol=1e-1)
-        @test isapprox(result["solution"]["branch"]["5"]["qt"], 0.42458, atol=1e-1)
+        @test isapprox(result["solution"]["branch"]["5"]["qt"], 0.3136, atol=1e-1)
 
 
         # ===   DECOUPLED AC-OPF-TS   === #
@@ -237,8 +237,8 @@
         @test isapprox(solution["bus"]["2"]["vm"], 1.09126, atol=1e-1)
         @test isapprox(solution["branch"]["5"]["pf"], -1.0029, atol=1e-1)
         @test isapprox(solution["branch"]["5"]["pt"], 1.0047, atol=1e-1)
-        @test isapprox(solution["branch"]["5"]["qf"], -0.4864, atol=1e-1)
-        @test isapprox(solution["branch"]["5"]["qt"], 0.4246, atol=1e-1)
+        @test isapprox(solution["branch"]["5"]["qf"], -0.3814, atol=1e-1)
+        @test isapprox(solution["branch"]["5"]["qt"], 0.3136, atol=1e-1)
 
 
         result = _PMGMD.solve_soc_gmd_opf(case_b6gic_nerc, ipopt_solver; setting=setting)
@@ -264,7 +264,7 @@
 
         result = _PMGMD.solve_ac_gmd_opf_decoupled(case_epri21, ipopt_solver; setting=setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
-        @test isapprox(result["objective"], 399334.3747; atol = 1e2)
+        @test isapprox(result["objective"], 399231; atol = 1e2)
 
         # DC solution:
         @test isapprox(result["solution"]["gmd_bus"]["5"]["gmd_vdc"], -6.5507, atol=1e-1)
