@@ -178,12 +178,12 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractWRModel, n:
     JuMP.@constraint(pm.model,
         ieff
         >=
-        (a * is + ic) / (a + 1.0)
+        (a*is + ic) / (a + 1.0)
     )
     JuMP.@constraint(pm.model,
         ieff
         >=
-        - ( a * is + ic) / (a + 1.0)
+        - (a*is + ic) / (a + 1.0)
     )
 
 end

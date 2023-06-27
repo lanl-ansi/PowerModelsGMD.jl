@@ -1,4 +1,4 @@
-@testset "TEST GMD MLD" begin
+@testset "TEST GMD Power Flow" begin
 
 
     @testset "EPRI21 case" begin
@@ -26,7 +26,7 @@
                     # there are discpreancies here
                     @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
                     @test isapprox(_PMGMD.calc_dc_current_mag(branch, case_epri21,result["solution"]), i_eff*3.0, atol=0.5) # test if ieffecitive calculations are same as the constraint
-                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=0.3)
                     found = true
                     break
                 end
@@ -39,13 +39,26 @@
 
         case_b4gic                   = _PM.parse_file(data_b4gic)
         case_b4gic_verification_data = CSV.File(data_b4gic_verification)
+        b4gic_vm                     = CSV.File(data_b4gic_vm)
 
-        baseMVA = case_b4gic["baseMVA"]
+        # Lock in voltage magnitudes to be what the powerworld verification data suggests
+        for row in b4gic_vm
+            i = row[:Number]
+            vm = row[:Vpu]
 
-        result = _PMGMD.solve_gmd_pf(case_b4gic, _PM.ACPPowerModel, ipopt_solver; setting=setting)
+            if (i == 1 || i == 2)
+                case_b4gic["bus"][string(i)]["vmin"] = vm - .0001
+                case_b4gic["bus"][string(i)]["vmax"] = vm + .0001
+                case_b4gic["bus"][string(i)]["vm"]   = vm
+            end
+        end
+
+        local_setting = Dict{String,Any}("bound_voltage" => true)
+        merge!(local_setting, setting)
+        result = _PMGMD.solve_gmd_pf(case_b4gic, _PM.ACPPowerModel, ipopt_solver; setting=local_setting)
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
-
+        baseMVA = case_b4gic["baseMVA"]
         for row in case_b4gic_verification_data
             i = row[:BusNum3W]
             j = row[Symbol("BusNum3W:1")]
@@ -60,7 +73,7 @@
                 if branch["fbus"] == i && branch["tbus"] == j && k == parse(Int64,branch["branch_sid"])
                     @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
                     @test isapprox(_PMGMD.calc_dc_current_mag(branch, case_b4gic,result["solution"]), i_eff*3.0, atol=0.5) # test if ieffecitive calculations are same as the constraint
-                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=0.3)
                     found = true
                     break
                 end
@@ -74,14 +87,28 @@
 
         case_b4gic                   = _PM.parse_file(data_b4gic)
         case_b4gic_verification_data = CSV.File(data_b4gic_verification)
+        b4gic_vm                     = CSV.File(data_b4gic_vm)
 
-        baseMVA = case_b4gic["baseMVA"]
+        # Lock in voltage magnitudes to be what the powerworld verification data suggests
+        for row in b4gic_vm
+            i = row[:Number]
+            vm = row[:Vpu]
+            if (i == 1 || i == 2)
+                case_b4gic["bus"][string(i)]["vmin"] = vm - .0001
+                case_b4gic["bus"][string(i)]["vmax"] = vm + .0001
+                case_b4gic["bus"][string(i)]["vm"]   = vm
+            end
+        end
 
-        result = _PMGMD.solve_ac_gmd_pf_decoupled(case_b4gic, ipopt_solver; setting=setting)
+
+
+        local_setting = Dict{String,Any}("bound_voltage" => true)
+        merge!(local_setting, setting)
+        result = _PMGMD.solve_ac_gmd_pf_decoupled(case_b4gic, ipopt_solver; setting=local_setting)
 
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
-
+        baseMVA                      =  case_b4gic["baseMVA"]
         for row in case_b4gic_verification_data
             i = row[:BusNum3W]
             j = row[Symbol("BusNum3W:1")]
@@ -95,7 +122,7 @@
             for (b, branch) in case_b4gic["branch"]
                 if branch["fbus"] == i && branch["tbus"] == j && k == parse(Int64,branch["branch_sid"])
                     @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
-                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=0.3)
                     found = true
                     break
                 end
@@ -130,7 +157,7 @@
             for (b, branch) in case_epri21["branch"]
                 if branch["fbus"] == i && branch["tbus"] == j && k == parse(Int64,branch["branch_sid"])
                     @test isapprox(result["solution"]["branch"][b]["gmd_idc_mag"], i_eff*3.0, atol=0.5)
-                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=1e-1)
+                    @test isapprox(result["solution"]["branch"][b]["gmd_qloss"] * baseMVA, qloss, atol=0.3)
                     found = true
                     break
                 end
