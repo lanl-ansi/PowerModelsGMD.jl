@@ -320,4 +320,17 @@ mpc.branch_sourceid = [
 17 19 '1 ';
 ];
 
+%% gmd_ne_blocker data
+%column_names% gmd_bus status construction_cost
+mpc.gmd_ne_blocker = [
+1	  1 1.0
+2	  1	1.0
+3	  1	1.0
+4	  1	1.0
+5	  1	1.0
+6	  1	1.0
+7	  1	1.0
+8	  1	1.0
+];
 
+mpc.load_served_ratio = 0.8185
