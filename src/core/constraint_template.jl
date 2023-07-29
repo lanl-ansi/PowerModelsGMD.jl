@@ -72,8 +72,8 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractPowerModel, k; n
     il = br_lo["f_bus"]
     jl = br_lo["t_bus"]
 
-    vhi = _PM.ref(pm, nw, :bus, i, "base_kv")
-    vlo = _PM.ref(pm, nw, :bus, j, "base_kv")
+    vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+    vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
     a = vhi / vlo
 
     constraint_dc_current_mag_gwye_gwye_xf(pm, nw, k, kh, ih, jh, kl, il, jl, a)
@@ -98,12 +98,9 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel,
     ic = br_com["f_bus"]
     jc = br_com["t_bus"]
 
-    ihi = -is
-    ilo = ic + is
-
-    vlo = _PM.ref(pm, nw, :bus, i, "base_kv")
-    vhi = _PM.ref(pm, nw, :bus, j, "base_kv")
-    a = vhi / vlo
+    vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+    vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+    a = (vhi / vlo) - 1.0
 
     constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, k, ks, is, js, kc, ic, jc, a)
 

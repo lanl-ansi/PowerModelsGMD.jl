@@ -21,8 +21,9 @@ end
 
 
 function build_gmd_pf(pm::_PM.AbstractPowerModel; kwargs...)
+    bound_voltage = get(pm.setting,"bound_voltage",false)
 
-    variable_bus_voltage(pm, bounded=false)
+    variable_bus_voltage(pm, bounded=bound_voltage)
     _PM.variable_gen_power(pm, bounded=false)
     _PM.variable_dcline_power(pm, bounded=false)
     _PM.variable_branch_power(pm, bounded=false)
@@ -133,8 +134,9 @@ end
 "FUNCTION: build the ac minimum loadshedding coupled with quasi-dc-pf problem
 as a maximum loadability problem on shunts and loads where the dc pf flow is uncoupled from the ac calculations"
 function build_gmd_pf_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
+    bound_voltage = get(pm.setting,"bound_voltage",false)
 
-    variable_bus_voltage(pm, bounded=false)
+    variable_bus_voltage(pm, bounded=bound_voltage)
     _PM.variable_gen_power(pm, bounded=false)
     _PM.variable_dcline_power(pm, bounded=false)
     _PM.variable_branch_power(pm, bounded=false)
