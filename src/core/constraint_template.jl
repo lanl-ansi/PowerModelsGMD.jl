@@ -2,6 +2,8 @@
 # Constraint Template Definitions #
 ###################################
 
+import Memento
+
 # Constraint templates help simplify data wrangling across multiple formulations
 # by providing an abstraction layer between the network data and network constraint
 # definitions. The constraint template's job is to extract the required parameters
@@ -40,12 +42,16 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, k; 
     branch = _PM.ref(pm, nw, :branch, k)
     kh = branch["gmd_br_hi"]
 
-    br_hi = _PM.ref(pm, nw, :gmd_branch, kh)
-    ih = br_hi["f_bus"]
-    jh = br_hi["t_bus"]
+    if kh == -1 || kh == "-1" || !(kh in keys(_PM.ref(pm, nw, :gmd_branch)))
+        Memento.warn(_LOGGER, "Branch [$k] is missing br_hi, skipping")
+    else
+        br_hi = _PM.ref(pm, nw, :gmd_branch, kh)
 
-    constraint_dc_current_mag_gwye_delta_xf(pm, nw, k, kh, ih, jh)
+        ih = br_hi["f_bus"]
+        jh = br_hi["t_bus"]
 
+        constraint_dc_current_mag_gwye_delta_xf(pm, nw, k, kh, ih, jh)
+    end
 end
 
 

@@ -375,13 +375,13 @@ function fix_gmd_indices!(net)
     branch_map = Dict(map(x -> x["source_id"] => x["index"], values(net["branch"])))
 
     for (i,gbr) in net["gmd_branch"]
+        if "parent_source_id" in keys(gbr)
+            k = gbr["parent_source_id"]
 
-        k = gbr["parent_source_id"]
-
-        if k in keys(branch_map)
-            gbr["parent_index"] = branch_map[k]
+            if k in keys(branch_map)
+                gbr["parent_index"] = branch_map[k]
+            end
         end
-
     end
 
 end
