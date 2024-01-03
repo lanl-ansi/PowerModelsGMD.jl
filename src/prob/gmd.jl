@@ -32,7 +32,7 @@ function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
     variable_dc_line_flow(pm)
 
     for i in _PM.ids(pm, :gmd_bus)
-        constraint_dc_power_balance(pm, i)
+        constraint_dc_kcl(pm, i)
     end
 
     for i in _PM.ids(pm, :gmd_branch)
@@ -52,125 +52,89 @@ function solve_gmd(file::String; kwargs...)
 end
 
 function solve_gmd(case::Dict{String,Any}; kwargs...)
-
-    # Assumption: branchListStruct and busListStruct are snatched directly from JSON
-
-    branchMap = case["gmd_branch"]
-    busMap = case["gmd_bus"]
-
-    # Solving for bus to ground currents: two matrices to worry about are Y and Z
-    #   Y and Z are both 'nxn', where n is the number of busses
-    #   Y is symettric and Z (fow now) is diagonal
-
-    numBranch = length(branchMap)
-    numBus = length(busMap)
-
-    branchList = collect(values(branchMap))
-    busList = collect(values(busMap))
-    busKeys = collect(keys(busMap))
-    busIdx = Dict( [(b["index"],i) for (i,b) in enumerate(busList)] )
-
-    # Assume perfect earth grounding current at each bus location:
-    #   sum of the emf on each line going into a substation times the y for that line
-
-    J = zeros(numBus)
-
-    mm = zeros(Int64, 2 * numBranch)  # off-diagonal rows
-    nn = zeros(Int64, 2 * numBranch)  # off-diagonal columns
-    matVals = zeros(2 * numBranch)  # off-diagonal values
-    z = -1
-
-    mmm = Array(1:numBus)  # diagonal rows
-    nnn = Array(1:numBus)  # diagonal columns
-    YY = zeros(numBus)  # diagonal values
-
-    for i in 1:numBranch
-
-        branch = branchList[i]
-        m = busIdx[branch["f_bus"]]
-        n = busIdx[branch["t_bus"]]
-
-        if( (m!=n) && (branch["br_status"]==1) )
-
-            J[m] -= (1.00 / branch["br_r"]) * branch["br_v"]
-            J[n] += (1.00 / branch["br_r"]) * branch["br_v"]
-
-            z += 2
-            mm[z] = m
-            nn[z] = n
-            matVals[z] = -(1.00 / branch["br_r"])
-
-            mm[z+1] = n
-            nn[z+1] = m
-            matVals[z+1] = matVals[z]
-
-            YY[m] += (1.00 / branch["br_r"])
-            YY[n] += (1.00 / branch["br_r"])
-
+diag_y = Dict{Int64,Float64}()
+    inject_i = Dict{Int64,Float64}()
+    for (i, bus) in case["gmd_bus"]
+        if bus["status"] == 1
+            bus["g_gnd"] != 0.0 ? diag_y[bus["index"]] = bus["g_gnd"] : diag_y[bus["index"]] = 0.0
+            inject_i[bus["index"]] = 0.0
         end
-
+    end
+    offDiag_y = Dict{Int64,Any}()
+    offDiag_counter = 0
+    for (i, branch) in case["gmd_branch"]
+        if branch["br_status"] == 1
+            m = branch["f_bus"]
+            n = branch["t_bus"]
+            if !haskey(offDiag_y, m)
+                offDiag_y[m] = Dict{Int64,Any}() 
+                offDiag_y[m][n] = 0.0
+                offDiag_counter += 1
+            end
+            if !haskey(offDiag_y, n)
+                offDiag_y[n] = Dict{Int64,Any}() 
+                offDiag_y[n][m] = 0.0
+                offDiag_counter += 1
+            end
+            if haskey(offDiag_y[m], n)
+                offDiag_y[m][n] -= 1/branch["br_r"] 
+            else
+                offDiag_y[m][n] = -1/branch["br_r"]
+                offDiag_counter += 1
+            end
+            if haskey(offDiag_y[n], m) 
+                offDiag_y[n][m] -= 1/branch["br_r"] 
+            else
+                offDiag_y[n][m] = -1/branch["br_r"]
+                offDiag_counter += 1
+            end
+            haskey(diag_y, m) ? diag_y[m] += 1/branch["br_r"] : nothing
+            haskey(diag_y, n) ? diag_y[n] += 1/branch["br_r"] : nothing
+            haskey(inject_i, m) ? inject_i[m] -= branch["br_v"]/branch["br_r"] : nothing
+            haskey(inject_i, n) ? inject_i[n] += branch["br_v"]/branch["br_r"] : nothing
+        end
     end
 
-    # Y matix:
-
-    Y = SparseArrays.sparse(vcat(mmm,mm), vcat(nnn,nn), vcat(YY,matVals))
-
-    zmm = zeros(Int64,numBus)
-    znn = zeros(Int64,numBus)
-    zmatVals = zeros(1,numBus)
-
-    for i in 1:numBus
-
-        bus = busList[i]
-        zmm[i] = i
-        znn[i] = i
-        zmatVals[i] = (1.00 / max(bus["g_gnd"], 1e-6))
-
+    # create bus map to eliminate zero rows and columns to help y^-1 could remove but for now just setting diagonal to 1
+    n = 1
+    busMap = Dict{Int64,Int64}()
+    for (i, val) in diag_y
+        if val == 0.0
+            diag_y[i] = 1
+        end
+        busMap[i] = n
+        n += 1
     end
 
-    zmm = vec(zmm)
-    znn = vec(znn)
-    zmatVals = vec(zmatVals)
-
-    # Z matix:
-
-    Z = SparseArrays.sparse(zmm, znn, zmatVals)
-
-    I = SparseArrays.sparse(SparseArrays.I, numBus, numBus)
-
-    MM = Y * Z
-
-    M = (I + MM)
-
-    gic = M \ J
-    vdc = Z * gic
-
-    # Build the result structure:
-
-    solution = Dict{String,Any}()
-    solution["gmd_bus"] = Dict()
-    solution["gmd_branch"] = Dict()
-    result = Dict{String,Any}()
-    result["status"] = :LocalOptimal
-    result["solution"] = solution
-
-    for (i, v) in enumerate(vdc)
-        n = busKeys[i]
-        solution["gmd_bus"]["$n"] = Dict()
-        solution["gmd_bus"]["$n"]["gmd_vdc"] = v
+    rows = zeros(Int64, length(keys(busMap)) + offDiag_counter)
+    columns = zeros(Int64, length(keys(busMap)) + offDiag_counter)
+    values = zeros(Float64, length(keys(busMap)) + offDiag_counter)
+    n = 1
+    for (i, val) in diag_y
+        if i in keys(busMap)
+            rows[n] = busMap[i]
+            columns[n] = busMap[i]
+            values[n] = val
+            n += 1
+        end
     end
-
-    for (n, branch) in case["gmd_branch"]
-        nf = branch["f_bus"]
-        nt = branch["t_bus"]
-        g = 1 / branch["br_r"]
-
-        vf = solution["gmd_bus"]["$nf"]["gmd_vdc"]
-        vt = solution["gmd_bus"]["$nt"]["gmd_vdc"]
-        solution["gmd_branch"]["$n"] = Dict()
-        solution["gmd_branch"]["$n"]["gmd_idc"] = g * (vf - vt)
+    for (i, ent) in offDiag_y
+        for (j, val) in ent
+            rows[n] = busMap[i]
+            columns[n] = busMap[j]
+            values[n] = val
+            n += 1
+        end
     end
-
-    return result
-
+    y = SparseArrays.sparse(rows, columns, values)
+    i_inj = zeros(Float64, length(keys(busMap)))
+    for (i, val) in inject_i
+        if i in keys(busMap)
+            i_inj[busMap[i]] = val
+        end
+    end
+    
+    v = y\i_inj
+    
+    return solution_gmd(v, busMap, case)
 end

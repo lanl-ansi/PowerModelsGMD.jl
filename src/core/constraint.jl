@@ -246,9 +246,8 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWConvexModels, n:
 end
 
 
-"CONSTRAINT: nodal power balance for dc circuits"
-function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
-
+"CONSTRAINT: nodal kcl for dc circuits"
+function constraint_dc_kcl(pm::_PM.AbstractPowerModel, n::Int, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
     v_dc = _PM.var(pm, n, :v_dc)[i]
 
     if length(gmd_bus_arcs) > 0
