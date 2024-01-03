@@ -175,8 +175,8 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractPowerModel, i::In
 end
 
 
-"CONSTRAINT: nodal power balance for dc circuits with shunts"
-function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+"CONSTRAINT: nodal kcl for dc circuits with shunts"
+function constraint_dc_kcl(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 
     dc_expr = pm.model.ext[:nw][nw][:dc_expr]
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
@@ -186,7 +186,7 @@ function constraint_dc_power_balance(pm::_PM.AbstractPowerModel, i::Int; nw::Int
     gs = gmd_bus["g_gnd"]
     blocker_status = length(blockers) > 0 ? 1 : 0
 
-    constraint_dc_power_balance(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
+    constraint_dc_kcl(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
 end
 
 
