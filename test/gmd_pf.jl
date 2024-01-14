@@ -3,13 +3,33 @@
 
     @testset "EPRI21 case" begin
 
-        case_epri21 = _PM.parse_file(data_epri21)
+        case_epri21                   = _PM.parse_file(data_epri21)
         case_epri21_verification_data = CSV.File(data_epri21_verification)
+        epri21_vm                     = CSV.File(data_epri21_vm)
+
+        # Lock in voltage magnitudes to be what the powerworld verification data suggests
+        for row in epri21_vm
+            i = row[:Number]
+            vm = row[:Vpu]
+
+            case_epri21["bus"][string(i)]["vm"]   = vm
+
+            if (i == 2)
+                case_epri21["bus"][string(i)]["vmin"] = vm - .03
+                case_epri21["bus"][string(i)]["vmax"] = vm + .03
+            end
+        end
+
+        local_setting = Dict{String,Any}("bound_voltage" => true)
+        merge!(local_setting, setting)
+        result = _PMGMD.solve_gmd_pf(case_epri21,  _PM.ACPPowerModel, ipopt_solver; setting=local_setting)
+        @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
         baseMVA = case_epri21["baseMVA"]
 
-        result = _PMGMD.solve_gmd_pf(case_epri21,  _PM.ACPPowerModel, ipopt_solver; setting=setting)
-        @test result["termination_status"] == _PM.LOCALLY_SOLVED
+        for (b, bus) in case_epri21["bus"]
+            println(b, " ", result["solution"]["bus"][b]["vm"])
+        end
 
         for row in case_epri21_verification_data
             i = row[:BusNum3W]
@@ -31,6 +51,7 @@
                     break
                 end
             end
+
             @test found == true
         end
     end
@@ -134,16 +155,30 @@
 
     @testset "EPRI 21 case decoupled" begin
 
-        case_epri21 = _PM.parse_file(data_epri21)
+        case_epri21                   = _PM.parse_file(data_epri21)
         case_epri21_verification_data = CSV.File(data_epri21_verification)
+        epri21_vm                     = CSV.File(data_epri21_vm)
 
-        baseMVA = case_epri21["baseMVA"]
+        # Lock in voltage magnitudes to be what the powerworld verification data suggests
+        for row in epri21_vm
+            i = row[:Number]
+            vm = row[:Vpu]
+
+            case_epri21["bus"][string(i)]["vm"]   = vm
+
+            if (i == 2)
+                case_epri21["bus"][string(i)]["vmin"] = vm - .03
+                case_epri21["bus"][string(i)]["vmax"] = vm + .03
+            end
+        end
+
+        local_setting = Dict{String,Any}("bound_voltage" => true)
+        merge!(local_setting, setting)
 
         result = _PMGMD.solve_ac_gmd_pf_decoupled(case_epri21, ipopt_solver; setting=setting)
-
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 
-
+        baseMVA = case_epri21["baseMVA"]
         for row in case_epri21_verification_data
             i = row[:BusNum3W]
             j = row[Symbol("BusNum3W:1")]

@@ -90,6 +90,7 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 solve_gmd(network_case, optimizer; setting)
 ```
 
+**Warning!** The default post-processing Qloss calculations used for the GMD and sequential (uncoupled??) GMD-AC*PF formtulations uses the per-unit voltages specified in the base case
 
 ### GIC AC-OPF
 
