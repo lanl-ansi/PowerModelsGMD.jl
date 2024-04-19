@@ -37,10 +37,20 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
                 ac_result["solution"][asset][i] = Dict{String,Any}()
             end
 
+            if typeof(variables) != Dict{String,Any}
+                Memento.warn(_LOGGER, "Variable dc_solution[$asset][$i] isn't a dictionary")
+                continue
+            end
+    
+
             for (variable, assignment) in variables
                 ac_result["solution"][asset][i][variable] = assignment
+                # try
+                #     ac_result["solution"][asset][i][variable] = assignment
+                # catch
+                #     println("Error assigning ac_result[\"solution\"][$asset][$i][$variable] = $assignment")
+                # end
             end
-
         end
 
     end

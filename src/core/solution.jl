@@ -72,6 +72,11 @@ function solution_gmd(v::Vector{Float64}, busMap::Dict{Int64,Int64}, case::Dict{
     end
     for (n, branch) in case["gmd_branch"]
         solution["gmd_branch"]["$n"] = Dict()
+
+        if branch["parent_type"] != "branch"
+            continue
+        end
+
         type = case["branch"]["$(branch["parent_index"])"]["type"]
         solution["gmd_branch"]["$n"]["gmd_idc"] = calc_dc_current_mag(branch, type, solution)
     end
