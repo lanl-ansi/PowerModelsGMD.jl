@@ -14,7 +14,7 @@ function solve_gmd(file, optimizer; kwargs...)
         optimizer,
         build_gmd;
         ref_extensions = [
-            ref_add_gmd!
+            ref_add_gmd!,
         ],
         solution_processors = [
             solution_gmd!
@@ -29,10 +29,18 @@ as a linear constraint satisfaction problem"
 function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
 
     variable_dc_voltage(pm)
+    variable_gic_current(pm)
     variable_dc_line_flow(pm)
+    variable_qloss(pm)
 
     for i in _PM.ids(pm, :gmd_bus)
-        constraint_dc_kcl(pm, i)
+        constraint_dc_kcl(pm, i) # constraint_gic_current_balance(
+        
+    end
+
+    for i in _PM.ids(pm, :branch)
+        constraint_qloss_gmd(pm, i)
+        constraint_dc_current_mag(pm, i)
     end
 
     for i in _PM.ids(pm, :gmd_branch)
@@ -52,7 +60,7 @@ function solve_gmd(file::String; kwargs...)
 end
 
 function solve_gmd(case::Dict{String,Any}; kwargs...)
-diag_y = Dict{Int64,Float64}()
+    diag_y = Dict{Int64,Float64}()
     inject_i = Dict{Int64,Float64}()
     for (i, bus) in case["gmd_bus"]
         if bus["status"] == 1
@@ -96,97 +104,37 @@ diag_y = Dict{Int64,Float64}()
     end
 
     # create bus map to eliminate zero rows and columns to help y^-1 could remove but for now just setting diagonal to 1
-    n = 1
-    busMap = Dict{Int64,Int64}()
     for (i, val) in diag_y
         if val == 0.0
             diag_y[i] = 1
         end
-        busMap[i] = n
-        n += 1
     end
 
-    rows = zeros(Int64, length(keys(busMap)) + offDiag_counter)
-    columns = zeros(Int64, length(keys(busMap)) + offDiag_counter)
-    values = zeros(Float64, length(keys(busMap)) + offDiag_counter)
+    rows = zeros(Int64, length(keys(diag_y)) + offDiag_counter)
+    columns = zeros(Int64, length(keys(diag_y)) + offDiag_counter)
+    values = zeros(Float64, length(keys(diag_y)) + offDiag_counter)
     n = 1
     for (i, val) in diag_y
-        if i in keys(busMap)
-            rows[n] = busMap[i]
-            columns[n] = busMap[i]
-            values[n] = val
-            n += 1
-        end
+        rows[n] = i
+        columns[n] = i
+        values[n] = val
+        n += 1
     end
     for (i, ent) in offDiag_y
         for (j, val) in ent
-            rows[n] = busMap[i]
-            columns[n] = busMap[j]
+            rows[n] = i
+            columns[n] = j
             values[n] = val
             n += 1
         end
     end
     y = SparseArrays.sparse(rows, columns, values)
-    i_inj = zeros(Float64, length(keys(busMap)))
+    i_inj = zeros(Float64, length(keys(inject_i)))
     for (i, val) in inject_i
-        if i in keys(busMap)
-            i_inj[busMap[i]] = val
-        end
+        i_inj[i] = val
     end
     
     v = y\i_inj
     
-    return solution_gmd(v, busMap, case)
-end
-
-
-"FUNCTION: solve the multi-time-series quasi-dc-pf problem"
-function solve_gmd_ts_decoupled(case, optimizer, waveform; setting=Dict{String,Any}(), disable_thermal=true, kwargs...)
-
-    wf_time = waveform["time"]
-    wf_waveforms = waveform["waveforms"]
-
-    if disable_thermal == false
-
-        base_mva = case["baseMVA"]
-        delta_t = wf_time[2] - wf_time[1]
-
-        Ie_prev = Dict()
-        for (i, br) in case["branch"]
-            Ie_prev[i] = nothing
-        end
-
-    end
-
-    solution = []
-    for i in 1:length(wf_time)
-        if (waveform !== nothing && waveform["waveforms"] !== nothing)
-            for (k, wf) in waveform["waveforms"]
-
-                otype = wf["parent_type"]
-                field  = wf["parent_field"]
-
-                case[otype][k][field] = wf["values"][i]
-
-            end
-        end
-
-        result = Dict()
-
-        if optimizer !== nothing
-            result = solve_gmd(case, optimizer; setting=setting,
-            solution_processors = [
-                solution_gmd!,
-            ])
-        else
-            result = solve_gmd(case)            
-        end
-
-        result["time_index"] = i
-        result["time"] = wf_time[i]
-
-        push!(solution, result)
-    end
-    return solution
-
+    return solution_gmd(v, case)
 end

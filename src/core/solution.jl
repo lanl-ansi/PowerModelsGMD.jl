@@ -16,8 +16,10 @@ function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,A
         indices = keys(_PM.var(pm,nw_id,:qloss))
 
         for (l, branch) in _PM.ref(pm,nw_id,:branch)
-            key             = (branch["index"], branch["hi_bus"], branch["lo_bus"])
+            key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
             branch_solution = nw_data["branch"][string(l)]
+            # println(JuMP.value.(_PM.var(pm,nw_id,:qloss,key)))
+            branch_solution["ieff"] = JuMP.value.(_PM.var(pm, nw_id, :i_dc_mag, l))
             branch_solution["gmd_qloss"] = JuMP.value.(_PM.var(pm,nw_id,:qloss,key))
         end
     end
@@ -48,17 +50,22 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
 
         nw_data["qloss"] = Dict{String,Any}()
         for (n, branch) in _PM.ref(pm,nw_id,:branch)
-            nw_data["qloss"]["$(n)"] = calc_qloss(branch, _PM.ref(pm,nw_id), nw_data)
+            i = branch["hi_bus"]
+            j = branch["lo_bus"]
+            i_eff = JuMP.value(_PM.var(pm, nw_id, :i_dc_mag, n)) / 3
+            q_loss = JuMP.value(_PM.var(pm, nw_id, :qloss)[(n,i,j)]) / 3
+            nw_data["ieff"]["$(n)"] = i_eff < 1e-12 ? 0.0 : i_eff
+            nw_data["qloss"]["$(n)"] = q_loss < 1e-12 ? 0.0 : q_loss
         end
-
     end
 end
+
 
 """
     solution for matrix gms nl_solver
         returns dc bus voltages, neutral voltages and currents
 """
-function solution_gmd(v::Vector{Float64}, busMap::Dict{Int64,Int64}, case::Dict{String,Any})
+function solution_gmd(v::Vector{Float64}, case::Dict{String,Any})
     solution = Dict{String,Any}()
     solution["gmd_bus"] = Dict()
     solution["gmd_branch"] = Dict()
@@ -66,19 +73,17 @@ function solution_gmd(v::Vector{Float64}, busMap::Dict{Int64,Int64}, case::Dict{
     result["status"] = :LocalOptimal
     result["solution"] = solution
 
-    for (bus, i) in busMap
+    for (bus, val) in enumerate(v)
         solution["gmd_bus"]["$bus"] = Dict()
-        solution["gmd_bus"]["$bus"]["gmd_vdc"] = v[i]
+        solution["gmd_bus"]["$bus"]["gmd_vdc"] = val
     end
+
     for (n, branch) in case["gmd_branch"]
         solution["gmd_branch"]["$n"] = Dict()
-
-        if branch["parent_type"] != "branch"
-            continue
-        end
-
-        type = case["branch"]["$(branch["parent_index"])"]["type"]
+        if branch["parent_type"] == "branch"
+            type = case["branch"]["$(branch["parent_index"])"]["type"]
         solution["gmd_branch"]["$n"]["gmd_idc"] = calc_dc_current_mag(branch, type, solution)
+        end
     end
 
     solution["ieff"] = Dict{String,Any}()

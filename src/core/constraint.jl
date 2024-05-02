@@ -295,21 +295,55 @@ function constraint_dc_ohms(pm::_PM.AbstractPowerModel, n::Int, i, f_bus, t_bus,
         ==
         gs * (vfr + vs - vto)
     )
-
-
 end
 
 
 # ===   QLOSS CONSTRAINTS   === #
 
+"CONSTRAINT: qloss calculcated from ac voltage and dc current"
+function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, baseMVA, branchMVA, vm, busKV, K)
+    branch    = _PM.ref(pm, n, :branch, k)
+
+    qloss = _PM.var(pm, n, :qloss)
+    ieff = _PM.var(pm, n, :i_dc_mag, k)
+
+    if branch["type"] == "xfmr"
+        JuMP.@constraint(pm.model,
+            qloss[(k,i,j)] == K * ieff * vm
+        )
+    else
+        JuMP.@constraint(pm.model,
+            qloss[(k,i,j)] == 0.0
+        )
+    end
+end
+
 
 "CONSTRAINT: qloss calculcated from ac voltage and dc current"
-function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, branchMVA, K)
+function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, baseMVA, branchMVA, busKV, K)
+    branch    = _PM.ref(pm, n, :branch, k)
 
-    type = typeof(pm)
-    Memento.error(_LOGGER, "Error: Function constraint_qloss needs to be implemented for PowerModel of type $type")
+    qloss = _PM.var(pm, n, :qloss)
+    vm    = _PM.var(pm, n, :vm)[i]
+    ieff = _PM.var(pm, n, :i_dc_mag, k)
 
+    
+
+    if branch["type"] == "xfmr"
+        JuMP.@constraint(pm.model,
+            qloss[(k,i,j)] == K * ieff * vm
+        )
+        # qloss[(k,i,j)] == 200.0
+    else
+        JuMP.@constraint(pm.model,
+            qloss[(k,i,j)] == 0.0
+        )
+    end
+        # Use this if we implement piecewise K
+        # (pm.data["baseMVA"]) / branchMVA ) * (K * vm * ieff) / (3.0 * branchMVA)
+        # (K * vm * ieff) / (3.0 * baseMVA)
 end
+
 
 "CONSTRAINT: qloss calculcated from ac voltage and constant ieff"
 function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i, j, baseMVA, K, ieff)

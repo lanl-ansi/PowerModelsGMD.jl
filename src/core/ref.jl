@@ -74,3 +74,20 @@ function ref_add_ne_blocker!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     end
 
 end
+
+
+"REF: add ieff solution to branches"
+function ref_add_ieff!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+
+    data_it  = _IM.ismultiinfrastructure(data) ? data["it"][pm_it_name] : data
+    nws_data = _IM.ismultinetwork(data_it) ? data_it["nw"] : Dict("0" => data_it)
+
+    for (n, nw_data) in nws_data
+        nw_id = parse(Int, n)
+        nw_ref = ref[:it][pm_it_sym][:nw][nw_id]
+        for (i, branch) in nw_ref[:branch]
+            branch["ieff"] = data["ieff"]["$i"]
+        end
+    end
+end
+

@@ -502,21 +502,17 @@ if branch["type"] == "xfmr"
         bus_i = case["bus"][i]
         bus_j = case["bus"][j]
 
-        # if branch["config"] == "gwye-gwye-auto"
-        #     vm = max(bus_i["vm"], bus_j["vm"])
-        # elseif branch["config"] == "gwye-delta"
-        #     vm = bus_i["vm"]
-        # else
-        #     vm = bus_i["vm"]
-        # end
+        if bus_i["vm"] == bus_j["vm"]
         vm = bus_i["vm"]
-        i_dc_mag = abs(solution["ieff"]["$(branch["index"])"])
+        else
+            vm = max(bus_i["vm"], bus_j["vm"])
+        end
 
         ibase = branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus_i["base_kv"] * sqrt(3.0))
+        i_dc_mag = abs(solution["ieff"]["$(branch["index"])"]) / ibase
 
-        K = branch["gmd_k"] * branch["baseMVA"] / ibase
-
-        return K * i_dc_mag * vm 
+        K = branch["gmd_k"]
+        return K * i_dc_mag * vm * 100
 
     end
 
@@ -550,7 +546,6 @@ function calc_qloss(branch::Dict{String,Any}, case::Dict{Symbol,Any}, solution::
     end
 
     return 0.0
-
 end
 
 
@@ -859,3 +854,27 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
     end
 
 end
+
+
+"FUNCTION to make time series networks"
+function make_time_series(data::Dict{String,<:Any}, waveforms::String; loads::String) 
+    wf_filetype = split(lowercase(waveforms), '.')[end]
+    io = open(waveforms)
+    if wf_filetype == "json"
+        wf_data = JSON.parse(io)
+    end
+    n = length(wf_data["time"])
+    nws = _PM.replicate(data, n)
+    for (i, t) in enumerate(wf_data["time"])
+        nws["nw"][string(i)]["time"] = t
+    end
+    return nws
+end
+
+
+function make_time_series(data::String, waveforms::String; loads::String="")
+    pm_data = _PM.parse_file(data)
+    return make_time_series(pm_data, waveforms; loads=loads) 
+end
+
+

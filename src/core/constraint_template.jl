@@ -219,13 +219,31 @@ end
 
 
 # ===   QLOSS CONSTRAINTS   === #
+"CONSTRAINT: Calculation of qloss on a per edge basis gmd where vm is parameter"
+function constraint_qloss_gmd(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
+    branch    = _PM.ref(pm, nw, :branch, k)
+    baseMVA   = _PM.ref(pm, :baseMVA)
+    branchMVA    = branch["baseMVA"]
+    i         = branch["hi_bus"]
+    j         = branch["lo_bus"]
+
+    bus       = _PM.ref(pm, nw, :bus, i)
+    vm        = bus["vm"]
+    busKV     = bus["base_kv"]
+
+    K         = calc_branch_K(pm,k;nw=nw)
+
+    constraint_qloss(pm, nw, k, i, j, baseMVA, branchMVA, vm, busKV, K)
+    
+end
 
 "CONSTRAINT: Calculation of qloss on a per edge basis"
 function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch    = _PM.ref(pm, nw, :branch, k)
     baseMVA   = _PM.ref(pm, :baseMVA)
+    branchMVA    = branch["baseMVA"]
     i         = branch["hi_bus"]
     j         = branch["lo_bus"]
 

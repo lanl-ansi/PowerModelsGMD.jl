@@ -116,6 +116,42 @@ function variable_dc_line_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default
 
 end
 
+"VARIABLE: gen xfrm flow"
+function variable_dc_gen_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+
+    if bounded
+        dc = _PM.var(pm, nw)[:dc_gen_flow] = JuMP.@variable(pm.model,
+            [(l,i,j) in _PM.ref(pm, nw, :gmd_arcs_imxfrm)], base_name="$(nw)_dc_gen_flow",
+            lower_bound = -Inf,
+            upper_bound = Inf,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gen, l), "dc_start")
+        )
+    else
+        dc = _PM.var(pm, nw)[:dc] = JuMP.@variable(pm.model,
+            [(l,i,j) in _PM.ref(pm, nw, :gmd_arcs)], base_name="$(nw)_dc",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_branch, l), "dc_start")
+        )
+    end
+
+end
+
+
+function variable_dc_bus_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+
+    if bounded
+        dc = _PM.var(pm, nw)[:dc_bus_sub_flow] = JuMP.@variable(pm.model,
+            [(i,j) in _PM.ref(pm, nw, :gmd_arcs_bus_g)], base_name="$(nw)_dc_bus_sub_flow",
+            lower_bound = -Inf,
+            upper_bound = Inf,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_bus, i), "dc_start")
+        )
+    else
+        dc = _PM.var(pm, nw)[:dc] = JuMP.@variable(pm.model,
+            [(l,i,j) in _PM.ref(pm, nw, :gmd_arcs)], base_name="$(nw)_dc",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_branch, l), "dc_start")
+        )
+    end
+end
 
 # ===   QLOSS VARIABLES   === #
 
