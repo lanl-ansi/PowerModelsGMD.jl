@@ -1,7 +1,7 @@
 
 " Generic algorithm that solves GIC optimization in a decoupled fashion, where first the gic flows are solved and then the ac flows"
 
-function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solver, gic_prob_method, ac_prob_method;  kwargs...)
+function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solver, gic_prob_method, ac_prob_method;  return_dc=false, kwargs...)
     setting = kwargs[:setting]
 
     dc_result = gic_prob_method(dc_case, solver)
@@ -10,13 +10,14 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
 
     ac_case = deepcopy(dc_case)
     for branch in values(ac_case["branch"])
-        branch["ieff"] = calc_dc_current_mag(branch, ac_case, dc_solution)
+        branch["ieff"] = calc_ieff_current_mag(branch, ac_case, dc_solution)
     end
 
     ac_result = ac_prob_method(ac_case, model_constructor, solver, setting=setting; solution_processors = [
         solution_gmd_qloss!,
     ],
     )
+
     for (i, branch) in ac_case["branch"]
         ac_result["solution"]["branch"][i]["gmd_idc_mag"] = branch["ieff"]
     end
@@ -55,14 +56,18 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
 
     end
 
+    if return_dc
+        data = Dict()
+        data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
+        data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
+        return data
+    end
+
     return ac_result
 
 #    ac_solution = ac_result["solution"]
 
-#    data = Dict()
-#    data["ac"] = Dict("case"=>ac_case, "result"=>ac_result)
-#    data["dc"] = Dict("case"=>dc_case, "result"=>dc_result)
-#    return data
+
 
 end
 

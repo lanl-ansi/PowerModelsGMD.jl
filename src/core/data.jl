@@ -512,7 +512,7 @@ if branch["type"] == "xfmr"
         i_dc_mag = abs(solution["ieff"]["$(branch["index"])"]) / ibase
 
         K = branch["gmd_k"]
-        return K * i_dc_mag * vm * 100
+        return K * i_dc_mag * vm * case["baseMVA"]
 
     end
 

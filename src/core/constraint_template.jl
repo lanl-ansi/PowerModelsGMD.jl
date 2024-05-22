@@ -36,11 +36,21 @@ function constraint_model_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=_PM
 end
 
 
+# "CONSTRAINT: dc current on branch"
+# function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) 
+#     branch = _PM.ref(pm, nw, :branch, k)
+#     kh = branch["gmd_br_hi"]
+#     ieff_max = branch["ieff_max"]    
+#     constraint_dc_current_mag(pm, nw, kh, ieff_max)
+# end
+
+
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
     kh = branch["gmd_br_hi"]
+    ieff_max = branch["ieff_max"]
 
     if kh == -1 || kh == "-1" || !(kh in keys(_PM.ref(pm, nw, :gmd_branch)))
         Memento.warn(_LOGGER, "Branch [$k] is missing br_hi, skipping")
@@ -50,7 +60,7 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, k; 
         ih = br_hi["f_bus"]
         jh = br_hi["t_bus"]
 
-        constraint_dc_current_mag_gwye_delta_xf(pm, nw, k, kh, ih, jh)
+        constraint_dc_current_mag_gwye_delta_xf(pm, nw, k, kh, ih, jh, ieff_max)
     end
 end
 
@@ -76,7 +86,9 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractPowerModel, k; n
     vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
     a = vhi / vlo
 
-    constraint_dc_current_mag_gwye_gwye_xf(pm, nw, k, kh, ih, jh, kl, il, jl, a)
+    ieff_max = branch["ieff_max"]
+
+    constraint_dc_current_mag_gwye_gwye_xf(pm, nw, k, kh, ih, jh, kl, il, jl, a, ieff_max)
 
 end
 
@@ -102,7 +114,9 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel,
     vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
     a = (vhi / vlo) - 1.0
 
-    constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, k, ks, is, js, kc, ic, jc, a)
+    ieff_max = branch["ieff_max"]
+
+    constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, k, ks, is, js, kc, ic, jc, a, ieff_max)
 
 end
 

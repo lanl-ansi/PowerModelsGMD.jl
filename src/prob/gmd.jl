@@ -138,3 +138,55 @@ function solve_gmd(case::Dict{String,Any}; kwargs...)
     
     return solution_gmd(v, case)
 end
+
+
+"FUNCTION: solve the multi-time-series quasi-dc-pf problem"
+function solve_gmd_ts_decoupled(case, optimizer, waveform; setting=Dict{String,Any}(), disable_thermal=true, kwargs...)
+
+    wf_time = waveform["time"]
+    wf_waveforms = waveform["waveforms"]
+
+    if !disable_thermal
+
+        base_mva = case["baseMVA"]
+        delta_t = wf_time[2] - wf_time[1]
+
+        Ie_prev = Dict()
+        for (i, br) in case["branch"]
+            Ie_prev[i] = nothing
+        end
+
+    end
+
+    solution = []
+    for i in eachindex(wf_time)
+        if (waveform !== nothing && waveform["waveforms"] !== nothing)
+            for (k, wf) in waveform["waveforms"]
+
+                otype = wf["parent_type"]
+                field  = wf["parent_field"]
+
+                case[otype][k][field] = wf["values"][i]
+
+            end
+        end
+
+        result = Dict()
+
+        if optimizer !== nothing
+            result = solve_gmd(case, optimizer; setting=setting,
+            solution_processors = [
+                solution_gmd!,
+            ])
+        else
+            result = solve_gmd(case)            
+        end
+
+        result["time_index"] = i
+        result["time"] = wf_time[i]
+
+        push!(solution, result)
+    end
+    return solution
+
+end

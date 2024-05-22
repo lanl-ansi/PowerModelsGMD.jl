@@ -19,8 +19,17 @@ function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,A
             key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
             branch_solution = nw_data["branch"][string(l)]
             # println(JuMP.value.(_PM.var(pm,nw_id,:qloss,key)))
-            branch_solution["ieff"] = JuMP.value.(_PM.var(pm, nw_id, :i_dc_mag, l))
-            branch_solution["gmd_qloss"] = JuMP.value.(_PM.var(pm,nw_id,:qloss,key))
+            try
+                branch_solution["ieff"] = JuMP.value.(_PM.var(pm, nw_id, :i_dc_mag, l))
+            catch
+                Memento.warn(_LOGGER, "Could not set ieff for branch $l")
+            end
+
+            try
+                branch_solution["gmd_qloss"] = JuMP.value.(_PM.var(pm,nw_id,:qloss,key))
+            catch
+                Memento.warn(_LOGGER, "Could not set qloss for branch $l")
+            end
         end
     end
 end

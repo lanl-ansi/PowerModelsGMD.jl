@@ -172,6 +172,7 @@ function build_opf_qloss(pm::_PM.AbstractACPModel, vnom; kwargs...)
 
 end
 
+# TODO: move to gmd_opf_ts.jl
 
 "FUNCTION: solve the multi-time-series quasi-dc-pf problem followed by the ac-opf problem with qloss constraints"
 function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{String,Any}(), disable_thermal=true, kwargs...)
@@ -192,7 +193,7 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
     end
 
     solution = []
-    for i in 1:length(wf_time)
+    for i in eachindex(wf_time)
         if (waveform !== nothing && waveform["waveforms"] !== nothing)
             for (k, wf) in waveform["waveforms"]
 
@@ -213,7 +214,7 @@ function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{S
         result["time_index"] = i
         result["time"] = wf_time[i]
 
-        if disable_thermal == false
+        if !disable_thermal
 
             xfmr_temp = Dict("Ieff" => 0.0, "delta_topoilrise_ss" => 0.0, "delta_hotspotrise_ss" => 0.0, "actual_hotspot" => 0.0)
 
