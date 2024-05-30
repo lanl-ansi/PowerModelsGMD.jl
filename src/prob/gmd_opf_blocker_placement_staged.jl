@@ -68,7 +68,7 @@ function build_gmd_opf_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 #        if i in _PM.ids(pm, :bus_blockers)
 #            constraint_dc_power_balance_blocker(pm, i)
 #        else
-#            constraint_dc_power_balance(pm, i)
+#            constraint_dc_kcl(pm, i)
 #        end
     end
 

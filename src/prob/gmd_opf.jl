@@ -80,7 +80,7 @@ function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :gmd_bus)
-        constraint_dc_power_balance(pm, i) # constraint 2b of [1]
+        constraint_dc_kcl(pm, i) # constraint 2b of [1]
     end
 
     for i in _PM.ids(pm, :gmd_branch)

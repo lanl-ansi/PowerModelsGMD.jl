@@ -35,7 +35,7 @@ function constraint_dc_current_mag_ungrounded_xf(pm::_PM.AbstractPowerModel, n::
     )
 
 end
-constraint_dc_current_mag_ungrounded_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_grounded_xf(pm, nw, k)
+constraint_dc_current_mag_ungrounded_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_ungrounded_xf(pm, nw, k)
 
 
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
@@ -318,8 +318,7 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, baseMVA, 
     end
 end
 
-
-"CONSTRAINT: qloss calculcated from ac voltage and dc current"
+"CONSTRAINT: qloss calculcated from dc current only"
 function constraint_qloss(pm::_PM.AbstractPowerModel, n::Int, k, i, j, baseMVA, branchMVA, busKV, K)
     branch    = _PM.ref(pm, n, :branch, k)
 
