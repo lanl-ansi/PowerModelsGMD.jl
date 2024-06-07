@@ -23,10 +23,14 @@ end
 
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh)
-
+    branch = _PM.ref(pm, n, :branch, k)
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
-    JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
+    if haskey(branch,"hi_3w_branch")
+        JuMP.@constraint(pm.model, ieff == 0.0)
+    else
+        JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
+    end
 
 end
 
@@ -39,6 +43,17 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractACPModel, n::Int
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
     ilo = _PM.var(pm, n, :dc)[(kl,il,jl)]
     JuMP.@NLconstraint(pm.model, ieff == abs(a*ihi + ilo)/a)
+
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
+function constraint_dc_current_mag_gwye_gwye_xf_3w(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh)
+
+    Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], 0.0")
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+    JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
 
 end
 

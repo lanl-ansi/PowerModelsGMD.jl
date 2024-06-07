@@ -102,12 +102,16 @@ function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{String,Any}, sol
     khi = branch["gmd_br_hi"]
 
     if khi == -1 || khi === nothing
-        Memento.warn(_LOGGER, "khi for gwye-delta transformer $k is -1")
+    # if khi === nothing
+        Memento.warn(_LOGGER, "khi for gwye-delta transformer $k is nothing")
         return 0.0
     else
-        return abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+        if haskey(branch,"hi_3w_branch")
+            return 0.0
+        else
+            return abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+        end
     end
-
 end
 
 
@@ -146,36 +150,70 @@ end
 
 "FUNCTION: dc current on ungrounded gwye-gwye auto transformers"
 function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{String,Any}, solution)
+    if haskey(branch, "hi_3w_branch")
+        if "$(branch["index"])" == branch["hi_3w_branch"]
+            k = branch["index"]
+            lo_3w_branch = case["branch"][branch["lo_3w_branch"]]
+            
+            ks = branch["gmd_br_series"]
+            kc = lo_3w_branch["gmd_br_common"]
+            
+            is = 0.0
+            ic = 0.0
 
-    k = branch["index"]
-    ks = branch["gmd_br_series"]
-    kc = branch["gmd_br_common"]
+            if ks == -1 || ks === nothing
+                Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
+            else
+                is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+            end
 
-    is = 0.0
-    ic = 0.0
+            if kc == -1 || kc === nothing
+                Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
+            else
+                ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+            end
 
-    if ks == -1 || ks === nothing
-        Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
+            jfr = branch["f_bus"]
+            jto = lo_3w_branch["f_bus"]
+
+            vhi = max(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
+            vlo = min(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
+            a = vhi/vlo - 1
+            return abs(a * is + ic) / (a + 1.0)
+        else
+            return 0.0
+        end
     else
-        is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+        k = branch["index"]
+        ks = branch["gmd_br_series"]
+        kc = branch["gmd_br_common"]
+
+        is = 0.0
+        ic = 0.0
+
+        if ks == -1 || ks === nothing
+            Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
+        else
+            is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+        end
+
+        if kc == -1 || kc === nothing
+            Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
+        else
+            ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+        end
+
+    #    ihi = -is
+    #    ilo = ic + is
+
+        jfr = branch["f_bus"]
+        jto = branch["t_bus"]
+        vhi = max(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
+        vlo = min(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
+        a = vhi/vlo - 1
+
+        return abs(a * is + ic) / (a + 1.0)
     end
-
-    if kc == -1 || kc === nothing
-        Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
-    else
-        ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
-    end
-
-#    ihi = -is
-#    ilo = ic + is
-
-    jfr = branch["f_bus"]
-    jto = branch["t_bus"]
-    vhi = max(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
-    vlo = min(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
-    a = vhi/vlo - 1
-
-    return abs(a * is + ic) / (a + 1.0)
 end
 
 
@@ -496,23 +534,50 @@ end
     "
 function calc_qloss(branch::Dict{String,Any}, case::Dict{String,Any}, solution::Dict{String,Any})
 if branch["type"] == "xfmr"
-        i = "$(branch["hi_bus"])"
-        j = "$(branch["lo_bus"])"
+        if haskey(branch, "hi_3w_branch")
+            lo_3w_branch = case["branch"][branch["lo_3w_branch"]]
 
-        bus_i = case["bus"][i]
-        bus_j = case["bus"][j]
+            i = "$(branch["hi_bus"])"
+            j = "$(lo_3w_branch["hi_bus"])" 
 
-        if bus_i["vm"] == bus_j["vm"]
-        vm = bus_i["vm"]
+            bus_i = case["bus"][i]
+            bus_j = case["bus"][j]
+
+            if haskey(branch, "hi_3w_branch")
+                vm = bus_i["vm"]
+            else
+                if bus_i["vm"] == bus_j["vm"]
+                    vm = bus_i["vm"]
+                else
+                    vm = max(bus_i["vm"], bus_j["vm"])
+                end
+            end
+
+            ibase = branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus_i["base_kv"] * sqrt(3.0))
+            i_dc_mag = abs(solution["ieff"]["$(branch["index"])"]) / ibase
+
+            K = branch["gmd_k"]
+            return K * i_dc_mag * vm * case["baseMVA"]
+
         else
-            vm = max(bus_i["vm"], bus_j["vm"])
+            i = "$(branch["hi_bus"])"
+            j = "$(branch["lo_bus"])"
+
+            bus_i = case["bus"][i]
+            bus_j = case["bus"][j]
+
+            if bus_i["vm"] == bus_j["vm"]
+            vm = bus_i["vm"]
+            else
+                vm = max(bus_i["vm"], bus_j["vm"])
+            end
+
+            ibase = branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus_i["base_kv"] * sqrt(3.0))
+            i_dc_mag = abs(solution["ieff"]["$(branch["index"])"]) / ibase
+
+            K = branch["gmd_k"]
+            return K * i_dc_mag * vm * case["baseMVA"]
         end
-
-        ibase = branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus_i["base_kv"] * sqrt(3.0))
-        i_dc_mag = abs(solution["ieff"]["$(branch["index"])"]) / ibase
-
-        K = branch["gmd_k"]
-        return K * i_dc_mag * vm * 100
 
     end
 
@@ -529,7 +594,11 @@ function calc_qloss(branch::Dict{String,Any}, case::Dict{Symbol,Any}, solution::
         bus_j = case[:bus][j]
    
         if branch["config"] == "gwye-gwye-auto"
-            vm = max(bus_i["vm"], bus_j["vm"])
+            if haskey(branch, "hi_3w_branch")
+                vm = bus_i["vm"]
+            else
+                vm = max(bus_i["vm"], bus_j["vm"])
+            end
         elseif branch["config"] == "gwye-delta"
             vm = bus_i["vm"]
         else
@@ -878,3 +947,16 @@ function make_time_series(data::String, waveforms::String; loads::String="")
 end
 
 
+function add_gmd_3w_branch!(data::Dict{String,<:Any})
+    if haskey(data, "gmd_3w_branch")
+        windings = ["hi_3w_branch", "lo_3w_branch", "tr_3w_branch"]
+        for (_, transformer) in data["gmd_3w_branch"]
+            for winding in windings
+                branch = data["branch"]["$(transformer[winding])"]
+                for w in windings
+                    branch[w] = "$(transformer[w])"
+                end
+            end
+        end
+    end
+end

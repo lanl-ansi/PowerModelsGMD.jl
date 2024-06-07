@@ -61,22 +61,37 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractPowerModel, k; n
     branch = _PM.ref(pm, nw, :branch, k)
     kh = branch["gmd_br_hi"]
     kl = branch["gmd_br_lo"]
-    i = branch["f_bus"]
-    j = branch["t_bus"]
 
-    br_hi = _PM.ref(pm, nw, :gmd_branch, kh)
-    ih = br_hi["f_bus"]
-    jh = br_hi["t_bus"]
+    if kl != -1
+        i = branch["f_bus"]
+        j = branch["t_bus"]
 
-    br_lo = _PM.ref(pm, nw, :gmd_branch, kl)
-    il = br_lo["f_bus"]
-    jl = br_lo["t_bus"]
+        br_hi = _PM.ref(pm, nw, :gmd_branch, kh)
+        ih = br_hi["f_bus"]
+        jh = br_hi["t_bus"]
 
-    vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
-    vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
-    a = vhi / vlo
+        br_lo = _PM.ref(pm, nw, :gmd_branch, kl)
+        il = br_lo["f_bus"]
+        jl = br_lo["t_bus"]
 
-    constraint_dc_current_mag_gwye_gwye_xf(pm, nw, k, kh, ih, jh, kl, il, jl, a)
+        vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        a = vhi / vlo
+
+        constraint_dc_current_mag_gwye_gwye_xf(pm, nw, k, kh, ih, jh, kl, il, jl, a)
+    else
+        i = branch["f_bus"]
+        j = branch["t_bus"]
+
+        br_hi = _PM.ref(pm, nw, :gmd_branch, kh)
+        ih = br_hi["f_bus"]
+        jh = br_hi["t_bus"]
+
+        vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+    
+        constraint_dc_current_mag_gwye_gwye_xf_3w(pm, nw, k, kh, ih, jh)
+    end
 
 end
 
@@ -85,25 +100,51 @@ end
 function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     branch = _PM.ref(pm, nw, :branch, k)
-    ks = branch["gmd_br_series"]
-    kc = branch["gmd_br_common"]
-    i = branch["f_bus"]
-    j = branch["t_bus"]
+    if haskey(branch, "hi_3w_branch")
+        if "$(branch["index"])" == branch["hi_3w_branch"]
+            lo_3w_branch = _PM.ref(pm, nw, :branch, parse(Int,branch["lo_3w_branch"]))
 
-    br_ser = _PM.ref(pm, nw, :gmd_branch, ks)
-    is = br_ser["f_bus"]
-    js = br_ser["t_bus"]
+            ks = branch["gmd_br_series"]
+            kc = lo_3w_branch["gmd_br_common"]
+            i = branch["f_bus"]
+            j = lo_3w_branch["f_bus"]
 
-    br_com = _PM.ref(pm, nw, :gmd_branch, kc)
-    ic = br_com["f_bus"]
-    jc = br_com["t_bus"]
+            br_ser = _PM.ref(pm, nw, :gmd_branch, ks)
+            is = br_ser["f_bus"]
+            js = br_ser["t_bus"]
 
-    vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
-    vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
-    a = (vhi / vlo) - 1.0
+            br_com = _PM.ref(pm, nw, :gmd_branch, kc)
+            ic = br_com["f_bus"]
+            jc = br_com["t_bus"]
 
-    constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, k, ks, is, js, kc, ic, jc, a)
+            vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+            vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+            a = (vhi / vlo) - 1.0
+            constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, k, ks, is, js, kc, ic, jc, a)
+        else
+            ieff = _PM.var(pm, nw, :i_dc_mag)[k]
+            JuMP.@constraint(pm.model, ieff == 0.0)
+        end
+    else
+        ks = branch["gmd_br_series"]
+        kc = branch["gmd_br_common"]
+        i = branch["f_bus"]
+        j = branch["t_bus"]
 
+        br_ser = _PM.ref(pm, nw, :gmd_branch, ks)
+        is = br_ser["f_bus"]
+        js = br_ser["t_bus"]
+
+        br_com = _PM.ref(pm, nw, :gmd_branch, kc)
+        ic = br_com["f_bus"]
+        jc = br_com["t_bus"]
+
+        vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        a = (vhi / vlo) - 1.0
+
+        constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, k, ks, is, js, kc, ic, jc, a)
+    end
 end
 
 
@@ -252,7 +293,7 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
     K         = calc_branch_K(pm,k;nw=nw)
 
-    constraint_qloss(pm, nw, k, i, j, baseMVA, K)
+    constraint_qloss(pm, nw, k, i, j, baseMVA, branchMVA, busKV, K)
 
 end
 

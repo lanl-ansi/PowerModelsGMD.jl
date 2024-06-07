@@ -36,18 +36,8 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
     nws_data = haskey(solution["it"][pm_it_name], "nw") ? solution["it"][pm_it_name]["nw"] : nws_data = Dict("0" => solution["it"][pm_it_name])
     for (n, nw_data) in nws_data
         nw_id = parse(Int64, n)
-
-        for (l, branch) in _PM.ref(pm,nw_id,:gmd_branch)
-            key = (branch["index"], branch["f_bus"], branch["t_bus"])
-            branch_solution = nw_data["gmd_branch"][string(l)]
-            branch_solution["gmd_idc"] = JuMP.value.(_PM.var(pm,nw_id,:dc,key)) / 3
-        end
         
         nw_data["ieff"] = Dict{String,Any}()
-        for (n, branch) in _PM.ref(pm,nw_id,:branch)
-            nw_data["ieff"]["$(n)"] = calc_ieff_current_mag(branch, _PM.ref(pm,nw_id), nw_data)
-        end
-
         nw_data["qloss"] = Dict{String,Any}()
         for (n, branch) in _PM.ref(pm,nw_id,:branch)
             i = branch["hi_bus"]
