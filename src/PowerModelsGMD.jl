@@ -53,6 +53,10 @@ const _PMGMD = PowerModelsGMD
     include("core/variable.jl")
     include("core/variable_staged.jl")
 
+    # Add IO functions
+    include("io/common.jl")
+    include("io/gic.jl")
+
     # Add network formulations:
     include("form/acp.jl")
     include("form/acp_staged.jl")
