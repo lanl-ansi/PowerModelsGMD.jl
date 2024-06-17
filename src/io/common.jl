@@ -1,13 +1,14 @@
 import PowerModels
 
 function parse_file(file::String; kwargs...)::Dict
-    filetype = split(lowercase(file), '.')[end]
-    if filetype != "gic"
+    filetype = lowercase(splitext(file)[end])
+    if filetype != ".gic"
         return PowerModels.parse_file(file)
     end
 
     io = open(file)
     return parse_gic(io)
+    close(io)
 end
 
 function parse_files(files::String...)::Dict
