@@ -355,7 +355,7 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, i::I
 
         constraint_dc_power_balance_ne_blocker(pm, nw, i, ne_blockers[1], dc_expr, gmd_bus_arcs, gs)
     else
-        constraint_dc_power_balance(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
+        constraint_dc_kcl(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
     end
 
 end
