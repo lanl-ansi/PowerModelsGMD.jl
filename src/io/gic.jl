@@ -159,7 +159,7 @@ const _comment_split = r"(?!\B[\'][^\']*)[\/](?![^\']*[\']\B)"
 const _split_string = r",(?=(?:[^']*'[^']*')*[^']*$)"
 
 function _get_line_elements(line::AbstractString, line_number::Int)
-    if count(i->(i=="'"), line) % 2 == 1
+    if count(i->(i=='\''), line) % 2 == 1
         throw(Memento.error(_LOGGER, "At line $line_number, the number of \"'\" characters are mismatched. Please make sure you close all your strings."))
     end
 
