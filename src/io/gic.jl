@@ -82,7 +82,7 @@ function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractStri
                 end
             end
         catch message
-            Memento.warn(_LOGGER, "At line $line_number, element #$i is not of type $dtype, which is what is expected.")
+            # Memento.warn(_LOGGER, "At line $line_number, element #$i is not of type $dtype, which is what is expected.")
             if isa(message, Meta.ParseError)
                 section_data[field] = element
             else
@@ -121,7 +121,7 @@ function _parse_gic(data_io::IO)::Dict
         end
 
         # Check new section        
-        if (length(elements) == 1 && elements[1] == "0")
+        if (elements[1] == "0")
             if (line_number == 2) 
                 section = popfirst!(sections) # Skip this section, as default is to start without indicating a new section
             end
