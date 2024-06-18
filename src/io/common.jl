@@ -1,5 +1,3 @@
-import PowerModels
-
 function parse_file(file::String; kwargs...)::Dict
     filetype = lowercase(splitext(file)[end])
     if filetype != ".gic"

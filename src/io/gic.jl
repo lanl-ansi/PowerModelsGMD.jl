@@ -22,7 +22,6 @@ const _facts_data = [("NAME", String), ("BUS", Int), ("ID", Int), ("R", Float64)
 # const _load_data = [("", Int)] # Information not provided as to what this is
 
 const _gic_data_forms = Dict{String, Array}(
-    "GICFILEVRSN" => _bus_data, 
     "SUBSTATION" => _substation_data, 
     "BUS" => _bus_data, 
     "TRANSFORMER" => _transformer_data, 
@@ -33,6 +32,59 @@ const _gic_data_forms = Dict{String, Array}(
     "DC" => _dc_data, 
     "VSC DC" => _vsc_dc_data, 
     "FACTS" => _facts_data, 
+    # "LOAD" => _load_data
+)
+
+# Default Values
+const _substation_defaults = Dict{String, Any}(
+    "RG" => 0.1,
+    "EARTH_MODEL" => "Activity Optn",
+    "RG_FLAG" => "Assumed"
+)
+const _transformer_defaults = Dict{String, Any}(
+    # "WRI" => ,
+    # "WRJ" => , 
+    # "WRK" => , 
+    "GICBDI" => 0,
+    "GICBDJ" => 0,
+    "GICBDK" => 0,
+    "CORE" => 0,
+    "KFACTOR" => 0,
+    "GRDRI" => 0,
+    "GRDRJ" => 0,
+    "GRDRK" => 0,
+    "TMODEL" => 0
+)
+const _fixed_shunt_defaults = Dict{String, Any}(
+    "RG" => 0
+)
+const _switched_shunt_defaults = Dict{String, Any}(
+    "RG" => 0
+)
+const _branch_defaults = Dict{String, Any}(
+    "RLNSHI" => 0,
+    "RLNSHJ" => 0
+)
+const _dc_defaults = Dict{String, Any}(
+    "RG" => 0
+)
+const _vsc_dc_defaults = Dict{String, Any}(
+    "RG" => 0
+)
+const _facts_defaults = Dict{String, Any}(
+    "RG" => 0
+)
+
+const _gic_defaults = Dict{String, Dict}(
+    "SUBSTATION" => _substation_defaults, 
+    "TRANSFORMER" => _transformer_defaults, 
+    "FIXED SHUNT" => _fixed_shunt_defaults, 
+    "BRANCH" => _branch_defaults, 
+    # "EARTH MODEL" => _earth_data,
+    "SWITCHED SHUNT" => _switched_shunt_defaults, 
+    "DC" => _dc_defaults, 
+    "VSC DC" => _vsc_dc_defaults, 
+    "FACTS" => _facts_defaults, 
     # "LOAD" => _load_data
 )
 
@@ -49,7 +101,6 @@ function parse_gic(file::String)::Dict
 end
 
 function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractString, line_number::Int)
-    missing_fields = []
     section_data = Dict{String, Any}()
 
     if !haskey(_gic_data_forms, "$section")
@@ -62,16 +113,18 @@ function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractStri
     end
 
     for (i, (field, dtype)) in enumerate(_gic_data_forms["$section"])
+        if haskey(_gic_defaults, section) && haskey(_gic_defaults["$section"], field)
+            section_data[field] = _gic_defaults["$section"]["$field"]
+        end
+
         if i > length(elements)
             Memento.warn(_LOGGER, "At line $line_number, $section is missing $field, which will be set to default.")
-            push!(missing_fields, field)
             continue
         end
 
         element = strip(elements[i])
 
         try
-            # TODO Set default value for the field before possibly rewriting it
             if dtype != String && element != ""
                 section_data[field] = parse(dtype, element)
             else
@@ -82,21 +135,20 @@ function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractStri
                 end
             end
         catch message
-            Memento.warn(_LOGGER, "At line $line_number, element #$i is not of type $dtype, which is what is expected.")
+            # Memento.warn(_LOGGER, "At line $line_number, element #$i is not of type $dtype, which is what is expected.")
             if isa(message, Meta.ParseError)
                 section_data[field] = element
             else
-                throw(Memento.error(_LOGGER, "At line $line_number, element #$i could not be parsed."))
+                Memento.warn(_LOGGER, "At line $line_number, element #$i could not be parsed.")
+                # throw(Memento.error(_LOGGER, "At line $line_number, element #$i could not be parsed."))
             end
         end
     end
 
-    if length(missing_fields) == 0
-        if haskey(gic_data, "$section")
-            push!(gic_data["$section"], section_data)
-        else
-            gic_data["$section"] = [section_data]
-        end
+    if haskey(gic_data, "$section")
+        push!(gic_data["$section"], section_data)
+    else
+        gic_data["$section"] = [section_data]
     end
 end
 
@@ -121,7 +173,7 @@ function _parse_gic(data_io::IO)::Dict
         end
 
         # Check new section        
-        if (length(elements) == 1 && elements[1] == "0")
+        if (elements[1] == "0")
             if (line_number == 2) 
                 section = popfirst!(sections) # Skip this section, as default is to start without indicating a new section
             end
@@ -159,7 +211,7 @@ const _comment_split = r"(?!\B[\'][^\']*)[\/](?![^\']*[\']\B)"
 const _split_string = r",(?=(?:[^']*'[^']*')*[^']*$)"
 
 function _get_line_elements(line::AbstractString, line_number::Int)
-    if count(i->(i=="'"), line) % 2 == 1
+    if count(i->(i=='\''), line) % 2 == 1
         throw(Memento.error(_LOGGER, "At line $line_number, the number of \"'\" characters are mismatched. Please make sure you close all your strings."))
     end
 
