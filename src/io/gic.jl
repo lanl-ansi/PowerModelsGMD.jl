@@ -4,22 +4,17 @@
 #                                                               #
 #################################################################
 
-const _gic_sections = ["GICFILEVRSN", "SUBSTATION", "BUS", "TRANSFORMER", "FIXED SHUNT", "BRANCH", "EARTH MODEL", "SWITCHED SHUNT", "DC", "VSC DC", "Multi-Terminal DC Data", "FACTS", "LOAD", "END"]
+const _gic_sections = ["GICFILEVRSN", "SUBSTATION", "BUS", "TRANSFORMER", "FIXED SHUNT", "BRANCH", "EARTH MODEL", "END"]
 # BUS, SWITCHED SHUNT, LOAD, and EXTRA BUSES are not consistent between excel and .gic file examples
 
 # Ignoring all comments in these sections for now
-const _substation_data = [("SUBSTATION", Int), ("NAME", String), ("BUS", Int), ("LAT", Float64), ("LONG", Float64), ("RG", Float64), ("EARTH_MODEL", String), ("RG_FLAG", String)]
+const _substation_data = [("SUBSTATION", Int), ("NAME", String), ("BUS", Int), ("LAT", Float64), ("LONG", Float64), ("RG", Float64), ("EARTH_MODEL", String)]
 # BUS doesn't seem to be a list, as stated in the spreadsheet, but rather a different section. EARTH_MODEL doesn't clarify what the options for the setting are supposed to be.
 const _bus_data = [("ID", Int), ("SUBSTATION", Int)] # Assumed, as not stated elsewhere
 const _transformer_data = [("BUSI", Int), ("BUSJ", Int), ("BUSK", Int), ("CKT", String), ("WRI", Float64), ("WRJ", Float64), ("WRK", Float64), ("GICBDI", Int), ("GICBDJ", Int), ("GICBDK", Int), ("VECGRP", String), ("CORE", Int), ("KFACTOR", Float64), ("GRDRI", Int), ("GRDRJ", Int), ("GRDRK", Int), ("TMODEL", Int)]
 const _fixed_shunt_data = [("BUS", Int), ("ID", Int), ("R", Float64), ("RG", Float64)]
-const _branch_data = [("BUSI", Int), ("BUSJ", Int), ("CKT", String), ("RBRN", Float64), ("INDVP", Float64), ("INDVQ", Float64), ("RLNSHI", Float64), ("RLNSHJ", Float64)]
+const _branch_data = [("BUSI", Int), ("BUSJ", Int), ("CKT", String), ("RBRN", Float64), ("INDVP", Float64), ("INDVQ", Float64)]
 # const _earth_data = [("", String)] # Not sure the format yet
-const _switched_shunt_data = [("BUS", Int), ("ID", Int), ("R", Float64), ("RG", Float64)] # ID is not listed anywhere, but I believe it is inferred
-const _dc_data = [("NAME", String), ("BUS", Int), ("ID", Int), ("R", Float64), ("RG", Float64)]
-const _vsc_dc_data = [("NAME", String), ("BUS", Int), ("ID", Int), ("R", Float64), ("RG", Float64)]
-const _facts_data = [("NAME", String), ("BUS", Int), ("ID", Int), ("R", Float64), ("RG", Float64)]
-# const _load_data = [("", Int)] # Information not provided as to what this is
 
 const _gic_data_forms = Dict{String, Array}(
     "SUBSTATION" => _substation_data, 
@@ -28,11 +23,6 @@ const _gic_data_forms = Dict{String, Array}(
     "FIXED SHUNT" => _fixed_shunt_data, 
     "BRANCH" => _branch_data, 
     # "EARTH MODEL" => _earth_data,
-    "SWITCHED SHUNT" => _switched_shunt_data, 
-    "DC" => _dc_data, 
-    "VSC DC" => _vsc_dc_data, 
-    "FACTS" => _facts_data, 
-    # "LOAD" => _load_data
 )
 
 # Default Values
@@ -58,21 +48,10 @@ const _transformer_defaults = Dict{String, Any}(
 const _fixed_shunt_defaults = Dict{String, Any}(
     "RG" => 0
 )
-const _switched_shunt_defaults = Dict{String, Any}(
-    "RG" => 0
-)
+
 const _branch_defaults = Dict{String, Any}(
     "RLNSHI" => 0,
     "RLNSHJ" => 0
-)
-const _dc_defaults = Dict{String, Any}(
-    "RG" => 0
-)
-const _vsc_dc_defaults = Dict{String, Any}(
-    "RG" => 0
-)
-const _facts_defaults = Dict{String, Any}(
-    "RG" => 0
 )
 
 const _gic_defaults = Dict{String, Dict}(
@@ -81,11 +60,6 @@ const _gic_defaults = Dict{String, Dict}(
     "FIXED SHUNT" => _fixed_shunt_defaults, 
     "BRANCH" => _branch_defaults, 
     # "EARTH MODEL" => _earth_data,
-    "SWITCHED SHUNT" => _switched_shunt_defaults, 
-    "DC" => _dc_defaults, 
-    "VSC DC" => _vsc_dc_defaults, 
-    "FACTS" => _facts_defaults, 
-    # "LOAD" => _load_data
 )
 
 function parse_gic(io::IO)::Dict
@@ -195,8 +169,8 @@ function _parse_gic(data_io::IO)::Dict
         end
 
         if section == "GICFILEVRSN" 
-            if elements[1] != "GICFILEVRSN=4"
-                throw(Memento.error(_LOGGER, "This parser only interprets GIC Version 4. Please ensure you are using the correct format."))
+            if elements[1] != "GICFILEVRSN=3"
+                throw(Memento.error(_LOGGER, "This parser only interprets GIC Version 3. Please ensure you are using the correct format."))
             end
             continue
         end

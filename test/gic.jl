@@ -6,9 +6,9 @@
         @test_nowarn PowerModelsGMD.parse_gic("../test/data/gic/EPRI.gic")
         Memento.setlevel!(TESTLOG, "error")
     end
-    @testset "Check GIC parser rrors" begin
+    @testset "Check GIC parser errors" begin
         Memento.setlevel!(TESTLOG, "warn")
-        @test_throws(TESTLOG, "This parser only interprets GIC Version 4. Please ensure you are using the correct format.",
+        @test_throws(TESTLOG, "This parser only interprets GIC Version 3. Please ensure you are using the correct format.",
         PowerModelsGMD.parse_gic("../test/data/gic/WrongVersion.gic"))
         @test_throws(TESTLOG, "At line 2, the number of \"'\" characters are mismatched. Please make sure you close all your strings.",
         PowerModelsGMD.parse_gic("../test/data/gic/MisMatchedQuotes.gic"))
@@ -16,12 +16,10 @@
         Memento.setlevel!(TESTLOG, "error")
     end
     @testset "Check GIC parser warnings" begin
-        @testset "Warns about missing parsing for EARTH MODEL and LOAD data" begin
+        @testset "Warns about missing parsing for EARTH MODEL data" begin
             Memento.setlevel!(TESTLOG, "warn")
             @test_warn(TESTLOG, "EARTH MODEL data is not supported by this parser and will be ignored.",
             PowerModelsGMD.parse_gic("../test/data/gic/EarthModel.gic"))
-            @test_warn(TESTLOG, "LOAD data is not supported by this parser and will be ignored.",
-            PowerModelsGMD.parse_gic("../test/data/gic/LoadData.gic"))
             Memento.setlevel!(TESTLOG, "error")
         end
         @testset "Warns about incorrect formatting of data" begin
@@ -35,7 +33,7 @@
             # Parse warning
             @test_warn(TESTLOG, "At line 9, section BUS started with '0', but additional non-comment data is present. Pattern '^\\s*0\\s*[/]*.*' is reserved for section start/end.",
             PowerModelsGMD.parse_gic("../test/data/gic/IncorrectSectionStart.gic"))
-            @test_warn(TESTLOG, "Too many sections at line 23. Please ensure you don't have any extra sections.",
+            @test_warn(TESTLOG, "Too many sections at line 17. Please ensure you don't have any extra sections.",
             PowerModelsGMD.parse_gic("../test/data/gic/ExtraSection.gic"))
             Memento.setlevel!(TESTLOG, "error")
         end
@@ -46,7 +44,7 @@
 
         @test length(data_dict["SUBSTATION"]) == 2
         for item in data_dict["SUBSTATION"]
-            @test length(item) == 8
+            @test length(item) == 7
         end
 
         @test length(data_dict["BUS"]) == 4
@@ -61,7 +59,7 @@
 
         @test length(data_dict["BRANCH"]) == 1
         for item in data_dict["BRANCH"]
-            @test length(item) == 8
+            @test length(item) == 6
         end
     end
 
@@ -71,7 +69,7 @@
 
         @test length(data_dict["SUBSTATION"]) == 8
         for item in data_dict["SUBSTATION"]
-            @test length(item) == 8
+            @test length(item) == 7
         end
 
         @test length(data_dict["BUS"]) == 19
@@ -86,7 +84,7 @@
 
         @test length(data_dict["BRANCH"]) == 16
         for item in data_dict["BRANCH"]
-            @test length(item) == 8
+            @test length(item) == 6
         end
     end
 
@@ -96,7 +94,7 @@
 
         @test length(data_dict["SUBSTATION"]) == 2
         for item in data_dict["SUBSTATION"]
-            @test length(item) == 8
+            @test length(item) == 7
         end
 
         @test length(data_dict["BUS"]) == 4
@@ -111,7 +109,7 @@
 
         @test length(data_dict["BRANCH"]) == 1
         for item in data_dict["BRANCH"]
-            @test length(item) == 8
+            @test length(item) == 6
         end
     end
 end

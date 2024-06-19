@@ -1,6 +1,6 @@
-GICFILEVRSN=4
-1,'Sub A',0, 40.0000,-89.0000,   0.200,'',''
-2,'Sub B',0, 40.0000,-87.0000,   0.200,'',''
+GICFILEVRSN=3
+1,'Sub A',0, 40.0000,-89.0000,   0.200,''
+2,'Sub B',0, 40.0000,-87.0000,   0.200,''
 0 / End of Substation data, Begin Bus Substation Data
 1,1
 2,2
@@ -11,18 +11,11 @@ GICFILEVRSN=4
 2,4,0,' 1',  0.3000,  0.1000,  0.0000,0,0,0,'YNd0        ', 1,  1.1023,0,0,0,0
 0 / End of Transformer Data, Begin Bus Fixed Shunt Data
 0 / End of Bus Fixed Shunt Data, Begin Branch Data
-1,2,' 1',0, , ,0,0
+1,2,' 1',0, , 
 0 / End of Branch Data, Begin User Earth Model Data
 TEST_MODEL
 0.2
 Test earth Model
 0.2
-0
 0 / End of User Earth Model Data
-0  / End of Switched Shunt Data
-0  / End of DC line Data
-0  / End of VSC Data
-0  / End of Multi-Terminal DC Data
-0  / End of FACTS Data
-0  / End of Load Data
 Q
