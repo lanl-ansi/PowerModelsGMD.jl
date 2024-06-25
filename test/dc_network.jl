@@ -1,5 +1,6 @@
 import PowerModelsGMD
 import JSON
+import SparseArrays
 
 gic_data = PowerModelsGMD.parse_file("../test/data/gic/Bus4.gic")
 raw_data = PowerModelsGMD.parse_file("../test/data/pti/B4GIC.RAW")
@@ -26,7 +27,10 @@ end
 
 include("../src/core/utilities.jl")
 
-display(gen_g_matrix(network_data))
+matrices = gen_g_i_matrix(network_data)
+
+display(matrices[1])
+display(matrices[2])
 
 # gic_data = PowerModelsGMD.parse_file("../test/data/gic/activsg200.gic")
 # raw_data = PowerModelsGMD.parse_file("../test/data/pti/ACTIVSg200.RAW")

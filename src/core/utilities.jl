@@ -1,36 +1,79 @@
-function gen_g_matrix(network::Dict{String, Any})
-    num_bus = length(network["gmd_bus"])
-    matrix = zeros(Float64, (num_bus, num_bus))
-    for bus_id_from in sort(collect(keys(network["gmd_bus"])))
-        bus_id_from = parse(Int, bus_id_from)
-        for bus_id_to in sort(collect(keys(network["gmd_bus"])))
-            bus_id_to = parse(Int, bus_id_to)
-            if (bus_id_from == bus_id_to)
-                matrix[bus_id_from, bus_id_to] = gen_diagonal_g(bus_id_from, network)
-            else
-                matrix[bus_id_from, bus_id_to] = -1 * branch_conductance(bus_id_from, bus_id_to, network)
-            end            
+function gen_g_i_matrix(network::Dict{String, Any})
+    diag_g = Dict{Int64, Float64}()
+    inject_i = Dict{Int64, Float64}()
+
+    for bus in values(network["gmd_bus"])
+        if bus["status"] == 1
+            diag_g[bus["index"]] = bus["g_gnd"]
+            inject_i[bus["index"]] = 0
         end
     end
 
-    return matrix
-end
-
-function branch_conductance(bus_from::Int, bus_to::Int, network::Dict{String, Any})
+    offDiag_g = Dict{Int64, Dict}()
+    offDiag_counter = 0
     for branch in values(network["gmd_branch"])
-        if (branch["f_bus"] == bus_from && branch["t_bus"] == bus_to) || (branch["f_bus"] == bus_to && branch["t_bus"] == bus_from)
-            return 1 / branch["br_r"]
-        end         
+        if branch["br_status"] != 1
+            continue
+        end
+
+        bus_from = branch["f_bus"]
+        bus_to = branch["t_bus"]
+
+        if !haskey(offDiag_g, bus_from)
+            offDiag_g[bus_from] = Dict{Int64, Float64}()
+        end
+        if !haskey(offDiag_g, bus_to)
+            offDiag_g[bus_to] = Dict{Int64, Float64}()
+        end
+
+        if !haskey(offDiag_g[bus_from], bus_to)
+            offDiag_g[bus_from][bus_to] = 0.0
+        end
+        if !haskey(offDiag_g[bus_to], bus_from)
+            offDiag_g[bus_to][bus_from] = 0.0
+        end
+
+        offDiag_g[bus_from][bus_to] -= 1/branch["br_r"]
+        offDiag_g[bus_to][bus_from] -= 1/branch["br_r"]
+
+        offDiag_counter += 2
+
+        # TODO: What would happen if these didn't exist?
+        haskey(diag_g, bus_from) ? diag_g[bus_from] += 1/branch["br_r"] : nothing
+        haskey(diag_g, bus_to) ? diag_g[bus_to] += 1/branch["br_r"] : nothing
+        haskey(inject_i, bus_from) ? inject_i[bus_from] -= branch["br_v"]/branch["br_r"] : nothing
+        haskey(inject_i, bus_to) ? inject_i[bus_to] += branch["br_v"]/branch["br_r"] : nothing
     end
 
-    return 0
-end
-
-function gen_diagonal_g(bus_from::Int, network::Dict{String, Any})
-    g_value = network["gmd_bus"]["$bus_from"]["g_gnd"]
-    for bus_id in keys(network["gmd_bus"])
-        g_value += branch_conductance(bus_from, parse(Int, bus_id), network)
+    for (i, val) in diag_g
+        if val == 0.0
+            diag_g[i] = 1
+        end
     end
 
-    return g_value
+    rows = zeros(Int64, length(keys(diag_g)) + offDiag_counter)
+    columns = zeros(Int64, length(keys(diag_g)) + offDiag_counter)
+    content = zeros(Float64, length(keys(diag_g)) + offDiag_counter)
+    n = 1
+    for (i, val) in diag_g
+        rows[n] = i
+        columns[n] = i
+        content[n] = val
+        n += 1
+    end
+    for (i, ent) in offDiag_g
+        for (j, val) in ent
+            rows[n] = i
+            columns[n] = j
+            content[n] = val
+            n += 1
+        end
+    end
+    g = SparseArrays.sparse(rows, columns, content)
+    i_inj = zeros(Float64, length(keys(inject_i)))
+    for (i, val) in inject_i
+        i_inj[i] = val
+    end
+
+    return [g, i_inj]
 end
