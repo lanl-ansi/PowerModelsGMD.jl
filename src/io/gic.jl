@@ -62,6 +62,11 @@ const _gic_defaults = Dict{String, Dict}(
     # "EARTH MODEL" => _earth_data,
 )
 
+const _gic_has_ID = Dict{String, String}(
+    "SUBSTATION" => "SUBSTATION",
+    "BUS" => "ID"
+)
+
 function parse_gic(io::IO)::Dict
     data = _parse_gic(io)
 
@@ -74,7 +79,7 @@ function parse_gic(file::String)::Dict
     return parse_gic(io)
 end
 
-function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractString, line_number::Int)
+function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractString, line_number::Int, ID::Int)
     section_data = Dict{String, Any}()
 
     if !haskey(_gic_data_forms, "$section")
@@ -103,10 +108,14 @@ function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractStri
                 section_data[field] = parse(dtype, element)
             else
                 if dtype == String && startswith(element, "'") && endswith(element, "'")
-                    section_data[field] = strip(chop(element[nextind(element, 1):end]))
+                    section_data[field] = chop(element[nextind(element, 1):end])
                 else
                     section_data[field] = element
                 end
+            end
+
+            if field == "CKT" && length(strip(section_data[field])) == 1
+                section_data[field] = strip(section_data[field]) * " "
             end
         catch message
             # Memento.warn(_LOGGER, "At line $line_number, element #$i is not of type $dtype, which is what is expected.")
@@ -114,15 +123,24 @@ function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractStri
                 section_data[field] = element
             else
                 Memento.warn(_LOGGER, "At line $line_number, element #$i could not be parsed.")
+                if !haskey(_gic_defaults, section) && haskey(_gic_defaults["$section"], field)
+                    Memento.warn(_LOGGER, "At line $line_number, element #$i did not have a default value to be substituted in") # TODO Add test for this
+                end
                 # throw(Memento.error(_LOGGER, "At line $line_number, element #$i could not be parsed."))
             end
         end
     end
 
+    if haskey(_gic_has_ID, "$section")
+        ID = section_data["$(_gic_has_ID["$section"])"]
+    end
+
     if haskey(gic_data, "$section")
-        push!(gic_data["$section"], section_data)
+        gic_data["$section"]["$ID"] = section_data
     else
-        gic_data["$section"] = [section_data]
+        gic_data["$section"] = Dict{String, Any}(
+            "$ID" => section_data
+            )
     end
 end
 
@@ -130,11 +148,13 @@ function _parse_gic(data_io::IO)::Dict
     sections = deepcopy(_gic_sections)
     data_lines = readlines(data_io)
 
-    gic_data = Dict{AbstractString, Any}()
+    gic_data = Dict{String, Any}()
 
     section = popfirst!(sections)
 
+    ID = 0
     for (line_number, line) in enumerate(data_lines)
+        ID += 1
         (elements, comment) = _get_line_elements(line, line_number)
 
         if length(elements) == 0
@@ -146,6 +166,7 @@ function _parse_gic(data_io::IO)::Dict
             break
         end
 
+        old_section = section
         # Check new section        
         if (elements[1] == "0")
             if (line_number == 2) 
@@ -163,6 +184,7 @@ function _parse_gic(data_io::IO)::Dict
             else
                 Memento.warn(_LOGGER, "Too many sections at line $line_number. Please ensure you don't have any extra sections.")
             end
+            ID = 0
             continue
         elseif line_number == 2
             section = popfirst!(sections) # Done with the version section after the first line
@@ -175,7 +197,11 @@ function _parse_gic(data_io::IO)::Dict
             continue
         end
 
-        _parse_gic_line!(gic_data, elements, section, line_number)
+        if old_section != section
+            ID = 1
+        end
+
+        _parse_gic_line!(gic_data, elements, section, line_number, ID)
     end
 
     return gic_data

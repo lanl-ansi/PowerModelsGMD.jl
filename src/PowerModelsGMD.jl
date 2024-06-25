@@ -45,6 +45,7 @@ const _PMGMD = PowerModelsGMD
     include("core/constraint_staged.jl")
     include("core/data.jl")
     include("core/data_staged.jl")
+    include("core/dc_network.jl")
     include("core/objective.jl")
     include("core/objective_staged.jl")
     include("core/ref.jl")

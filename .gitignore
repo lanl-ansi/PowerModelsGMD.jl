@@ -11,3 +11,4 @@ docs/.documenter
 .tags
 *.orig
 *.bak
+temp_data/
