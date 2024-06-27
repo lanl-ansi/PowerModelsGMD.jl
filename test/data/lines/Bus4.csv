@@ -1,0 +1,3 @@
+Branch
+From Number,From Name,To Number,To Name,Circuit,Manually Enter Line Resistance,Power Flow Resistance (Ohms/Phase),Custom DC Resistance (Ohms/Phase),GIC DC  Volt Input,GIC Use Fixed DC Volt Input,GIC DC Amps Per Phase From ,GIC DC Amps Per Phase To ,GIC DC Amps Per Phase Max Abs Value,GIC DC Volt From ,GIC DC Volt To ,GIC Conductance per Phase,GIC Mvar Losses,Distance Between Substations (Miles),Compass Angle Between Substations,Low R per Distance
+1,Bus 1,2,Bus 2,1,NO,3.0022,,106.12,NO,22.10,-22.10,22.10,-19.89,19.89,0.3331,,106.12,90.00,NO
