@@ -53,11 +53,11 @@ function _gen_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         substation = gic_data["SUBSTATION"][substation_id]
         local_id = parse(Int, substation_id)
         substation_data = Dict{String, Any}(
-            "name" => "dc_sub_" * substation["NAME"],
+            "name" => "dc_" * replace(lowercase(substation["NAME"]), " " => "_"),
             "g_gnd" => 1/substation["RG"],
             "index" => global_index,
             "status" => 1,
-            "source_id" => ["gmd_bus", local_id],
+            "source_id" => ["substation", local_id],
             "parent_index" => local_id,
             "parent_type" => "sub"
         )
@@ -71,12 +71,12 @@ function _gen_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         bus = gic_data["BUS"][bus_id]
         local_id = parse(Int, bus_id)
         bus_data = Dict{String, Any}(
-            "name" => "dc_bus_" * strip(raw_data["bus"][bus_id]["name"]),
+            "name" => "dc_" * replace(lowercase(strip(raw_data["bus"][bus_id]["name"])), " " => "_"),
             "g_gnd" => 0,
             "index" => global_index,
             "status" => 1,
             "sub" => bus["SUBSTATION"],
-            "source_id" => ["gmd_bus", local_id],
+            "source_id" => ["bus", local_id],
             "parent_index" => local_id,
             "parent_type" => "bus"
         )
