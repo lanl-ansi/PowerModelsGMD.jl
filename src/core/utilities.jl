@@ -19,6 +19,10 @@ function gen_g_i_matrix(network::Dict{String, Any})
         bus_from = branch["f_bus"]
         bus_to = branch["t_bus"]
 
+        if !haskey(diag_g, bus_from) || !haskey(diag_g, bus_to)
+            continue
+        end
+
         if !haskey(offDiag_g, bus_from)
             offDiag_g[bus_from] = Dict{Int64, Float64}()
         end
@@ -28,21 +32,21 @@ function gen_g_i_matrix(network::Dict{String, Any})
 
         if !haskey(offDiag_g[bus_from], bus_to)
             offDiag_g[bus_from][bus_to] = 0.0
+            offDiag_counter += 1
         end
         if !haskey(offDiag_g[bus_to], bus_from)
             offDiag_g[bus_to][bus_from] = 0.0
+            offDiag_counter += 1
         end
 
         offDiag_g[bus_from][bus_to] -= 1/branch["br_r"]
         offDiag_g[bus_to][bus_from] -= 1/branch["br_r"]
 
-        offDiag_counter += 2
-
         # TODO: What would happen if these didn't exist?
-        haskey(diag_g, bus_from) ? diag_g[bus_from] += 1/branch["br_r"] : nothing
-        haskey(diag_g, bus_to) ? diag_g[bus_to] += 1/branch["br_r"] : nothing
-        haskey(inject_i, bus_from) ? inject_i[bus_from] -= branch["br_v"]/branch["br_r"] : nothing
-        haskey(inject_i, bus_to) ? inject_i[bus_to] += branch["br_v"]/branch["br_r"] : nothing
+        diag_g[bus_from] += 1/branch["br_r"]
+        diag_g[bus_to] += 1/branch["br_r"]
+        inject_i[bus_from] -= branch["br_v"]/branch["br_r"]
+        inject_i[bus_to] += branch["br_v"]/branch["br_r"]
     end
 
     for (i, val) in diag_g
@@ -70,6 +74,7 @@ function gen_g_i_matrix(network::Dict{String, Any})
         end
     end
     g = SparseArrays.sparse(rows, columns, content)
+
     i_inj = zeros(Float64, length(keys(inject_i)))
     for (i, val) in inject_i
         i_inj[i] = val

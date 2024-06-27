@@ -1,7 +1,7 @@
 function parse_file(file::String; kwargs...)::Dict
     filetype = lowercase(splitext(file)[end])
     if filetype != ".gic"
-        return PowerModels.parse_file(file)
+        return PowerModels.parse_file(file; kwargs...)
     end
 
     io = open(file)
@@ -9,7 +9,7 @@ function parse_file(file::String; kwargs...)::Dict
     close(io)
 end
 
-function parse_files(files::String...)::Dict
+function parse_files(files::String...; kwargs...)::Dict
     mn_data = Dict{String, Any}(
         "nw" => Dict{String, Any}(),
         "per_unit" => true,
@@ -19,7 +19,7 @@ function parse_files(files::String...)::Dict
     names = Array{String, 1}()
 
     for (i, filename) in enumerate(files)
-        data = parse_file(filename)
+        data = parse_file(filename; kwargs...)
 
         delete!(data, "multinetwork")
         delete!(data, "per_unit")

@@ -36,6 +36,9 @@ const _PMGMD = PowerModelsGMD
     import LinearAlgebra
     import SparseArrays
 
+    import CSV
+    using DataFrames
+
     # Add core functions:
     include("core/base.jl")
     include("core/base_staged.jl")
@@ -51,6 +54,7 @@ const _PMGMD = PowerModelsGMD
     include("core/ref.jl")
     include("core/solution.jl")
     include("core/solution_staged.jl")
+    include("core/utilities.jl")
     include("core/variable.jl")
     include("core/variable_staged.jl")
 
