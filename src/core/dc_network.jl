@@ -50,16 +50,15 @@ function _gen_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     global_index = 1
 
     sort_func(x) = parse(Int, x)
-    for substation_id in sort(collect(keys(gic_data["SUBSTATION"])), by=sort_func)
-        substation = gic_data["SUBSTATION"][substation_id]
-        local_id = parse(Int, substation_id)
+    for substation_index in sort([x["SUBSTATION"] for x in values(gic_data["SUBSTATION"])])
+        substation = gic_data["SUBSTATION"]["$substation_index"]
         substation_data = Dict{String, Any}(
             "name" => "dc_" * replace(lowercase(substation["NAME"]), " " => "_"),
             "g_gnd" => 1/substation["RG"],
             "index" => global_index,
             "status" => 1,
-            "source_id" => ["substation", local_id],
-            "parent_index" => local_id,
+            "source_id" => ["substation", substation_index],
+            "parent_index" => substation_index,
             "parent_type" => "sub"
         )
 
