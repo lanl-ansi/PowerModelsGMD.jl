@@ -14,7 +14,6 @@ function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, v
     dc_bus_map = _gen_gmd_bus!(output, gic_data, raw_data)
     _gen_gmd_branch!(output, gic_data, raw_data, dc_bus_map)
 
-    lines_info = CSV.read(voltage_file, DataFrame, header=2)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
     lines_info = CSV.read(voltage_file, DataFrame; header=2)
@@ -50,7 +49,8 @@ function _gen_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     gmd_bus = Dict{String, Any}()
     global_index = 1
 
-    for substation_id in sort(collect(keys(gic_data["SUBSTATION"])))
+    sort_func(x) = parse(Int, x)
+    for substation_id in sort(collect(keys(gic_data["SUBSTATION"])), by=sort_func)
         substation = gic_data["SUBSTATION"][substation_id]
         local_id = parse(Int, substation_id)
         substation_data = Dict{String, Any}(
@@ -68,21 +68,20 @@ function _gen_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     end
 
     bus_map = Dict{Int, Int}()
-    for bus_id in sort(collect(keys(gic_data["BUS"])))
-        bus = gic_data["BUS"][bus_id]
-        local_id = parse(Int, bus_id)
+    for bus_index in sort([x["index"] for x in values(raw_data["bus"])])
+        bus = gic_data["BUS"]["$bus_index"]
         bus_data = Dict{String, Any}(
-            "name" => "dc_" * replace(lowercase(strip(raw_data["bus"][bus_id]["name"])), " " => "_"),
+            "name" => "dc_" * replace(lowercase(strip(raw_data["bus"]["$bus_index"]["name"])), " " => "_"),
             "g_gnd" => 0,
             "index" => global_index,
             "status" => 1,
             "sub" => bus["SUBSTATION"],
-            "source_id" => ["bus", local_id],
-            "parent_index" => local_id,
+            "source_id" => ["bus", bus_index],
+            "parent_index" => bus_index,
             "parent_type" => "bus"
         )
 
-        bus_map[parse(Int, bus_id)] = global_index
+        bus_map[bus_index] = global_index
         gmd_bus["$global_index"] = bus_data
         global_index += 1
     end
@@ -95,37 +94,35 @@ end
 function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int, Int})
     branches = Dict{String, Any}()
 
-    transformer_map = Dict{Array, Dict}()
+    transformer_map = Dict{Tuple{Int64, Int64, String}, Dict}()
     for transformer in values(gic_data["TRANSFORMER"])
-        key = [transformer["BUSI"], transformer["BUSJ"], transformer["CKT"]]
+        key = (transformer["BUSI"], transformer["BUSJ"], transformer["CKT"]) # use tuple instead of array as tuples are immutable
         transformer_map[key] = transformer
     end
 
     offset = 0
-    sort_func(x) = parse(Int, x)
-    for branch_id in sort(collect(keys(raw_data["branch"])), by=sort_func)
-        branch = raw_data["branch"][branch_id]
-        branch_id = parse(Int, branch_id)
+    for branch_index in sort([x["index"] for x in values(raw_data["branch"])])
+        branch = raw_data["branch"]["$branch_index"]
         if !branch["transformer"]
             branch_data = Dict{String, Any}(
                 "f_bus" => dc_bus_map[branch["f_bus"]],
                 "t_bus" => dc_bus_map[branch["t_bus"]],
                 "br_r" => branch["br_r"] * (raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] ^ 2) / (3 * raw_data["baseMVA"]),
-                "name" => "dc_br$(branch_id + offset)",
+                "name" => "dc_br$(branch_index + offset)",
                 "br_status" => 1,
-                "parent_index" => branch_id,
+                "parent_index" => branch_index,
                 "parent_type" => "branch",
                 "source_id" => branch["source_id"],
                 "br_v" => 0, # TODO
                 "len_km" => 0, # TODO
             )
 
-            gmd_branch_index = branch_id + offset
+            gmd_branch_index = branch_index + offset
             branch_data["index"] = gmd_branch_index
             branches["$gmd_branch_index"] = branch_data            
         else
             # It is a transformer
-            transformer = transformer_map[[branch["f_bus"], branch["t_bus"], branch["source_id"][5]]]
+            transformer = transformer_map[(branch["f_bus"], branch["t_bus"], branch["source_id"][5])]
 
             primary_winding = false
             secondary_winding = false
@@ -150,9 +147,9 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "f_bus" => dc_bus_map[branch["f_bus"]],
                     "t_bus" => substation,
                     "br_r" => transformer["WRI"]/3,
-                    "name" => "dc_x$(branch_id + offset)_hi",
+                    "name" => "dc_x$(branch_index)_hi",
                     "br_status" => 1,
-                    "parent_index" => branch_id,
+                    "parent_index" => branch_index,
                     "parent_type" => "branch",
                     "source_id" => branch["source_id"],
                     "br_v" => 0,
@@ -160,7 +157,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 )
 
                 offset += 1
-                gmd_branch_index = branch_id + offset
+                gmd_branch_index = branch_index + offset
                 branch_data["index"] = gmd_branch_index
                 branches["$gmd_branch_index"] = branch_data
             end
@@ -170,9 +167,9 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "f_bus" => dc_bus_map[branch["f_bus"]],
                     "t_bus" => substation,
                     "br_r" => transformer["WRJ"]/3,
-                    "name" => "dc_x$(branch_id)_lo",
+                    "name" => "dc_x$(branch_index)_lo",
                     "br_status" => 1,
-                    "parent_index" => branch_id,
+                    "parent_index" => branch_index,
                     "parent_type" => "branch",
                     "source_id" => branch["source_id"],
                     "br_v" => 0,
@@ -180,7 +177,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 )
 
                 offset += 1
-                gmd_branch_index = branch_id + offset
+                gmd_branch_index = branch_index + offset
                 branch_data["index"] = gmd_branch_index
                 branches["$gmd_branch_index"] = branch_data
             end
