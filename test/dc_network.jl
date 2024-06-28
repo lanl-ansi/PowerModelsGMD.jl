@@ -30,6 +30,7 @@ function solve_gmd(name; kwargs...)
     g, i_inj = gen_g_i_matrix(case)
 
     println(g)
+    display(g)
     
     return PowerModelsGMD.solve_gmd(case; kwargs...)
 end

@@ -1,5 +1,5 @@
 Branch
-From Number,From Name,To Number,To Name,Circuit,Manually Enter Line Resistance,Power Flow Resistance (Ohms/Phase),Custom DC Resistance (Ohms/Phase),GIC DC  Volt Input,GIC Use Fixed DC Volt Input,GIC DC Amps Per Phase From ,GIC DC Amps Per Phase To ,GIC DC Amps Per Phase Max Abs Value,GIC DC Volt From ,GIC DC Volt To ,GIC Conductance per Phase,GIC Mvar Losses,Distance Between Substations (km),Compass Angle Between Substations,Low R per Distance
+BusNumFrom,BusNameFrom,BusNumTo,BusNameTo,Circuit,GICUSEPFR,GICPFR1,GICCUSTOMR1,GICInducedDCVolt,GICInpucedDCVoltFixed,GICFlowFrom,GICFlowTo,GICFlowMax,GICDCVoltFrom,GICDCVoltTo,GICG,GICMvarLosses,GICLineDistanceKm,GICLineAngle,GICLowRPerDist
 2,CREVE COEUR 1,1,CREVE COEUR 0,1,NO,0.0890,,0.00,NO,0.00,-0.00,0.00,-4.50,-4.50,11.2345,,0.00,,NO
 1,CREVE COEUR 0,119,METAMORA 0,1,NO,2.4522,,20.78,NO,9.74,-9.74,9.74,-4.50,-7.61,0.4078,,32.81,39.30,NO
 124,BARTONVILLE 1,1,CREVE COEUR 0,1,NO,0.7426,,5.38,NO,6.66,-6.66,6.66,-4.93,-4.50,1.3466,,7.44,46.27,NO
