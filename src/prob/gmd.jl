@@ -57,13 +57,13 @@ end
 
 "FUNCTION: solve GIC matrix solve"
 function solve_gmd(raw_file::String, gic_file::String, voltage_file::String; kwargs...)
-    data = _PMGMD.parse_files(gic_file, raw_file)
-    case = _PMGMD.gen_dc_data(data["nw"]["1"], data["nw"]["2"], voltage_file) 
+    data = parse_files(gic_file, raw_file)
+    case = gen_dc_data(data["nw"]["1"], data["nw"]["2"], voltage_file) 
     return solve_gmd(case; kwargs)
 end
 
 function solve_gmd(file::String; kwargs...)
-    data = _PMGMD.parse_file(file)
+    data = parse_file(file)
     return solve_gmd(data; kwargs...)
 end
 
