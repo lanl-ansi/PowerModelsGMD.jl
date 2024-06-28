@@ -29,11 +29,11 @@ function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, v
         branch_map[source_id] = branch["index"]
     end
 
-    dc_voltages = lines_info[!, 9]
+    dc_voltages = lines_info[!, "GICInducedDCVolt"]
 
-    froms = lines_info[!, 1]
-    tos = lines_info[!, 3]
-    ckts = lines_info[!, 5]
+    froms = lines_info[!, "BusNumFrom"]
+    tos = lines_info[!, "BusNumTo"]
+    ckts = lines_info[!, "Circuit"]
 
     for (from, to, ckt, dc_voltage) in zip(froms, tos, ckts, dc_voltages)
         source_id = ["branch", from, to, "$ckt"]
