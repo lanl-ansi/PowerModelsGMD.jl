@@ -44,5 +44,5 @@ include("test_cases.jl")
     # include("gmd_mld.jl")
     # include("gmd_ots.jl")
     # include("gmd_blocker.jl")
-    include("gic.jl")
+    include("parse.jl")
 end

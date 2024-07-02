@@ -119,6 +119,53 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
         else
             # It is a transformer
             transformer = transformer_map[(branch["f_bus"], branch["t_bus"], branch["source_id"][5])]
+            lo_bus = raw_data["bus"]["$(transformer["BUSI"])"]["base_kv"] < raw_data["bus"]["$(transformer["BUSJ"])"]["base_kv"] ? transformer["BUSI"] : transformer["BUSJ"]
+            hi_bus = raw_data["bus"]["$(transformer["BUSI"])"]["base_kv"] > raw_data["bus"]["$(transformer["BUSJ"])"]["base_kv"] ? transformer["BUSI"] : transformer["BUSJ"]
+
+            if endswith(transformer["VECGRP"], r"a.*")
+                # It is an auto transformer
+                if !startswith(transformer["VECGRP"], "YN") # TODO may not need this
+                    continue
+                end
+
+                substation = output["gmd_bus"]["$(dc_bus_map[transformer["BUSI"]])"]["sub"]
+
+                common_data = Dict{String, Any}(
+                    "f_bus" => dc_bus_map[lo_bus],
+                    "t_bus" => substation,
+                    "br_r" => lo_bus == transformer["BUSI"] ? transformer["WRI"]/3 : transformer["WRJ"]/3, # TODO: Is it always WRI? It looks like it is and busI being lo has nothing to do with it
+                    "name" => "dc_x$(branch_index)_common",
+                    "br_status" => 1,
+                    "parent_index" => branch_index,
+                    "parent_type" => "branch",
+                    "source_id" => branch["source_id"],
+                    "br_v" => 0,
+                    "len_km" => 0, # TODO
+                )
+
+                gmd_branch_index = branch_index + offset
+                common_data["index"] = gmd_branch_index
+                branches["$gmd_branch_index"] = common_data
+
+                series_data = Dict{String, Any}(
+                    "f_bus" => dc_bus_map[hi_bus],
+                    "t_bus" => dc_bus_map[lo_bus],
+                    "br_r" => hi_bus == transformer["BUSI"] ? transformer["WRI"]/3 : transformer["WRJ"]/3, # TODO: Is it always WRI? It looks like it is and busI being lo has nothing to do with it
+                    "name" => "dc_x$(branch_index)_series",
+                    "br_status" => 1,
+                    "parent_index" => branch_index,
+                    "parent_type" => "branch",
+                    "source_id" => branch["source_id"],
+                    "br_v" => 0,
+                    "len_km" => 0, # TODO
+                )
+
+                offset += 1
+                gmd_branch_index = branch_index + offset
+                series_data["index"] = gmd_branch_index
+                branches["$gmd_branch_index"] = series_data
+                continue
+            end
 
             primary_winding = false
             secondary_winding = false
@@ -140,7 +187,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
 
             if (primary_winding)
                 branch_data = Dict{String, Any}(
-                    "f_bus" => dc_bus_map[branch["f_bus"]],
+                    "f_bus" => dc_bus_map[hi_bus],
                     "t_bus" => substation,
                     "br_r" => transformer["WRI"]/3,
                     "name" => "dc_x$(branch_index)_hi",
@@ -160,7 +207,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
 
             if (secondary_winding)
                 branch_data = Dict{String, Any}(
-                    "f_bus" => dc_bus_map[branch["f_bus"]],
+                    "f_bus" => dc_bus_map[lo_bus],
                     "t_bus" => substation,
                     "br_r" => transformer["WRJ"]/3,
                     "name" => "dc_x$(branch_index)_lo",
@@ -224,8 +271,6 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     output["branch"] = Dict{String, Any}()
     for (branch_id, branch) in raw_data["branch"]
         branch_data = deepcopy(branch)
-        branch_data["gmd_br_series"] = -1 # TODO autotransformers
-        branch_data["gmd_br_common"] = -1 # TODO
         # TODO hotspot coeff, gmd_k
         branch_data["lo_bus"] = branch["t_bus"] # TODO
         branch["transformer"] ? branch_data["xfmr"] = 1 : branch_data["xfmr"] = 0
@@ -233,6 +278,8 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         branch_data["source_id"] = ["branch", branch_id]
         gmd_branch_hi = haskey(gmd_branch_map, [branch["source_id"], "hi"]) ? gmd_branch_map[[branch["source_id"], "hi"]] : nothing
         gmd_branch_lo = haskey(gmd_branch_map, [branch["source_id"], "lo"]) ? gmd_branch_map[[branch["source_id"], "lo"]] : nothing
+        gmd_branch_series = haskey(gmd_branch_map, [branch["source_id"], "es"]) ? gmd_branch_map[[branch["source_id"], "es"]] : nothing
+        gmd_branch_common = haskey(gmd_branch_map, [branch["source_id"], "on"]) ? gmd_branch_map[[branch["source_id"], "on"]] : nothing
         if branch["transformer"]
             key = [branch["f_bus"], branch["t_bus"], branch["source_id"][5]]
             transformer = transformer_map[key]
@@ -245,6 +292,17 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
                 branch_data["gmd_br_lo"] = gmd_branch_lo
             else
                 branch_data["gmd_br_lo"] = -1
+            end
+            if !isnothing(gmd_branch_series)
+                println(gmd_branch_series)
+                branch_data["gmd_br_series"] = gmd_branch_series
+            else
+                branch_data["gmd_br_series"] = -1
+            end
+            if !isnothing(gmd_branch_common)
+                branch_data["gmd_br_common"] = gmd_branch_common
+            else
+                branch_data["gmd_br_common"] = -1
             end
         end
         branch_data["baseMVA"] = raw_data["baseMVA"]
