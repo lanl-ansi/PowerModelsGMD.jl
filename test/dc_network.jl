@@ -29,10 +29,11 @@ function solve_gmd(name; kwargs...)
 
     g, i_inj = gen_g_i_matrix(case)
 
-    println(g)
-    display(g)
-    
-    return PowerModelsGMD.solve_gmd(case; kwargs...)
+    output = PowerModelsGMD.solve_gmd(case; kwargs...)
+
+    open("../temp_data/output_$name.json", "w") do f
+        JSON.print(f, output)
+    end
 end
 # gic_data = PowerModelsGMD.parse_file("../test/data/gic/Bus4.gic")
 # raw_data = PowerModelsGMD.parse_file("../test/data/pti/B4GIC.RAW"; import_all=true)
@@ -65,18 +66,7 @@ end
 #     JSON.print(f, solve_gic)
 # end
 
-# bus4 = solve_gmd("bus4")
-
-# open("../temp_data/output_bus4.json", "w") do f
-#     JSON.print(f, bus4)
-# end
-
-hawaii = solve_gmd("hawaii")
-
-open("../temp_data/output_hawaii.json", "w") do f
-    JSON.print(f, hawaii)
-end
-
+solve_gmd("epri")
 
 # solve_m = PowerModelsGMD.solve_gmd("../test/data/matpower/b4gic_default.m")
 

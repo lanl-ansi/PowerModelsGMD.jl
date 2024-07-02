@@ -49,7 +49,6 @@ function _gen_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     gmd_bus = Dict{String, Any}()
     global_index = 1
 
-    sort_func(x) = parse(Int, x)
     for substation_index in sort([x["SUBSTATION"] for x in values(gic_data["SUBSTATION"])])
         substation = gic_data["SUBSTATION"]["$substation_index"]
         substation_data = Dict{String, Any}(
@@ -58,8 +57,6 @@ function _gen_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
             "index" => global_index,
             "status" => 1,
             "source_id" => ["substation", substation_index],
-            "parent_index" => substation_index,
-            "parent_type" => "sub"
         )
 
         gmd_bus["$global_index"] = substation_data

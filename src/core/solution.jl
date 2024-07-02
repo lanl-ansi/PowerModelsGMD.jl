@@ -72,7 +72,7 @@ function solution_gmd(v::Vector{Float64}, case::Dict{String,Any})
         solution["gmd_branch"]["$n"] = Dict()
         if branch["parent_type"] == "branch"
             type = case["branch"]["$(branch["parent_index"])"]["type"]
-        solution["gmd_branch"]["$n"]["gmd_idc"] = calc_dc_current_mag(branch, type, solution)
+            solution["gmd_branch"]["$n"]["gmd_idc"] = calc_dc_current_mag(branch, type, solution)
         end
     end
 

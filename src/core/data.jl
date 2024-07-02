@@ -567,7 +567,7 @@ if branch["type"] == "xfmr"
             bus_j = case["bus"][j]
 
             if bus_i["vm"] == bus_j["vm"]
-            vm = bus_i["vm"]
+                vm = bus_i["vm"]
             else
                 vm = max(bus_i["vm"], bus_j["vm"])
             end
@@ -583,7 +583,6 @@ if branch["type"] == "xfmr"
 
     return 0.0
 end
-
 
 function calc_qloss(branch::Dict{String,Any}, case::Dict{Symbol,Any}, solution::Dict{String,Any})
     if branch["type"] == "xfmr"

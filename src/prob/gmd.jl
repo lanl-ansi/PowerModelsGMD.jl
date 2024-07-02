@@ -46,9 +46,6 @@ function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
     for i in _PM.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
     end
-
-    println(pm.model)
-
 end
 
 
