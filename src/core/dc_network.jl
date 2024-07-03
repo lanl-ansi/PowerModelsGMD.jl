@@ -21,7 +21,7 @@ function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, v
     branch_map = Dict{Array, Int}()
     for (_, branch) in output["gmd_branch"]
         source_id = branch["source_id"]
-        if source_id[1] == "transformer"
+        if source_id[1] != "branch"
             continue
         end
         source_id[4]  = strip(source_id[4])
@@ -53,7 +53,7 @@ function _gen_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         substation = gic_data["SUBSTATION"]["$substation_index"]
         substation_data = Dict{String, Any}(
             "name" => "dc_" * replace(lowercase(substation["NAME"]), " " => "_"),
-            "g_gnd" => 1/substation["RG"],
+            "g_gnd" => substation["RG"] != 0 ? 1/substation["RG"] : 4.6216128431, # TODO Find the value for reals
             "index" => global_index,
             "status" => 1,
             "source_id" => ["substation", substation_index],
@@ -99,11 +99,18 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
     offset = 0
     for branch_index in sort([x["index"] for x in values(raw_data["branch"])])
         branch = raw_data["branch"]["$branch_index"]
+
+        hi_bus = raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] < raw_data["bus"]["$(branch["t_bus"])"]["base_kv"] ? branch["t_bus"] : branch["f_bus"]
+        lo_bus = raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] < raw_data["bus"]["$(branch["t_bus"])"]["base_kv"] ? branch["f_bus"] : branch["t_bus"]
+
+        branch["hi_bus"] = hi_bus
+        branch["lo_bus"] = lo_bus
+
         if !branch["transformer"]
             branch_data = Dict{String, Any}(
                 "f_bus" => dc_bus_map[branch["f_bus"]],
                 "t_bus" => dc_bus_map[branch["t_bus"]],
-                "br_r" => branch["br_r"] * (raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] ^ 2) / (3 * raw_data["baseMVA"]),
+                "br_r" => branch["br_r"] != 0 ? branch["br_r"] * (raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] ^ 2) / (3 * raw_data["baseMVA"]) : 0.0005, # TODO add 1e-4 ohms per km
                 "name" => "dc_br$(branch_index + offset)",
                 "br_status" => 1,
                 "parent_index" => branch_index,
@@ -119,8 +126,6 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
         else
             # It is a transformer
             transformer = transformer_map[(branch["f_bus"], branch["t_bus"], branch["source_id"][5])]
-            lo_bus = raw_data["bus"]["$(transformer["BUSI"])"]["base_kv"] < raw_data["bus"]["$(transformer["BUSJ"])"]["base_kv"] ? transformer["BUSI"] : transformer["BUSJ"]
-            hi_bus = raw_data["bus"]["$(transformer["BUSI"])"]["base_kv"] > raw_data["bus"]["$(transformer["BUSJ"])"]["base_kv"] ? transformer["BUSI"] : transformer["BUSJ"]
 
             if endswith(transformer["VECGRP"], r"a.*")
                 # It is an auto transformer
@@ -169,11 +174,11 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
 
             primary_winding = false
             secondary_winding = false
-            if startswith(transformer["VECGRP"], "YN")
+            if (startswith(transformer["VECGRP"], "YN") && hi_bus == transformer["BUSI"]) || (endswith(transformer["VECGRP"], r"yn.*") && transformer["BUSJ"] == hi_bus)
                 primary_winding = true
             end
             
-            if endswith(transformer["VECGRP"], r"yn.*")
+            if (endswith(transformer["VECGRP"], r"yn.*") && lo_bus == transformer["BUSJ"]) || (startswith(transformer["VECGRP"], "YN") && lo_bus == transformer["BUSI"])
                 secondary_winding = true
             end
 
@@ -187,9 +192,9 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
 
             if (primary_winding)
                 branch_data = Dict{String, Any}(
-                    "f_bus" => dc_bus_map[hi_bus],
+                    "f_bus" => dc_bus_map[branch["hi_bus"]],
                     "t_bus" => substation,
-                    "br_r" => transformer["WRI"]/3,
+                    "br_r" => hi_bus == transformer["BUSI"] ? transformer["WRI"]/3 : transformer["WRJ"]/3,
                     "name" => "dc_x$(branch_index)_hi",
                     "br_status" => 1,
                     "parent_index" => branch_index,
@@ -207,9 +212,9 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
 
             if (secondary_winding)
                 branch_data = Dict{String, Any}(
-                    "f_bus" => dc_bus_map[lo_bus],
+                    "f_bus" => dc_bus_map[branch["lo_bus"]],
                     "t_bus" => substation,
-                    "br_r" => transformer["WRJ"]/3,
+                    "br_r" => lo_bus == transformer["BUSI"] ? transformer["WRI"]/3 : transformer["WRJ"]/3,
                     "name" => "dc_x$(branch_index)_lo",
                     "br_status" => 1,
                     "parent_index" => branch_index,
@@ -225,6 +230,27 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 branches["$gmd_branch_index"] = branch_data
             end
         end
+    end
+
+    for (id, bus) in raw_data["bus"]
+        id = parse(Int64, id)
+        substation = output["gmd_bus"]["$(dc_bus_map[id])"]["sub"]
+        index = length(branches) + 1
+        branch_data = Dict{String, Any}(
+            "f_bus" => dc_bus_map[id],
+            "t_bus" => substation,
+            "br_r" => 25000.00,
+            "name" => "dc_bus$id",
+            "br_status" => 1,
+            "parent_index" => id,
+            "index" => index,
+            "parent_type" => "bus",
+            "source_id" => ["gmd_branch", index],
+            "br_v" => 0,
+            "len_km" => 0, # TODO
+        )
+
+        branches["$index"] = branch_data
     end
 
     output["gmd_branch"] = branches
@@ -272,7 +298,6 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     for (branch_id, branch) in raw_data["branch"]
         branch_data = deepcopy(branch)
         # TODO hotspot coeff, gmd_k
-        branch_data["lo_bus"] = branch["t_bus"] # TODO
         branch["transformer"] ? branch_data["xfmr"] = 1 : branch_data["xfmr"] = 0
         # TODO pt, topoil_init, hotspot_instant_limit, topoil_rated
         branch_data["source_id"] = ["branch", branch_id]
@@ -294,7 +319,6 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
                 branch_data["gmd_br_lo"] = -1
             end
             if !isnothing(gmd_branch_series)
-                println(gmd_branch_series)
                 branch_data["gmd_br_series"] = gmd_branch_series
             else
                 branch_data["gmd_br_series"] = -1
@@ -307,7 +331,6 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         end
         branch_data["baseMVA"] = raw_data["baseMVA"]
         # TODO topoil_initialized
-        branch_data["hi_bus"] = branch["f_bus"] # TODO
         branch_data["config"] = "none"
         if branch["transformer"]
             key = [branch["f_bus"], branch["t_bus"], branch["source_id"][5]]
@@ -319,7 +342,8 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
                 "D" => "delta",
                 "yn" => "-gwye",
                 "y" => "-wye",
-                "d" => "-delta"
+                "d" => "-delta",
+                "a" => "-gwye-auto" # TODO can change if we expect non gwye-gwye autos
             )
             for key in keys(config_map)
                 if startswith(transformer["VECGRP"], key * r"[a-z]+")
@@ -335,7 +359,7 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         end
         # TODO topoil_time_const
         # TODO: qf, temperature_ambient, qt, hotspot_avg_limit, hotspot_rated
-        branch["transformer"] ? branch_data["type"] = "xfmr" : branch_data["type"] = "line"
+        branch["transformer"] ? branch_data["type"] = "xfmr" : (branch_data["br_r"] == 0 ? branch_data["type"] = "series_cap" : branch_data["type"] = "line")
         # TODO: pf
         branch_data["source_id"] = ["branch", parse(Int, branch_id)]
         output["branch"][branch_id] = branch_data

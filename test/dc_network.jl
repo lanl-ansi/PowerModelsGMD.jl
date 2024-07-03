@@ -68,7 +68,7 @@ end
 #     JSON.print(f, solve_gic)
 # end
 
-# solve_gmd("epri")
+solve_gmd("epri")
 
 # solve_m = PowerModelsGMD.solve_gmd("../test/data/matpower/b4gic_default.m")
 
@@ -128,6 +128,10 @@ end
 case = gen_dc_data(gic_data, raw_data, "../test/data/lines/$name.csv")
 
 solution = PowerModelsGMD.parse_file("../test/data/matpower/epricase_new.m")
+
+g, i_inj = gen_g_i_matrix(solution)
+
+println(g)
 
 branch_map = Dict{Array, Dict}()
 

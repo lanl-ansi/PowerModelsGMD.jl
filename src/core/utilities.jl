@@ -79,6 +79,5 @@ function gen_g_i_matrix(network::Dict{String, Any})
     for (i, val) in inject_i
         i_inj[i] = val
     end
-    println(diag_g)
     return [g, i_inj]
 end
