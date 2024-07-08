@@ -138,7 +138,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 common_data = Dict{String, Any}(
                     "f_bus" => dc_bus_map[lo_bus],
                     "t_bus" => substation,
-                    "br_r" => lo_bus == transformer["BUSI"] ? transformer["WRI"]/3 : transformer["WRJ"]/3, # TODO: Is it always WRI? It looks like it is and busI being lo has nothing to do with it
+                    "br_r" => lo_bus == transformer["BUSI"] ? transformer["WRI"]/3 : transformer["WRJ"]/3,
                     "name" => "dc_x$(branch_index)_common",
                     "br_status" => 1,
                     "parent_index" => branch_index,
@@ -155,7 +155,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 series_data = Dict{String, Any}(
                     "f_bus" => dc_bus_map[hi_bus],
                     "t_bus" => dc_bus_map[lo_bus],
-                    "br_r" => hi_bus == transformer["BUSI"] ? transformer["WRI"]/3 : transformer["WRJ"]/3, # TODO: Is it always WRI? It looks like it is and busI being lo has nothing to do with it
+                    "br_r" => hi_bus == transformer["BUSI"] ? transformer["WRI"]/3 : transformer["WRJ"]/3,
                     "name" => "dc_x$(branch_index)_series",
                     "br_status" => 1,
                     "parent_index" => branch_index,

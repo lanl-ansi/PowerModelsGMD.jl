@@ -32,7 +32,7 @@ data = raw"U:\gmd-tools-10k_fix\gmd-tools-10k_fix\epricase_aug2022_v22_fix.m"
 case = _PM.parse_file(data)
 _PMGMD.add_gmd_3w_branch!(case)
 sol = _PMGMD.solve_gmd(case)
-sol= _PMGMD.solve_gmd("../test/data/pti/epri.raw", "../test/data/gic/epri.gic", "../test/data/lines/epri.csv") # linear solver
+sol = _PMGMD.solve_gmd("../test/data/pti/epri.raw", "../test/data/gic/epri.gic", "../test/data/lines/epri.csv") # linear solver
 # sol=  _PMGMD.solve_gmd(case, ipopt_solver; setting=setting) # for opt solver
 
 high_error = 1e-2 # abs(value) >= .0001
