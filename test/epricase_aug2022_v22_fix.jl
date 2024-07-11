@@ -28,7 +28,7 @@ juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" =
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
 
-data = raw"U:\gmd-tools-10k_fix\gmd-tools-10k_fix\epricase_aug2022_v22_fix.m"
+data = "../test/data/matpower/epricase_new.m"
 case = _PM.parse_file(data)
 _PMGMD.add_gmd_3w_branch!(case)
 sol = _PMGMD.solve_gmd(case)

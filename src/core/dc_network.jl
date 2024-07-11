@@ -106,6 +106,11 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
         branch["hi_bus"] = hi_bus
         branch["lo_bus"] = lo_bus
 
+        gen_buses = []
+        for generator in values(raw_data["gen"])
+            push!(gen_buses, generator["gen_bus"])
+        end
+
         if !branch["transformer"]
             branch_data = Dict{String, Any}(
                 "f_bus" => dc_bus_map[branch["f_bus"]],
@@ -126,6 +131,27 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
         else
             # It is a transformer
             transformer = transformer_map[(branch["f_bus"], branch["t_bus"], branch["source_id"][5])]
+            if length(strip(transformer["VECGRP"])) == 0
+                if branch["f_bus"] in gen_buses
+                    transformer["VECGRP"] = "D"
+                else
+                    transformer["VECGRP"] = "YN"
+                end
+
+                if branch["t_bus"] in gen_buses
+                    transformer["VECGRP"] *= "d" # TODO: could end up with delta delta, is that ok?
+                else
+                    transformer["VECGRP"] *= "yn"
+                end
+
+                if transformer["VECGRP"] == "YNyn"
+                    transformer["VECGRP"] = "YNa"
+                end
+
+                # TODO Warn that a transformer config has been assumed
+            end
+
+            turns_ratio = raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] / raw_data["bus"]["$(branch["lo_bus"])"]["base_kv"]
 
             if endswith(transformer["VECGRP"], r"a.*")
                 # It is an auto transformer
@@ -135,6 +161,8 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
 
                 substation = output["gmd_bus"]["$(dc_bus_map[transformer["BUSI"]])"]["sub"]
 
+                R_s, R_c = calcTransformerResistances(branch["br_r"], turns_ratio, (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"], true)
+                
                 common_data = Dict{String, Any}(
                     "f_bus" => dc_bus_map[lo_bus],
                     "t_bus" => substation,
@@ -147,6 +175,10 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "br_v" => 0,
                     "len_km" => 0, # TODO
                 )
+
+                if common_data["br_r"] == 0
+                    common_data["br_r"] = R_c
+                end
 
                 gmd_branch_index = branch_index + offset
                 common_data["index"] = gmd_branch_index
@@ -164,6 +196,10 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "br_v" => 0,
                     "len_km" => 0, # TODO
                 )
+
+                if series_data["br_r"] == 0
+                    series_data["br_r"] = R_s
+                end
 
                 offset += 1
                 gmd_branch_index = branch_index + offset
@@ -186,6 +222,8 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 continue
             end
 
+            R_hi, R_lo = calcTransformerResistances(branch["br_r"], turns_ratio, (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"], true)
+
             offset -= 1
 
             substation = output["gmd_bus"]["$(dc_bus_map[transformer["BUSI"]])"]["sub"]
@@ -203,6 +241,10 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "br_v" => 0,
                     "len_km" => 0, # TODO
                 )
+
+                if branch_data["br_r"] == 0
+                    branch_data["br_r"] = R_hi
+                end
 
                 offset += 1
                 gmd_branch_index = branch_index + offset
@@ -223,6 +265,10 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "br_v" => 0,
                     "len_km" => 0, # TODO
                 )
+
+                if branch_data["br_r"] == 0
+                    branch_data["br_r"] = R_lo
+                end
 
                 offset += 1
                 gmd_branch_index = branch_index + offset
@@ -364,4 +410,15 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         branch_data["source_id"] = ["branch", parse(Int, branch_id)]
         output["branch"][branch_id] = branch_data
     end
+end
+
+function calcTransformerResistances(positiveSequenceR::Float64, turnsRatio::Float64, baseHighR::Float64, isAuto::Bool)
+    R_high = (baseHighR * positiveSequenceR) / 2
+    if isAuto
+        R_low = R_high / ((turnsRatio - 1) ^ 2)
+    else
+        R_low = R_high / (turnsRatio ^ 2)
+    end
+    
+    return R_high / 3, R_low / 3
 end

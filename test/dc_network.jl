@@ -29,7 +29,7 @@ function solve_gmd(name; kwargs...)
 
     g, i_inj = gen_g_i_matrix(case)
 
-    println(g)
+    # println(g)
 
     output = PowerModelsGMD.solve_gmd(case; kwargs...)
 
@@ -68,7 +68,7 @@ end
 #     JSON.print(f, solve_gic)
 # end
 
-solve_gmd("epri")
+solve_gmd("activsg200")
 
 # solve_m = PowerModelsGMD.solve_gmd("../test/data/matpower/b4gic_default.m")
 
@@ -110,42 +110,52 @@ solve_gmd("epri")
 # display(g)
 # display(i_inj)
 
-name = "epri"
+# name = "activsg200"
 
-data = PowerModelsGMD.parse_files("../test/data/gic/$name.gic", "../test/data/pti/$name.raw")
+# data = PowerModelsGMD.parse_files("../test/data/gic/$name.gic", "../test/data/pti/$name.raw")
 
-gic_data = data["nw"]["1"]
-raw_data = data["nw"]["2"]
+# gic_data = data["nw"]["1"]
+# raw_data = data["nw"]["2"]
 
-open("../temp_data/gic_$name.json", "w") do f
-    JSON.print(f, gic_data)
-end
+# open("../temp_data/gic_$name.json", "w") do f
+#     JSON.print(f, gic_data)
+# end
 
-open("../temp_data/raw_$name.json", "w") do f
-    JSON.print(f, raw_data)
-end
+# open("../temp_data/raw_$name.json", "w") do f
+#     JSON.print(f, raw_data)
+# end
 
-case = gen_dc_data(gic_data, raw_data, "../test/data/lines/$name.csv")
+# case = gen_dc_data(gic_data, raw_data, "../test/data/lines/$name.csv")
 
-solution = PowerModelsGMD.parse_file("../test/data/matpower/epricase_new.m")
+# open("../temp_data/network_$name.json", "w") do f
+#     JSON.print(f, case)
+# end
 
-g, i_inj = gen_g_i_matrix(solution)
+# solution = PowerModelsGMD.solve_gmd("../test/data/matpower/activsg200.m")
 
-println(g)
+# # open("../temp_data/solution_activsg200.json", "w") do f
+# #     JSON.print(f, solution)
+# # end
 
-branch_map = Dict{Array, Dict}()
+# solution = PowerModelsGMD.parse_file("../test/data/matpower/activsg200.m")
 
-for (id, branch) in solution["branch"]
-    key = [branch["f_bus"], branch["t_bus"]]
-    branch_map[key] = branch
-end
+# g, i_inj = gen_g_i_matrix(solution)
 
-for (id, bus) in case["branch"]
-    println(id)
-    solution_branch = branch_map[[bus["f_bus"], bus["t_bus"]]]
-    for (key, value) in bus
-        if !(solution_branch[key] == value || (typeof(value) in [Int64, Float64] && solution_branch[key] - value < 0.2))
-            println(key, ": ", value, " ", solution_branch[key])
-        end
-    end
-end
+# # println(g)
+
+# # branch_map = Dict{Array, Dict}()
+
+# # for (id, branch) in solution["branch"]
+# #     key = [branch["f_bus"], branch["t_bus"]]
+# #     branch_map[key] = branch
+# # end
+
+# # for (id, bus) in case["branch"]
+# #     println(id)
+# #     solution_branch = branch_map[[bus["f_bus"], bus["t_bus"]]]
+# #     for (key, value) in bus
+# #         if !(solution_branch[key] == value || (typeof(value) in [Int64, Float64] && solution_branch[key] - value < 0.2))
+# #             println(key, ": ", value, " ", solution_branch[key])
+# #         end
+# #     end
+# # end

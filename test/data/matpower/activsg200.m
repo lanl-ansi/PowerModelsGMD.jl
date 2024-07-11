@@ -1,4 +1,4 @@
-% Case saved by PowerWorld Simulator, version 23, build date April 25, 2024
+% Case saved by PowerWorld Simulator, version 23, build date June 10, 2024
 % Case Information Header = 4 lines
 % This is a synthetic power system model that does not represent the actual grid. It was developed as part of the US ARPA-E Grid 
 % Data research project and contains no CEII.
