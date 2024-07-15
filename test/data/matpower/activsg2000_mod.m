@@ -1,4 +1,4 @@
-% Case saved by PowerWorld Simulator, version 23, build date April 25, 2024
+% Case saved by PowerWorld Simulator, version 23, build date June 10, 2024
 % Case Information Header = 6 lines
 % This is a synthetic power system model that does NOT represent the actual grid. It was developed as part of the US ARPA-E Grid 
 % Data research project and contains no CEII.
@@ -13850,13 +13850,13 @@ mpc.gmd_branch = {
 	% line 4151-4158
 1784	1775	'branch'	780	1	0.1816233367		8.7539310500		9.0606980200		'dc 780'
 	% line 4164-4155
-1779	1788	'branch'	787	1	0.0251275000		-1.1917473100		1.2434508900		'dc 787'
+1779	1788	'branch'	787	1	0.0251275000		0.0000000000		1.2434508900		'dc 787'
 	% line 4159-4168
-1779	1788	'branch'	788	1	0.0251275000		-1.1917473100		1.2434508900		'dc 788'
+1779	1788	'branch'	788	1	0.0251275000		0.0000000000		1.2434508900		'dc 788'
 	% line 4159-4168-2
-1779	1788	'branch'	789	1	0.0251275000		-1.1917473100		1.2434508900		'dc 789'
+1779	1788	'branch'	789	1	0.0251275000		0.0000000000		1.2434508900		'dc 789'
 	% line 4159-4168-3
-1779	1788	'branch'	790	1	0.0251275000		-1.1917473100		1.2434508900		'dc 790'
+1779	1788	'branch'	790	1	0.0251275000		0.0000000000		1.2434508900		'dc 790'
 	% line 4159-4168-4
 1806	1787	'branch'	793	1	0.6405308600		-12.6308908500		19.3391916100		'dc 793'
 	% line 4186-4167

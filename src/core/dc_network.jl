@@ -1,3 +1,13 @@
+impxfrm = Dict{Float64, Float64}(
+    765.0 => 1.0892000157158984e-05,
+    500.0 => 1.666666666676272e-05,
+    345.0 => 2.4155598209192887e-05,
+    230.0 => 3.623188405928273e-05,
+    161.0 => 5.175983436949935e-05,
+    138.0 => 6.038901527172248e-05,
+    115.0 => 7.246376811370438e-05,
+) # For the implicit transformer branch resistances
+
 function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, voltage_file::String)
     output = Dict{String, Any}()
 
@@ -100,6 +110,9 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
     for branch_index in sort([x["index"] for x in values(raw_data["branch"])])
         branch = raw_data["branch"]["$branch_index"]
 
+        branch["f_bus"] = branch["source_id"][2]
+        branch["t_bus"] = branch["source_id"][3] # TODO Do not know why this is happening...
+
         hi_bus = raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] < raw_data["bus"]["$(branch["t_bus"])"]["base_kv"] ? branch["t_bus"] : branch["f_bus"]
         lo_bus = raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] < raw_data["bus"]["$(branch["t_bus"])"]["base_kv"] ? branch["f_bus"] : branch["t_bus"]
 
@@ -127,11 +140,11 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
 
             gmd_branch_index = branch_index + offset
             branch_data["index"] = gmd_branch_index
-            branches["$gmd_branch_index"] = branch_data            
+            branches["$gmd_branch_index"] = branch_data
         else
             # It is a transformer
             transformer = transformer_map[(branch["f_bus"], branch["t_bus"], branch["source_id"][5])]
-            if length(strip(transformer["VECGRP"])) == 0
+            if length(strip(transformer["VECGRP"])) == 0 || (endswith(transformer["VECGRP"], r"a.*") && !startswith(transformer["VECGRP"],"YNa"))
                 if branch["f_bus"] in gen_buses
                     transformer["VECGRP"] = "D"
                 else
@@ -145,7 +158,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 end
 
                 if transformer["VECGRP"] == "YNyn"
-                    transformer["VECGRP"] = "YNa"
+                    transformer["VECGRP"] = "YNa" # TODO: Unknown configs are assumed as not auto...
                 end
 
                 # TODO Warn that a transformer config has been assumed
@@ -155,14 +168,14 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
 
             if endswith(transformer["VECGRP"], r"a.*")
                 # It is an auto transformer
-                if !startswith(transformer["VECGRP"], "YN") # TODO may not need this
-                    continue
-                end
-
-                substation = output["gmd_bus"]["$(dc_bus_map[transformer["BUSI"]])"]["sub"]
+                substation = output["gmd_bus"]["$(dc_bus_map[transformer["BUSJ"]])"]["sub"]
 
                 R_s, R_c = calcTransformerResistances(branch["br_r"], turns_ratio, (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"], true)
-                
+
+                if (turns_ratio == 1)
+                    R_c = R_s # TODO: Temporary solution
+                end
+
                 common_data = Dict{String, Any}(
                     "f_bus" => dc_bus_map[lo_bus],
                     "t_bus" => substation,
@@ -278,10 +291,11 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
         end
     end
 
+    index = length(branches)
     for (id, bus) in raw_data["bus"]
+        index += 1
         id = parse(Int64, id)
         substation = output["gmd_bus"]["$(dc_bus_map[id])"]["sub"]
-        index = length(branches) + 1
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[id],
             "t_bus" => substation,
@@ -292,6 +306,36 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
             "index" => index,
             "parent_type" => "bus",
             "source_id" => ["gmd_branch", index],
+            "br_v" => 0,
+            "len_km" => 0, # TODO
+        )
+
+        branches["$index"] = branch_data
+    end
+
+    for (id, gen) in raw_data["gen"]
+        gen_base_kv = raw_data["bus"]["$(gen["gen_bus"])"]["base_kv"]
+        if gen_base_kv < 30.0 || gen["gen_status"] == 0
+            continue
+        end
+
+        id = parse(Int64, id)
+
+        substation = output["gmd_bus"]["$(dc_bus_map[gen["gen_bus"]])"]["sub"]
+
+        z_base = (gen_base_kv ^ 2) / gen["mbase"]
+
+        index += 1
+        branch_data = Dict{String, Any}(
+            "f_bus" => dc_bus_map[gen["gen_bus"]],
+            "t_bus" => substation,
+            "br_r" => impxfrm[gen_base_kv] * z_base,
+            "name" => "dc_gen$id",
+            "br_status" => 1,
+            "parent_index" => id,
+            "index" => index,
+            "parent_type" => "gen",
+            "source_id" => ["gen", id],
             "br_v" => 0,
             "len_km" => 0, # TODO
         )
@@ -407,7 +451,7 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         # TODO: qf, temperature_ambient, qt, hotspot_avg_limit, hotspot_rated
         branch["transformer"] ? branch_data["type"] = "xfmr" : (branch_data["br_r"] == 0 ? branch_data["type"] = "series_cap" : branch_data["type"] = "line")
         # TODO: pf
-        branch_data["source_id"] = ["branch", parse(Int, branch_id)]
+        # branch_data["source_id"] = ["branch", parse(Int, branch_id)]
         output["branch"][branch_id] = branch_data
     end
 end

@@ -1,6 +1,6 @@
 import PowerModelsGMD
 import JSON
-import SparseArrays
+using SparseArrays
 import CSV
 using DataFrames
 
@@ -68,7 +68,7 @@ end
 #     JSON.print(f, solve_gic)
 # end
 
-solve_gmd("activsg200")
+# solve_gmd("activsg2000")
 
 # solve_m = PowerModelsGMD.solve_gmd("../test/data/matpower/b4gic_default.m")
 
@@ -131,13 +131,17 @@ solve_gmd("activsg200")
 #     JSON.print(f, case)
 # end
 
-# solution = PowerModelsGMD.solve_gmd("../test/data/matpower/activsg200.m")
+# solution = PowerModelsGMD.solve_gmd("../test/data/matpower/activsg2000_mod.m")
 
-# # open("../temp_data/solution_activsg200.json", "w") do f
-# #     JSON.print(f, solution)
-# # end
+# open("../temp_data/solution_activsg2000.json", "w") do f
+#     JSON.print(f, solution)
+# end
 
-# solution = PowerModelsGMD.parse_file("../test/data/matpower/activsg200.m")
+# solution = PowerModelsGMD.parse_file("../test/data/matpower/activsg2000_mod.m")
+
+# open("../temp_data/solution_activsg2000_network.json", "w") do f
+#     JSON.print(f, solution)
+# end
 
 # g, i_inj = gen_g_i_matrix(solution)
 
@@ -159,3 +163,57 @@ solve_gmd("activsg200")
 # #         end
 # #     end
 # # end
+
+answers = CSV.read("../temp_data/answers_2000.csv", DataFrame; header=2)
+
+name = "activsg2000"
+
+data = PowerModelsGMD.parse_files("../test/data/gic/$name.gic", "../test/data/pti/$name.raw")
+
+gic_data = data["nw"]["1"]
+raw_data = data["nw"]["2"]
+
+case = gen_dc_data(gic_data, raw_data, "../test/data/lines/$name.csv")
+
+g, i_inj = gen_g_i_matrix(case)
+
+# println(g)
+
+output = PowerModelsGMD.solve_gmd(case)
+
+# case = PowerModelsGMD.parse_file("../test/data/matpower/activsg2000_mod.m")
+# g2, i_inj2 = gen_g_i_matrix(case)
+
+# for (x, y, z) in zip(findnz(g)...)
+#     if !isapprox(g1[x, y], z, rtol=0.01)
+#         println(x, " ", y, " ", g2[x,y], " ", z)
+#     end
+# end
+
+# for (idx, val) in enumerate(i_inj2)
+#     if !isapprox(val, i_inj[idx], rtol=0.1)
+#         println(idx, " ", val, " ", i_inj[idx])
+#     end
+# end
+
+# # println(g)
+
+# output = PowerModelsGMD.solve_gmd("../test/data/matpower/activsg2000_mod.m")
+
+branch_map = Dict{Array, Any}()
+
+for (branch_id, branch) in case["branch"]
+    if branch["type"] != "xfmr"
+        continue
+    end
+    key = [branch["hi_bus"], branch["lo_bus"]]
+    branch_map[key] = branch_id
+end
+
+for row in eachrow(answers)
+    key = [row["BusNum3W"], row["BusNum3W:1"]]
+    branch_id = branch_map[key]
+    if !isapprox(output["solution"]["qloss"][branch_id], row["GICQLosses"], rtol=0.15)
+        println(branch_id, " ", key, " ", output["solution"]["qloss"][branch_id], " ", row["GICQLosses"])
+    end
+end

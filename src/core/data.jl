@@ -533,7 +533,7 @@ end
 "FUNCTION: calculate qloss
     "
 function calc_qloss(branch::Dict{String,Any}, case::Dict{String,Any}, solution::Dict{String,Any})
-if branch["type"] == "xfmr"
+    if branch["type"] == "xfmr"
         if haskey(branch, "hi_3w_branch")
             lo_3w_branch = case["branch"][branch["lo_3w_branch"]]
 
