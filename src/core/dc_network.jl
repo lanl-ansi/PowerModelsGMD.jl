@@ -8,6 +8,20 @@ impxfrm = Dict{Float64, Float64}(
     115.0 => 7.246376811370438e-05,
 ) # For the implicit transformer branch resistances
 
+function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, voltage_file::IOStream)
+    # This produces an annoying warning about the number of columns in the first row
+    # TODO: How to get rid of it?
+    lines_info = CSV.read(voltage_file, DataFrame; header=2)
+    return gen_dc_data(gic_data, raw_data, lines_info)
+end
+
+function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, voltage_file::String)
+    # This produces an annoying warning about the number of columns in the first row
+    # TODO: How to get rid of it?
+    lines_info = CSV.read(voltage_file, DataFrame; header=2)
+    return gen_dc_data(gic_data, raw_data, lines_info)
+end
+
 function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, voltage_file::String)
     output = Dict{String, Any}()
 
@@ -24,12 +38,8 @@ function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, v
     dc_bus_map = _gen_gmd_bus!(output, gic_data, raw_data)
     _gen_gmd_branch!(output, gic_data, raw_data, dc_bus_map)
 
-    # This produces an annoying warning about the number of columns in the first row
-    # TODO: How to get rid of it?
-    lines_info = CSV.read(voltage_file, DataFrame; header=2)
-
     branch_map = Dict{Array, Int}()
-    for (_, branch) in output["gmd_branch"]
+    for branch in values(output["gmd_branch"])
         source_id = branch["source_id"]
         if source_id[1] != "branch"
             continue
@@ -63,6 +73,7 @@ function _gen_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         substation = gic_data["SUBSTATION"]["$substation_index"]
         substation_data = Dict{String, Any}(
             "name" => "dc_" * replace(lowercase(substation["NAME"]), " " => "_"),
+            # TODO: check for cases where 0 is not just a placeholder
             "g_gnd" => substation["RG"] != 0 ? 1/substation["RG"] : 4.6216128431, # TODO Find the value for reals
             "index" => global_index,
             "status" => 1,
@@ -134,8 +145,8 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 "parent_index" => branch_index,
                 "parent_type" => "branch",
                 "source_id" => branch["source_id"],
-                "br_v" => 0, # TODO
-                "len_km" => 0, # TODO
+                "br_v" => 0.0, # TODO
+                "len_km" => 0.0, # TODO
             )
 
             gmd_branch_index = branch_index + offset
@@ -157,6 +168,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     transformer["VECGRP"] *= "yn"
                 end
 
+                # Note: this seems a little dangerous to force gwye-gwye transformers as autos
                 if transformer["VECGRP"] == "YNyn"
                     transformer["VECGRP"] = "YNa" # TODO: Unknown configs are assumed as not auto...
                 end
@@ -166,11 +178,11 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
 
             turns_ratio = raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] / raw_data["bus"]["$(branch["lo_bus"])"]["base_kv"]
 
-            if endswith(transformer["VECGRP"], r"a.*")
+            if endswith(transformer["VECGRP"], r"a.*") # same as 'a' in transformer["VECGRP"]?
                 # It is an auto transformer
                 substation = output["gmd_bus"]["$(dc_bus_map[transformer["BUSJ"]])"]["sub"]
 
-                R_s, R_c = calcTransformerResistances(branch["br_r"], turns_ratio, (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"], true)
+                R_s, R_c = _calc_transformer_resistances(branch["br_r"], turns_ratio, (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"], true)
 
                 if (turns_ratio == 1)
                     R_c = R_s # TODO: Temporary solution
@@ -185,8 +197,8 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "parent_index" => branch_index,
                     "parent_type" => "branch",
                     "source_id" => branch["source_id"],
-                    "br_v" => 0,
-                    "len_km" => 0, # TODO
+                    "br_v" => 0.0,
+                    "len_km" => 0.0, # TODO
                 )
 
                 if common_data["br_r"] == 0
@@ -206,8 +218,8 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "parent_index" => branch_index,
                     "parent_type" => "branch",
                     "source_id" => branch["source_id"],
-                    "br_v" => 0,
-                    "len_km" => 0, # TODO
+                    "br_v" => 0.0,
+                    "len_km" => 0.0, # TODO
                 )
 
                 if series_data["br_r"] == 0
@@ -227,6 +239,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 primary_winding = true
             end
             
+            # TODO: same as "yn" in occursin("yn", transformer["VECGRP"])?
             if (endswith(transformer["VECGRP"], r"yn.*") && lo_bus == transformer["BUSJ"]) || (startswith(transformer["VECGRP"], "YN") && lo_bus == transformer["BUSI"])
                 secondary_winding = true
             end
@@ -235,7 +248,8 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 continue
             end
 
-            R_hi, R_lo = calcTransformerResistances(branch["br_r"], turns_ratio, (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"], true)
+            Z_base_high = (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"]
+            R_hi, R_lo = _calc_transformer_resistances(branch["br_r"], turns_ratio, Z_base_high; is_auto=true)
 
             offset -= 1
 
@@ -251,11 +265,11 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "parent_index" => branch_index,
                     "parent_type" => "branch",
                     "source_id" => branch["source_id"],
-                    "br_v" => 0,
-                    "len_km" => 0, # TODO
+                    "br_v" => 0.0, # 
+                    "len_km" => 0.0, # TODO
                 )
 
-                if branch_data["br_r"] == 0
+                if branch_data["br_r"] == 0.0
                     branch_data["br_r"] = R_hi
                 end
 
@@ -275,11 +289,11 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                     "parent_index" => branch_index,
                     "parent_type" => "branch",
                     "source_id" => branch["source_id"],
-                    "br_v" => 0,
-                    "len_km" => 0, # TODO
+                    "br_v" => 0.0,
+                    "len_km" => 0.0, # TODO
                 )
 
-                if branch_data["br_r"] == 0
+                if branch_data["br_r"] == 0.0
                     branch_data["br_r"] = R_lo
                 end
 
@@ -292,37 +306,37 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
     end
 
     index = length(branches)
-    for (id, bus) in raw_data["bus"]
+    for id in sort([x["index"] for x in values(raw_data["bus"])])
+        bus = raw_data["bus"]["$id"]
         index += 1
-        id = parse(Int64, id)
         substation = output["gmd_bus"]["$(dc_bus_map[id])"]["sub"]
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[id],
             "t_bus" => substation,
-            "br_r" => 25000.00,
+            "br_r" => 25e3,
             "name" => "dc_bus$id",
             "br_status" => 1,
             "parent_index" => id,
             "index" => index,
             "parent_type" => "bus",
             "source_id" => ["gmd_branch", index],
-            "br_v" => 0,
-            "len_km" => 0, # TODO
+            "br_v" => 0.0,
+            "len_km" => 0.0, # TODO
         )
 
         branches["$index"] = branch_data
     end
 
-    for (id, gen) in raw_data["gen"]
+    for id in sort([x["index"] for x in values(raw_data["gen"])])
+        gen = raw_data["gen"]["$id"]
         gen_base_kv = raw_data["bus"]["$(gen["gen_bus"])"]["base_kv"]
+
         if gen_base_kv < 30.0 || gen["gen_status"] == 0
             continue
         end
 
-        id = parse(Int64, id)
-
+        # TODO: Add bus-sub mapping into the bus table directly?
         substation = output["gmd_bus"]["$(dc_bus_map[gen["gen_bus"]])"]["sub"]
-
         z_base = (gen_base_kv ^ 2) / gen["mbase"]
 
         index += 1
@@ -456,12 +470,12 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     end
 end
 
-function calcTransformerResistances(positiveSequenceR::Float64, turnsRatio::Float64, baseHighR::Float64, isAuto::Bool)
-    R_high = (baseHighR * positiveSequenceR) / 2
-    if isAuto
-        R_low = R_high / ((turnsRatio - 1) ^ 2)
-    else
-        R_low = R_high / (turnsRatio ^ 2)
+function _calc_transformer_resistances(positive_sequence_r::Float64, turns_ratio::Float64, Z_base_high::Float64, is_auto::Bool)
+    R_high = (Z_base_high * positive_sequence_r) / 2
+    if is_auto
+        R_low = R_high / ((turns_ratio - 1) ^ 2)
+   else
+        R_low = R_high / (turns_ratio ^ 2)
     end
     
     return R_high / 3, R_low / 3

@@ -43,10 +43,12 @@ function gen_g_i_matrix(network::Dict{String, Any})
         offDiag_g[bus_to][bus_from] -= 1/branch["br_r"]
 
         # TODO: What would happen if these didn't exist?
-        diag_g[bus_from] += 1/branch["br_r"]
-        diag_g[bus_to] += 1/branch["br_r"]
-        inject_i[bus_from] -= (branch["br_v"] == 0 ? 0.0 : branch["br_v"]/branch["br_r"])
-        inject_i[bus_to] += (branch["br_v"] == 0 ? 0.0 : branch["br_v"]/branch["br_r"])
+        # Art: added dictionary get function to specify defaults
+        # TODO: consider printing a warning if br_r or br_v don't exist and using defaults
+        diag_g[bus_from] += 1.0/get(branch, "br_r", 1e6)
+        diag_g[bus_to] += 1.0/get(branch, "br_r", 1e6)
+        inject_i[bus_from] -= (get(branch, "br_v", 0.0) == 0.0 ? 0.0 : branch["br_v"]/branch["br_r"])
+        inject_i[bus_to] += (get(branch, "br_v", 0.0) == 0.0 ? 0.0 : branch["br_v"]/branch["br_r"])
     end
 
     for (i, val) in diag_g
