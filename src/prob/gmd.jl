@@ -55,7 +55,7 @@ end
 "FUNCTION: solve GIC matrix solve"
 function solve_gmd(raw_file::String, gic_file::String, voltage_file::String; kwargs...)
     data = parse_files(gic_file, raw_file)
-    case = gen_dc_data(data["nw"]["1"], data["nw"]["2"], voltage_file) 
+    case = generate_dc_data(data["nw"]["1"], data["nw"]["2"], voltage_file) 
     return solve_gmd(case; kwargs)
 end
 
@@ -65,7 +65,7 @@ function solve_gmd(file::String; kwargs...)
 end
 
 function solve_gmd(case::Dict{String,Any}; kwargs...)
-    g, i_inj = gen_g_i_matrix(case)
+    g, i_inj = generate_g_i_matrix(case)
 
     v = g\i_inj
     
