@@ -8,16 +8,20 @@ impxfrm = Dict{Float64, Float64}(
     115.0 => 7.246376811370438e-05,
 ) # For the implicit transformer branch resistances
 
-function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, voltage_file::IOStream)
+function gen_dc_data(gic_file::String, raw_file::String, voltage_file::String)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
+    gic_data = parse_gic(gic_file)
+    raw_data = _PM.parse_file(raw_file)
     lines_info = CSV.read(voltage_file, DataFrame; header=2)
     return gen_dc_data(gic_data, raw_data, lines_info)
 end
 
-function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, voltage_file::String)
+function gen_dc_data(gic_file::IOStream, raw_file::IOStream, voltage_file::IOStream)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
+    gic_data = parse_gic(gic_file)
+    raw_data = _PM.parse_file(raw_file)
     lines_info = CSV.read(voltage_file, DataFrame; header=2)
     return gen_dc_data(gic_data, raw_data, lines_info)
 end
@@ -371,10 +375,14 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         bus_data["source_id"] = Array{Any}(bus_data["source_id"])
         bus_data["source_id"][2] = parse(Int64, bus["source_id"][2])
         sub_id = gic_data["BUS"][bus_id]["SUBSTATION"]
+        bus_data["substation"] = sub_id
         bus_data["lat"] = gic_data["SUBSTATION"]["$sub_id"]["LAT"]
         bus_data["lon"] = gic_data["SUBSTATION"]["$sub_id"]["LONG"]
         output["bus"][bus_id] = bus_data
     end
+
+    # Add a substation table
+    output["substation"] = Dict{String, Any}()
 
     output["gen"] = Dict{String, Any}()
     for (gen_id, gen) in raw_data["gen"]
