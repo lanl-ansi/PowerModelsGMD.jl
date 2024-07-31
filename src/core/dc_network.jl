@@ -8,6 +8,8 @@ impxfrm = Dict{Float64, Float64}(
     115.0 => 7.246376811370438e-05,
 ) # For the implicit transformer branch resistances
 
+# TODO: generate dc networks without coupling info
+
 function gen_dc_data(gic_file::String, raw_file::String, voltage_file::String)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
@@ -382,8 +384,20 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     end
 
     # Add a substation table
+    # This isn't needed for analysis so not sure if it's smart
+    # to add it
     output["substation"] = Dict{String, Any}()
+    for (sub_id, sub) in gic_data["SUBSTATION"]
+        sub_data = Dict{String,Any}()
+        sub_data["index"] = sub["SUBSTATION"]
+        sub_data["g"] = sub["RG"]
+        sub_data["lat"] = sub["LAT"]
+        sub_data["lon"] = sub["LON"]
+        output["substation"][sub_id] = sub_data
+    end
 
+    # TODO: this looks like it is messing up the gen ID
+    # do we really need to do this?
     output["gen"] = Dict{String, Any}()
     for (gen_id, gen) in raw_data["gen"]
         gen_data = deepcopy(gen)
@@ -392,19 +406,12 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         output["gen"][gen_id] = gen_data
     end
 
-    transformer_map = Dict{Array, Dict}()
-    for transformer in values(gic_data["TRANSFORMER"])
-        key = [transformer["BUSI"], transformer["BUSJ"], transformer["CKT"]]
-        transformer_map[key] = transformer
-    end
+    gen_xf_key = x -> (x["BUSI"], xf["BUSJ"], xf["CKT"])
+    transformer_map = Dict{Tuple,Dict}(gen_xf_key(x) => x for x in values(gic_data["TRANSFORMER"]))
 
-    gmd_branch_map = Dict{Array, Int}()
-    for (_, gmd_branch) in output["gmd_branch"]
-        if gmd_branch["source_id"][1] == "transformer"
-            key = [gmd_branch["source_id"], last(gmd_branch["name"], 2)]
-            gmd_branch_map[key] = gmd_branch["index"]
-        end
-    end
+    gen_gmd_branch_key = x -> (x["source_id"], last(x["name"], 2))
+    transformer_gmd_branches = filter(x -> x["source_id"]["1"] == "transformer", values(gmd_branch))
+    gmd_branch_map = Dict{Tuple, Int}(gen_gmd_branch_key(x) => x["index"] for x in transformer_gmd_branches)
 
     output["branch"] = Dict{String, Any}()
     for (branch_id, branch) in raw_data["branch"]
@@ -413,37 +420,26 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         branch["transformer"] ? branch_data["xfmr"] = 1 : branch_data["xfmr"] = 0
         # TODO pt, topoil_init, hotspot_instant_limit, topoil_rated
         branch_data["source_id"] = ["branch", branch_id]
-        gmd_branch_hi = haskey(gmd_branch_map, [branch["source_id"], "hi"]) ? gmd_branch_map[[branch["source_id"], "hi"]] : nothing
-        gmd_branch_lo = haskey(gmd_branch_map, [branch["source_id"], "lo"]) ? gmd_branch_map[[branch["source_id"], "lo"]] : nothing
-        gmd_branch_series = haskey(gmd_branch_map, [branch["source_id"], "es"]) ? gmd_branch_map[[branch["source_id"], "es"]] : nothing
-        gmd_branch_common = haskey(gmd_branch_map, [branch["source_id"], "on"]) ? gmd_branch_map[[branch["source_id"], "on"]] : nothing
+        gmd_branch_hi = get(gmd_branch_map, (branch["source_id"], "hi"), nothing)
+        gmd_branch_lo = get(gmd_branch_map, (branch["source_id"], "lo"), nothing) 
+        gmd_branch_series = get(gmd_branch_map, (branch["source_id"], "es"), nothing)
+        gmd_branch_common = get(gmd_branch_map, (branch["source_id"], "on"), nothing)
+
         if branch["transformer"]
             key = [branch["f_bus"], branch["t_bus"], branch["source_id"][5]]
             transformer = transformer_map[key]
-            if !isnothing(gmd_branch_hi)
-                branch_data["gmd_br_hi"] = gmd_branch_hi
-            else
-                branch_data["gmd_br_hi"] = -1
-            end
-            if !isnothing(gmd_branch_lo)
-                branch_data["gmd_br_lo"] = gmd_branch_lo
-            else
-                branch_data["gmd_br_lo"] = -1
-            end
-            if !isnothing(gmd_branch_series)
-                branch_data["gmd_br_series"] = gmd_branch_series
-            else
-                branch_data["gmd_br_series"] = -1
-            end
-            if !isnothing(gmd_branch_common)
-                branch_data["gmd_br_common"] = gmd_branch_common
-            else
-                branch_data["gmd_br_common"] = -1
-            end
+            null2magic = x -> isnothing(x) ? -1 : x
+
+            branch_data["gmd_br_hi"] = null2magic(gmd_branch_hi)
+            branch_data["gmd_br_lo"] = null2magic(gmd_branch_lo)
+            branch_data["gmd_br_series"] = null2magic(gmd_branch_series)
+            branch_data["gmd_br_common"] = null2magic(gmd_branch_common)
         end
+
         branch_data["baseMVA"] = raw_data["baseMVA"]
         # TODO topoil_initialized
         branch_data["config"] = "none"
+
         if branch["transformer"]
             key = [branch["f_bus"], branch["t_bus"], branch["source_id"][5]]
             transformer = transformer_map[key]
@@ -457,10 +453,12 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
                 "d" => "-delta",
                 "a" => "-gwye-auto" # TODO can change if we expect non gwye-gwye autos
             )
+
             for key in keys(config_map)
                 if startswith(transformer["VECGRP"], key * r"[a-z]+")
                     config = config_map[key] * config
                 end
+
                 if endswith(transformer["VECGRP"], r"[A-Z]+" * key * r"[^a-z]*")
                     config *= config_map[key]
                 end
@@ -469,9 +467,18 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
             branch_data["config"] = config
             branch_data["gmd_k"] = transformer["KFACTOR"] * 2 * sqrt(2/3)
         end
+
         # TODO topoil_time_const
         # TODO: qf, temperature_ambient, qt, hotspot_avg_limit, hotspot_rated
-        branch["transformer"] ? branch_data["type"] = "xfmr" : (branch_data["br_r"] == 0 ? branch_data["type"] = "series_cap" : branch_data["type"] = "line")
+      
+        if branch_data["transformer"]
+            branch_data["type"] = "xfmr"
+        elseif branch_data["br_r"] == 0
+            branch_data["type"] = "series_cap"
+        else
+            branch_data["type"] = "line"
+        end
+        
         # TODO: pf
         # branch_data["source_id"] = ["branch", parse(Int, branch_id)]
         output["branch"][branch_id] = branch_data
