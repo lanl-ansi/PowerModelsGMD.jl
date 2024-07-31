@@ -28,7 +28,7 @@ function gen_dc_data(gic_file::IOStream, raw_file::IOStream, voltage_file::IOStr
     return gen_dc_data(gic_data, raw_data, lines_info)
 end
 
-function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, voltage_file::String)
+function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, lines_info::DataFrames.DataFrame)
     output = Dict{String, Any}()
 
     output["source_type"] = "gic"
@@ -188,7 +188,7 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 # It is an auto transformer
                 substation = output["gmd_bus"]["$(dc_bus_map[transformer["BUSJ"]])"]["sub"]
 
-                R_s, R_c = _calc_transformer_resistances(branch["br_r"], turns_ratio, (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"], true)
+                R_s, R_c = _calc_transformer_resistances(branch["br_r"], turns_ratio, (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"]; is_auto=true)
 
                 if (turns_ratio == 1)
                     R_c = R_s # TODO: Temporary solution
@@ -406,12 +406,21 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         output["gen"][gen_id] = gen_data
     end
 
-    gen_xf_key = x -> (x["BUSI"], xf["BUSJ"], xf["CKT"])
-    transformer_map = Dict{Tuple,Dict}(gen_xf_key(x) => x for x in values(gic_data["TRANSFORMER"]))
+    transformer_map = Dict{Tuple, Dict}()
+    for transformer in values(gic_data["TRANSFORMER"])
+        key = (transformer["BUSI"], transformer["BUSJ"], transformer["CKT"])
+        transformer_map[key] = transformer
+    end
 
-    gen_gmd_branch_key = x -> (x["source_id"], last(x["name"], 2))
-    transformer_gmd_branches = filter(x -> x["source_id"]["1"] == "transformer", values(gmd_branch))
-    gmd_branch_map = Dict{Tuple, Int}(gen_gmd_branch_key(x) => x["index"] for x in transformer_gmd_branches)
+    gmd_branch_map = Dict{Tuple, Int}()
+    for gmd_branch in values(output["gmd_branch"])
+        if gmd_branch["source_id"][1] == "transformer"
+            key = (gmd_branch["source_id"], last(gmd_branch["name"], 2))
+            gmd_branch_map[key] = gmd_branch["index"]
+        end
+    end
+
+
 
     output["branch"] = Dict{String, Any}()
     for (branch_id, branch) in raw_data["branch"]
@@ -485,7 +494,7 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     end
 end
 
-function _calc_transformer_resistances(positive_sequence_r::Float64, turns_ratio::Float64, Z_base_high::Float64, is_auto::Bool)
+function _calc_transformer_resistances(positive_sequence_r::Float64, turns_ratio::Float64, Z_base_high::Float64, is_auto::Bool=false)
     R_high = (Z_base_high * positive_sequence_r) / 2
     if is_auto
         R_low = R_high / ((turns_ratio - 1) ^ 2)
