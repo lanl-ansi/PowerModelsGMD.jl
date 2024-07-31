@@ -188,7 +188,8 @@ function _gen_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}
                 # It is an auto transformer
                 substation = output["gmd_bus"]["$(dc_bus_map[transformer["BUSJ"]])"]["sub"]
 
-                R_s, R_c = _calc_transformer_resistances(branch["br_r"], turns_ratio, (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"]; is_auto=true)
+                Z_base = (raw_data["bus"]["$(branch["hi_bus"])"]["base_kv"] ^ 2) / raw_data["baseMVA"]
+                R_s, R_c = _calc_transformer_resistances(branch["br_r"], turns_ratio, Z_base; is_auto=true)
 
                 if (turns_ratio == 1)
                     R_c = R_s # TODO: Temporary solution
@@ -392,7 +393,7 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         sub_data["index"] = sub["SUBSTATION"]
         sub_data["g"] = sub["RG"]
         sub_data["lat"] = sub["LAT"]
-        sub_data["lon"] = sub["LON"]
+        sub_data["lon"] = sub["LONG"]
         output["substation"][sub_id] = sub_data
     end
 
@@ -406,16 +407,16 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
         output["gen"][gen_id] = gen_data
     end
 
-    transformer_map = Dict{Tuple, Dict}()
+    transformer_map = Dict{Vector, Dict}()
     for transformer in values(gic_data["TRANSFORMER"])
-        key = (transformer["BUSI"], transformer["BUSJ"], transformer["CKT"])
+        key = [transformer["BUSI"], transformer["BUSJ"], transformer["CKT"]]
         transformer_map[key] = transformer
     end
 
-    gmd_branch_map = Dict{Tuple, Int}()
+    gmd_branch_map = Dict{Vector, Int}()
     for gmd_branch in values(output["gmd_branch"])
         if gmd_branch["source_id"][1] == "transformer"
-            key = (gmd_branch["source_id"], last(gmd_branch["name"], 2))
+            key = [gmd_branch["source_id"], last(gmd_branch["name"], 2)]
             gmd_branch_map[key] = gmd_branch["index"]
         end
     end
@@ -494,7 +495,7 @@ function _gen_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, r
     end
 end
 
-function _calc_transformer_resistances(positive_sequence_r::Float64, turns_ratio::Float64, Z_base_high::Float64, is_auto::Bool=false)
+function _calc_transformer_resistances(positive_sequence_r::Float64, turns_ratio::Float64, Z_base_high::Float64; is_auto::Bool=false)
     R_high = (Z_base_high * positive_sequence_r) / 2
     if is_auto
         R_low = R_high / ((turns_ratio - 1) ^ 2)
