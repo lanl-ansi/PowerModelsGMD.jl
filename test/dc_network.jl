@@ -29,7 +29,7 @@ function solve_gmd(name; kwargs...)
         JSON.print(f, case)
     end
 
-    g, i_inj = gen_g_i_matrix(case)
+    g, i_inj = generate_g_i_matrix(case)
 
     # println(g)
 
@@ -60,7 +60,7 @@ end
 
 solve_gmd("b4gic3wyyd")
 # save_solution("activsg10k")
-# solve_gmd("activsg10k")
+solve_gmd("activsg10k")
 
 # name = "activsg10k"
 
