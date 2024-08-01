@@ -112,8 +112,6 @@ function _generate_gmd_branch!(output::Dict{String, Any}, raw_data::Dict{String,
     _generate_3w_branch_table!(output, gmd_3w_branch)
 end
 
-
-
 function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
     output["bus"] = Dict{String, Any}()
     for (bus_id, bus) in raw_data["bus"]
@@ -131,7 +129,7 @@ function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, An
     output["gen"] = raw_data["gen"]
 
     gmd_branch_map = Dict{Array, Int64}()
-    for (_, gmd_branch) in output["gmd_branch"]
+    for gmd_branch in values(output["gmd_branch"])
         if gmd_branch["source_id"][1] == "transformer"
             key = [gmd_branch["source_id"], last(gmd_branch["name"], 2)]
             gmd_branch_map[key] = gmd_branch["index"]
@@ -227,12 +225,12 @@ function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, An
     end
 end
 
-function _calc_xfmr_resistances(positiveSequenceR::Float64, turnsRatio::Float64, baseHighR::Float64, isAuto::Bool)
-    R_high = (baseHighR * positiveSequenceR) / 2
-    if isAuto
-        R_low = R_high / ((turnsRatio - 1) ^ 2)
+function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float64, z_base_high::Float64, is_auto::Bool)
+    R_high = (z_base_high * positive_sequence_r) / 2
+    if is_auto
+        R_low = R_high / ((turns_ratio - 1) ^ 2)
     else
-        R_low = R_high / (turnsRatio ^ 2)
+        R_low = R_high / (turns_ratio ^ 2)
     end
 
     R_high = R_high == 0 ? 0.25 : R_high
@@ -246,7 +244,7 @@ function _configure_line_info!(voltage_file::String, output::Dict{String, Any})
     lines_info = CSV.read(voltage_file, DataFrame; header=2)
 
     branch_map = Dict{Array, Int64}()
-    for (_, branch) in output["gmd_branch"]
+    for branch in values(output["gmd_branch"])
         source_id = branch["source_id"]
         if source_id[1] != "branch"
             continue
@@ -358,7 +356,7 @@ function _add_bus_table!(gmd_bus::Dict{String, Dict}, substation_map::Dict{Int64
 
         bus_data = Dict{String, Any}(
             "name" => bus_name,
-            "g_gnd" => 0, # Not tied to ground directly
+            "g_gnd" => 0.0, # Not tied to ground directly
             "index" => gmd_bus_index,
             "status" => 1,
             "sub" => bus["sub"], # Converts to new gmd_bus index for substation
@@ -445,8 +443,8 @@ function _handle_normal_transformer!(branches::Dict{String, Dict{String, Any}}, 
             "parent_index" => branch["index"],
             "parent_type" => "branch",
             "source_id" => branch["source_id"],
-            "br_v" => 0,
-            "len_km" => 0,
+            "br_v" => 0.0,
+            "len_km" => 0.0,
         )
 
         # Sets default resistance if needed
@@ -469,8 +467,8 @@ function _handle_normal_transformer!(branches::Dict{String, Dict{String, Any}}, 
             "parent_index" => branch["index"],
             "parent_type" => "branch",
             "source_id" => branch["source_id"],
-            "br_v" => 0,
-            "len_km" => 0,
+            "br_v" => 0.0,
+            "len_km" => 0.0,
         )
 
         # Sets default resistance if needed
@@ -518,8 +516,8 @@ function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc
         "parent_index" => branch["index"],
         "parent_type" => "branch",
         "source_id" => branch["source_id"],
-        "br_v" => 0,
-        "len_km" => 0,
+        "br_v" => 0.0,
+        "len_km" => 0.0,
     )
 
     # Sets default resistance if needed
@@ -541,8 +539,8 @@ function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc
         "parent_index" => branch["index"],
         "parent_type" => "branch",
         "source_id" => branch["source_id"],
-        "br_v" => 0,
-        "len_km" => 0,
+        "br_v" => 0.0,
+        "len_km" => 0.0,
     )
 
     # Sets default resistance if needed
@@ -684,8 +682,8 @@ function _set_branch_data!(branches::Dict{String, Dict{String, Any}}, gmd_3w_bra
             "parent_index" => branch["index"],
             "parent_type" => "branch",
             "source_id" => branch["source_id"],
-            "br_v" => 0,
-            "len_km" => 0,
+            "br_v" => 0.0,
+            "len_km" => 0.0,
         )
 
         branches["$gmd_branch_index"] = branch_data
@@ -698,7 +696,11 @@ end
 
 # Makes a unique branch for each bus to its substation
 function _generate_bus_gmd_branches!(branches::Dict{String, Dict{String, Any}}, dc_bus_map::Dict{Int64, Int64}, raw_data::Dict{String, Any}, gmd_branch_index::Int64)
-    for (bus_id, bus) in raw_data["bus"]
+    sorted_bus_indices = sort([x["index"] for x in values(raw_data["bus"])])
+
+    for bus_id in sorted_bus_indices
+        bus = raw_data["bus"]["$bus_id"]
+
         bus_id = parse(Int64, bus_id)
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[bus_id],
@@ -710,8 +712,8 @@ function _generate_bus_gmd_branches!(branches::Dict{String, Dict{String, Any}}, 
             "index" => gmd_branch_index,
             "parent_type" => "bus",
             "source_id" => ["gmd_branch", gmd_branch_index],
-            "br_v" => 0,
-            "len_km" => 0,
+            "br_v" => 0.0,
+            "len_km" => 0.0,
         )
 
         branches["$gmd_branch_index"] = branch_data
@@ -723,7 +725,11 @@ end
 
 # Adds GSU transformer at each active generator above 30kV
 function _generate_implicit_gsu!(branches::Dict{String, Dict{String, Any}}, dc_bus_map::Dict{Int64, Int64}, raw_data::Dict{String, Any}, gmd_branch_index::Int64)
-    for (gen_id, gen) in raw_data["gen"]
+    sorted_gen_indices = sort([x["index"] for x in values(raw_data["gen"])])
+
+    for gen_id in sorted_gen_indices
+        gen = raw_data["gen"]["$gen_id"]
+
         gen_bus = gen["gen_bus"]
         gen_base_kv = raw_data["bus"]["$gen_bus"]["base_kv"]
         if gen_base_kv < 30.0 || gen["gen_status"] == 0
@@ -745,8 +751,8 @@ function _generate_implicit_gsu!(branches::Dict{String, Dict{String, Any}}, dc_b
             "index" => gmd_branch_index,
             "parent_type" => "gen",
             "source_id" => ["gen", gen_id],
-            "br_v" => 0,
-            "len_km" => 0,
+            "br_v" => 0.0,
+            "len_km" => 0.0,
         )
 
         branches["$gmd_branch_index"] = branch_data
