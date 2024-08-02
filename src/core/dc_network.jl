@@ -62,7 +62,6 @@ function gen_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, v
     output["baseMVA"] = raw_data["baseMVA"]
     output["load"] = raw_data["load"]
 
-    for (_, branch) in output["gmd_branch"]
     return output
 end
 
@@ -262,7 +261,7 @@ function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float
     R_high = (z_base_high * positive_sequence_r) / 2
     if is_auto
         R_low = R_high / ((turns_ratio - 1) ^ 2)
-   else
+    else
         R_low = R_high / (turns_ratio ^ 2)
     end
 
