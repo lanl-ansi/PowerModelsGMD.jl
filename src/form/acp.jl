@@ -58,6 +58,7 @@ function constraint_dc_current_mag_gwye_gwye_xf_3w(pm::_PM.AbstractACPModel, n::
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
     JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
+    
     # TODO: use variable bounds for this
     if !isnothing(ieff_max)
         JuMP.@constraint(pm.model, ieff <= ieff_max)
