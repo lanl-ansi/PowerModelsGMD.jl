@@ -67,12 +67,9 @@ mpc.gmd_bus = {
 %% gmd_branch data
 %column_names% f_bus t_bus parent_type parent_index br_status br_r br_v len_km name
 mpc.gmd_branch = {
-3	4	'branch'	1	1	1.0007347500		106.1231079100		170.7885924600		'dc 1'
-	% line 1-2
-3	1	'branch'	2	1	0.1000000000		0.0000000000		0.0000000000		'dc 2_hi'
-	% transformer 1-3
-4	2	'branch'	3	1	0.1000000000		0.0000000000		0.0000000000		'dc 3_hi'
-	% transformer 2-4
+3	4	'branch'	1	1	1.0007347500		106.1231079100		170.7885924600		'dc 1'		% line 1-2
+3	1	'branch'	2	1	0.1000000000		0.0000000000		0.0000000000		'dc 2_hi'	% transformer 1-3
+4	2	'branch'	3	1	0.1000000000		0.0000000000		0.0000000000		'dc 3_hi'	% transformer 2-4
 3	1	'bus'	1	1	25000.0000000000		0.0000000000		0.0000000000		'dc bus_3'
 4	2	'bus'	2	1	25000.0000000000		0.0000000000		0.0000000000		'dc bus_4'
 5	1	'bus'	3	1	25000.0000000000		0.0000000000		0.0000000000		'dc bus_5'

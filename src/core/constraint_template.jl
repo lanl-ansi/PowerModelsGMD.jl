@@ -50,7 +50,8 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, k; 
 
     branch = _PM.ref(pm, nw, :branch, k)
     kh = branch["gmd_br_hi"]
-    ieff_max = branch["ieff_max"]
+    # TODO switch to variable bounds
+    ieff_max = get(branch, "ieff_max", nothing)
 
     if kh == -1 || kh == "-1" || !(kh in keys(_PM.ref(pm, nw, :gmd_branch)))
         Memento.warn(_LOGGER, "Branch [$k] is missing br_hi, skipping")
@@ -88,7 +89,8 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractPowerModel, k; n
         vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
         a = vhi / vlo
 
-    ieff_max = branch["ieff_max"]
+    # TODO: rely on variable bounds
+    ieff_max = get(branch, "ieff_max", nothing)
 
     constraint_dc_current_mag_gwye_gwye_xf(pm, nw, k, kh, ih, jh, kl, il, jl, a, ieff_max)
     else
@@ -155,7 +157,8 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel,
         vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
         a = (vhi / vlo) - 1.0
 
-    ieff_max = branch["ieff_max"]
+    # TODO: use variable bounds for this
+    ieff_max = get(branch, "ieff_max", nothing)
 
     constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, k, ks, is, js, kc, ic, jc, a, ieff_max)
     end

@@ -32,7 +32,10 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractACPModel, n::In
         JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
     end
     
-    JuMP.@constraint(pm.model, ieff <= ieff_max)
+    # TODO: use variable bounds for this
+    if !isnothing(ieff_max)
+        JuMP.@constraint(pm.model, ieff <= ieff_max)
+    end
 end
 
 
@@ -55,7 +58,10 @@ function constraint_dc_current_mag_gwye_gwye_xf_3w(pm::_PM.AbstractACPModel, n::
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
     JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
-    JuMP.@constraint(pm.model, ieff <= ieff_max)
+    # TODO: use variable bounds for this
+    if !isnothing(ieff_max)
+        JuMP.@constraint(pm.model, ieff <= ieff_max)
+    end    
 end
 
 
@@ -66,7 +72,11 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractACPModel, n
     is = _PM.var(pm, n, :dc)[(ks,is,js)]
     ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
     JuMP.@NLconstraint(pm.model, ieff == abs(a*is + ic)/(a + 1.0))
-    JuMP.@constraint(pm.model, ieff <= ieff_max)
+
+    # TODO: use variable bounds for this
+    if !isnothing(ieff_max)
+        JuMP.@constraint(pm.model, ieff <= ieff_max)
+    end
 end
 
 

@@ -141,11 +141,15 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractWRModel, n::Int
         >=
         -ihi
     )
-    JuMP.@constraint(pm.model,
-        ieff
-        <=
-        ieff_max
-    )
+
+    # TODO: use variable bounds for this
+    if !isnothing(ieff_max)
+        JuMP.@constraint(pm.model,
+            ieff
+            <=
+            ieff_max
+        )
+    end
 end
 
 
@@ -193,11 +197,14 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractWRModel, n:
         >=
         - (a*is + ic) / (a + 1.0)
     )
-    JuMP.@constraint(pm.model,
-        ieff
-        <=
-        ieff_max
-    )
+    # TODO: use variable bounds for this
+    if !isnothing(ieff_max)
+        JuMP.@constraint(pm.model,
+            ieff
+            <=
+            ieff_max
+        )
+    end
 end
 
 

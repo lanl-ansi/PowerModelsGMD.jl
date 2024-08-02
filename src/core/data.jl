@@ -109,7 +109,12 @@ function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{String,Any}, sol
         if haskey(branch,"hi_3w_branch")
             return 0.0
         else
-            return abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+            if haskey(solution["gmd_branch"]["$khi"], "gmd_idc")
+                return abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+            else
+                Memento.warn(_LOGGER, "Gwye-delta transformers $k doesn't have high-side gmd_idc, skipping calculation of ieff")
+                return 0.0
+            end
         end
     end
 end
