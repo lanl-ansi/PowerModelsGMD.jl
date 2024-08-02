@@ -1,4 +1,4 @@
-function gen_g_i_matrix(network::Dict{String, Any})
+function generate_g_i_matrix(network::Dict{String, Any})
     diag_g = Dict{Int64, Float64}()
     inject_i = Dict{Int64, Float64}()
 
@@ -47,6 +47,7 @@ function gen_g_i_matrix(network::Dict{String, Any})
         # TODO: consider printing a warning if br_r or br_v don't exist and using defaults
         diag_g[bus_from] += 1.0/get(branch, "br_r", 1e6)
         diag_g[bus_to] += 1.0/get(branch, "br_r", 1e6)
+        
         inject_i[bus_from] -= (get(branch, "br_v", 0.0) == 0.0 ? 0.0 : branch["br_v"]/branch["br_r"])
         inject_i[bus_to] += (get(branch, "br_v", 0.0) == 0.0 ? 0.0 : branch["br_v"]/branch["br_r"])
     end
