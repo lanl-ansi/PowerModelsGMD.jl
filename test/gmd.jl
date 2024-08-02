@@ -99,6 +99,7 @@
             @test isapprox(result["solution"]["qloss"]["2"], 37.26, rtol=1e-3)
             @test isapprox(result["solution"]["qloss"]["3"], 37.16, rtol=1e-3)
         end
+        # TODO: b4gic_busOff case broken
         @testset "autotransformer case" begin
             result = _PMGMD.solve_gmd(autotransformer, ipopt_solver; setting=setting)
             @test result["termination_status"] == _PM.LOCALLY_SOLVED
