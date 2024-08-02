@@ -116,8 +116,8 @@ function calc_delta_hotspotrise_ss(branch, k, result)
 
     delta_hotspotrise_ss = 0
 
-    Ie = result["solution"]["branch"][k]["gmd_idc_mag"] #branch["ieff"]
-    delta_hotspotrise_ss = branch["hotspot_coeff"] * Ie
+    Ie = result["solution"]["ieff"][k]
+    delta_hotspotrise_ss = get(branch, "hotspot_coeff", 0.63) * Ie
 
     return delta_hotspotrise_ss
 end
@@ -128,18 +128,14 @@ function calc_delta_hotspotrise(branch, result, k, Ie_prev, delta_t)
 
     delta_hotspotrise = 0
 
-    Ie = result["solution"]["branch"][k]["gmd_idc_mag"] #branch["ieff"]
-    tau = 2 * branch["hotspot_rated"] / delta_t
+    Ie = result["solution"]["ieff"][k]
+    tau = 2 * get(branch, "hotspot_rated", 150.0) / delta_t
 
     if Ie_prev === nothing
-
-        delta_hotspotrise = branch["hotspot_coeff"] * Ie
-
+        delta_hotspotrise = get(branch, "hotspot_coeff", 0.63) * Ie
     else
-
         delta_hotspotrise_prev = branch["delta_hotspotrise"]
-        delta_hotspotrise = branch["hotspot_coeff"] * (Ie + Ie_prev) / (1 + tau) - delta_hotspotrise_prev * (1 - tau) / (1 + tau)
-
+        delta_hotspotrise = get(branch, "hotspot_coeff", 0.63) * (Ie + Ie_prev) / (1 + tau) - delta_hotspotrise_prev * (1 - tau) / (1 + tau)
     end
 
     return delta_hotspotrise
@@ -160,12 +156,15 @@ end
 
 "FUNCTION: calculate steady-state top-oil temperature rise"
 function calc_delta_topoilrise_ss(branch, result, base_mva)
-
-    delta_topoilrise_ss = 0
+    delta_topoilrise_ss = 75.0 # rated top-oil temperature
 
     if ( (branch["type"] == "xfmr") || (branch["type"] == "xf") || (branch["type"] == "transformer") )
-
         i = branch["index"]
+
+        if !haskey(result["solution"], "branch") || !haskey(result["solution"]["branch"], "$i")
+            return delta_topoilrise_ss
+        end
+
         bs = result["solution"]["branch"]["$i"]
         p = bs["pf"]
         q = bs["qf"]
@@ -173,7 +172,7 @@ function calc_delta_topoilrise_ss(branch, result, base_mva)
         S = sqrt(p^2 + q^2)
         K = S / (branch["rate_a"] * base_mva)
 
-        delta_topoilrise_ss = branch["topoil_rated"] * K^2
+        delta_topoilrise_ss = get(branch, "topoil_rated", 75.0) * K^2
 
     end
 
@@ -193,7 +192,7 @@ function calc_delta_topoilrise(branch, result, base_mva, delta_t)
         delta_topoilrise_prev = branch["delta_topoilrise"]
         delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"]
 
-        tau = 2 * (branch["topoil_time_const"] * 60) / delta_t
+        tau = 2 * (get(branch, "topoil_time_const", 71.0) * 60) / delta_t
         delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev) / (1 + tau) - delta_topoilrise_prev * (1 - tau) / (1 + tau)
 
     else
