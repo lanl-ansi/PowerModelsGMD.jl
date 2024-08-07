@@ -22,11 +22,10 @@ eccentricity_squared = 0.00669437999014
 # Configures the line voltages and distances
 function load_voltages!(voltage_file::IO, output::Dict{String, Any})
     lines_info = CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
-    load_voltages(lines_info, output)
+    load_voltages!(lines_info, output)
 end
 
 function load_voltages!(lines_info::DataFrame, output::Dict{String, Any})
-
     branch_map = Dict{Array, Int64}()
     for branch in values(output["gmd_branch"])
         source_id = branch["source_id"]
