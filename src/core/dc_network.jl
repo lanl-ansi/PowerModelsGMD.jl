@@ -19,46 +19,47 @@ function read_line_data(voltage_file)
     return CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
 end
 
-# Art's note: I've made voltage file a keyword argument so it will be easier
-# to pass in an e field as another keyword agument, eg.
-# e_ew=1.5, e_ns=0.0
-function generate_dc_data(gic_file::String, raw_file::String; voltage_file=nothing)
+function generate_dc_data(gic_file::String, raw_file::String, voltage_file::String)
     # This produces an annoying warning about the number of columns in the first row
     gic_data = parse_gic(gic_file)
     raw_data = _PM.parse_file(raw_file)
-    line_data = isnothing(voltage_file) ? nothing : read_line_data(voltage_file)
-    return generate_dc_data(gic_data, raw_data; line_info=line_data)
+    line_data = read_line_data(voltage_file)
+    return generate_dc_data(gic_data, raw_data, line_data)
 end
 
-function generate_dc_data(gic_file::IOStream, raw_file::IOStream; voltage_file=nothing)
-    return generate_dc_data_psse(gic_file, raw_file; voltage_file=voltage_file)
+function generate_dc_data(gic_file::IO, raw_file::IO, voltage_file::IO)
+    return generate_dc_data_psse(gic_file, raw_file, voltage_file)
 end
 
-function generate_dc_data_matpower(gic_file::IOStream, raw_file::IOStream; voltage_file=nothing)
+function generate_dc_data_matpower(gic_file::IO, raw_file::IO, voltage_file::IO)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
     gic_data = parse_gic(gic_file)
     raw_data = _PM.parse_matpower(raw_file)
-    line_data = isnothing(voltage_file) ? nothing : read_line_data(voltage_file)
-    return generate_dc_data(gic_data, raw_data; line_info=line_data)
+    line_data = read_line_data(voltage_file)
+    return generate_dc_data(gic_data, raw_data, line_data)
 end
 
-function generate_dc_data_psse(gic_file::IOStream, raw_file::IOStream; voltage_file=nothing)
+function generate_dc_data_psse(gic_file::IO, raw_file::IO, voltage_file::IO)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
     gic_data = parse_gic(gic_file)
     raw_data = _PM.parse_psse(raw_file)
-    line_data = isnothing(voltage_file) ? nothing : read_line_data(voltage_file)
-    return generate_dc_data(gic_data, raw_data; line_info=line_data)
+    line_data = read_line_data(voltage_file)
+    return generate_dc_data(gic_data, raw_data, line_data)
 end
 
 # Main Function for generating DC network
 # TODO: Remove voltage_file requirement
-function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}; line_info=nothing)
+function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, line_info::DataFrame)
     # Sets up output network dictionary
     output = Dict{String, Any}()
     output["source_type"] = "gic"
-    output["name"] = raw_data["name"]
+
+    if haskey(raw_data, "name")
+        output["name"] = raw_data["name"]
+    end
+
     output["source_version"] = "3"
 
     # Generates gmd_bus table
@@ -177,7 +178,7 @@ function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float
 end
 
 # Configures the line voltages and distances
-function _configure_line_info!(line_info::DataFrame, output::Dict{String, Any})
+function _configure_line_info!(lines_info::DataFrame, output::Dict{String, Any})
     branch_map = Dict{Array, Int64}()
     for branch in values(output["gmd_branch"])
         source_id = branch["source_id"]
@@ -689,7 +690,8 @@ function _generate_implicit_gsu!(branches::Dict{String, Dict{String, Any}}, dc_b
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[gen["gen_bus"]],
             "t_bus" => raw_data["bus"]["$gen_bus"]["sub"],
-            "br_r" => impxfrm[gen_base_kv] * z_base,
+            # TODO: use curve-fit instead of lookup table
+            "br_r" => get(impxfrm, gen_base_kv, 3e-5) * z_base,
             "name" => "dc_gen$gen_id",
             "br_status" => 1,
             "parent_index" => gen_id,
