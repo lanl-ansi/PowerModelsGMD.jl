@@ -45,6 +45,7 @@ function generate_g_i_matrix(network::Dict{String, Any})
         # TODO: What would happen if these didn't exist?
         diag_g[bus_from] += 1/branch["br_r"]
         diag_g[bus_to] += 1/branch["br_r"]
+        
         inject_i[bus_from] -= (branch["br_v"] == 0 ? 0.0 : branch["br_v"]/branch["br_r"])
         inject_i[bus_to] += (branch["br_v"] == 0 ? 0.0 : branch["br_v"]/branch["br_r"])
     end
