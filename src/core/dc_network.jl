@@ -15,9 +15,13 @@ KVMIN = 50
 # Resistance value for gmd_branches from each bus to substation
 R_g_default = 25000.00
 
+# Constants for Earth Model calculations
+equatorial_radius = 6378.137
+eccentricity_squared = 0.00669437999014
+
 # Main Function for generating DC network
 # TODO: Remove voltage_file requirement
-function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, voltage_file::String)
+function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64, field_dir::Float64, min_line_length::Float64)
     # Sets up output network dictionary
     output = Dict{String, Any}()
     output["source_type"] = "gic"
@@ -33,11 +37,11 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
     # Generates gmd_branch table
     _generate_gmd_branch!(output, raw_data, dc_bus_map, transformer_map)
 
-    # Adds line voltages 
-    _configure_line_info!(voltage_file, output)
-
     # Generates the rest of the AC Data
     _generate_ac_data!(output, gic_data, raw_data, transformer_map)
+
+    # Adds line voltages 
+    _configure_line_info!(output, field_mag, field_dir, min_line_length)
 
     # Copies over identical AC data
     output["dcline"] = raw_data["dcline"]
@@ -138,32 +142,37 @@ function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float
 end
 
 # Configures the line voltages and distances
-function _configure_line_info!(voltage_file::String, output::Dict{String, Any})
-    lines_info = CSV.read(voltage_file, DataFrame; header=2)
-
-    branch_map = Dict{Array, Int64}()
+function _configure_line_info!(output::Dict{String, Any}, field_mag::Float64, field_dir::Float64, min_line_length::Float64)
     for branch in values(output["gmd_branch"])
-        source_id = branch["source_id"]
-        if source_id[1] != "branch"
-            continue
+        # Fetches substations for the buses on the branch
+        sub_a = output["gmd_bus"]["$(branch["f_bus"])"]["sub"]
+        sub_b = output["gmd_bus"]["$(branch["t_bus"])"]["sub"]
+
+        # Calculates north south distance using the NERC appliation guide
+        lat_a = output["gmd_bus"]["$sub_a"]["lat"]
+        lat_b = output["gmd_bus"]["$sub_b"]["lat"]
+
+        average_lat = (lat_a + lat_b) / 2
+
+        radius_meridian = equatorial_radius * (1 - eccentricity_squared) / ((1 - eccentricity_squared * (sind(average_lat) ^ 2)) ^ 1.5)
+        length_north_south = (pi / 180) * radius_meridian * abs(lat_a - lat_b)
+
+        # Calculates east west distances using the NERC application guide
+        long_a = output["gmd_bus"]["$sub_a"]["lon"]
+        long_b = output["gmd_bus"]["$sub_b"]["lon"]
+
+        radius_lat = equatorial_radius / ((1 - eccentricity_squared * (sind(average_lat) ^ 2)) ^ 0.5)
+        length_east_west = (pi / 180) * radius_lat * cosd(average_lat) * abs(long_a - long_b)
+
+        # Uses distances to calculate total vector distance and overall branch voltage
+        branch["len_km"] = (length_north_south ^ 2 + length_east_west ^ 2) ^ 0.5
+
+        if branch["len_km"] >= min_line_length
+            branch["br_v"] = field_mag * (length_north_south * cosd(field_dir) + length_east_west * sind(field_dir))
+        else
+            branch["br_v"] = 0.0
         end
-        source_id[4]  = strip(source_id[4])
-        branch_map[source_id] = branch["index"]
     end
-
-    dc_voltages = lines_info[!, "GICInducedDCVolt"]
-
-    froms = lines_info[!, "BusNumFrom"]
-    tos = lines_info[!, "BusNumTo"]
-    ckts = lines_info[!, "Circuit"]
-
-    for (from, to, ckt, dc_voltage) in zip(froms, tos, ckts, dc_voltages)
-        source_id = ["branch", from, to, "$ckt"]
-        branch_id = branch_map[source_id]
-        output["gmd_branch"]["$branch_id"]["br_v"] = dc_voltage
-    end
-
-    # TODO: Adds line distances
 end
 
 # Defines a link between ac branch and gic transformer table
@@ -227,6 +236,9 @@ function _add_substation_table!(gmd_bus::Dict{String, Dict}, gmd_bus_index::Int6
             "index" => gmd_bus_index,
             "status" => 1,
             "source_id" => ["substation", substation_index],
+            "sub" => gmd_bus_index,
+            "lat" => substation["LAT"],
+            "lon" => substation["LONG"],
             "parent_index" => substation_index,
             "parent_type" => "sub"
         )
@@ -499,7 +511,7 @@ end
 
 # Determines assumed configurations according to PowerWorld rules
 function _set_default_config!(transformer::Dict{String, Any}, gen_buses::Vector{Any}, load_buses::Vector{Any})
-    if hi_side_bus_kv > KVMIN && (lo_side_bus_kv < KVMIN || lo_side_bus in load_buses)
+    if hi_side_bus_kv >= KVMIN && (lo_side_bus_kv < KVMIN || lo_side_bus in load_buses)
         if hi_side_bus == branch["f_bus"]
             transformer["VECGRP"] = "Dyn"
         else
@@ -507,7 +519,7 @@ function _set_default_config!(transformer::Dict{String, Any}, gen_buses::Vector{
         end
     end
 
-    if (hi_side_bus_kv > KVMIN && lo_side_bus in gen_buses) || (hi_side_bus_kv >= 300 && lo_side_bus_kv < KVMIN)
+    if (hi_side_bus_kv >= KVMIN && lo_side_bus in gen_buses) || (hi_side_bus_kv >= 300 && lo_side_bus_kv < KVMIN)
         if hi_side_bus == branch["f_bus"]
             transformer["VECGRP"] = "YNd"
         else
@@ -515,7 +527,7 @@ function _set_default_config!(transformer::Dict{String, Any}, gen_buses::Vector{
         end
     end
 
-    if (hi_side_bus_kv > KVMIN && lo_side_bus_kv > KVMIN) || (hi_side_bus_kv < KVMIN && lo_side_bus_kv < KVMIN)
+    if (hi_side_bus_kv >= KVMIN && lo_side_bus_kv >= KVMIN) || (hi_side_bus_kv < KVMIN && lo_side_bus_kv < KVMIN)
         transformer["VECGRP"] = "YNyn"
     end
 
@@ -742,7 +754,7 @@ function _add_branch_table!(output::Dict{String, Any}, raw_data::Dict{String, An
         if branch["transformer"]
             branch_data["type"] = "xfmr"
         elseif branch_data["br_r"] == 0
-            branch["type"] = "series_cap"
+            branch_data["type"] = "series_cap"
         else
             branch_data["type"] = "line"
         end

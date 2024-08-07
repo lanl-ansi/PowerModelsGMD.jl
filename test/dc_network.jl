@@ -21,17 +21,13 @@ function solve_gmd(name; kwargs...)
         JSON.print(f, raw_data)
     end
 
-    case = generate_dc_data(gic_data, raw_data, "../test/data/lines/$name.csv")
+    case = generate_dc_data(gic_data, raw_data, 1.0, 90.0, 1.0)
 
     PowerModelsGMD.add_gmd_3w_branch!(case)
 
     open("../temp_data/network_$name.json", "w") do f
         JSON.print(f, case)
     end
-
-    g, i_inj = generate_g_i_matrix(case)
-
-    # println(g)
 
     output = PowerModelsGMD.solve_gmd(case; kwargs...)
 
@@ -58,9 +54,10 @@ if !isdir("../temp_data/")
     mkdir("../temp_data/")
 end
 
-solve_gmd("b4gic3wyyd")
+solve_gmd("epri")
+# solve_gmd("b4gic3wyyd")
 # save_solution("activsg10k")
-solve_gmd("activsg10k")
+# solve_gmd("activsg10k")
 
 # name = "activsg10k"
 
