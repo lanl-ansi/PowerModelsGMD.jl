@@ -19,13 +19,50 @@ R_g_default = 25000.00
 equatorial_radius = 6378.137
 eccentricity_squared = 0.00669437999014
 
+# Configures the line voltages and distances
+function load_voltages!(voltage_file::IO, output::Dict{String, Any})
+    lines_info = CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
+    load_voltages(lines_info, output)
+end
+
+function load_voltages!(lines_info::DataFrame, output::Dict{String, Any})
+
+    branch_map = Dict{Array, Int64}()
+    for branch in values(output["gmd_branch"])
+        source_id = branch["source_id"]
+        if source_id[1] != "branch"
+            continue
+        end
+        source_id[4]  = strip(source_id[4])
+        branch_map[source_id] = branch["index"]
+    end
+
+    dc_voltages = lines_info[!, "GICInducedDCVolt"]
+
+    froms = lines_info[!, "BusNumFrom"]
+    tos = lines_info[!, "BusNumTo"]
+    ckts = lines_info[!, "Circuit"]
+
+    for (from, to, ckt, dc_voltage) in zip(froms, tos, ckts, dc_voltages)
+        source_id = ["branch", from, to, "$ckt"]
+        branch_id = branch_map[source_id]
+        output["gmd_branch"]["$branch_id"]["br_v"] = dc_voltage
+    end
+
+    # TODO: Adds line distances
+end
+
 # Main Function for generating DC network
 # TODO: Remove voltage_file requirement
-function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64, field_dir::Float64, min_line_length::Float64)
+function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # Sets up output network dictionary
     output = Dict{String, Any}()
     output["source_type"] = "gic"
-    output["name"] = raw_data["name"]
+
+    if haskey(raw_data, "name")
+        output["name"] = raw_data["name"]
+    end
+
     output["source_version"] = "3"
 
     # Generates gmd_bus table
