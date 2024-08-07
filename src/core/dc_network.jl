@@ -433,7 +433,7 @@ function _handle_normal_transformer!(branches::Dict{String, Dict{String, Any}}, 
 end
 
 # Generates branches for auto transformers
-function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc_bus_map::Dict{Int64, Int64}, branch::Dict{String, Any}, transformer::Dict{String, Any}, gmd_branch_index::Int64, three_winding::Bool)
+function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc_bus_map::Dict{Int64, Int64}, branch::Dict{String, Any}, transformer::Dict{String, Any}, gmd_branch_index::Int64)
     hi_bus = branch["hi_bus"]
     lo_bus = branch["lo_bus"]
     
@@ -446,11 +446,11 @@ function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc
     end
 
     # Models the two transformers (primary-star and secondary-star) to behave like a singular transformer
-    if three_winding && transformer["hi_side_bus"] == branch["f_bus"]
+    if transformer["three_winding"] && transformer["hi_side_bus"] == branch["f_bus"]
         R_c = 1e6
     end
 
-    if three_winding && transformer["lo_side_bus"] == branch["f_bus"]
+    if transformer["three_winding"] && transformer["lo_side_bus"] == branch["f_bus"]
         R_s = 1e-6
     end
 
@@ -547,38 +547,38 @@ function _handle_3w_transformer!(transformer::Dict{String, Any}, gmd_3w_branch::
 end
 
 # Determines assumed configurations according to PowerWorld rules
-function _set_default_config!(transformer::Dict{String, Any}, gen_buses::Vector{Any}, load_buses::Vector{Any})
-    if hi_side_bus_kv >= KVMIN && (lo_side_bus_kv < KVMIN || lo_side_bus in load_buses)
-        if hi_side_bus == branch["f_bus"]
+function _set_default_config!(transformer::Dict{String, Any}, gen_buses::Vector{Any}, load_buses::Vector{Any}, branch::Dict{String, Any})
+    if transformer["hi_side_bus_kv"] >= KVMIN && (transformer["lo_side_bus_kv"] < KVMIN || transformer["lo_side_bus"] in load_buses)
+        if transformer["hi_side_bus"] == branch["f_bus"]
             transformer["VECGRP"] = "Dyn"
         else
             transformer["VECGRP"] = "YNd"
         end
     end
 
-    if (hi_side_bus_kv >= KVMIN && lo_side_bus in gen_buses) || (hi_side_bus_kv >= 300 && lo_side_bus_kv < KVMIN)
-        if hi_side_bus == branch["f_bus"]
+    if (transformer["hi_side_bus_kv"] >= KVMIN && transformer["lo_side_bus"] in gen_buses) || (transformer["hi_side_bus_kv"] >= 300 && transformer["lo_side_bus_kv"] < KVMIN)
+        if transformer["hi_side_bus"] == branch["f_bus"]
             transformer["VECGRP"] = "YNd"
         else
             transformer["VECGRP"] = "Dyn"
         end
     end
 
-    if (hi_side_bus_kv >= KVMIN && lo_side_bus_kv >= KVMIN) || (hi_side_bus_kv < KVMIN && lo_side_bus_kv < KVMIN)
+    if (transformer["hi_side_bus_kv"] >= KVMIN && transformer["lo_side_bus_kv"] >= KVMIN) || (transformer["hi_side_bus_kv"] < KVMIN && transformer["lo_side_bus_kv"] < KVMIN)
         transformer["VECGRP"] = "YNyn"
     end
 
     # Assumes auto transformer
-    if transformer["VECGRP"] == "YNyn" && turns_ratio <= 4 && turns_ratio != 1 && hi_side_bus_kv >= KVMIN
+    if transformer["VECGRP"] == "YNyn" && transformer["turns_ratio"] <= 4 && transformer["turns_ratio"] != 1 && transformer["hi_side_bus_kv"] >= KVMIN
         transformer["VECGRP"] = "YNa"
     end
 
     # Adds assumed delta tertiary if three winding
-    if three_winding
+    if transformer["three_winding"]
         transformer["VECGRP"] *= "0d0"
     end
 
-    Memento.warn(_LOGGER, "Transformer configuration corresponding to index $branch_index in the raw branch table was assumed as $(transformer["VECGRP"])")
+    Memento.warn(_LOGGER, "Transformer configuration corresponding to index $(branch["index"]) in the raw branch table was assumed as $(transformer["VECGRP"])")
 end
 
 # Calls other functions to create branches for any transformer
@@ -591,21 +591,21 @@ function _handle_transformer!(branches::Dict{String, Dict{String, Any}}, gmd_3w_
     transformer["lo_side_bus"] = raw_data["bus"]["$(branch["source_id"][2])"]["base_kv"] >= raw_data["bus"]["$(branch["source_id"][3])"]["base_kv"] ? branch["source_id"][3] : branch["source_id"][2]
 
     # Fetches the nominal voltages of the high side and low side buses 
-    hi_side_bus_kv = raw_data["bus"]["$(transformer["hi_side_bus"])"]["base_kv"]
-    lo_side_bus_kv = raw_data["bus"]["$(transformer["lo_side_bus"])"]["base_kv"]
+    transformer["hi_side_bus_kv"] = raw_data["bus"]["$(transformer["hi_side_bus"])"]["base_kv"]
+    transformer["lo_side_bus_kv"] = raw_data["bus"]["$(transformer["lo_side_bus"])"]["base_kv"]
 
     # Three winding if tertiary winding in source id is not 0
-    three_winding = branch["source_id"][4] != 0
+    transformer["three_winding"] = branch["source_id"][4] != 0
 
-    transformer["turns_ratio"] = hi_side_bus_kv / lo_side_bus_kv
+    transformer["turns_ratio"] = transformer["hi_side_bus_kv"] / transformer["lo_side_bus_kv"]
 
     # If no transformer configuration given or non gwye-gwye auto transformer
     if length(strip(transformer["VECGRP"])) == 0 || (endswith(transformer["VECGRP"], r"a.*") && !startswith(transformer["VECGRP"],"YNa"))
-        _set_default_config!(transformer, gen_buses, load_buses)
+        _set_default_config!(transformer, gen_buses, load_buses, branch)
     end
 
     # Calculates/Fetches information for the transformer
-    transformer["hi_base_z"] = (hi_side_bus_kv ^ 2) / raw_data["baseMVA"]
+    transformer["hi_base_z"] = (transformer["hi_side_bus_kv"] ^ 2) / raw_data["baseMVA"]
     transformer["xfmr_r"] = branch["br_r"]
     transformer["substation"] = raw_data["bus"]["$(branch["t_bus"])"]["sub"]
 
@@ -616,13 +616,13 @@ function _handle_transformer!(branches::Dict{String, Dict{String, Any}}, gmd_3w_
     branch["gmd_br_series"] = -1
 
     # Sets transformer config and resets xfmr_r for 3w
-    if three_winding
+    if transformer["three_winding"]
         _handle_3w_transformer!(transformer, gmd_3w_branch, branch)
         transformer["xfmr_r"] = three_winding_resistances[Tuple(branch["source_id"][2:5])]
     end
 
     if endswith(transformer["VECGRP"], r"a.*")
-        return _handle_auto_transformer!(branches, dc_bus_map, branch, transformer, gmd_branch_index, three_winding)
+        return _handle_auto_transformer!(branches, dc_bus_map, branch, transformer, gmd_branch_index)
     end
 
     return _handle_normal_transformer!(branches, raw_data, dc_bus_map, branch, transformer, gmd_branch_index)

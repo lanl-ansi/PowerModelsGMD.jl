@@ -3,6 +3,9 @@ import JSON
 using SparseArrays
 import CSV
 using DataFrames
+using Memento
+
+const _LOGGER = Memento.getlogger(@__MODULE__)
 
 include("../src/core/dc_network.jl")
 include("../src/core/utilities.jl")
@@ -54,7 +57,7 @@ if !isdir("../temp_data/")
     mkdir("../temp_data/")
 end
 
-solve_gmd("epri")
+solve_gmd("activsg10k")
 # solve_gmd("b4gic3wyyd")
 # save_solution("activsg10k")
 # solve_gmd("activsg10k")
