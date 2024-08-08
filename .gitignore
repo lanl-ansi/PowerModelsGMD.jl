@@ -12,3 +12,4 @@ docs/.documenter
 *.orig
 *.bak
 temp_data/
+.ipynb_checkpoints/

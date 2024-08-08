@@ -50,16 +50,22 @@ end
 
 
 # ===   WITH MATRIX SOLVE   === #
-
+function solve_gmd(raw_file::IO, gic_file::IO, csv_file::IO; kwargs...)
+    raw_data = _PM.parse_psse(raw_file)
+    gic_data = parse_gic(gic_file)
+    case = generate_dc_data(gic_data, raw_data)
+    load_voltages!(csv_file, case)
+    return solve_gmd(case; kwargs)
+end
 
 "FUNCTION: solve GIC matrix solve"
-function solve_gmd(raw_file::String, gic_file::String, voltage_file::String; kwargs...)
+function solve_gmd(raw_file::String, gic_file::String, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0; kwargs...)
     case = gen_dc_data_raw(raw_file, gic_file, voltage_file)
     return solve_gmd(case; kwargs)
 end
 
 function solve_gmd(raw_file::IO, gic_file::IO, voltage_file::IO; kwargs...)
-    case = gen_dc_data_raw(raw_file, gic_file, voltage_file)
+    case = generate_dc_data(data["nw"]["1"], data["nw"]["2"], voltage_file) 
     return solve_gmd(case; kwargs)
 end
 

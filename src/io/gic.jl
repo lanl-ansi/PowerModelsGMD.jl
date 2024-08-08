@@ -69,16 +69,18 @@ const _gic_has_ID = Dict{String, String}(
 
 function parse_gic(io::IO)::Dict
     data = _parse_gic(io)
-    data["name"] = ""
 
-    if !isnothing(io.name)
-        matches = match(r"^\<file\s[\/\\]*(?:.*[\/\\])*(.*)\.gic\>", lowercase(io.name))
-
-        if !isnothing(matches)
-            data["name"] = matches.captures[1]
-        end
+    if isnothing(io.name)
+        return data
     end
 
+    matches =  match(r"^\<file\s[\/\\]*(?:.*[\/\\])*(.*)\.gic\>$", lowercase(io.name))
+
+    if isnothing(matches) || length(matches) == 0
+        return data
+    end
+
+    data["name"] = matches.captures[1]
     return data
 end
 

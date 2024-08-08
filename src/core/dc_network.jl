@@ -8,13 +8,6 @@ impxfrm = Dict{Float64, Float64}(
     138.0 => 6.038901527172248e-05,
     115.0 => 7.246376811370438e-05,
 )
-
-# Auto Transformer high side minimum kV
-KVMIN = 50
-
-# Resistance value for gmd_branches from each bus to substation
-R_g_default = 25000.00
-
 function read_line_data(voltage_file)
     return CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
 end
@@ -49,9 +42,52 @@ function generate_dc_data_psse(gic_file::IO, raw_file::IO, voltage_file::IO)
     return generate_dc_data(gic_data, raw_data, line_data)
 end
 
+
+# Auto Transformer high side minimum kV
+KVMIN = 50
+
+# Resistance value for gmd_branches from each bus to substation
+R_g_default = 25000.00
+
+# Constants for Earth Model calculations
+equatorial_radius = 6378.137
+eccentricity_squared = 0.00669437999014
+
+# Configures the line voltages and distances
+function load_voltages!(voltage_file::IO, output::Dict{String, Any})
+    lines_info = CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
+    load_voltages!(lines_info, output)
+end
+
+function load_voltages!(lines_info::DataFrame, output::Dict{String, Any})
+    branch_map = Dict{Array, Int64}()
+    for branch in values(output["gmd_branch"])
+        source_id = branch["source_id"]
+        if source_id[1] != "branch"
+            continue
+        end
+        source_id[4]  = strip(source_id[4])
+        branch_map[source_id] = branch["index"]
+    end
+
+    dc_voltages = lines_info[!, "GICInducedDCVolt"]
+
+    froms = lines_info[!, "BusNumFrom"]
+    tos = lines_info[!, "BusNumTo"]
+    ckts = lines_info[!, "Circuit"]
+
+    for (from, to, ckt, dc_voltage) in zip(froms, tos, ckts, dc_voltages)
+        source_id = ["branch", from, to, "$ckt"]
+        branch_id = branch_map[source_id]
+        output["gmd_branch"]["$branch_id"]["br_v"] = dc_voltage
+    end
+
+    # TODO: Adds line distances
+end
+
 # Main Function for generating DC network
 # TODO: Remove voltage_file requirement
-function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, line_info::DataFrame)
+function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # Sets up output network dictionary
     output = Dict{String, Any}()
     output["source_type"] = "gic"
@@ -71,13 +107,11 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
     # Generates gmd_branch table
     _generate_gmd_branch!(output, raw_data, dc_bus_map, transformer_map)
 
-    # Adds line voltages 
-    if !isnothing(line_info)
-        _configure_line_info!(line_info, output)
-    end
-
     # Generates the rest of the AC Data
     _generate_ac_data!(output, gic_data, raw_data, transformer_map)
+
+    # Adds line voltages 
+    _configure_line_info!(output, field_mag, field_dir, min_line_length)
 
     # Copies over identical AC data
     output["dcline"] = raw_data["dcline"]
@@ -178,30 +212,37 @@ function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float
 end
 
 # Configures the line voltages and distances
-function _configure_line_info!(lines_info::DataFrame, output::Dict{String, Any})
-    branch_map = Dict{Array, Int64}()
+function _configure_line_info!(output::Dict{String, Any}, field_mag::Float64, field_dir::Float64, min_line_length::Float64)
     for branch in values(output["gmd_branch"])
-        source_id = branch["source_id"]
-        if source_id[1] != "branch"
-            continue
+        # Fetches substations for the buses on the branch
+        sub_a = output["gmd_bus"]["$(branch["f_bus"])"]["sub"]
+        sub_b = output["gmd_bus"]["$(branch["t_bus"])"]["sub"]
+
+        # Calculates north south distance using the NERC appliation guide
+        lat_a = output["gmd_bus"]["$sub_a"]["lat"]
+        lat_b = output["gmd_bus"]["$sub_b"]["lat"]
+
+        average_lat = (lat_a + lat_b) / 2
+
+        radius_meridian = equatorial_radius * (1 - eccentricity_squared) / ((1 - eccentricity_squared * (sind(average_lat) ^ 2)) ^ 1.5)
+        length_north_south = (pi / 180) * radius_meridian * abs(lat_a - lat_b)
+
+        # Calculates east west distances using the NERC application guide
+        long_a = output["gmd_bus"]["$sub_a"]["lon"]
+        long_b = output["gmd_bus"]["$sub_b"]["lon"]
+
+        radius_lat = equatorial_radius / ((1 - eccentricity_squared * (sind(average_lat) ^ 2)) ^ 0.5)
+        length_east_west = (pi / 180) * radius_lat * cosd(average_lat) * abs(long_a - long_b)
+
+        # Uses distances to calculate total vector distance and overall branch voltage
+        branch["len_km"] = (length_north_south ^ 2 + length_east_west ^ 2) ^ 0.5
+
+        if branch["len_km"] >= min_line_length
+            branch["br_v"] = field_mag * (length_north_south * cosd(field_dir) + length_east_west * sind(field_dir))
+        else
+            branch["br_v"] = 0.0
         end
-        source_id[4]  = strip(source_id[4])
-        branch_map[source_id] = branch["index"]
     end
-
-    dc_voltages = lines_info[!, "GICInducedDCVolt"]
-
-    froms = lines_info[!, "BusNumFrom"]
-    tos = lines_info[!, "BusNumTo"]
-    ckts = lines_info[!, "Circuit"]
-
-    for (from, to, ckt, dc_voltage) in zip(froms, tos, ckts, dc_voltages)
-        source_id = ["branch", from, to, "$ckt"]
-        branch_id = branch_map[source_id]
-        output["gmd_branch"]["$branch_id"]["br_v"] = dc_voltage
-    end
-
-    # TODO: Adds line distances
 end
 
 # Defines a link between ac branch and gic transformer table
@@ -265,6 +306,9 @@ function _add_substation_table!(gmd_bus::Dict{String, Dict}, gmd_bus_index::Int6
             "index" => gmd_bus_index,
             "status" => 1,
             "source_id" => ["substation", substation_index],
+            "sub" => gmd_bus_index,
+            "lat" => substation["LAT"],
+            "lon" => substation["LONG"],
             "parent_index" => substation_index,
             "parent_type" => "sub"
         )
@@ -422,7 +466,7 @@ function _handle_normal_transformer!(branches::Dict{String, Dict{String, Any}}, 
 end
 
 # Generates branches for auto transformers
-function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc_bus_map::Dict{Int64, Int64}, branch::Dict{String, Any}, transformer::Dict{String, Any}, gmd_branch_index::Int64, three_winding::Bool)
+function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc_bus_map::Dict{Int64, Int64}, branch::Dict{String, Any}, transformer::Dict{String, Any}, gmd_branch_index::Int64)
     hi_bus = branch["hi_bus"]
     lo_bus = branch["lo_bus"]
     
@@ -435,11 +479,11 @@ function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc
     end
 
     # Models the two transformers (primary-star and secondary-star) to behave like a singular transformer
-    if three_winding && transformer["hi_side_bus"] == branch["f_bus"]
+    if transformer["three_winding"] && transformer["hi_side_bus"] == branch["f_bus"]
         R_c = 1e6
     end
 
-    if three_winding && transformer["lo_side_bus"] == branch["f_bus"]
+    if transformer["three_winding"] && transformer["lo_side_bus"] == branch["f_bus"]
         R_s = 1e-6
     end
 
@@ -536,38 +580,38 @@ function _handle_3w_transformer!(transformer::Dict{String, Any}, gmd_3w_branch::
 end
 
 # Determines assumed configurations according to PowerWorld rules
-function _set_default_config!(transformer::Dict{String, Any}, gen_buses::Vector{Any}, load_buses::Vector{Any})
-    if hi_side_bus_kv > KVMIN && (lo_side_bus_kv < KVMIN || lo_side_bus in load_buses)
-        if hi_side_bus == branch["f_bus"]
+function _set_default_config!(transformer::Dict{String, Any}, gen_buses::Vector{Any}, load_buses::Vector{Any}, branch::Dict{String, Any})
+    if transformer["hi_side_bus_kv"] >= KVMIN && (transformer["lo_side_bus_kv"] < KVMIN || transformer["lo_side_bus"] in load_buses)
+        if transformer["hi_side_bus"] == branch["f_bus"]
             transformer["VECGRP"] = "Dyn"
         else
             transformer["VECGRP"] = "YNd"
         end
     end
 
-    if (hi_side_bus_kv > KVMIN && lo_side_bus in gen_buses) || (hi_side_bus_kv >= 300 && lo_side_bus_kv < KVMIN)
-        if hi_side_bus == branch["f_bus"]
+    if (transformer["hi_side_bus_kv"] >= KVMIN && transformer["lo_side_bus"] in gen_buses) || (transformer["hi_side_bus_kv"] >= 300 && transformer["lo_side_bus_kv"] < KVMIN)
+        if transformer["hi_side_bus"] == branch["f_bus"]
             transformer["VECGRP"] = "YNd"
         else
             transformer["VECGRP"] = "Dyn"
         end
     end
 
-    if (hi_side_bus_kv > KVMIN && lo_side_bus_kv > KVMIN) || (hi_side_bus_kv < KVMIN && lo_side_bus_kv < KVMIN)
+    if (transformer["hi_side_bus_kv"] >= KVMIN && transformer["lo_side_bus_kv"] >= KVMIN) || (transformer["hi_side_bus_kv"] < KVMIN && transformer["lo_side_bus_kv"] < KVMIN)
         transformer["VECGRP"] = "YNyn"
     end
 
     # Assumes auto transformer
-    if transformer["VECGRP"] == "YNyn" && turns_ratio <= 4 && turns_ratio != 1 && hi_side_bus_kv >= KVMIN
+    if transformer["VECGRP"] == "YNyn" && transformer["turns_ratio"] <= 4 && transformer["turns_ratio"] != 1 && transformer["hi_side_bus_kv"] >= KVMIN
         transformer["VECGRP"] = "YNa"
     end
 
     # Adds assumed delta tertiary if three winding
-    if three_winding
+    if transformer["three_winding"]
         transformer["VECGRP"] *= "0d0"
     end
 
-    Memento.warn(_LOGGER, "Transformer configuration corresponding to index $branch_index in the raw branch table was assumed as $(transformer["VECGRP"])")
+    Memento.warn(_LOGGER, "Transformer configuration corresponding to index $(branch["index"]) in the raw branch table was assumed as $(transformer["VECGRP"])")
 end
 
 # Calls other functions to create branches for any transformer
@@ -580,21 +624,21 @@ function _handle_transformer!(branches::Dict{String, Dict{String, Any}}, gmd_3w_
     transformer["lo_side_bus"] = raw_data["bus"]["$(branch["source_id"][2])"]["base_kv"] >= raw_data["bus"]["$(branch["source_id"][3])"]["base_kv"] ? branch["source_id"][3] : branch["source_id"][2]
 
     # Fetches the nominal voltages of the high side and low side buses 
-    hi_side_bus_kv = raw_data["bus"]["$(transformer["hi_side_bus"])"]["base_kv"]
-    lo_side_bus_kv = raw_data["bus"]["$(transformer["lo_side_bus"])"]["base_kv"]
+    transformer["hi_side_bus_kv"] = raw_data["bus"]["$(transformer["hi_side_bus"])"]["base_kv"]
+    transformer["lo_side_bus_kv"] = raw_data["bus"]["$(transformer["lo_side_bus"])"]["base_kv"]
 
     # Three winding if tertiary winding in source id is not 0
-    three_winding = branch["source_id"][4] != 0
+    transformer["three_winding"] = branch["source_id"][4] != 0
 
-    transformer["turns_ratio"] = hi_side_bus_kv / lo_side_bus_kv
+    transformer["turns_ratio"] = transformer["hi_side_bus_kv"] / transformer["lo_side_bus_kv"]
 
     # If no transformer configuration given or non gwye-gwye auto transformer
     if length(strip(transformer["VECGRP"])) == 0 || (endswith(transformer["VECGRP"], r"a.*") && !startswith(transformer["VECGRP"],"YNa"))
-        _set_default_config!(transformer, gen_buses, load_buses)
+        _set_default_config!(transformer, gen_buses, load_buses, branch)
     end
 
     # Calculates/Fetches information for the transformer
-    transformer["hi_base_z"] = (hi_side_bus_kv ^ 2) / raw_data["baseMVA"]
+    transformer["hi_base_z"] = (transformer["hi_side_bus_kv"] ^ 2) / raw_data["baseMVA"]
     transformer["xfmr_r"] = branch["br_r"]
     transformer["substation"] = raw_data["bus"]["$(branch["t_bus"])"]["sub"]
 
@@ -605,13 +649,13 @@ function _handle_transformer!(branches::Dict{String, Dict{String, Any}}, gmd_3w_
     branch["gmd_br_series"] = -1
 
     # Sets transformer config and resets xfmr_r for 3w
-    if three_winding
+    if transformer["three_winding"]
         _handle_3w_transformer!(transformer, gmd_3w_branch, branch)
         transformer["xfmr_r"] = three_winding_resistances[Tuple(branch["source_id"][2:5])]
     end
 
     if endswith(transformer["VECGRP"], r"a.*")
-        return _handle_auto_transformer!(branches, dc_bus_map, branch, transformer, gmd_branch_index, three_winding)
+        return _handle_auto_transformer!(branches, dc_bus_map, branch, transformer, gmd_branch_index)
     end
 
     return _handle_normal_transformer!(branches, raw_data, dc_bus_map, branch, transformer, gmd_branch_index)
@@ -690,8 +734,7 @@ function _generate_implicit_gsu!(branches::Dict{String, Dict{String, Any}}, dc_b
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[gen["gen_bus"]],
             "t_bus" => raw_data["bus"]["$gen_bus"]["sub"],
-            # TODO: use curve-fit instead of lookup table
-            "br_r" => get(impxfrm, gen_base_kv, 3e-5) * z_base,
+            "br_r" => impxfrm[gen_base_kv] * z_base,
             "name" => "dc_gen$gen_id",
             "br_status" => 1,
             "parent_index" => gen_id,
@@ -781,7 +824,7 @@ function _add_branch_table!(output::Dict{String, Any}, raw_data::Dict{String, An
         if branch["transformer"]
             branch_data["type"] = "xfmr"
         elseif branch_data["br_r"] == 0
-            branch["type"] = "series_cap"
+            branch_data["type"] = "series_cap"
         else
             branch_data["type"] = "line"
         end
