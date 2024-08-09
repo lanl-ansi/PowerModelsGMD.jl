@@ -8,40 +8,6 @@ impxfrm = Dict{Float64, Float64}(
     138.0 => 6.038901527172248e-05,
     115.0 => 7.246376811370438e-05,
 )
-function read_line_data(voltage_file)
-    return CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
-end
-
-function generate_dc_data(gic_file::String, raw_file::String, voltage_file::String)
-    # This produces an annoying warning about the number of columns in the first row
-    gic_data = parse_gic(gic_file)
-    raw_data = _PM.parse_file(raw_file)
-    line_data = read_line_data(voltage_file)
-    return generate_dc_data(gic_data, raw_data, line_data)
-end
-
-function generate_dc_data(gic_file::IO, raw_file::IO, voltage_file::IO)
-    return generate_dc_data_psse(gic_file, raw_file, voltage_file)
-end
-
-function generate_dc_data_matpower(gic_file::IO, raw_file::IO, voltage_file::IO)
-    # This produces an annoying warning about the number of columns in the first row
-    # TODO: How to get rid of it?
-    gic_data = parse_gic(gic_file)
-    raw_data = _PM.parse_matpower(raw_file)
-    line_data = read_line_data(voltage_file)
-    return generate_dc_data(gic_data, raw_data, line_data)
-end
-
-function generate_dc_data_psse(gic_file::IO, raw_file::IO, voltage_file::IO)
-    # This produces an annoying warning about the number of columns in the first row
-    # TODO: How to get rid of it?
-    gic_data = parse_gic(gic_file)
-    raw_data = _PM.parse_psse(raw_file)
-    line_data = read_line_data(voltage_file)
-    return generate_dc_data(gic_data, raw_data, line_data)
-end
-
 
 # Auto Transformer high side minimum kV
 KVMIN = 50
@@ -53,13 +19,48 @@ R_g_default = 25000.00
 equatorial_radius = 6378.137
 eccentricity_squared = 0.00669437999014
 
-# Configures the line voltages and distances
-function load_voltages!(voltage_file::IO, output::Dict{String, Any})
-    lines_info = CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
-    load_voltages!(lines_info, output)
+# TODO: include add_3w_xf! function here?
+function generate_dc_data(gic_file::String, raw_file::String, voltage_file::String)
+    # TODO: add gz support to parse_file
+    gic_data = parse_gic(gic_file)
+    raw_data = _PM.parse_file(raw_file)
+    net =  generate_dc_data(gic_data, raw_data)
+    add_coupled_voltages!(voltage_file, net)
+    return net
 end
 
-function load_voltages!(lines_info::DataFrame, output::Dict{String, Any})
+function generate_dc_data(gic_file::IO, raw_file::IO)
+    return generate_dc_data_psse(gic_file, raw_file)
+end
+
+function generate_dc_data_matpower(gic_file::IO, raw_file::IO)
+    # This produces an annoying warning about the number of columns in the first row
+    # TODO: How to get rid of it?
+    gic_data = parse_gic(gic_file)
+    raw_data = _PM.parse_matpower(raw_file)
+    return generate_dc_data(gic_data, raw_data)
+end
+
+function generate_dc_data_psse(gic_file::IO, raw_file::IO)
+    # This produces an annoying warning about the number of columns in the first row
+    # TODO: How to get rid of it?
+    gic_data = parse_gic(gic_file)
+    raw_data = _PM.parse_psse(raw_file)
+    return generate_dc_data(gic_data, raw_data)
+end
+
+# Configures the line voltages and distances
+function add_coupled_voltages!(voltage_file::String, output::Dict{String, Any})
+    lines_info = CSV.read(voltage_file, DataFrame; header=2)
+    add_coupled_voltages!(lines_info, output)
+end
+
+function add_coupled_voltages!(voltage_file::IO, output::Dict{String, Any})
+    lines_info = CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
+    add_coupled_voltages!(lines_info, output)
+end
+
+function add_coupled_voltages!(lines_info::DataFrame, output::Dict{String, Any})
     branch_map = Dict{Array, Int64}()
     for branch in values(output["gmd_branch"])
         source_id = branch["source_id"]
@@ -109,9 +110,6 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
 
     # Generates the rest of the AC Data
     _generate_ac_data!(output, gic_data, raw_data, transformer_map)
-
-    # Adds line voltages 
-    _configure_line_info!(output, field_mag, field_dir, min_line_length)
 
     # Copies over identical AC data
     output["dcline"] = raw_data["dcline"]

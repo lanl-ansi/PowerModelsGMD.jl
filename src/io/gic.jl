@@ -70,6 +70,7 @@ const _gic_has_ID = Dict{String, String}(
 function parse_gic(io::IO)::Dict
     data = _parse_gic(io)
 
+    # do I 
     if isnothing(io.name)
         return data
     end
@@ -85,6 +86,7 @@ function parse_gic(io::IO)::Dict
 end
 
 function parse_gic(file::String)::Dict
+    # TODO: need to close io?
     io = open(file)
     return parse_gic(io)
 end
