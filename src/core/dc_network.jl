@@ -22,10 +22,16 @@ eccentricity_squared = 0.00669437999014
 # TODO: include add_3w_xf! function here?
 function generate_dc_data(gic_file::String, raw_file::String, voltage_file::String)
     # TODO: add gz support to parse_file
+    net =  generate_dc_data(gic_file, raw_file)
+    add_coupled_voltages!(voltage_file, net)
+    return net
+end
+
+function generate_dc_data(gic_file::String, raw_file::String)
+    # TODO: add gz support to parse_file
     gic_data = parse_gic(gic_file)
     raw_data = _PM.parse_file(raw_file)
     net =  generate_dc_data(gic_data, raw_data)
-    add_coupled_voltages!(voltage_file, net)
     return net
 end
 
