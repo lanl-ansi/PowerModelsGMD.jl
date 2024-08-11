@@ -621,6 +621,110 @@ function calc_qloss(branch::Dict{String,Any}, case::Dict{Symbol,Any}, solution::
     return 0.0
 end
 
+# ===   CALCULATIONS FOR THERMAL VARIABLES   === #
+
+"FUNCTION: calculate steady-state hotspot temperature rise"
+function calc_delta_hotspotrise_ss(branch, k, result)
+    delta_hotspotrise_ss = 0
+
+    Ie = result["solution"]["ieff"][k]
+    delta_hotspotrise_ss = get(branch, "hotspot_coeff", 0.63) * Ie
+
+    return delta_hotspotrise_ss
+end
+
+
+"FUNCTION: calculate hotspot temperature rise"
+function calc_delta_hotspotrise(branch, result, k, Ie_prev, delta_t)
+    delta_hotspotrise = 0
+
+    Ie = result["solution"]["ieff"][k]
+    tau = 2 * get(branch, "hotspot_rated", 150.0) / delta_t
+
+    if Ie_prev === nothing
+        delta_hotspotrise = get(branch, "hotspot_coeff", 0.63) * Ie
+    else
+        delta_hotspotrise_prev = branch["delta_hotspotrise"]
+        delta_hotspotrise = get(branch, "hotspot_coeff", 0.63) * (Ie + Ie_prev) / (1 + tau) - delta_hotspotrise_prev * (1 - tau) / (1 + tau)
+    end
+
+    return delta_hotspotrise
+
+end
+
+
+"FUNCTION: update hotspot temperature rise in the network"
+function update_hotspotrise!(branch, case::Dict{String,Any})
+
+    i = branch["index"]
+
+    case["branch"]["$i"]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
+    case["branch"]["$i"]["delta_hotspotrise"] = branch["delta_hotspotrise"]
+
+end
+
+
+"FUNCTION: calculate steady-state top-oil temperature rise"
+function calc_delta_topoilrise_ss(branch, result, base_mva)
+    delta_topoilrise_ss = 75.0 # rated top-oil temperature
+
+    if ( (branch["type"] == "xfmr") || (branch["type"] == "xf") || (branch["type"] == "transformer") )
+        i = branch["index"]
+
+        if !haskey(result["solution"], "branch") || !haskey(result["solution"]["branch"], "$i")
+            return delta_topoilrise_ss
+        end
+
+        bs = result["solution"]["branch"]["$i"]
+        p = bs["pf"]
+        q = bs["qf"]
+
+        S = sqrt(p^2 + q^2)
+        K = S / (branch["rate_a"] * base_mva)
+
+        delta_topoilrise_ss = get(branch, "topoil_rated", 75.0) * K^2
+
+    end
+
+    return delta_topoilrise_ss
+
+end
+
+
+"FUNCTION: calculate top-oil temperature rise"
+function calc_delta_topoilrise(branch, result, base_mva, delta_t)
+
+    delta_topoilrise_ss = branch["delta_topoilrise_ss"]
+    delta_topoilrise = delta_topoilrise_ss
+
+    if ( ("delta_topoilrise" in keys(branch)) && ("delta_topoilrise_ss" in keys(branch)) )
+
+        delta_topoilrise_prev = branch["delta_topoilrise"]
+        delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"]
+
+        tau = 2 * (get(branch, "topoil_time_const", 71.0) * 60) / delta_t
+        delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev) / (1 + tau) - delta_topoilrise_prev * (1 - tau) / (1 + tau)
+
+    else
+
+        delta_topoilrise = 0
+
+    end
+
+    return delta_topoilrise
+
+end
+
+
+"FUNCTION: update top-oil temperature rise in the network"
+function update_topoilrise!(branch, case::Dict{String,Any})
+
+    i = branch["index"]
+    case["branch"]["$i"]["delta_topoilrise_ss"] = branch["delta_topoilrise_ss"]
+    case["branch"]["$i"]["delta_topoilrise"] = branch["delta_topoilrise"]
+
+end
+
 
 
 # ===   GENERAL SETTINGS AND FUNCTIONS   === #
