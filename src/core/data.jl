@@ -36,20 +36,17 @@ end
 
 "FUNCTION: calculate the maximum absolute value AC current on a branch"
 function calc_ac_current_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus = _PM.ref(pm, nw, :bus, branch["f_bus"])
     t_bus = _PM.ref(pm, nw, :bus, branch["t_bus"])
 
     ac_max = branch["rate_a"] * branch["tap"] / min(f_bus["vmin"], t_bus["vmin"])
     return ac_max
-
 end
 
 
 "FUNCTION: calculate ieff current magnitude for branches"
 function calc_ieff_current_mag(branch, case::Dict{String,Any}, solution)
-
     if branch["transformer"] == 0
         return calc_ieff_current_mag_line(branch, case, solution)
 
@@ -81,23 +78,17 @@ end
 
 "FUNCTION: dc current on normal lines"
 function calc_ieff_current_mag_line(branch, case::Dict{String,Any}, solution)
-
-    return 0.0
-
+   return 0.0
 end
-
 
 "FUNCTION: dc current on grounded transformers"
 function calc_ieff_current_mag_grounded_xf(branch, case::Dict{String,Any}, solution)
-
     return 0.0
-
 end
 
 
 "FUNCTION: dc current on ungrounded gwye-delta transformers"
 function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{String,Any}, solution)
-
     k   = branch["index"]
     khi = branch["gmd_br_hi"]
 
@@ -122,7 +113,6 @@ end
 
 "FUNCTION: dc current on ungrounded gwye-gwye transformers"
 function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{String,Any}, solution)
-
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
@@ -224,7 +214,6 @@ end
 
 "FUNCTION: dc current on three-winding transformers"
 function calc_ieff_current_mag_3w_xf(branch, case::Dict{String,Any}, solution)
-
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
@@ -263,7 +252,6 @@ function calc_ieff_current_mag_3w_xf(branch, case::Dict{String,Any}, solution)
 
     # Boteler 2016, Equation (51)
     return abs( ihi + ilo / a + iter / b )
-
 end
 
 
@@ -301,23 +289,18 @@ end
 
 "FUNCTION: dc current on normal lines"
 function calc_ieff_current_mag_line(branch, case::Dict{Symbol,Any}, solution)
-
     return 0.0
-
 end
 
 
 "FUNCTION: dc current on grounded transformers"
 function calc_ieff_current_mag_grounded_xf(branch, case::Dict{Symbol,Any}, solution)
-
     return 0.0
-
 end
 
 
 "FUNCTION: dc current on ungrounded gwye-delta transformers"
 function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{Symbol,Any}, solution)
-
     k   = branch["index"]
     khi = branch["gmd_br_hi"]
 
@@ -333,7 +316,6 @@ end
 
 "FUNCTION: dc current on ungrounded gwye-gwye transformers"
 function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{Symbol,Any}, solution)
-
     k = branch["index"]
     khi = branch["gmd_br_hi"]
     klo = branch["gmd_br_lo"]
@@ -360,13 +342,11 @@ function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{Symbol,Any}, solu
     a = vhi/vlo
 
     return abs( (a * ihi + ilo) / a )
-
 end
 
 
 "FUNCTION: dc current on ungrounded gwye-gwye auto transformers"
 function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{Symbol,Any}, solution)
-
     k = branch["index"]
     ks = branch["gmd_br_series"]
     kc = branch["gmd_br_common"]
@@ -440,12 +420,10 @@ function calc_ieff_current_mag_3w_xf(branch, case::Dict{Symbol,Any}, solution)
 
     # Boteler 2016, Equation (51)
     return abs( ihi + ilo / a + iter / b )
-
 end
 
 
 function calc_dc_current_mag(branch, type, solution)
-
     if type == "line"
         return calc_dc_current_mag_line(branch, solution)
 
@@ -493,7 +471,6 @@ end
 
 "FUNCTION: calculate the maximum DC current on a branch"
 function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-
     branch = _PM.ref(pm, nw, :branch, i)
 
     ac_max = -Inf
@@ -515,12 +492,10 @@ end
 
 "FUNCTION: calculate the ibase for a branch"
 function calc_branch_ibase(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-
     branch = _PM.ref(pm, nw, :branch, i)
     bus = _PM.ref(pm, nw, :bus, branch["hi_bus"])
 
     return branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus["base_kv"] * sqrt(3.0))
-
 end
 
 
@@ -622,110 +597,82 @@ function calc_qloss(branch::Dict{String,Any}, case::Dict{Symbol,Any}, solution::
 end
 
 # ===   CALCULATIONS FOR THERMAL VARIABLES   === #
-
-"FUNCTION: calculate steady-state hotspot temperature rise"
-function calc_delta_hotspotrise_ss(branch, k, result)
-    delta_hotspotrise_ss = 0
-
-    Ie = result["solution"]["ieff"][k]
-    delta_hotspotrise_ss = get(branch, "hotspot_coeff", 0.63) * Ie
-
-    return delta_hotspotrise_ss
-end
-
+const default_topoil_rated_temp_rise_c = 75.0 # C
+const default_hotspot_coeff = 0.63
+const default_hotspot_time_const_secs = 150.0 # seconds 
+const default_topoil_time_const_mins = 71.0 # minutes 
+const default_ambient_temp_c = 25.0 # C
 
 "FUNCTION: calculate hotspot temperature rise"
-function calc_delta_hotspotrise(branch, result, k, Ie_prev, delta_t)
-    delta_hotspotrise = 0
-
-    Ie = result["solution"]["ieff"][k]
-    tau = 2 * get(branch, "hotspot_rated", 150.0) / delta_t
-
-    if Ie_prev === nothing
-        delta_hotspotrise = get(branch, "hotspot_coeff", 0.63) * Ie
-    else
-        delta_hotspotrise_prev = branch["delta_hotspotrise"]
-        delta_hotspotrise = get(branch, "hotspot_coeff", 0.63) * (Ie + Ie_prev) / (1 + tau) - delta_hotspotrise_prev * (1 - tau) / (1 + tau)
+function calc_delta_hotspotrise!(branch, result, δ_t)
+    if branch["type"] ∉ Set(("xfmr", "xf", "transformer"))
+        return
     end
-
-    return delta_hotspotrise
-
-end
-
-
-"FUNCTION: update hotspot temperature rise in the network"
-function update_hotspotrise!(branch, case::Dict{String,Any})
-
+                        
     i = branch["index"]
+    Ie = result["solution"]["ieff"]["$i"]
+    Re = get(branch, "hotspot_coeff", default_hotspot_coeff)
 
-    case["branch"]["$i"]["delta_hotspotrise_ss"] = branch["delta_hotspotrise_ss"]
-    case["branch"]["$i"]["delta_hotspotrise"] = branch["delta_hotspotrise"]
+    hotspot_time_const = get(branch, "hotspot_time_const", default_hotspot_time_const_secs)
+    δ_hs_ss = Re*Ie
+    δ_hs_ss_prev = get(branch, "delta_hotspotrise_ss", δ_hs_ss)
+    δ_hs_prev = get(branch, "delta_hotspotrise", δ_hs_ss)
+    τ = 2*hotspot_time_const/δ_t
+    δ_hs = (δ_hs_ss + δ_hs_ss_prev)/(1 + τ) - δ_hs_prev*(1 - τ)/(1 + τ)
 
+    branch["delta_hotspotrise_ss"] = δ_hs_ss
+    branch["delta_hotspotrise"] = δ_hs
 end
 
 
 "FUNCTION: calculate steady-state top-oil temperature rise"
 function calc_delta_topoilrise_ss(branch, result, base_mva)
-    delta_topoilrise_ss = 75.0 # rated top-oil temperature
+    if branch["type"] ∉ Set(("xfmr", "xf", "transformer"))
+        return
+    end
+            
+    δ_to_r = get(branch, "topoil_rated", default_topoil_rated_temp_rise_c)
+    i = branch["index"]
+    Sr = branch["rate_a"]
+    S = Sr # assume branch is 100% loaded if no ac solution
 
-    if ( (branch["type"] == "xfmr") || (branch["type"] == "xf") || (branch["type"] == "transformer") )
-        i = branch["index"]
-
-        if !haskey(result["solution"], "branch") || !haskey(result["solution"]["branch"], "$i")
-            return delta_topoilrise_ss
-        end
-
+    if haskey(result["solution"], "branch") && haskey(result["solution"]["branch"], "$i")
         bs = result["solution"]["branch"]["$i"]
         p = bs["pf"]
         q = bs["qf"]
-
         S = sqrt(p^2 + q^2)
-        K = S / (branch["rate_a"] * base_mva)
-
-        delta_topoilrise_ss = get(branch, "topoil_rated", 75.0) * K^2
-
     end
 
-    return delta_topoilrise_ss
-
+    K = S/(Sr*base_mva) # TODO: check if base_mva is needed
+    return δ_to_r*K^2
 end
 
 
 "FUNCTION: calculate top-oil temperature rise"
-function calc_delta_topoilrise(branch, result, base_mva, delta_t)
+function calc_delta_topoilrise!(branch, result, base_mva, δ_t)
+    topoil_time_const = get(branch, "topoil_time_const", 60.0*default_topoil_time_const_mins)
+    δ_to_ss = calc_delta_topoilrise_ss(branch, result, base_mva)
+    δ_to_ss_prev = get(branch, "delta_topoilrise_ss", δ_to_ss)
+    δ_to_prev = get(branch, "delta_topoilrise", δ_to_ss)
+    τ = 2*topoil_time_const/δ_t
+    δ_to = (δ_to_ss + δ_to_ss_prev)/(1 + τ) - δ_to_prev*(1 - τ)/(1 + τ)
 
-    delta_topoilrise_ss = branch["delta_topoilrise_ss"]
-    delta_topoilrise = delta_topoilrise_ss
-
-    if ( ("delta_topoilrise" in keys(branch)) && ("delta_topoilrise_ss" in keys(branch)) )
-
-        delta_topoilrise_prev = branch["delta_topoilrise"]
-        delta_topoilrise_ss_prev = branch["delta_topoilrise_ss"]
-
-        tau = 2 * (get(branch, "topoil_time_const", 71.0) * 60) / delta_t
-        delta_topoilrise = (delta_topoilrise_ss + delta_topoilrise_ss_prev) / (1 + tau) - delta_topoilrise_prev * (1 - tau) / (1 + tau)
-
-    else
-
-        delta_topoilrise = 0
-
-    end
-
-    return delta_topoilrise
-
+    branch["delta_topoilrise_ss"] = δ_to_ss
+    branch["delta_topoilrise"] = δ_to
 end
 
 
-"FUNCTION: update top-oil temperature rise in the network"
-function update_topoilrise!(branch, case::Dict{String,Any})
-
-    i = branch["index"]
-    case["branch"]["$i"]["delta_topoilrise_ss"] = branch["delta_topoilrise_ss"]
-    case["branch"]["$i"]["delta_topoilrise"] = branch["delta_topoilrise"]
-
+function calc_hotspot_temp!(branch)
+    ambient_temp = get(branch, "temperature_ambient", default_ambient_temp_c) 
+    branch["actual_hotspot"] = ambient_temp + branch["delta_topoilrise_ss"] + branch["delta_hotspotrise_ss"]
 end
 
 
+function calc_transformer_temps!(branch, result, base_mva, δ_t)
+    calc_delta_hotspotrise!(branch, result, δ_t)
+    calc_delta_topoilrise!(branch, result, base_mva, δ_t)
+    calc_hotspot_temp!(branch)
+end
 
 # ===   GENERAL SETTINGS AND FUNCTIONS   === #
 
