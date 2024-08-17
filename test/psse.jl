@@ -23,7 +23,7 @@ end
 @testset "test PSS(R)E parser" begin
     @testset "4-bus frankenstein file" begin
         @testset "AC Model (parse_file)" begin
-            data_pti = PowerModels.parse_file("../test/data/pti/frankenstein_00.raw")
+            data_pti = PowerModelsGMD.parse_file("../test/data/pti/frankenstein_00.raw")
             data_mp = PowerModels.parse_file("../test/data/matpower/frankenstein_00.m")
 
             set_costs!(data_mp)
