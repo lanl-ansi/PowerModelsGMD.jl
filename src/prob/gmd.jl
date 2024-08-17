@@ -50,12 +50,18 @@ end
 
 
 # ===   WITH MATRIX SOLVE   === #
-
+function solve_gmd(raw_file::IO, gic_file::IO, csv_file::IO; kwargs...)
+    raw_data = _PM.parse_psse(raw_file)
+    gic_data = parse_gic(gic_file)
+    case = generate_dc_data(gic_data, raw_data)
+    add_coupled_voltages!(csv_file, case)
+    return solve_gmd(case; kwargs)
+end
 
 "FUNCTION: solve GIC matrix solve"
-function solve_gmd(raw_file::String, gic_file::String, voltage_file::String; kwargs...)
-    data = parse_files(gic_file, raw_file)
-    case = generate_dc_data(data["nw"]["1"], data["nw"]["2"], voltage_file) 
+function solve_gmd(raw_file::String, gic_file::String, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0; kwargs...)
+    # TODO: pass coupling arguments
+    case = generate__dc_data_raw(raw_file, gic_file)
     return solve_gmd(case; kwargs)
 end
 
@@ -82,25 +88,19 @@ function solve_gmd_ts_decoupled(case, optimizer, waveform; setting=Dict{String,A
 
     if thermal
         base_mva = case["baseMVA"]
-        delta_t = wf_time[2] - wf_time[1]
-
-        Ie_prev = Dict()
-        for (i, br) in case["branch"]
-            Ie_prev[i] = nothing
-        end
+        δ_t = wf_time[2] - wf_time[1]
     end
 
     # TODO: add optional parameter of ac solve for transformer loading, or add sequential ac solve
     solution = []
+
     for i in eachindex(wf_time)
         if (waveform !== nothing && waveform["waveforms"] !== nothing)
             for (k, wf) in waveform["waveforms"]
-
                 otype = wf["parent_type"]
                 field  = wf["parent_field"]
 
                 case[otype][k][field] = wf["values"][i]
-
             end
         end
 
@@ -122,34 +122,25 @@ function solve_gmd_ts_decoupled(case, optimizer, waveform; setting=Dict{String,A
             xfmr_temp = Dict("Ieff" => 0.0, "delta_topoilrise_ss" => 0.0, "delta_hotspotrise_ss" => 0.0, "actual_hotspot" => 0.0)
 
             if i > 1
-                delta_t = wf_time[i] - wf_time[i-1]
+                δ_t = wf_time[i] - wf_time[i-1]
             end
 
             result["solution"]["branch"] = Dict()
 
-            #for (k, br) in result["ac"]["case"]["branch"]
             for (k, br) in case["branch"]
-
-                if !(br["type"] == "xfmr" || br["type"] == "xf" || br["type"] == "transformer")
+                if br["type"] ∉ Set(("xfmr", "xf", "transformer"))
                     continue
-                else
-                    br["delta_topoilrise_ss"] = calc_delta_topoilrise_ss(br, result, base_mva)
-                    br["delta_topoilrise"] = calc_delta_topoilrise(br, result, base_mva, delta_t)
-                    update_topoilrise!(br, case)
-
-                    br["delta_hotspotrise_ss"] = calc_delta_hotspotrise_ss(br, k, result)
-                    br["delta_hotspotrise"] = calc_delta_hotspotrise(br, result, k, Ie_prev[k], delta_t)
-                    update_hotspotrise!(br, case)
-
-                    xfmr_temp["Ieff"] = result["solution"]["ieff"][k]
-                    # xfmr_temp["delta_topoilrise"] = br["delta_topoilrise"]
-                    xfmr_temp["delta_topoilrise_ss"] = br["delta_topoilrise_ss"]
-                    # xfmr_temp["delta_hotspotrise"] =  br["delta_hotspotrise"]
-                    xfmr_temp["delta_hotspotrise_ss"] = br["delta_hotspotrise_ss"]
-                    xfmr_temp["actual_hotspot"] = (get(br, "temperature_ambient", 25.0) + br["delta_topoilrise_ss"] + br["delta_hotspotrise_ss"])
                 end
 
-                result["solution"]["branch"]["$k"] = xfmr_temp
+                calc_transformer_temps!(br, result, base_mva, δ_t)
+                xfmr_temp["Ieff"] = result["solution"]["ieff"][k]
+                xfmr_temp["delta_topoilrise"] = br["delta_topoilrise"]
+                xfmr_temp["delta_topoilrise_ss"] = br["delta_topoilrise_ss"]
+                xfmr_temp["delta_hotspotrise"] =  br["delta_hotspotrise"]
+                xfmr_temp["delta_hotspotrise_ss"] = br["delta_hotspotrise_ss"]
+                xfmr_temp["actual_hotspot"] = br["actual_hotspot"]
+
+                result["solution"]["branch"][k] = xfmr_temp
             end
         end
 

@@ -9,6 +9,7 @@ function parse_file(file::String; kwargs...)::Dict
     close(io)
 end
 
+# TODO: handle csv voltage file?
 function parse_files(files::String...; kwargs...)::Dict
     mn_data = Dict{String, Any}(
         "nw" => Dict{String, Any}(),
