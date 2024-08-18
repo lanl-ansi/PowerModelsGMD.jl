@@ -27,6 +27,7 @@ ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "p
 juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => _PM.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes"), "log_levels" => [])
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
+# TODO: Move this file into PowerModelsGMDLib
 
 data = raw"U:\gmd-tools-10k_fix\gmd-tools-10k_fix\activsg2000_mod.m"
 case = _PM.parse_file(data)

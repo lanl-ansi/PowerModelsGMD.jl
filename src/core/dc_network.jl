@@ -233,20 +233,20 @@ function _configure_line_info!(output::Dict{String, Any}, field_mag::Float64=1.0
         average_lat = (lat_a + lat_b) / 2
 
         radius_meridian = equatorial_radius * (1 - eccentricity_squared) / ((1 - eccentricity_squared * (sind(average_lat) ^ 2)) ^ 1.5)
-        length_north_south = (pi / 180) * radius_meridian * abs(lat_a - lat_b)
+        displacement_north_south = (pi / 180) * radius_meridian * (lat_b - lat_a)
 
         # Calculates east west distances using the NERC application guide
         long_a = output["gmd_bus"]["$sub_a"]["lon"]
         long_b = output["gmd_bus"]["$sub_b"]["lon"]
 
         radius_lat = equatorial_radius / ((1 - eccentricity_squared * (sind(average_lat) ^ 2)) ^ 0.5)
-        length_east_west = (pi / 180) * radius_lat * cosd(average_lat) * abs(long_a - long_b)
+        displacement_east_west = (pi / 180) * radius_lat * cosd(average_lat) * (long_b - long_a)
 
         # Uses distances to calculate total vector distance and overall branch voltage
-        branch["len_km"] = (length_north_south ^ 2 + length_east_west ^ 2) ^ 0.5
+        branch["len_km"] = (displacement_north_south ^ 2 + displacement_east_west ^ 2) ^ 0.5
 
         if branch["len_km"] >= min_line_length
-            branch["br_v"] = field_mag * (length_north_south * cosd(field_dir) + length_east_west * sind(field_dir))
+            branch["br_v"] = field_mag * (displacement_north_south * cosd(field_dir) + displacement_east_west * sind(field_dir))
         else
             branch["br_v"] = 0.0
         end

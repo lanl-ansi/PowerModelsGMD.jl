@@ -3,23 +3,86 @@
 
 TESTLOG = Memento.getlogger(PowerModels)
 
-# Rename this to PSSE? Or leave psse.jl unit tests for comparison against MatPower cases?
+# TODO: Rename this to PSSE? Or leave psse.jl unit tests for comparison against MatPower cases?
+# Compare coupled voltages for both csv & coupling code
+# Compare GMD solve results against PW - put this in PSSE.jl?
+
+function create_branch_voltage_map(net)
+    branch_map = Dict()
+
+    for (key, branch) in net["gmd_branch"]
+        source_id = branch["source_id"]
+
+        if source_id[1] != "branch"
+            continue
+        end
+
+        if length(source_id[4]) == 1
+            source_id[4] = source_id[4] * " "
+        end
+
+        branch_map[source_id[2:end]] = branch["br_v"]
+    end
+
+    return branch_map
+end
+
+const voltage_err = 0.01
+
 
 @testset "Test Coupling" begin
-    @testset "B4GIC file" begin
-        @testset "AC Model (parse_file)" begin
-            data_pti = PowerModelsGMD.generate_dc_data("../test/data/gic/bus4.gic", "../test/data/pti/bus4.raw")
-            data_mp = PowerModels.parse_file("../test/data/matpower/frankenstein_00.m")
+    @testset "Bus4 file" begin
+        gic_file = "../test/data/gic/bus4.gic"
+        raw_file = "../test/data/pti/bus4.raw"
+        csv_file = "../test/data/lines/bus4_1v_km.csv"
 
-            set_costs!(data_mp)
+        @testset "Load coupled voltages from CSV" begin
 
-            result_pti = PowerModels.solve_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-            result_mp  = PowerModels.solve_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
-
-            @test result_pti["termination_status"] == LOCALLY_SOLVED
-            @test result_mp["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result_mp["objective"], result_pti["objective"]; atol = 1e-5)
+            data = PowerModelsGMD.generate_dc_data(gic_file, raw_file, csv_file)
+            @test isapprox(data["gmd_branch"]["1"]["br_v"], 170.788589; atol = voltage_err)
         end
+
+        @testset "Run Coupling" begin
+            data = PowerModelsGMD.generate_dc_data(gic_file, raw_file)
+            @test isapprox(data["gmd_branch"]["1"]["br_v"], 170.788589; atol = voltage_err)
+        end        
+    end
+
+    @testset "EPRI20 file" begin
+        gic_file = "../test/data/gic/epri.gic"
+        raw_file = "../test/data/pti/epri.raw"
+        csv_file = "../test/data/lines/epri_1v_km.csv"
+
+        @testset "Load coupled voltages from CSV" begin
+            data = PowerModelsGMD.generate_dc_data(gic_file, raw_file, csv_file)
+            branch_voltage_map = create_branch_voltage_map(data)
+            # Pick some different cases: 
+            # first/last branch, highest/lowest voltage, middle branch
+            # branch with zero voltage, 2 parallel transmission lines
+            @test isapprox(branch_voltage_map[[2, 3, "1 "]], 120.603544; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[17, 20, "1 "]], 158.178009; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[5, 6, "1 "]], 190.986511; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[16, 17, "1 "]], -155.555679; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[4, 6, "1 "]], 321.261292; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[5, 21, "1 "]], 0.0; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[15, 6, "1 "]], 191.110397; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[15, 6, "2 "]], 191.110397; atol = voltage_err)
+        end
+
+        @testset "Run coupling" begin
+            data = PowerModelsGMD.generate_dc_data(gic_file, raw_file)
+            branch_voltage_map = create_branch_voltage_map(data)
+            @test isapprox(branch_voltage_map[[2, 3, "1 "]], 120.603544; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[17, 20, "1 "]], 158.178009; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[5, 6, "1 "]], 190.986511; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[16, 17, "1 "]], -155.555679; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[4, 6, "1 "]], 321.261292; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[5, 21, "1 "]], 0.0; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[15, 6, "1 "]], 191.110397; atol = voltage_err)
+            @test isapprox(branch_voltage_map[[15, 6, "2 "]], 191.110397; atol = voltage_err)      
+        end        
+    end    
+end
 
 #         @testset "AC Model (parse_psse)" begin
 #             data_pti = PowerModels.parse_psse("../test/data/pti/frankenstein_00.raw")
