@@ -1,0 +1,3 @@
+Branch
+BusNumFrom,BusNameFrom,BusNumTo,BusNameTo,Circuit,GICUSEPFR,GICPFR1,GICCUSTOMR1,GICInducedDCVolt,GICInpucedDCVoltFixed,GICFlowFrom,GICFlowTo,GICFlowMax,GICDCVoltFrom,GICDCVoltTo,GICG,GICMvarLosses,GICLineDistanceMile,GICLineAngle,GICLowRPerDist
+1,Bus 1,2,Bus 2,1,NO,3.0022,,170.79,NO,22.10,-22.10,22.10,-19.89,19.89,0.3331,,106.12,90.00,NO

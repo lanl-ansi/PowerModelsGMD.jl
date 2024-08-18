@@ -39,7 +39,7 @@
         end
     end
     @testset "Bus4 file" begin
-        data_dict = PowerModelsGMD.parse_gic("../test/data/gic/Bus4.gic")
+        data_dict = PowerModelsGMD.parse_gic("../test/data/gic/bus4.gic")
         @test isa(data_dict, Dict)
 
         @test length(data_dict["SUBSTATION"]) == 2

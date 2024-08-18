@@ -22,37 +22,37 @@ eccentricity_squared = 0.00669437999014
 # TODO: include add_3w_xf! function here?
 function generate_dc_data(gic_file::String, raw_file::String, voltage_file::String)
     # TODO: add gz support to parse_file
-    net =  generate_dc_data(gic_file, raw_file)
+    net =  generate_dc_data(gic_file, raw_file, 0.0)
     add_coupled_voltages!(voltage_file, net)
     return net
 end
 
-function generate_dc_data(gic_file::String, raw_file::String)
+function generate_dc_data(gic_file::String, raw_file::String, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # TODO: add gz support to parse_file
     gic_data = parse_gic(gic_file)
     raw_data = _PM.parse_file(raw_file)
-    net =  generate_dc_data(gic_data, raw_data)
+    net =  generate_dc_data(gic_data, raw_data, field_mag, field_dir, min_line_length)
     return net
 end
 
-function generate_dc_data(gic_file::IO, raw_file::IO)
-    return generate_dc_data_psse(gic_file, raw_file)
+function generate_dc_data(gic_file::IO, raw_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+    return generate_dc_data_psse(gic_file, raw_file, field_mag, field_dir, min_line_length)
 end
 
-function generate_dc_data_matpower(gic_file::IO, raw_file::IO)
+function generate_dc_data_matpower(gic_file::IO, raw_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
     gic_data = parse_gic(gic_file)
     raw_data = _PM.parse_matpower(raw_file)
-    return generate_dc_data(gic_data, raw_data)
+    return generate_dc_data(gic_data, raw_data, field_mag, field_dir, min_line_length)
 end
 
-function generate_dc_data_psse(gic_file::IO, raw_file::IO)
+function generate_dc_data_psse(gic_file::IO, raw_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
     gic_data = parse_gic(gic_file)
     raw_data = _PM.parse_psse(raw_file)
-    return generate_dc_data(gic_data, raw_data)
+    return generate_dc_data(gic_data, raw_data, field_mag, field_dir, min_line_length)
 end
 
 # Configures the line voltages and distances
@@ -93,7 +93,7 @@ function add_coupled_voltages!(lines_info::DataFrame, output::Dict{String, Any})
 end
 
 # Main Function for generating DC network
-# TODO: Remove voltage_file requirement
+# TODO: use rectangular coordinates instead of polar coordinates?
 function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # Sets up output network dictionary
     output = Dict{String, Any}()
@@ -116,6 +116,10 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
 
     # Generates the rest of the AC Data
     _generate_ac_data!(output, gic_data, raw_data, transformer_map)
+
+    if field_mag != 0.0
+        _configure_line_info!(output, field_mag, field_dir, min_line_length)
+    end
 
     # Copies over identical AC data
     output["dcline"] = raw_data["dcline"]
@@ -216,7 +220,7 @@ function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float
 end
 
 # Configures the line voltages and distances
-function _configure_line_info!(output::Dict{String, Any}, field_mag::Float64, field_dir::Float64, min_line_length::Float64)
+function _configure_line_info!(output::Dict{String, Any}, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     for branch in values(output["gmd_branch"])
         # Fetches substations for the buses on the branch
         sub_a = output["gmd_bus"]["$(branch["f_bus"])"]["sub"]
