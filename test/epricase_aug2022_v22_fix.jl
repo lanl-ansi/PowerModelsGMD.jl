@@ -27,8 +27,9 @@ ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "p
 juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => _PM.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes"), "log_levels" => [])
 setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
-
-data = "../test/data/matpower/epricase_new.m"
+# TODO: move this into PowerModelsGMDLib
+# Split into 2 test cases for .m & .gic/.raw files?
+data = "../test/data/matpower/epricase_aug2022_v22_fix.m"
 case = _PM.parse_file(data)
 _PMGMD.add_gmd_3w_branch!(case)
 sol = _PMGMD.solve_gmd(case)
@@ -36,7 +37,6 @@ sol = _PMGMD.solve_gmd("../test/data/pti/epri.raw", "../test/data/gic/epri.gic",
 # sol=  _PMGMD.solve_gmd(case, ipopt_solver; setting=setting) # for opt solver
 
 high_error = 1e-2 # abs(value) >= .0001
-
 low_error = 1 # abs(value) < .0001
 
 @testset "solve of gmd" begin
