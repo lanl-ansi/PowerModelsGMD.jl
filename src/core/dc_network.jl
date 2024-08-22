@@ -786,12 +786,15 @@ function _add_bus_table!(output::Dict{String, Any}, gic_data::Dict{String, Any},
 end
 
 # TODO: add option for additional fields, and whether this should be added to the ac network
+# TODO: this is confusingly similarly named to _add_substation_table!
 function _add_sub_table!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any})
     output["sub"] = Dict{String, Any}()
     for (sub_id, sub) in gic_data["SUBSTATION"]
         sub_data = Dict{String,Any}(lowercase(k) => v for (k,v) in sub)
         sub_data["index"] = pop!(sub_data, "substation")
+        sub_data["lon"] = pop!(sub_data, "long")
         delete!(sub_data, "earth_model")
+        output["sub"][sub_id] = sub_data
     end
 end
 
