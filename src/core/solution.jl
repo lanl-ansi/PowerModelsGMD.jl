@@ -77,6 +77,7 @@ function solution_gmd(v::Vector{Float64}, case::Dict{String,Any})
         solution["gmd_bus"]["$bus"]["gmd_vdc"] = val
     end
 
+    # TODO: check if calc_dc_current_mag is redundant with calc_ieff_current_mag
     for (n, branch) in case["gmd_branch"]
         solution["gmd_branch"]["$n"] = Dict()
         if haskey(branch, "parent_type") && branch["parent_type"] == "branch"

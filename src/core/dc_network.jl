@@ -198,6 +198,8 @@ end
 function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
     # Adds bus table to network
     _add_bus_table!(output, gic_data, raw_data)
+    # Make this optional
+    _add_sub_table!(output, gic_data, raw_data)
 
     # Copies over generator table
     output["gen"] = raw_data["gen"]
@@ -780,6 +782,16 @@ function _add_bus_table!(output::Dict{String, Any}, gic_data::Dict{String, Any},
         bus_data["lat"] = gic_data["SUBSTATION"]["$sub_id"]["LAT"]
         bus_data["lon"] = gic_data["SUBSTATION"]["$sub_id"]["LONG"]
         output["bus"][bus_id] = bus_data
+    end
+end
+
+# TODO: add option for additional fields, and whether this should be added to the ac network
+function _add_sub_table!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any})
+    output["sub"] = Dict{String, Any}()
+    for (sub_id, sub) in gic_data["SUBSTATION"]
+        sub_data = Dict{String,Any}(lowercase(k) => v for (k,v) in sub)
+        sub_data["index"] = pop!(sub_data, "substation")
+        delete!(sub_data, "earth_model")
     end
 end
 
