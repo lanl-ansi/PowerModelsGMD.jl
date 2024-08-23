@@ -23,7 +23,6 @@ function solve_gmd(file, optimizer; kwargs...)
     )
 end
 
-
 "FUNCTION: build the quasi-dc-pf problem
 as a linear constraint satisfaction problem"
 function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
@@ -54,14 +53,16 @@ function solve_gmd(raw_file::IO, gic_file::IO, csv_file::IO; kwargs...)
     raw_data = _PM.parse_psse(raw_file)
     gic_data = parse_gic(gic_file)
     case = generate_dc_data(gic_data, raw_data)
-    add_coupled_voltages!(csv_file, case)
+    load_voltages!(csv_file, case)
+    add_gmd_3w_branch!(case)
     return solve_gmd(case; kwargs)
 end
 
 "FUNCTION: solve GIC matrix solve"
 function solve_gmd(raw_file::String, gic_file::String, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0; kwargs...)
     # TODO: pass coupling arguments
-    case = generate__dc_data_raw(raw_file, gic_file)
+    case = generate_dc_data_raw(raw_file, gic_file)
+    add_gmd_3w_branch!(case)
     return solve_gmd(case; kwargs)
 end
 
