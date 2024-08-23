@@ -47,12 +47,9 @@ function load_voltages!(lines_info::DataFrame, output::Dict{String, Any})
         branch_id = branch_map[source_id]
         output["gmd_branch"]["$branch_id"]["br_v"] = dc_voltage
     end
-
-    # TODO: Adds line distances
 end
 
 # Main Function for generating DC network
-# TODO: Remove voltage_file requirement
 function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # Sets up output network dictionary
     output = Dict{String, Any}()
@@ -85,8 +82,20 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
     output["switch"] = raw_data["switch"]
     output["baseMVA"] = raw_data["baseMVA"]
     output["load"] = raw_data["load"]
+    output["shunt"] = raw_data["shunt"]
 
     return output
+end
+
+# Adds AC information into the output network
+function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
+    # Adds bus table to network
+    _add_bus_table!(output, gic_data, raw_data)
+
+    # Copies over generator table
+    output["gen"] = raw_data["gen"]
+
+    _add_branch_table!(output, raw_data, transformer_map)
 end
 
 # Generates gmd_bus table
@@ -152,17 +161,6 @@ function _generate_gmd_branch!(output::Dict{String, Any}, raw_data::Dict{String,
     _generate_3w_branch_table!(output, gmd_3w_branch)
 end
 
-# Adds AC information into the output network
-function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
-    # Adds bus table to network
-    _add_bus_table!(output, gic_data, raw_data)
-
-    # Copies over generator table
-    output["gen"] = raw_data["gen"]
-
-    _add_branch_table!(output, raw_data, transformer_map)
-end
-
 function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float64, z_base_high::Float64, is_auto::Bool)
     R_high = (z_base_high * positive_sequence_r) / 2
     if is_auto
@@ -191,20 +189,20 @@ function _configure_line_info!(output::Dict{String, Any}, field_mag::Float64, fi
         average_lat = (lat_a + lat_b) / 2
 
         radius_meridian = equatorial_radius * (1 - eccentricity_squared) / ((1 - eccentricity_squared * (sind(average_lat) ^ 2)) ^ 1.5)
-        length_north_south = (pi / 180) * radius_meridian * abs(lat_a - lat_b)
+        length_north_south = (pi / 180) * radius_meridian * (lat_a - lat_b)
 
         # Calculates east west distances using the NERC application guide
         long_a = output["gmd_bus"]["$sub_a"]["lon"]
         long_b = output["gmd_bus"]["$sub_b"]["lon"]
 
         radius_lat = equatorial_radius / ((1 - eccentricity_squared * (sind(average_lat) ^ 2)) ^ 0.5)
-        length_east_west = (pi / 180) * radius_lat * cosd(average_lat) * abs(long_a - long_b)
+        length_east_west = (pi / 180) * radius_lat * cosd(average_lat) * (long_a - long_b)
 
         # Uses distances to calculate total vector distance and overall branch voltage
         branch["len_km"] = (length_north_south ^ 2 + length_east_west ^ 2) ^ 0.5
 
         if branch["len_km"] >= min_line_length
-            branch["br_v"] = field_mag * (length_north_south * cosd(field_dir) + length_east_west * sind(field_dir))
+            branch["br_v"] = -1 * field_mag * (length_north_south * cosd(field_dir) + length_east_west * sind(field_dir))
         else
             branch["br_v"] = 0.0
         end
@@ -784,6 +782,10 @@ function _add_branch_table!(output::Dict{String, Any}, raw_data::Dict{String, An
 
             # Converts kfactor into per unit
             branch_data["gmd_k"] = transformer["KFACTOR"] * 2 * sqrt(2/3)
+
+            branch["ckt"] = branch["source_id"][5]
+        else
+            branch["ckt"] = branch["source_id"][4]
         end
         
         # Determines type of the transformer
