@@ -92,7 +92,7 @@ function solve_gmd_ts_decoupled(case, optimizer, waveform; setting=Dict{String,A
     end
 
     # TODO: add optional parameter of ac solve for transformer loading, or add sequential ac solve
-    solution = []
+    results = []
 
     for i in eachindex(wf_time)
         if (waveform !== nothing && waveform["waveforms"] !== nothing)
@@ -106,20 +106,19 @@ function solve_gmd_ts_decoupled(case, optimizer, waveform; setting=Dict{String,A
 
         result = Dict()
 
-        if optimizer !== nothing
+        if isnothing(optimizer)
+            result = solve_gmd(case)
+        else
             result = solve_gmd(case, optimizer; setting=setting,
             solution_processors = [
                 solution_gmd!,
             ])
-        else
-            result = solve_gmd(case)            
         end
 
         result["time_index"] = i
         result["time"] = wf_time[i]
 
         if thermal
-            xfmr_temp = Dict("Ieff" => 0.0, "delta_topoilrise_ss" => 0.0, "delta_hotspotrise_ss" => 0.0, "actual_hotspot" => 0.0)
 
             if i > 1
                 δ_t = wf_time[i] - wf_time[i-1]
@@ -133,7 +132,9 @@ function solve_gmd_ts_decoupled(case, optimizer, waveform; setting=Dict{String,A
                 end
 
                 calc_transformer_temps!(br, result, base_mva, δ_t)
-                xfmr_temp["Ieff"] = result["solution"]["ieff"][k]
+
+                xfmr_temp = Dict{String,Any}()
+                xfmr_temp["Ieff"] = br["ieff"]
                 xfmr_temp["delta_topoilrise"] = br["delta_topoilrise"]
                 xfmr_temp["delta_topoilrise_ss"] = br["delta_topoilrise_ss"]
                 xfmr_temp["delta_hotspotrise"] =  br["delta_hotspotrise"]
@@ -144,9 +145,8 @@ function solve_gmd_ts_decoupled(case, optimizer, waveform; setting=Dict{String,A
             end
         end
 
-
-        push!(solution, result)
+        push!(results, result)
     end
-    return solution
 
+    return results
 end
