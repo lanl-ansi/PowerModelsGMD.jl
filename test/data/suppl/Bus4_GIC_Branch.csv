@@ -1,0 +1,5 @@
+Branch
+BusNumFrom,BusNumTo,Circuit,BranchDeviceType,GICInducedDCVolt,GICFlowFrom
+1,2,1,Line,170.788589,35.564640
+1,3,1,Transformer,0.000000,-35.564503
+2,4,1,Transformer,0.000000,35.564503

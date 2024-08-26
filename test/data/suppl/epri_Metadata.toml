@@ -1,0 +1,7 @@
+case_name = "epri"
+pw_version = 23
+pw_build_date = "July 12, 2024"
+export_time = "August 25, 2024 18:08:37"
+efield_mag = 1.0 # V/km
+efield_dir = 90.0 # degrees
+solve_pf = false # include GIC in power flow
