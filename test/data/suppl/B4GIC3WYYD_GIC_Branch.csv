@@ -1,0 +1,9 @@
+Branch
+BusNum,BusNum:1,LineCircuit,BranchDeviceType,GICObjectInputDCVolt,GICLineDCFlow
+3,1,1,Transformer,0.000000,0.000000
+1,10,1,Line,85.394295,22.122541
+2,4,1,Transformer,0.000000,33.576141
+20,2,1,Line,85.394295,33.576267
+5,1001,1,TransformerWinding,0.000000,0.000000
+10,1001,1,TransformerWinding,0.000000,22.122505
+20,1001,1,TransformerWinding,0.000000,-33.576233
