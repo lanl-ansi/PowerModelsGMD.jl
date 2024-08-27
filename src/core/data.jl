@@ -603,6 +603,20 @@ const default_hotspot_time_const_secs = 150.0 # seconds
 const default_topoil_time_const_mins = 71.0 # minutes 
 const default_ambient_temp_c = 25.0 # C
 
+function calc_transformer_temps!(branch, result, base_mva, δ_t)
+    calc_delta_hotspotrise!(branch, result, δ_t)
+    calc_delta_topoilrise!(branch, result, base_mva, δ_t)
+    calc_hotspot_temp!(branch)
+end
+
+
+function calc_hotspot_temp!(branch)
+    ambient_temp = get(branch, "temperature_ambient", default_ambient_temp_c) 
+    branch["actual_hotspot"] = ambient_temp + branch["delta_topoilrise"] 
+        + branch["delta_hotspotrise"]
+end
+
+
 "FUNCTION: calculate hotspot temperature rise"
 function calc_delta_hotspotrise!(branch, result, δ_t)
     if branch["type"] ∉ Set(("xfmr", "xf", "transformer"))
@@ -620,6 +634,7 @@ function calc_delta_hotspotrise!(branch, result, δ_t)
     τ = 2*hotspot_time_const/δ_t
     δ_hs = (δ_hs_ss + δ_hs_ss_prev)/(1 + τ) - δ_hs_prev*(1 - τ)/(1 + τ)
 
+    branch["ieff"] = Ie
     branch["delta_hotspotrise_ss"] = δ_hs_ss
     branch["delta_hotspotrise"] = δ_hs
 end
@@ -643,7 +658,7 @@ function calc_delta_topoilrise_ss(branch, result, base_mva)
         S = sqrt(p^2 + q^2)
     end
 
-    K = S/(Sr*base_mva) # TODO: check if base_mva is needed
+    K = S/Sr 
     return δ_to_r*K^2
 end
 
@@ -661,18 +676,6 @@ function calc_delta_topoilrise!(branch, result, base_mva, δ_t)
     branch["delta_topoilrise"] = δ_to
 end
 
-
-function calc_hotspot_temp!(branch)
-    ambient_temp = get(branch, "temperature_ambient", default_ambient_temp_c) 
-    branch["actual_hotspot"] = ambient_temp + branch["delta_topoilrise_ss"] + branch["delta_hotspotrise_ss"]
-end
-
-
-function calc_transformer_temps!(branch, result, base_mva, δ_t)
-    calc_delta_hotspotrise!(branch, result, δ_t)
-    calc_delta_topoilrise!(branch, result, base_mva, δ_t)
-    calc_hotspot_temp!(branch)
-end
 
 # ===   GENERAL SETTINGS AND FUNCTIONS   === #
 

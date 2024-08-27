@@ -88,8 +88,6 @@ function add_coupled_voltages!(lines_info::DataFrame, output::Dict{String, Any})
         branch_id = branch_map[source_id]
         output["gmd_branch"]["$branch_id"]["br_v"] = dc_voltage
     end
-
-    # TODO: Adds line distances
 end
 
 # Main Function for generating DC network
@@ -127,8 +125,23 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
     output["switch"] = raw_data["switch"]
     output["baseMVA"] = raw_data["baseMVA"]
     output["load"] = raw_data["load"]
+    output["shunt"] = raw_data["shunt"]
 
     return output
+end
+
+# Adds AC information into the output network
+function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
+    # Adds bus table to network
+    _add_bus_table!(output, gic_data, raw_data)
+    
+    # Make this optional
+    _add_sub_table!(output, gic_data, raw_data)    
+
+    # Copies over generator table
+    output["gen"] = raw_data["gen"]
+
+    _add_branch_table!(output, raw_data, transformer_map)
 end
 
 # Generates gmd_bus table
@@ -192,19 +205,6 @@ function _generate_gmd_branch!(output::Dict{String, Any}, raw_data::Dict{String,
 
     # Finalizes the gmd_3w_branch table with collected information
     _generate_3w_branch_table!(output, gmd_3w_branch)
-end
-
-# Adds AC information into the output network
-function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
-    # Adds bus table to network
-    _add_bus_table!(output, gic_data, raw_data)
-    # Make this optional
-    _add_sub_table!(output, gic_data, raw_data)
-
-    # Copies over generator table
-    output["gen"] = raw_data["gen"]
-
-    _add_branch_table!(output, raw_data, transformer_map)
 end
 
 function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float64, z_base_high::Float64, is_auto::Bool)
@@ -841,6 +841,10 @@ function _add_branch_table!(output::Dict{String, Any}, raw_data::Dict{String, An
 
             # Converts kfactor into per unit
             branch_data["gmd_k"] = transformer["KFACTOR"] * 2 * sqrt(2/3)
+
+            branch["ckt"] = branch["source_id"][5]
+        else
+            branch["ckt"] = branch["source_id"][4]
         end
         
         # Determines type of the transformer

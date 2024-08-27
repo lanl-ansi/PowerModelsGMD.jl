@@ -5,6 +5,15 @@ import CSV
 using DataFrames
 using Memento
 
+import JSON
+import JuMP
+import Ipopt
+import Juniper
+import LinearAlgebra
+import SparseArrays
+using Test
+import Memento
+
 const _LOGGER = Memento.getlogger(@__MODULE__)
 
 include("../src/core/dc_network.jl")
@@ -16,27 +25,31 @@ function solve_gmd(name; kwargs...)
     gic_data = data["nw"]["1"]
     raw_data = data["nw"]["2"]
 
-    open("../temp_data/gic_$name.json", "w") do f
-        JSON.print(f, gic_data)
-    end
+    # open("../temp_data/gic_$name.json", "w") do f
+    #     JSON.print(f, gic_data)
+    # end
 
-    open("../temp_data/raw_$name.json", "w") do f
-        JSON.print(f, raw_data)
-    end
+    # open("../temp_data/raw_$name.json", "w") do f
+    #     JSON.print(f, raw_data)
+    # end
 
     case = generate_dc_data(gic_data, raw_data, 1.0, 90.0, 1.0)
 
     PowerModelsGMD.add_gmd_3w_branch!(case)
 
-    open("../temp_data/network_$name.json", "w") do f
-        JSON.print(f, case)
-    end
+    # open("../temp_data/network_$name.json", "w") do f
+    #     JSON.print(f, case)
+    # end
 
     output = PowerModelsGMD.solve_gmd(case; kwargs...)
 
-    open("../temp_data/output_$name.json", "w") do f
-        JSON.print(f, output)
-    end
+    PowerModelsGMD.source_id_keys!(output, case)
+
+    println(output)
+
+    # open("../temp_data/output_$name.json", "w") do f
+    #     JSON.print(f, output)
+    # end
 end
 
 function save_solution(name)
@@ -57,7 +70,31 @@ if !isdir("../temp_data/")
     mkdir("../temp_data/")
 end
 
-solve_gmd("activsg10k")
+solve_gmd("epri")
+
+# ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes")
+# setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
+
+# name = "epri"
+
+# data = PowerModelsGMD.parse_files("../test/data/gic/$name.gic", "../test/data/pti/$name.raw")
+
+# gic_data = data["nw"]["1"]
+# raw_data = data["nw"]["2"]
+
+# open("../temp_data/gic_$name.json", "w") do f
+#     JSON.print(f, gic_data)
+# end
+
+# open("../temp_data/raw_$name.json", "w") do f
+#     JSON.print(f, raw_data)
+# end
+
+# case = generate_dc_data(gic_data, raw_data, 1.0, 90.0, 1.0)
+# PowerModelsGMD.add_gmd_3w_branch!(case)
+# sol= _PMGMD.solve_gmd(case) # linear solver
+# sol=  PowerModelsGMD.solve_gmd(case, ipopt_solver; setting=setting) # for opt solver
+
 # solve_gmd("b4gic3wyyd")
 # save_solution("activsg10k")
 # solve_gmd("activsg10k")
@@ -96,59 +133,55 @@ solve_gmd("activsg10k")
 # # display(g)
 # # display(i_inj)
 
-# # name = "activsg200"
+# name = "epri"
 
-# # data = PowerModelsGMD.parse_files("../test/data/gic/$name.gic", "../test/data/pti/$name.raw")
+# data = PowerModelsGMD.parse_files("../test/data/gic/$name.gic", "../test/data/pti/$name.raw")
 
-# # gic_data = data["nw"]["1"]
-# # raw_data = data["nw"]["2"]
+# gic_data = data["nw"]["1"]
+# raw_data = data["nw"]["2"]
 
-# # open("../temp_data/gic_$name.json", "w") do f
-# #     JSON.print(f, gic_data)
-# # end
+# open("../temp_data/gic_$name.json", "w") do f
+#     JSON.print(f, gic_data)
+# end
 
-# # open("../temp_data/raw_$name.json", "w") do f
-# #     JSON.print(f, raw_data)
-# # end
+# open("../temp_data/raw_$name.json", "w") do f
+#     JSON.print(f, raw_data)
+# end
 
-# # case = gen_dc_data(gic_data, raw_data, "../test/data/lines/$name.csv")
+# case = generate_dc_data(gic_data, raw_data, 1.0, 90.0)
 
-# # open("../temp_data/network_$name.json", "w") do f
-# #     JSON.print(f, case)
-# # end
+# solution = PowerModelsGMD.solve_gmd(case)
 
-# # solution = PowerModelsGMD.solve_gmd("../test/data/matpower/activsg2000_mod.m")
+# g, i_inj = generate_g_i_matrix(case)
 
-# # open("../temp_data/solution_activsg2000.json", "w") do f
-# #     JSON.print(f, solution)
-# # end
+# open("../temp_data/network_$name.json", "w") do f
+#     JSON.print(f, case)
+# end
 
-# # solution = PowerModelsGMD.parse_file("../test/data/matpower/activsg2000_mod.m")
+# solution = PowerModelsGMD.parse_file("../test/data/matpower/epricase_new.m")
 
-# # open("../temp_data/solution_activsg2000_network.json", "w") do f
-# #     JSON.print(f, solution)
-# # end
+# println(g)
 
-# # g, i_inj = gen_g_i_matrix(solution)
+# g, i_inj = generate_g_i_matrix(solution)
 
-# # # println(g)
+# println(g)
 
-# # # branch_map = Dict{Array, Dict}()
+# branch_map = Dict{Array, Dict}()
 
-# # # for (id, branch) in solution["branch"]
-# # #     key = [branch["f_bus"], branch["t_bus"]]
-# # #     branch_map[key] = branch
-# # # end
+# for (id, branch) in solution["branch"]
+#     key = [branch["f_bus"], branch["t_bus"]]
+#     branch_map[key] = branch
+# end
 
-# # # for (id, bus) in case["branch"]
-# # #     println(id)
-# # #     solution_branch = branch_map[[bus["f_bus"], bus["t_bus"]]]
-# # #     for (key, value) in bus
-# # #         if !(solution_branch[key] == value || (typeof(value) in [Int64, Float64] && solution_branch[key] - value < 0.2))
-# # #             println(key, ": ", value, " ", solution_branch[key])
-# # #         end
-# # #     end
-# # # end
+# for (id, bus) in case["branch"]
+#     println(id)
+#     solution_branch = branch_map[[bus["f_bus"], bus["t_bus"]]]
+#     for (key, value) in bus
+#         if !(solution_branch[key] == value || (typeof(value) in [Int64, Float64] && solution_branch[key] - value < 0.2))
+#             println(key, ": ", value, " ", solution_branch[key])
+#         end
+#     end
+# end
 
 # answers = CSV.read("../temp_data/answers_2000.csv", DataFrame; header=2)
 

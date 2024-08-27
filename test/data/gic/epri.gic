@@ -5,7 +5,7 @@ GICFILEVRSN=3
 4,'Substation 4',0, 33.5479,-99.0746,   1.000,''
 5,'Substation 5',0, 32.7051,-97.6634,   0.100,''
 6,'Substation 6',0, 33.3773,-95.6188,   0.100,''
-7,'Substaton 7',0, 34.2522,-95.8363,   0.000,''
+7,'Substaton 7',0, 34.2522,-95.8363,   0.220,''
 8,'Substation 8',0, 34.1956,-94.0980,   0.100,''
 0 / End of Substation data, Begin Bus Substation Data
  1,1

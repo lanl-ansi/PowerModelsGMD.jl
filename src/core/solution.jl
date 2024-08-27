@@ -108,3 +108,22 @@ function add_ieff_solution!(data::Dict{String,Any}, dc_sol::Dict{String,Any})
         data["ieff"] = dc_sol["solution"]["ieff"]
     end
 end
+
+function source_id_keys!(solution::Dict{String, Any}, network::Dict{String, Any})
+    solution_keys_pairs = [["qloss", "branch"], ["gmd_branch", "gmd_branch"], ["gmd_bus", "gmd_bus"], ["ieff", "branch"]]
+
+    for key_pair in solution_keys_pairs
+        _convert_table!(solution["solution"], network, key_pair)
+    end
+end
+
+function _convert_table!(solution::Dict{String, Any}, network::Dict{String, Any}, key_pair::Vector{String})
+    valType = valtype(solution[key_pair[1]])
+    new_table = Dict{Array, valType}()
+
+    for (key, element) in solution[key_pair[1]]
+        new_table[network[key_pair[2]][key]["source_id"]] = element
+    end
+
+    solution[key_pair[1]] = new_table
+end
