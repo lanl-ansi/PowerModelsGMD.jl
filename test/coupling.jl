@@ -27,23 +27,22 @@ function create_branch_voltage_map(net)
     return branch_map
 end
 
-calc_gmd_branch_length = data -> length(data["gmd_branch"])
-calc_v_sum = data -> sum(map(x -> x["br_v"], values(gmd_branch)))
-calc_v_mean(data) -> calc_v_sum(data)/calc_gmd_branch_length(data)
+calc_v_sum = data -> sum(map(x -> x["br_v"], data)
+calc_v_mean = data -> calc_v_sum(data)/length(data)
 
 function calc_v_std(data)
-    n = calc_gmd_branch_length(data)
+    n = length(data)
     v_mean = calc_v_mean(data)
-    return sqrt(sum(map(x -> (x["br_v"] - v_mean)^2, values(data["gmd_branch"])))/(n - 1))
+    return sqrt(sum(map(x -> (x["br_v"] - v_mean)^2, data))/(n - 1))
 end
 
-calc_v_mag_sum = data -> sum(map(x -> abs(x["br_v"]), values(data["gmd_branch"])))
-calc_v_mag_mean = data -> calc_v_mag_sum(data)/calc_gmd_branch_length(data) 
+calc_v_mag_sum = data -> sum(map(x -> abs(x["br_v"]), data))
+calc_v_mag_mean = data -> calc_v_mag_sum(data)/length(data)
 
 function calc_v_mag_std(data)
-    n = calc_gmd_branch_length(data)
+    n = length(data)
     v_mag_mean = calc_v_mag_mean(data)
-    return sqrt(sum(map(x -> (abs(x["br_v"]) - v_mag_mean)^2, values(data["gmd_branch"])))/(n - 1))
+    return sqrt(sum(map(x -> (abs(x["br_v"]) - v_mag_mean)^2, data))/(n - 1))
 end
 
 const voltage_err = 0.01
@@ -89,11 +88,16 @@ const voltage_err = 0.01
             # we don't have an objective, so check the moments of the coupled voltage (along with the min/max)
             # TODO: use Julia stats package for this
             # TODO: export coupled voltages to more than 2 decimal places
+            # TODO: calculate median or other statistics?
+            gmd_branches = collect(values(data["gmd_branch"]))
             @test calc_gmd_branch_length(data) ==  30
-            @test isapprox(calc_v_mean(data), 1369.97; atol = voltage_err) 
-            @test isapprox(calc_v_std(data), 1360.426081; atol = voltage_err)  
-            @test isapprox(calc_v_mag_mean(data), 2166.25; atol = voltage_err) 
-            @test isapprox(calc_v_mag_std(data), 2148.762437; atol = voltage_err)  
+            @test isapprox(calc_v_mean(gmd_branches), 1369.97; atol = voltage_err) 
+            @test isapprox(calc_v_std(gmd_branches), 1360.426081; atol = voltage_err)  
+            @test isapprox(calc_v_mag_mean(gmd_branches), 2166.25; atol = voltage_err) 
+            @test isapprox(calc_v_mag_std(gmd_branches), 2148.762437; atol = voltage_err)  
+
+            other_branches = filter(x -> x["source_id"][1] != "branch", gmd_branches)
+            @test isapprox(calc_v_mag_sum(other_branches), 0.0; atol = voltage_err)  
         end
 
         @testset "Run coupling" begin
