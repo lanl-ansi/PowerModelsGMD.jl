@@ -27,8 +27,26 @@ function create_branch_voltage_map(net)
     return branch_map
 end
 
-const voltage_err = 0.01
+calc_gmd_branch_length = data -> length(data["gmd_branch"])
+calc_v_sum = data -> sum(map(x -> x["br_v"], values(gmd_branch)))
+calc_v_mean(data) -> calc_v_sum(data)/calc_gmd_branch_length(data)
 
+function calc_v_std(data)
+    n = calc_gmd_branch_length(data)
+    v_mean = calc_v_mean(data)
+    return sqrt(sum(map(x -> (x["br_v"] - v_mean)^2, values(data["gmd_branch"])))/(n - 1))
+end
+
+calc_v_mag_sum = data -> sum(map(x -> abs(x["br_v"]), values(data["gmd_branch"])))
+calc_v_mag_mean = data -> calc_v_mag_sum(data)/calc_gmd_branch_length(data) 
+
+function calc_v_mag_std(data)
+    n = calc_gmd_branch_length(data)
+    v_mag_mean = calc_v_mag_mean(data)
+    return sqrt(sum(map(x -> (abs(x["br_v"]) - v_mag_mean)^2, values(data["gmd_branch"])))/(n - 1))
+end
+
+const voltage_err = 0.01
 
 @testset "Test Coupling" begin
     @testset "Bus4 file" begin
@@ -69,20 +87,13 @@ const voltage_err = 0.01
             @test isapprox(branch_voltage_map[[15, 6, "2 "]], 191.110397; atol = voltage_err) # parallel line 
 
             # we don't have an objective, so check the moments of the coupled voltage (along with the min/max)
-            n = length(net["gmd_branch"])
             # TODO: use Julia stats package for this
-            v_avg = sum(map(x -> x["br_v"], values(gmd_branch)))/n
             # TODO: export coupled voltages to more than 2 decimal places
-            @test isapprox(v_avg, 1369.97; atol = voltage_err) 
-
-            v_std = sqrt(sum(map(x -> (x["br_v"] - v_avg)^2, values(net["gmd_branch"])))/(n - 1))
-            @test isapprox(v_std, 1360.426081; atol = voltage_err)  
-
-            v_mag_avg = sum(map(x -> abs(x["br_v"]), values(gmd_branch)))/n
-            @test isapprox(v_avg, 2166.25; atol = voltage_err) 
-
-            v_mag_std = sqrt(sum(map(x -> (abs(x["br_v"]) - v_mag_avg)^2, values(net["gmd_branch"])))/(n - 1))
-            @test isapprox(v_std, 2148.762437; atol = voltage_err)  
+            @test calc_gmd_branch_length(data) ==  30
+            @test isapprox(calc_v_mean(data), 1369.97; atol = voltage_err) 
+            @test isapprox(calc_v_std(data), 1360.426081; atol = voltage_err)  
+            @test isapprox(calc_v_mag_mean(data), 2166.25; atol = voltage_err) 
+            @test isapprox(calc_v_mag_std(data), 2148.762437; atol = voltage_err)  
         end
 
         @testset "Run coupling" begin
