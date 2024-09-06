@@ -49,11 +49,20 @@ end
 
 
 # ===   WITH MATRIX SOLVE   === #
+function solve_gmd(ac_file::String, gic_file::String, csv_file::String; kwargs...)
+    ac_data = _PM.parse_file(ac_file)
+    gic_data = parse_gic(gic_file)
+    case = generate_dc_data(gic_data, ac_data)
+    add_coupled_voltages!(csv_file, case)
+    add_gmd_3w_branch!(case)
+    return solve_gmd(case; kwargs)
+end
+
 function solve_gmd(raw_file::IO, gic_file::IO, csv_file::IO; kwargs...)
     raw_data = _PM.parse_psse(raw_file)
     gic_data = parse_gic(gic_file)
     case = generate_dc_data(gic_data, raw_data)
-    load_voltages!(csv_file, case)
+    add_coupled_voltages!(csv_file, case)
     add_gmd_3w_branch!(case)
     return solve_gmd(case; kwargs)
 end

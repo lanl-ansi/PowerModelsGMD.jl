@@ -2,7 +2,6 @@
 
 "FUNCTION: ac current"
 #function variable_ac_current(pm::_PM.AbstractWRModel; kwargs...)
-
 #    nw = nw_id_default
 
 #    variable_ac_current_mag(pm; kwargs...)
@@ -17,27 +16,16 @@
 #        upper_bound = cm_max[l],
 #        start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "cm_p_start")
 #    )
-
 #end
 
 
 "CONSTRAINT: relating current to power flow on_off"
 function constraint_current_on_off(pm::_PM.AbstractWRModel, n::Int, i::Int, ac_max)
-
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     z = _PM.var(pm, n, :z_branch)[i]
 
-    JuMP.@constraint(pm.model,
-        i_ac_mag
-        <=
-        z * ac_max
-    )
-    JuMP.@constraint(pm.model,
-        i_ac_mag
-        >=
-        0
-    )
-
+    JuMP.@constraint(pm.model, i_ac_mag <= z*ac_max)
+    JuMP.@constraint(pm.model, i_ac_mag >= 0.0)
 end
 
 
@@ -46,7 +34,6 @@ end
 
 "CONSTRAINT: nodal power balance with gmd"
 function constraint_power_balance_gmd(pm::_PM.AbstractWRModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd)
-
     p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
     q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
     qloss = get(_PM.var(pm, n), :qloss, Dict()); _PM._check_var_keys(qloss, bus_arcs, "reactive power", "branch")
@@ -113,13 +100,11 @@ function constraint_power_balance_gmd(pm::_PM.AbstractWRModel, n::Int, i::Int, b
         _PM.sol(pm, n, :bus, i)[:lam_kcl_r] = cstr_p
         _PM.sol(pm, n, :bus, i)[:lam_kcl_i] = cstr_q
     end
-
 end
 
 
 "CONSTRAINT: nodal power balance with gmd and shunts"
 function constraint_power_balance_gmd_shunt(pm::_PM.AbstractWRModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-
     w = _PM.var(pm, n, :w, i)
     p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
     q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
@@ -191,13 +176,11 @@ function constraint_power_balance_gmd_shunt(pm::_PM.AbstractWRModel, n::Int, i::
         _PM.sol(pm, n, :bus, i)[:lam_kcl_r] = cstr_p
         _PM.sol(pm, n, :bus, i)[:lam_kcl_i] = cstr_q
     end
-
 end
 
 
 "CONSTRAINT: nodal power balance with gmd, shunts, and constant power factor load shedding"
 function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWRModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-
     w = _PM.var(pm, n, :w, i)
     p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
     q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
@@ -263,7 +246,6 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWRModel, n::Int, 
         _PM.sol(pm, n, :bus, i)[:lam_kcl_r] = cstr_p
         _PM.sol(pm, n, :bus, i)[:lam_kcl_i] = cstr_q
     end
-
 end
 
 
@@ -272,53 +254,32 @@ end
 
 "CONSTRAINT: zero qloss"
 function constraint_zero_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j)
-
     qloss = _PM.var(pm, n, :qloss)
 
-
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        0.0
-    )
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
-
+    JuMP.@constraint(pm.model, qloss[(k,i,j)] == 0.0)
+    JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
 end
 
 
 "CONSTRAINT: thermal protection of transformers"
 function constraint_thermal_protection(pm::_PM.AbstractWRModel, n::Int, i::Int, coeff, ibase)
-
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     ieff = _PM.var(pm, n, :i_dc_mag)[i]
     ieff_sqr = _PM.var(pm, n, :i_dc_mag_sqr)[i]
 
-    JuMP.@constraint(pm.model,
-        i_ac_mag
-        <=
-        coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff_sqr/(ibase^2)
-    )
-
+    JuMP.@constraint(pm.model, i_ac_mag <= coeff[1] + coeff[2]*ieff/ibase + coeff[3]*ieff_sqr/(ibase^2))
     _IM.relaxation_sqr(pm.model, ieff, ieff_sqr)
-
 end
 
 
 "FUNCTION: ac current on/off"
 function variable_ac_current_on_off(pm::_PM.AbstractWRModel; kwargs...)
-
    variable_ac_current_mag(pm; bounded=false, kwargs...)
-
 end
 
 "FUNCTION: dc current"
 function variable_dc_current(pm::_PM.AbstractWRModel; kwargs...)
-
     variable_dc_current_mag(pm; kwargs...)
     variable_dc_current_mag_sqr(pm; kwargs...)
-
 end
+

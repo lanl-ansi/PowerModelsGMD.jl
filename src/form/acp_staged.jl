@@ -1,19 +1,10 @@
 "CONSTRAINT: relating current to power flow on/off"
 function constraint_current_on_off(pm::_PM.AbstractACPModel, n::Int, i::Int, ac_max)
-
     i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
     z = _PM.var(pm, n, :z_branch)[i]
 
-    JuMP.@constraint(pm.model,
-        i_ac_mag
-        <=
-        z * ac_max
-    )
-    JuMP.@constraint(pm.model,
-        i_ac_mag
-        >=
-        0
-    )
+    JuMP.@constraint(pm.model, i_ac_mag <= z * ac_max)
+    JuMP.@constraint(pm.model, i_ac_mag >= 0.0)
 
 end
 

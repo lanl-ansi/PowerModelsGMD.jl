@@ -3,16 +3,13 @@
 
 function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solver, gic_prob_method, ac_prob_method;  return_dc=false, kwargs...)
     setting = kwargs[:setting]
-
     dc_result = gic_prob_method(dc_case, solver)
-
     dc_solution = dc_result["solution"]
-
     ac_case = deepcopy(dc_case)
+
     for branch in values(ac_case["branch"])
         branch["ieff"] = calc_ieff_current_mag(branch, ac_case, dc_solution)
     end
-
     ac_result = ac_prob_method(ac_case, model_constructor, solver, setting=setting; solution_processors = [
         solution_gmd_qloss!,
     ],
@@ -22,12 +19,10 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
         ac_result["solution"]["branch"][i]["gmd_idc_mag"] = branch["ieff"]
     end
 
-
     for (asset, indicies) in dc_solution
         if typeof(indicies) != Dict{String,Any}
             continue
         end
-
 
         if !haskey(ac_result["solution"], asset)
             ac_result["solution"][asset] = Dict{String,Any}()
@@ -64,11 +59,7 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
     end
 
     return ac_result
-
-#    ac_solution = ac_result["solution"]
-
-
-
+    #    ac_solution = ac_result["solution"]
 end
 
 
@@ -127,3 +118,4 @@ end
 function solve_gmd_pf_decoupled(case::Dict{String,Any}, model_constructor, solver; kwargs...)
     return solve_gmd_decoupled(case, model_constructor, solver, _PMGMD.solve_gmd, _PMGMD.solve_gmd_pf_uncoupled; kwargs...)
 end
+
