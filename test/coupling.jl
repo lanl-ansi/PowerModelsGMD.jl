@@ -85,22 +85,55 @@ const voltage_err = 0.01
             # TODO: use Julia stats package for this
             # TODO: export coupled voltages to more than 2 decimal places
             # TODO: calculate median or other statistics?
-            v = get_branch_voltages(data)
-            @test length(data) ==  58
-            @test isapprox(calc_mean(v), 1369.97; atol = voltage_err) 
-            @test isapprox(calc_std(v), 1360.426081; atol = voltage_err)  
-            @test isapprox(calc_mag_mean(v), 2166.25; atol = voltage_err) 
-            @test isapprox(calc_mag_std(v), 2148.762437; atol = voltage_err)  
+            v = [x["br_v"] for x in values(data["gmd_branch"]) if x["source_id"][1] == "branch"]
 
-            v_line = [x["gmd_vdc"] for x in values(data["gmd_branch"]) if x["source_id"][1] != "branch"]
-            @test length(v_line) == 16
+            # Summary Stats:
+            # Length:         16
+            # Missing Count:  0
+            # Mean:           85.624962
+            # Std. Deviation: 135.194889
+            # Minimum:        -155.555679
+            # 1st Quartile:   -5.034325
+            # Median:         131.693298
+            # 3rd Quartile:   175.112583
+            # Maximum:        321.261292
 
-            gmd_branches = collect(values(data["gmd_branch"]))
-            #other_branches = filter(x -> x["source_id"][1] != "branch", gmd_branches)
-            #v_other = collect(map(x -> x["gmd_vdc"], other_branches))
-            v_other = [x["gmd_vdc"] for x in values(data["gmd_branch"]) if x["source_id"][1] != "branch"]
-            @test length(v_other) == 42 
-            @test isapprox(calc_v_mag_sum(v_other), 0.0; atol = voltage_err)  
+            @test length(v) ==  16
+            mu, std = StatsBase.mean_and_std(v, corrected=true)
+            @test isapprox(mu, 85.624962; atol = voltage_err) 
+            @test isapprox(std, 135.194889; atol = voltage_err)  
+            q = StatsBase.nquantile(v, 4)
+            # @test isapprox(q[1], -155.555679; atol = voltage_err) # min, redundant
+            @test isapprox(q[2], -5.034325; atol = voltage_err) # 1st quartile 
+            @test isapprox(q[3], 131.693298; atol = voltage_err) # median
+            @test isapprox(q[4], 175.112583; atol = voltage_err) # 3rd quartile
+            # @test isapprox(q[5], 321.261292; atol = voltage_err) # max, redundant
+
+            # Length:         16
+            # Missing Count:  0
+            # Mean:           135.389907
+            # Std. Deviation: 80.904958
+            # Minimum:        0.000000
+            # 1st Quartile:   113.742239
+            # Median:         143.624488
+            # 3rd Quartile:   175.112583
+            # Maximum:        321.261292
+
+            vm = abs.(v)
+            mu_m, std_m = StatsBase.mean_and_std(vm, corrected=true)
+            @test isapprox(mu_m, 135.389907; atol = voltage_err) 
+            @test isapprox(std_m, 80.904958; atol = voltage_err)  
+            qm = StatsBase.nquantile(vm, 4)
+            # @test isapprox(qm[1], 0.0; atol = voltage_err) # min
+            @test isapprox(qm[2], 113.742239; atol = voltage_err) # 1st quartile 
+            @test isapprox(qm[3], 143.624488; atol = voltage_err) # median
+            @test isapprox(qm[4], 175.112583; atol = voltage_err) # 3rd quartile
+            # @test isapprox(qm[5], 321.261292; atol = voltage_err) # max
+
+            @test length(data["gmd_branch"]) == 58
+
+            v_other = [x["br_v"] for x in values(data["gmd_branch"]) if x["source_id"][1] != "branch"]
+            @test isapprox(sum(abs.(v_other)), 0.0; atol = voltage_err)  
         end
 
         @testset "Run coupling" begin

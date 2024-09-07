@@ -9,6 +9,7 @@ const _PM = PowerModels
 import JSON
 import JuMP
 import Memento
+import StatsBase
 
 # Suppressing warning messages:
 Memento.setlevel!(Memento.getlogger(_PMGMD), "error")
