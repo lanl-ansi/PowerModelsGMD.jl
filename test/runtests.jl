@@ -10,6 +10,7 @@ import JSON
 import JuMP
 import Memento
 import StatsBase
+import FFTW
 
 # Suppressing warning messages:
 Memento.setlevel!(Memento.getlogger(_PMGMD), "error")

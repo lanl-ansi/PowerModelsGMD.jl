@@ -612,8 +612,7 @@ end
 
 function calc_hotspot_temp!(branch)
     ambient_temp = get(branch, "temperature_ambient", default_ambient_temp_c) 
-    branch["actual_hotspot"] = ambient_temp + branch["delta_topoilrise"] 
-        + branch["delta_hotspotrise"]
+    branch["actual_hotspot"] = ambient_temp + branch["delta_topoilrise"] + branch["delta_hotspotrise"]
 end
 
 

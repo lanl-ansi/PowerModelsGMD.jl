@@ -81,72 +81,93 @@ const voltage_err = 0.01
             @test isapprox(branch_voltage_map[[15, 6, "1 "]], 191.110397; atol = voltage_err) # parallel line
             @test isapprox(branch_voltage_map[[15, 6, "2 "]], 191.110397; atol = voltage_err) # parallel line 
 
-            # we don't have an objective, so check the moments of the coupled voltage (along with the min/max)
-            # TODO: use Julia stats package for this
+            # we don't have an objective, so check the stats of coupled voltages 
+            # (and make sure to check the branch keys with min/max coupled voltages
             # TODO: export coupled voltages to more than 2 decimal places
-            # TODO: calculate median or other statistics?
             v = [x["br_v"] for x in values(data["gmd_branch"]) if x["source_id"][1] == "branch"]
-
-            # Summary Stats:
-            # Length:         16
-            # Missing Count:  0
-            # Mean:           85.624962
-            # Std. Deviation: 135.194889
-            # Minimum:        -155.555679
-            # 1st Quartile:   -5.034325
-            # Median:         131.693298
-            # 3rd Quartile:   175.112583
-            # Maximum:        321.261292
-
+            @test length(data["gmd_branch"]) == 58
             @test length(v) ==  16
+
             mu, std = StatsBase.mean_and_std(v, corrected=true)
             @test isapprox(mu, 85.624962; atol = voltage_err) 
             @test isapprox(std, 135.194889; atol = voltage_err)  
             q = StatsBase.nquantile(v, 4)
-            # @test isapprox(q[1], -155.555679; atol = voltage_err) # min, redundant
             @test isapprox(q[2], -5.034325; atol = voltage_err) # 1st quartile 
             @test isapprox(q[3], 131.693298; atol = voltage_err) # median
             @test isapprox(q[4], 175.112583; atol = voltage_err) # 3rd quartile
-            # @test isapprox(q[5], 321.261292; atol = voltage_err) # max, redundant
-
-            # Length:         16
-            # Missing Count:  0
-            # Mean:           135.389907
-            # Std. Deviation: 80.904958
-            # Minimum:        0.000000
-            # 1st Quartile:   113.742239
-            # Median:         143.624488
-            # 3rd Quartile:   175.112583
-            # Maximum:        321.261292
 
             vm = abs.(v)
             mu_m, std_m = StatsBase.mean_and_std(vm, corrected=true)
             @test isapprox(mu_m, 135.389907; atol = voltage_err) 
             @test isapprox(std_m, 80.904958; atol = voltage_err)  
             qm = StatsBase.nquantile(vm, 4)
-            # @test isapprox(qm[1], 0.0; atol = voltage_err) # min
             @test isapprox(qm[2], 113.742239; atol = voltage_err) # 1st quartile 
             @test isapprox(qm[3], 143.624488; atol = voltage_err) # median
             @test isapprox(qm[4], 175.112583; atol = voltage_err) # 3rd quartile
-            # @test isapprox(qm[5], 321.261292; atol = voltage_err) # max
 
-            @test length(data["gmd_branch"]) == 58
+            # Check that ordering is the same by looking at the DTFT
+            # 1: 1369.9993900
+            # 2: 187.1521930
+            # 3: 539.9495103
+            # 4: 565.9244708
+            # 5: 641.4641840
+            # 6: 469.3418969
+            # 7: 613.4904560
+            # 8: 427.1627412
+            # 9: 843.6591340
+            # 10: 427.1627412
+            # 11: 613.4904560
+            # 12: 469.3418969
+            # 13: 641.4641840
+            # 14: 565.9244708
+            # 15: 539.9495103
+            # 16: 187.1521930            
+
+            sorted_keys = sort([x["source_id"][2:4] for x in values(data["branch"]) if x["source_id"][1] == "branch"])
+            vs = [branch_voltage_map[k] for k in sorted_keys]
+            Vm = abs.(FFTW.fft(vs))
+
+            for (i, vi) in enumerate(Vm)
+                # @printf "%02d: %0.6f\n" i round(vi, digits=6)
+                println("$i: $vi")
+            end
+
+            @test isapprox(Vm[2], 679.012015; atol = voltage_err) 
+            @test isapprox(Vm[5], 384.097304; atol = voltage_err) 
+            @test isapprox(Vm[9], 80.690000; atol = voltage_err) 
 
             v_other = [x["br_v"] for x in values(data["gmd_branch"]) if x["source_id"][1] != "branch"]
+            @test length(v_other) == 42
             @test isapprox(sum(abs.(v_other)), 0.0; atol = voltage_err)  
         end
 
         @testset "Run coupling" begin
             data = PowerModelsGMD.generate_dc_data(gic_file, raw_file)
             branch_voltage_map = create_branch_voltage_map(data)
-            @test isapprox(branch_voltage_map[[2, 3, "1 "]], 120.603544; atol = voltage_err)
-            @test isapprox(branch_voltage_map[[17, 20, "1 "]], 158.178009; atol = voltage_err)
-            @test isapprox(branch_voltage_map[[5, 6, "1 "]], 190.986511; atol = voltage_err)
-            @test isapprox(branch_voltage_map[[16, 17, "1 "]], -155.555679; atol = voltage_err)
-            @test isapprox(branch_voltage_map[[4, 6, "1 "]], 321.261292; atol = voltage_err)
-            @test isapprox(branch_voltage_map[[5, 21, "1 "]], 0.0; atol = voltage_err)
-            @test isapprox(branch_voltage_map[[15, 6, "1 "]], 191.110397; atol = voltage_err)
-            @test isapprox(branch_voltage_map[[15, 6, "2 "]], 191.110397; atol = voltage_err)      
+            @test isapprox(branch_voltage_map[[2, 3, "1 "]], 120.603544; atol = voltage_err) # first line
+            @test isapprox(branch_voltage_map[[17, 20, "1 "]], 158.178009; atol = voltage_err) # last line
+            @test isapprox(branch_voltage_map[[5, 6, "1 "]], 190.986511; atol = voltage_err) # random line
+            @test isapprox(branch_voltage_map[[16, 17, "1 "]], -155.555679; atol = voltage_err) # min voltage
+            @test isapprox(branch_voltage_map[[4, 6, "1 "]], 321.261292; atol = voltage_err) # max voltage
+            @test isapprox(branch_voltage_map[[5, 21, "1 "]], 0.0; atol = voltage_err) # line with zero voltage 
+            @test isapprox(branch_voltage_map[[16, 20, "1 "]], 1.489666; atol = voltage_err) # line with smallest absolute nonzero voltage
+            @test isapprox(branch_voltage_map[[15, 6, "1 "]], 191.110397; atol = voltage_err) # parallel line
+            @test isapprox(branch_voltage_map[[15, 6, "2 "]], 191.110397; atol = voltage_err) # parallel line 
+            
+            v = [x["br_v"] for x in values(data["gmd_branch"]) if x["source_id"][1] == "branch"]
+            @test length(data["gmd_branch"]) == 58
+            @test length(v) ==  16
+
+            mu, std = StatsBase.mean_and_std(v, corrected=true)
+            @test isapprox(mu, 85.624962; atol = voltage_err) 
+            @test isapprox(std, 135.194889; atol = voltage_err)  
+
+            vm = abs.(v)
+            mu_m = StatsBase.Statistics.mean(vm)
+            @test isapprox(mu_m, 135.389907; atol = voltage_err) 
+
+            v_other = [x["br_v"] for x in values(data["gmd_branch"]) if x["source_id"][1] != "branch"]
+            @test isapprox(sum(abs.(v_other)), 0.0; atol = voltage_err)  
         end        
     end    
 end
