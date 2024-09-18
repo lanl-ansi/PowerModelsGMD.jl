@@ -103,34 +103,11 @@ const voltage_err = 0.01
             qm = StatsBase.nquantile(vm, 4)
             @test isapprox(qm[2], 113.742239; atol = voltage_err) # 1st quartile 
             @test isapprox(qm[3], 143.624488; atol = voltage_err) # median
-            @test isapprox(qm[4], 175.112583; atol = voltage_err) # 3rd quartile
-
-            # Check that ordering is the same by looking at the DTFT
-            # 1: 1369.9993900
-            # 2: 187.1521930
-            # 3: 539.9495103
-            # 4: 565.9244708
-            # 5: 641.4641840
-            # 6: 469.3418969
-            # 7: 613.4904560
-            # 8: 427.1627412
-            # 9: 843.6591340
-            # 10: 427.1627412
-            # 11: 613.4904560
-            # 12: 469.3418969
-            # 13: 641.4641840
-            # 14: 565.9244708
-            # 15: 539.9495103
-            # 16: 187.1521930            
+            @test isapprox(qm[4], 175.112583; atol = voltage_err) # 3rd quartile      
 
             sorted_keys = sort([x["source_id"][2:4] for x in values(data["branch"]) if x["source_id"][1] == "branch"])
             vs = [branch_voltage_map[k] for k in sorted_keys]
             Vm = abs.(FFTW.fft(vs))
-
-            for (i, vi) in enumerate(Vm)
-                # @printf "%02d: %0.6f\n" i round(vi, digits=6)
-                println("$i: $vi")
-            end
 
             @test isapprox(Vm[2], 679.012015; atol = voltage_err) 
             @test isapprox(Vm[5], 384.097304; atol = voltage_err) 
