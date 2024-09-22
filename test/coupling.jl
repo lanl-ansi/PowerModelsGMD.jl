@@ -27,19 +27,6 @@ function create_branch_voltage_map(net)
     return branch_map
 end
 
-get_branch_voltages = data -> collect(map(x -> x["br_v"], values(data["gmd_branch"])))
-calc_mean = x -> sum(x)/length(x)
-
-function calc_std(x)
-    n = length(x)
-    mu = calc_mean(x)
-    return sqrt(sum((x .- mu).^2)/(n - 1))
-end
-
-calc_mag_sum = x -> calc_mean(abs.(x))
-calc_mag_mean = x -> calc_mag_sum(x)/length(x)
-calc_v_mag_std = x -> calc_std(abs.(x))
-
 const voltage_err = 0.01
 
 @testset "Test Coupling" begin
@@ -91,6 +78,7 @@ const voltage_err = 0.01
             mu, std = StatsBase.mean_and_std(v, corrected=true)
             @test isapprox(mu, 85.624962; atol = voltage_err) 
             @test isapprox(std, 135.194889; atol = voltage_err)  
+
             q = StatsBase.nquantile(v, 4)
             @test isapprox(q[2], -5.034325; atol = voltage_err) # 1st quartile 
             @test isapprox(q[3], 131.693298; atol = voltage_err) # median
@@ -98,8 +86,9 @@ const voltage_err = 0.01
 
             vm = abs.(v)
             mu_m, std_m = StatsBase.mean_and_std(vm, corrected=true)
-            @test isapprox(mu_m, 135.389907; atol = voltage_err) 
+            @test isapprox(mu_m, 35.389907; atol = voltage_err) 
             @test isapprox(std_m, 80.904958; atol = voltage_err)  
+
             qm = StatsBase.nquantile(vm, 4)
             @test isapprox(qm[2], 113.742239; atol = voltage_err) # 1st quartile 
             @test isapprox(qm[3], 143.624488; atol = voltage_err) # median

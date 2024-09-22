@@ -79,8 +79,27 @@ const voltage_err_hi = 1.0
             @test isapprox(bus_voltage_map[["bus", 12]], 21.668301; atol = voltage_err_hi)
             @test isapprox(bus_voltage_map[["bus", 4]], -107.737228; atol = voltage_err_hi)
             @test isapprox(bus_voltage_map[["bus", 6]], 52.523746; atol = voltage_err_hi)
+            f = k -> result["solution"]["gmd_bus"][k]["gmd_vdc"]
+            vbus = [f(k) for (k,x) in data["gmd_bus"] if x["parent_type"] == "bus"]
+            @test length(values(result["solution"]["gmd_bus"])) == 19
+            @test length(v) == 19
+
+            mu, std = StatsBase.mean_and_std(vbus, corrected=true)
+            @test isapprox(mu, -12.666903; atol = 0.5)
+            @test isapprox(std, 43.423599; atol = 0.5)
+
+            q = StatsBase.nquantile(vbus, 4)
+            @test isapprox(q[2], -21.589440; atol = 0.1) # median
+            @test isapprox(q[3], -12.543691; atol = 0.1) # 1st quartile 
+            @test isapprox(q[4], 18.572832; atol = 0.1) # 3rd quartile
+
+            vm = abs.(v)
+            mu_m, std_m = StatsBase.mean_and_std(vm, corrected=true)
+            @test isapprox(mu_m, 33.805089; atol = voltage_err) 
+            @test isapprox(std_m, 29.132478; atol = voltage_err)  
+
         end
-#
+
 #        @testset "Run coupling" begin
 #            data = PowerModelsGMD.generate_dc_data(gic_file, raw_file)
 #            branch_voltage_map = create_branch_voltage_map(data)
