@@ -7,9 +7,6 @@ TESTLOG = Memento.getlogger(PowerModels)
 # Compare coupled voltages for both csv & coupling code
 # Compare GMD solve results against PW - put this in PSSE.jl?
 
-calc_mean = x -> StatsBase.Statistics.mean(x)
-calc_std = x -> StatsBase.Statistics.std(x, corrected=true)
-
 function create_branch_voltage_map(net)
     branch_map = Dict()
 
