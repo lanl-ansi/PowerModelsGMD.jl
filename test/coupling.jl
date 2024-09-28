@@ -132,6 +132,20 @@ const voltage_err = 0.01
             vm = abs.(v)
             mu_m = StatsBase.Statistics.mean(vm)
             @test isapprox(mu_m, 135.389907; atol = voltage_err) 
+            @test isapprox(std_m, 80.904958; atol = voltage_err) 
+
+            qm = StatsBase.nquantile(vm, 4)
+            @test isapprox(qm[2], 113.742239; atol = voltage_err) # 1st quartile 
+            @test isapprox(qm[3], 143.624488; atol = voltage_err) # median
+            @test isapprox(qm[4], 175.112583; atol = voltage_err) # 3rd quartile      
+
+            sorted_keys = sort([x["source_id"][2:4] for x in values(data["branch"]) if x["source_id"][1] == "branch"])
+            vs = [branch_voltage_map[k] for k in sorted_keys]
+            Vm = abs.(FFTW.fft(vs))
+
+            @test isapprox(Vm[2], 679.012015; atol = voltage_err) 
+            @test isapprox(Vm[5], 384.097304; atol = voltage_err) 
+            @test isapprox(Vm[9], 80.690000; atol = voltage_err) 
 
             v_other = [x["br_v"] for x in values(data["gmd_branch"]) if x["source_id"][1] != "branch"]
             @test isapprox(sum(abs.(v_other)), 0.0; atol = voltage_err)  
