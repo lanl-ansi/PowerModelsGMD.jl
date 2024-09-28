@@ -6,16 +6,8 @@ Status:
 [![Documentation](https://github.com/lanl-ansi/PowerModelsGMD.jl/workflows/Documentation/badge.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/stable/)
 </p>
 
-```
-UNDER DEVELOPMENT
-
-PMSGMD V0.5.0 WILL BE RELEASED IN EARLY 2023
-```
-
 PowerModelsGMD (PMsGMD) is an open-source [Julia](https://julialang.org/) tool for evaluating the risks and mitigating the impacts of geomagnetic disturbances (GMDs) and E3 high-altitude electromagnetic pulse (HEMP) events on electrical power transmission networks.
 It solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (GIC) and calculates GICs based on pre-determined geoelectric fields and takes in the coupled line voltages as inputs.
-
-
 
 ## PMsGMD Dependencies
 
