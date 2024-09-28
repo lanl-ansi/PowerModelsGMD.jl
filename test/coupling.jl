@@ -33,7 +33,7 @@ const voltage_err = 0.01
     @testset "Bus4 file" begin
         gic_file = "../test/data/gic/bus4.gic"
         raw_file = "../test/data/pti/bus4.raw"
-        csv_file = "../test/data/lines/bus4_1v_km.csv"
+        csv_file = "../test/data/pw_csv/lines/bus4_1v_km.csv"
 
         @testset "Load coupled voltages from CSV" begin
 
@@ -51,7 +51,7 @@ const voltage_err = 0.01
         # TODO: rearrange the powerworld CSV exports into one folder
         gic_file = "../test/data/gic/epri.gic"
         raw_file = "../test/data/pti/epri.raw"
-        csv_file = "../test/data/lines/epri_1v_km.csv"
+        csv_file = "../test/data/pw_csv/lines/epri_1v_km.csv"
 
         @testset "Load coupled voltages from CSV" begin
             data = PowerModelsGMD.generate_dc_data(gic_file, raw_file, csv_file)

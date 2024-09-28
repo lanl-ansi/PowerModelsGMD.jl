@@ -14,8 +14,8 @@
 # # data_uiuc_150bus_contigency_mods = "../test/data/suppl/uiuc-150bus_15kvm_contigency_mods.json"
 # data_blocker_test = "../test/data/matpower/blocker_test.m"
 
-# data_b4gic_verification = "../test/data/verification/B4GIC_Slack_Only_GICXformer_1Vkm.csv"
-# data_epri21_verification = "../test/data/verification/EpriCase_Mar2012_GICXformer_1Vkm.csv"
+data_b4gic_verification = "../test/data/pw_csv/verification/B4GIC_Slack_Only_GICXformer_1Vkm.csv"
+data_epri21_verification = "../test/data/pw_csv/verification/EpriCase_Mar2012_GICXformer_1Vkm.csv"
 
 # data_b4gic_vm = "../test/data/verification/B4GIC_Slack_Only_Bus_1Vkm.csv"
 # data_epri21_vm = "../test/data/verification/EpriCase_Mar2012_Bus_1Vkm.csv"

@@ -48,7 +48,7 @@ const voltage_err_hi = 1.0
     @testset "Bus4 file" begin
         gic_file = "../test/data/gic/bus4.gic"
         raw_file = "../test/data/pti/bus4.raw"
-        csv_file = "../test/data/lines/bus4_1v_km.csv"
+        csv_file = "../test/data/pw_csv/lines/bus4_1v_km.csv"
 
         @testset "Solve GIC Flow" begin
             result = PowerModelsGMD.solve_gmd(raw_file, gic_file, csv_file)
@@ -64,7 +64,7 @@ const voltage_err_hi = 1.0
     @testset "EPRI20 file" begin
         gic_file = "../test/data/gic/epri.gic"
         raw_file = "../test/data/pti/epri.raw"
-        csv_file = "../test/data/lines/epri_1v_km.csv"
+        csv_file = "../test/data/pw_csv/lines/epri_1v_km.csv"
 
         @testset "Load coupled voltages from CSV" begin
             # TODO: Do I need to specify package name here?

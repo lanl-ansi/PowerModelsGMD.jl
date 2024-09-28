@@ -10,6 +10,19 @@ Data format similar to those used in PowerModelsONM ...
 RAW is the simple model.
 JSON is addition of PMsGMD data.
 
+## CSV Data Format
+
+CSV files are exported directly from PowerWorld, with PowerWorld internal variable names used as column names. The PowerWorld CSV export has the characteristic of a two-line header, where the first line indicates the exported object type, and the second line indicates the column names. See below for an example:
+
+``` csv
+Bus
+Number,GICDCVolt
+1,-32.008137
+2,32.008137
+3,-21.338785
+4,21.338785
+```
+
 
 ## MATPOWER Data Format
 
