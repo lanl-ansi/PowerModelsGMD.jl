@@ -13,3 +13,5 @@ docs/.documenter
 *.bak
 temp_data/
 .ipynb_checkpoints/
+*.swp
+
