@@ -7,6 +7,9 @@ TESTLOG = Memento.getlogger(PowerModels)
 # Compare coupled voltages for both csv & coupling code
 # Compare GMD solve results against PW - put this in PSSE.jl?
 
+calc_mean = x -> StatsBase.Statistics.mean(x)
+calc_std = x -> StatsBase.Statistics.std(x, corrected=true)
+
 function create_branch_voltage_map(net)
     branch_map = Dict()
 
@@ -76,18 +79,17 @@ const voltage_err = 0.01
             @test length(data["gmd_branch"]) == 58
             @test length(v) ==  16
 
-            mu, std = StatsBase.mean_and_std(v, corrected=true)
-            @test isapprox(mu, 85.624962; atol = voltage_err) 
-            @test isapprox(std, 135.194889; atol = voltage_err)  
+            # mu, std = StatsBase.mean_and_std(v, corrected=true)
+            @test isapprox(calc_mean(v), 85.624962; atol = voltage_err) 
+            @test isapprox(calc_std(v), 135.194889; atol = voltage_err)  
 
             q = StatsBase.nquantile(v, 4)
             @test isapprox(q[2], -5.034325; atol = voltage_err) # 1st quartile 
             @test isapprox(q[3], 131.693298; atol = voltage_err) # median
             @test isapprox(q[4], 175.112583; atol = voltage_err) # 3rd quartile
 
-            mu_m, std_m = StatsBase.mean_and_std(abs.(v), corrected=true)
-            @test isapprox(mu_m, 135.389907; atol = voltage_err) 
-            @test isapprox(std_m, 80.904958; atol = voltage_err)  
+            @test isapprox(calc_mean(abs.(v)), 135.389907; atol = voltage_err) 
+            @test isapprox(calc_std(abs.(v)), 80.904958; atol = voltage_err)  
 
             qm = StatsBase.nquantile(abs.(v), 4)
             @test isapprox(qm[2], 113.742239; atol = voltage_err) # 1st quartile 
