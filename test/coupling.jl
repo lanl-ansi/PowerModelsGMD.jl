@@ -85,12 +85,11 @@ const voltage_err = 0.01
             @test isapprox(q[3], 131.693298; atol = voltage_err) # median
             @test isapprox(q[4], 175.112583; atol = voltage_err) # 3rd quartile
 
-            vm = abs.(v)
-            mu_m, std_m = StatsBase.mean_and_std(vm, corrected=true)
+            mu_m, std_m = StatsBase.mean_and_std(abs.(v), corrected=true)
             @test isapprox(mu_m, 135.389907; atol = voltage_err) 
             @test isapprox(std_m, 80.904958; atol = voltage_err)  
 
-            qm = StatsBase.nquantile(vm, 4)
+            qm = StatsBase.nquantile(abs.(v), 4)
             @test isapprox(qm[2], 113.742239; atol = voltage_err) # 1st quartile 
             @test isapprox(qm[3], 143.624488; atol = voltage_err) # median
             @test isapprox(qm[4], 175.112583; atol = voltage_err) # 3rd quartile      
@@ -129,12 +128,11 @@ const voltage_err = 0.01
             @test isapprox(mu, 85.624962; atol = voltage_err) 
             @test isapprox(std, 135.194889; atol = voltage_err)  
 
-            vm = abs.(v)
-            mu_m = StatsBase.Statistics.mean(vm)
+            mu_m, std_m = StatsBase.mean_and_std(abs.(v), corrected=true)
             @test isapprox(mu_m, 135.389907; atol = voltage_err) 
             @test isapprox(std_m, 80.904958; atol = voltage_err) 
 
-            qm = StatsBase.nquantile(vm, 4)
+            qm = StatsBase.nquantile(abs.(v), 4)
             @test isapprox(qm[2], 113.742239; atol = voltage_err) # 1st quartile 
             @test isapprox(qm[3], 143.624488; atol = voltage_err) # median
             @test isapprox(qm[4], 175.112583; atol = voltage_err) # 3rd quartile      
