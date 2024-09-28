@@ -1,5 +1,11 @@
 # PowerModelsGMD.jl
 
+Status:
+[![CI](https://github.com/lanl-ansi/PowerModels.jl/workflows/CI/badge.svg)](https://github.com/lanl-ansi/PowerModels.jl/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/lanl-ansi/PowerModels.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/lanl-ansi/PowerModels.jl)
+[![Documentation](https://github.com/lanl-ansi/PowerModels.jl/workflows/Documentation/badge.svg)](https://lanl-ansi.github.io/PowerModels.jl/stable/)
+</p>
+
 ```
 UNDER DEVELOPMENT
 
