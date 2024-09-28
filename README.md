@@ -92,7 +92,7 @@ solve_gmd(network_case, optimizer; setting)
 
 ### GIC AC-OPF
 
-#### GIC -> AC-OPF
+#### GIC → AC-OPF
 
 Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-OPF optimal power flow specification and calculates the increase in transformer reactive power consumption.
 This specification was implemented with nonlinear ac polar relaxation.
@@ -125,7 +125,7 @@ solve_ac_gmd_opf_ts(multi_network_case, optimizer)
 
 ### GIC AC-MLD
 
-#### GIC -> AC-MLD
+#### GIC → AC-MLD
 
 Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-MLD maximum loadability specification and calculates the increase in transformer reactive power consumption.
 This specification was implemented with fixed network topology, and with second order cone relaxation.
