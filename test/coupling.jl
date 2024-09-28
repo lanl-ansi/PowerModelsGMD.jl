@@ -48,6 +48,7 @@ const voltage_err = 0.01
     end
 
     @testset "EPRI20 file" begin
+        # TODO: rearrange the powerworld CSV exports into one folder
         gic_file = "../test/data/gic/epri.gic"
         raw_file = "../test/data/pti/epri.raw"
         csv_file = "../test/data/lines/epri_1v_km.csv"
@@ -86,7 +87,7 @@ const voltage_err = 0.01
 
             vm = abs.(v)
             mu_m, std_m = StatsBase.mean_and_std(vm, corrected=true)
-            @test isapprox(mu_m, 35.389907; atol = voltage_err) 
+            @test isapprox(mu_m, 135.389907; atol = voltage_err) 
             @test isapprox(std_m, 80.904958; atol = voltage_err)  
 
             qm = StatsBase.nquantile(vm, 4)
