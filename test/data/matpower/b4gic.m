@@ -56,41 +56,41 @@ mpc.genfuel = {
 %% gmd_bus data
 %column_names% parent_index status g_gnd sub name
 mpc.gmd_bus = {
--1	1	5.0000000000		-1	'dc sub Sub A'
--1	1	5.0000000000		-1	'dc sub Sub B'
-1	1	0.0000000000		1	'dc bus Bus 1'
-2	1	0.0000000000		2	'dc bus Bus 2'
-3	1	0.0000000000		1	'dc bus Bus 3'
-4	1	0.0000000000		2	'dc bus Bus 4'
+-1	1	5.00000		-1	'dc sub Sub A'
+-1	1	5.00000		-1	'dc sub Sub B'
+1	1	0.00000		1	'dc bus Bus 1'
+2	1	0.00000		2	'dc bus Bus 2'
+3	1	0.00000		1	'dc bus Bus 3'
+4	1	0.00000		2	'dc bus Bus 4'
 };
 
 %% gmd_branch data
 %column_names% f_bus t_bus parent_type parent_index br_status br_r br_v len_km name
 mpc.gmd_branch = {
-3	4	'branch'	1	1	1.0007347500		106.1231079100		170.7885924600		'dc 1'		% line 1-2
-3	1	'branch'	2	1	0.1000000000		0.0000000000		0.0000000000		'dc 2_hi'	% transformer 1-3
-4	2	'branch'	3	1	0.1000000000		0.0000000000		0.0000000000		'dc 3_hi'	% transformer 2-4
-3	1	'bus'	1	1	25000.0000000000		0.0000000000		0.0000000000		'dc bus_3'
-4	2	'bus'	2	1	25000.0000000000		0.0000000000		0.0000000000		'dc bus_4'
-5	1	'bus'	3	1	25000.0000000000		0.0000000000		0.0000000000		'dc bus_5'
-6	2	'bus'	4	1	25000.0000000000		0.0000000000		0.0000000000		'dc bus_6'
+3	4	'branch'	1	1	1.00073		106.12311	170.78859	'dc 1'		% line 1-2
+3	1	'branch'	2	1	0.10000		0.00000		0.00000		'dc 2_hi'	% transformer 1-3
+4	2	'branch'	3	1	0.10000		0.00000		0.00000		'dc 3_hi'	% transformer 2-4
+3	1	'bus'	1	1	25000.00000		0.00000		0.00000		'dc bus_3'
+4	2	'bus'	2	1	25000.00000		0.00000		0.00000		'dc bus_4'
+5	1	'bus'	3	1	25000.00000		0.00000		0.00000		'dc bus_5'
+6	2	'bus'	4	1	25000.00000		0.00000		0.00000		'dc bus_6'
 };
 
 %% branch_gmd data
 %column_names% hi_bus lo_bus gmd_br_hi gmd_br_lo gmd_k gmd_br_series gmd_br_common baseMVA type config
 mpc.branch_gmd = {
-1	2	-1	-1	-1.0000000000		-1		-1		100.0	'line'	'none'
-1	3	2	-1	1.8000000000		-1		-1		100.0	'xfmr'	'gwye-delta'
-2	4	3	-1	1.8000000000		-1		-1		100.0	'xfmr'	'gwye-delta'
+1	2	-1	-1	-1.00000	-1		-1		100.0	'line'	'none'
+1	3	2	-1	1.80000     -1		-1		100.0	'xfmr'	'gwye-delta'
+2	4	3	-1	1.80000     -1		-1		100.0	'xfmr'	'gwye-delta'
 };
 
 %% bus_gmd data
 %column_names% lat lon
 mpc.bus_gmd = {
-40.0000000000		-89.0000000000		
-40.0000000000		-87.0000000000		
-40.0000000000		-89.0000000000		
-40.0000000000		-87.0000000000		
+40.00000    -89.00000		
+40.00000    -87.00000		
+40.00000    -89.00000		
+40.00000    -87.00000		
 };
 
 %% branch_thermal data
