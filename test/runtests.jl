@@ -49,5 +49,5 @@ include("test_cases.jl")
     # include("gmd_blocker.jl")
     include("parse.jl") # GIC parser
     include("coupling.jl")
-    include("gic.jl") # RAW/GIC network builder
+    # include("gic.jl") # RAW/GIC network builder
 end
