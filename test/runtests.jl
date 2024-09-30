@@ -41,9 +41,9 @@ include("test_cases.jl")
 # Perform automated testing of PMsGMD problem specifications:
 @testset "PowerModelsGMD" begin
     # include("ac_data.jl")
-    include("gmd.jl") # currently breaking
+    include("gmd.jl") 
     # include("gmd_pf.jl")
-    # include("gmd_opf.jl")
+    include("gmd_opf.jl")
     # include("gmd_mld.jl")
     # include("gmd_ots.jl")
     # include("gmd_blocker.jl")

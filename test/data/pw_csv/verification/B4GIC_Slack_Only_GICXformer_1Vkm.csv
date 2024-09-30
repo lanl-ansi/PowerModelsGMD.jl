@@ -1,3 +1,4 @@
+GICXFormer
 BusNum3W,BusNum3W:1,LineCircuit,GICXFIEffective1,GICXFIEffective1PU,GICXFIBasePeak,GICXFMVABase,GICQLosses,GICXFNeutralR,GICXFCoilR1,GICXFCoilR1:1,XFConfiguration,XFConfiguration:1,GICXFConfigUsed,XFIsAutoXF,GICModelParam,GICModelParam:1,GICModelParam:2,GICModelKUsed,GICModelKUsed:1,GICModelKUsed:2,GICLineDCFlow,GICLineDCFlow:1
 1,3,1,35.674,0.334,106.732,100.000,56.096,0.000,0.293,,Gwye,Delta,GWye-Delta,No,0.000,0.000,1.796,2,0.000,1.796,-35.674,0.000
 2,4,1,35.674,0.334,106.732,100.000,58.727,0.000,0.293,,Gwye,Delta,GWye-Delta,No,0.000,0.000,1.796,2,0.000,1.796,35.674,0.000
