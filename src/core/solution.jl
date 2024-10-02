@@ -77,17 +77,22 @@ function solution_gmd(v::Vector{Float64}, case::Dict{String,Any})
         solution["gmd_bus"]["$bus"]["gmd_vdc"] = val
     end
 
-    # TODO: check if calc_dc_current_mag is redundant with calc_ieff_current_mag
+    # Note: calc_dc_current (formely calc_dc_current_mag) is different from
+    # calc_ieff_current_mag as the latter is for ieff rather than idc
+    # and associated with branches rather than gmd_branches
     for (n, branch) in case["gmd_branch"]
         solution["gmd_branch"]["$n"] = Dict()
         if haskey(branch, "parent_type") && branch["parent_type"] == "branch"
             type = case["branch"]["$(branch["parent_index"])"]["type"]
-            solution["gmd_branch"]["$n"]["gmd_idc"] = calc_dc_current_mag(branch, type, solution)
+            idc = calc_dc_current(branch, type, solution)
+            solution["gmd_branch"]["$n"]["dcf"] =  idc
+            solution["gmd_branch"]["$n"]["dcf"] = -idc
         else
             Memento.warn(_LOGGER, "Branch $n doesn't have parent_type, skipping")
         end
     end
 
+    # TODO: 
     solution["ieff"] = Dict{String,Any}()
 
     for (n, branch) in case["branch"]

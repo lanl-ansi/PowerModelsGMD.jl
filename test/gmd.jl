@@ -71,7 +71,7 @@
             @test isapprox(result["solution"]["ieff"]["25"], 19.075, rtol=1e-3)
             @test isapprox(result["solution"]["ieff"]["29"], 17.183, rtol=1e-3)
             @test isapprox(result["solution"]["ieff"]["30"], 17.183, rtol=1e-3)
-            println(result["solution"]["qloss"])
+            # println(result["solution"]["qloss"])
         end
     end
     @testset "opt solve of gmd" begin
@@ -151,7 +151,7 @@
             @test isapprox(result["solution"]["ieff"]["25"], 19.075, rtol=1e-3)
             @test isapprox(result["solution"]["ieff"]["29"], 17.183, rtol=1e-3)
             @test isapprox(result["solution"]["ieff"]["30"], 17.183, rtol=1e-3)
-            println(result["solution"]["qloss"])
+            # println(result["solution"]["qloss"])
         end
     end
 end

@@ -100,10 +100,10 @@ function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{String,Any}, sol
         if haskey(branch,"hi_3w_branch")
             return 0.0
         else
-            if haskey(solution["gmd_branch"]["$khi"], "gmd_idc")
-                return abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+            if haskey(solution["gmd_branch"]["$khi"], "dcf")
+                return abs(solution["gmd_branch"]["$khi"]["dcf"])
             else
-                Memento.warn(_LOGGER, "Gwye-delta transformers $k doesn't have high-side gmd_idc, skipping calculation of ieff")
+                Memento.warn(_LOGGER, "Gwye-delta transformers $k doesn't have high-side dcf, skipping calculation of ieff")
                 return 0.0
             end
         end
@@ -123,13 +123,13 @@ function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{String,Any}, solu
     if khi == -1 || khi === nothing
         Memento.warn(_LOGGER, "khi for gwye-gwye transformer $k is -1")
     else
-        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+        ihi = solution["gmd_branch"]["$khi"]["dcf"]
     end
 
     if klo == -1 || klo === nothing
         Memento.warn(_LOGGER, "klo for gwye-gwye transformer $k is -1")
     else
-        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+        ilo = solution["gmd_branch"]["$klo"]["dcf"]
     end
 
     jfr = branch["f_bus"]
@@ -159,13 +159,13 @@ function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{String,Any},
             if ks == -1 || ks === nothing
                 Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
             else
-                is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+                is = solution["gmd_branch"]["$ks"]["dcf"]
             end
 
             if kc == -1 || kc === nothing
                 Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
             else
-                ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+                ic = solution["gmd_branch"]["$kc"]["dcf"]
             end
 
             jfr = branch["f_bus"]
@@ -189,13 +189,13 @@ function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{String,Any},
         if ks == -1 || ks === nothing
             Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
         else
-            is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+            is = solution["gmd_branch"]["$ks"]["dcf"]
         end
 
         if kc == -1 || kc === nothing
             Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
         else
-            ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+            ic = solution["gmd_branch"]["$kc"]["dcf"]
         end
 
     #    ihi = -is
@@ -226,19 +226,19 @@ function calc_ieff_current_mag_3w_xf(branch, case::Dict{String,Any}, solution)
     if khi == -1 || khi === nothing
         Memento.warn(_LOGGER, "khi for three-winding transformer $k is -1")
     else
-        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+        ihi = solution["gmd_branch"]["$khi"]["dcf"]
     end
 
     if klo == -1 || klo === nothing
         Memento.warn(_LOGGER, "klo for three-winding transformer $k is -1")
     else
-        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+        ilo = solution["gmd_branch"]["$klo"]["dcf"]
     end
 
     if kter == -1 || kter === nothing
         Memento.warn(_LOGGER, "kter for three-winding transformer $k is -1")
     else
-        iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
+        iter = solution["gmd_branch"]["$ter"]["dcf"]
     end
 
     jfr = branch["source_id"][2]
@@ -308,7 +308,7 @@ function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{Symbol,Any}, sol
         Memento.warn(_LOGGER, "khi for gwye-delta transformer $k is -1")
         return 0.0
     else
-        return abs(solution["gmd_branch"]["$khi"]["gmd_idc"])
+        return abs(solution["gmd_branch"]["$khi"]["dcf"])
     end
 
 end
@@ -326,13 +326,13 @@ function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{Symbol,Any}, solu
     if khi == -1 || khi === nothing
         Memento.warn(_LOGGER, "khi for gwye-gwye transformer $k is -1")
     else
-        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+        ihi = solution["gmd_branch"]["$khi"]["dcf"]
     end
 
     if klo == -1 || klo === nothing
         Memento.warn(_LOGGER, "klo for gwye-gwye transformer $k is -1")
     else
-        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+        ilo = solution["gmd_branch"]["$klo"]["dcf"]
     end
 
     jfr = branch["f_bus"]
@@ -357,13 +357,13 @@ function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{Symbol,Any},
     if ks == -1 || ks === nothing
         Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
     else
-        is = solution["gmd_branch"]["$ks"]["gmd_idc"]
+        is = solution["gmd_branch"]["$ks"]["dcf"]
     end
 
     if kc == -1 || kc === nothing
         Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
     else
-        ic = solution["gmd_branch"]["$kc"]["gmd_idc"]
+        ic = solution["gmd_branch"]["$kc"]["dcf"]
     end
 
 #    ihi = -is
@@ -394,19 +394,19 @@ function calc_ieff_current_mag_3w_xf(branch, case::Dict{Symbol,Any}, solution)
     if khi == -1 || khi === nothing
         Memento.warn(_LOGGER, "khi for three-winding transformer $k is -1")
     else
-        ihi = solution["gmd_branch"]["$khi"]["gmd_idc"]
+        ihi = solution["gmd_branch"]["$khi"]["dcf"]
     end
 
     if klo == -1 || klo === nothing
         Memento.warn(_LOGGER, "klo for three-winding transformer $k is -1")
     else
-        ilo = solution["gmd_branch"]["$klo"]["gmd_idc"]
+        ilo = solution["gmd_branch"]["$klo"]["dcf"]
     end
 
     if kter == -1 || kter === nothing
         Memento.warn(_LOGGER, "kter for three-winding transformer $k is -1")
     else
-        iter = solution["gmd_branch"]["$ter"]["gmd_idc"]
+        iter = solution["gmd_branch"]["$ter"]["dcf"]
     end
 
     jfr = branch["source_id"][2]
@@ -423,15 +423,15 @@ function calc_ieff_current_mag_3w_xf(branch, case::Dict{Symbol,Any}, solution)
 end
 
 
-function calc_dc_current_mag(branch, type, solution)
+function calc_dc_current(branch, type, solution)
     if type == "line"
-        return calc_dc_current_mag_line(branch, solution)
+        return calc_dc_current_line(branch, solution)
 
     elseif type == "xfmr"
-        return calc_dc_current_mag_xfmr(branch, solution)
+        return calc_dc_current_xfmr(branch, solution)
 
     else
-        return calc_dc_current_mag_sub(branch, solution)
+        return calc_dc_current_sub(branch, solution)
 
     end
 
@@ -439,7 +439,7 @@ function calc_dc_current_mag(branch, type, solution)
 end
 
 
-function calc_dc_current_mag_line(branch, solution)
+function calc_dc_current_line(branch, solution)
     nf = branch["f_bus"]
     nt = branch["t_bus"]
     g = 1 / branch["br_r"]
@@ -449,7 +449,7 @@ function calc_dc_current_mag_line(branch, solution)
 end
 
 
-function calc_dc_current_mag_xfmr(branch, solution)
+function calc_dc_current_xfmr(branch, solution)
     nf = branch["f_bus"]
     nt = branch["t_bus"]
     g = 1 / branch["br_r"]
@@ -459,7 +459,7 @@ function calc_dc_current_mag_xfmr(branch, solution)
 end
 
 
-function calc_dc_current_mag_sub(branch, solution)
+function calc_dc_current_sub(branch, solution)
     nf = branch["f_bus"]
     nt = branch["t_bus"]
     g = 1 / branch["br_r"]
@@ -804,7 +804,7 @@ function adjust_gmd_phasing!(result)
 
     gmd_branches = result["solution"]["gmd_branch"]
     for branch in values(gmd_branches)
-        branch["gmd_idc"] = branch["gmd_idc"] / 3
+        branch["dcf"] /= 3
     end
 
     return result
@@ -831,15 +831,15 @@ function add_gmd_data!(case::Dict{String,Any}, solution::Dict{String,<:Any}; dec
 
         if br["type"] == "line"
             k = "$(br["gmd_br"])"
-            br["gmd_idc"] = solution["gmd_branch"][k]["gmd_idc"]/3.0
+            br["dcf"] = solution["gmd_branch"][k]["dcf"]/3.0
 
         else
             if decoupled  # TODO: add calculations from constraint_dc_current_mag
 
                 k = br["dc_brid_hi"]
                     # high-side gmd branch
-                br["gmd_idc"] = 0.0
-                br["ieff"] = abs(br["gmd_idc"])
+                br["dcf"] = 0.0
+                br["ieff"] = abs(br["dcf"])
                 br["qloss"] = calc_qloss(i, case, solution)
 
             else
