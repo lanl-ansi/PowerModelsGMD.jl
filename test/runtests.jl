@@ -12,6 +12,9 @@ import Memento
 import StatsBase
 import FFTW
 
+calc_mean = x -> StatsBase.Statistics.mean(x)
+calc_std = x -> StatsBase.Statistics.std(x, corrected=true)
+
 # Suppressing warning messages:
 Memento.setlevel!(Memento.getlogger(_PMGMD), "error")
 Memento.setlevel!(Memento.getlogger(_IM), "error")
@@ -31,22 +34,20 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 
 import LinearAlgebra
 import SparseArrays
-
 import CSV
-
 using Test
 
 include("test_cases.jl")
 # Perform automated testing of PMsGMD problem specifications:
 @testset "PowerModelsGMD" begin
     # include("ac_data.jl")
-    # include("gmd.jl") # currently breaking
+    include("gmd.jl") 
     # include("gmd_pf.jl")
     # include("gmd_opf.jl")
     # include("gmd_mld.jl")
     # include("gmd_ots.jl")
     # include("gmd_blocker.jl")
-    include("parse.jl")
+    include("parse.jl") # GIC parser
     include("coupling.jl")
-    include("gic.jl")
+    # include("gic.jl") # RAW/GIC network builder
 end

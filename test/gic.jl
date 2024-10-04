@@ -48,7 +48,7 @@ const voltage_err_hi = 1.0
     @testset "Bus4 file" begin
         gic_file = "../test/data/gic/bus4.gic"
         raw_file = "../test/data/pti/bus4.raw"
-        csv_file = "../test/data/lines/bus4_1v_km.csv"
+        csv_file = "../test/data/pw_csv/lines/bus4_1v_km.csv"
 
         @testset "Solve GIC Flow" begin
             result = PowerModelsGMD.solve_gmd(raw_file, gic_file, csv_file)
@@ -64,7 +64,7 @@ const voltage_err_hi = 1.0
     @testset "EPRI20 file" begin
         gic_file = "../test/data/gic/epri.gic"
         raw_file = "../test/data/pti/epri.raw"
-        csv_file = "../test/data/lines/epri_1v_km.csv"
+        csv_file = "../test/data/pw_csv/lines/epri_1v_km.csv"
 
         @testset "Load coupled voltages from CSV" begin
             # TODO: Do I need to specify package name here?
@@ -85,20 +85,17 @@ const voltage_err_hi = 1.0
             v = [f(k) for (k,x) in data["gmd_bus"] if x["parent_type"] == "bus"]
             @test length(v) == 19
 
-            mu, std = StatsBase.mean_and_std(v, corrected=true)
-            @test isapprox(mu, -12.666903; atol = 0.5)
-            @test isapprox(std, 43.423599; atol = 0.5)
+            @test isapprox(calc_mean(v), -12.666903; atol = 0.5)
+            @test isapprox(calc_std(v), 43.423599; atol = 0.5)
 
-            mu_m, std_m = StatsBase.mean_and_std(abs.(v), corrected=true)
-            @test isapprox(mu_m, 33.805089; atol = 0.5)
-            @test isapprox(std_m, 29.132478; atol = 0.5)
+            @test isapprox(calc_mean(abs.(v)), 33.805089; atol = 0.5)
+            @test isapprox(calc_std(abs.(v)), 29.132478; atol = 0.5)
 
             v = [f(k) for (k,x) in data["gmd_bus"] if x["parent_type"] == "sub"]
             @test length(v) == 8
 
-            mu, std = StatsBase.mean_and_std(v, corrected=true)
-            @test isapprox(mu, -16.844325; atol = 0.5)
-            @test isapprox(std, 44.028149; atol = 0.5)
+            @test isapprox(calc_mean(v), -16.844325; atol = 0.5)
+            @test isapprox(calc_std(v), 44.028149; atol = 0.5)
         end
 
 #        @testset "Run coupling" begin

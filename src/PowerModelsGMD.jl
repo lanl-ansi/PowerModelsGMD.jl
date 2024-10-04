@@ -5,8 +5,8 @@ const _PMGMD = PowerModelsGMD
     const _IM = InfrastructureModels
     import PowerModels
     const _PM = PowerModels
-    import PowerModelsRestoration
-    const _PMR = PowerModelsRestoration
+    # import PowerModelsRestoration
+    # const _PMR = PowerModelsRestoration
 
 
     import PowerModels: pm_it_name, pm_it_sym, nw_ids, nws, ismultinetwork

@@ -4,21 +4,21 @@
     @testset "EPRI21 case" begin
 
         case_epri21                   = _PM.parse_file(data_epri21)
-        case_epri21_verification_data = CSV.File(data_epri21_verification)
-        epri21_vm                     = CSV.File(data_epri21_vm)
+        case_epri21_verification_data = CSV.File(data_epri21_verification, header=2)
+        epri21_vm                     = CSV.File(data_epri21_vm, header=2)
 
         # Lock in voltage magnitudes to be what the powerworld verification data suggests
-        for row in epri21_vm
-            i = row[:Number]
-            vm = row[:Vpu]
+        # for row in epri21_vm
+        #     i = row.Number
+        #     vm = row.Vpu
 
-            case_epri21["bus"][string(i)]["vm"]   = vm
+        #     case_epri21["bus"]["$i"]["vm"]   = vm
 
-            if (i == 2)
-                case_epri21["bus"][string(i)]["vmin"] = vm - .03
-                case_epri21["bus"][string(i)]["vmax"] = vm + .03
-            end
-        end
+        #     if i == 2 
+        #         case_epri21["bus"]["$i"]["vmin"] = vm - 0.03
+        #         case_epri21["bus"]["$i"]["vmax"] = vm + 0.03
+        #     end
+        # end
 
         local_setting = Dict{String,Any}("bound_voltage" => true)
         merge!(local_setting, setting)
@@ -59,20 +59,20 @@
     @testset "B4GIC case" begin
 
         case_b4gic                   = _PM.parse_file(data_b4gic)
-        case_b4gic_verification_data = CSV.File(data_b4gic_verification)
-        b4gic_vm                     = CSV.File(data_b4gic_vm)
+        case_b4gic_verification_data = CSV.File(data_b4gic_verification, header=2)
+        b4gic_vm                     = CSV.File(data_b4gic_vm, header=2)
 
         # Lock in voltage magnitudes to be what the powerworld verification data suggests
-        for row in b4gic_vm
-            i = row[:Number]
-            vm = row[:Vpu]
+        # for row in b4gic_vm
+        #     i = row[:Number]
+        #     vm = row[:Vpu]
 
-            if (i == 1 || i == 2)
-                case_b4gic["bus"][string(i)]["vmin"] = vm - .0001
-                case_b4gic["bus"][string(i)]["vmax"] = vm + .0001
-                case_b4gic["bus"][string(i)]["vm"]   = vm
-            end
-        end
+        #     if (i == 1 || i == 2)
+        #         case_b4gic["bus"]["$i"]["vmin"] = vm - 0.0001
+        #         case_b4gic["bus"]["$i"]["vmax"] = vm + 0.0001
+        #         case_b4gic["bus"]["$i"]["vm"]   = vm
+        #     end
+        # end
 
         local_setting = Dict{String,Any}("bound_voltage" => true)
         merge!(local_setting, setting)
@@ -107,19 +107,19 @@
     @testset "B4GIC case decoupled" begin
 
         case_b4gic                   = _PM.parse_file(data_b4gic)
-        case_b4gic_verification_data = CSV.File(data_b4gic_verification)
-        b4gic_vm                     = CSV.File(data_b4gic_vm)
+        case_b4gic_verification_data = CSV.File(data_b4gic_verification, header=2)
+        b4gic_vm                     = CSV.File(data_b4gic_vm, header=2)
 
         # Lock in voltage magnitudes to be what the powerworld verification data suggests
-        for row in b4gic_vm
-            i = row[:Number]
-            vm = row[:Vpu]
-            if (i == 1 || i == 2)
-                case_b4gic["bus"][string(i)]["vmin"] = vm - .0001
-                case_b4gic["bus"][string(i)]["vmax"] = vm + .0001
-                case_b4gic["bus"][string(i)]["vm"]   = vm
-            end
-        end
+        # for row in b4gic_vm
+        #     i = row[:Number]
+        #     vm = row[:Vpu]
+        #     if (i == 1 || i == 2)
+        #         case_b4gic["bus"]["$i"]["vmin"] = vm - 0.0001
+        #         case_b4gic["bus"]["$i"]["vmax"] = vm + 0.0001
+        #         case_b4gic["bus"]["$i"]["vm"]   = vm
+        #     end
+        # end
 
 
 
@@ -156,21 +156,21 @@
     @testset "EPRI 21 case decoupled" begin
 
         case_epri21                   = _PM.parse_file(data_epri21)
-        case_epri21_verification_data = CSV.File(data_epri21_verification)
-        epri21_vm                     = CSV.File(data_epri21_vm)
+        case_epri21_verification_data = CSV.File(data_epri21_verification, header=2)
+        epri21_vm                     = CSV.File(data_epri21_vm, header=2)
 
         # Lock in voltage magnitudes to be what the powerworld verification data suggests
-        for row in epri21_vm
-            i = row[:Number]
-            vm = row[:Vpu]
+        # for row in epri21_vm
+        #     i = row[:Number]
+        #     vm = row[:Vpu]
 
-            case_epri21["bus"][string(i)]["vm"]   = vm
+        #     case_epri21["bus"]["$i"]["vm"]   = vm
 
-            if (i == 2)
-                case_epri21["bus"][string(i)]["vmin"] = vm - .03
-                case_epri21["bus"][string(i)]["vmax"] = vm + .03
-            end
-        end
+        #     if (i == 2)
+        #         case_epri21["bus"]["$i"]["vmin"] = vm - 0.03
+        #         case_epri21["bus"]["$i"]["vmax"] = vm + 0.03
+        #     end
+        # end
 
         local_setting = Dict{String,Any}("bound_voltage" => true)
         merge!(local_setting, setting)

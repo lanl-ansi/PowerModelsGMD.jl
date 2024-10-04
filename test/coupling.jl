@@ -33,7 +33,7 @@ const voltage_err = 0.01
     @testset "Bus4 file" begin
         gic_file = "../test/data/gic/bus4.gic"
         raw_file = "../test/data/pti/bus4.raw"
-        csv_file = "../test/data/lines/bus4_1v_km.csv"
+        csv_file = "../test/data/pw_csv/lines/bus4_1v_km.csv"
 
         @testset "Load coupled voltages from CSV" begin
 
@@ -51,7 +51,7 @@ const voltage_err = 0.01
         # TODO: rearrange the powerworld CSV exports into one folder
         gic_file = "../test/data/gic/epri.gic"
         raw_file = "../test/data/pti/epri.raw"
-        csv_file = "../test/data/lines/epri_1v_km.csv"
+        csv_file = "../test/data/pw_csv/lines/epri_1v_km.csv"
 
         @testset "Load coupled voltages from CSV" begin
             data = PowerModelsGMD.generate_dc_data(gic_file, raw_file, csv_file)
@@ -76,18 +76,17 @@ const voltage_err = 0.01
             @test length(data["gmd_branch"]) == 58
             @test length(v) ==  16
 
-            mu, std = StatsBase.mean_and_std(v, corrected=true)
-            @test isapprox(mu, 85.624962; atol = voltage_err) 
-            @test isapprox(std, 135.194889; atol = voltage_err)  
+            # mu, std = StatsBase.mean_and_std(v, corrected=true)
+            @test isapprox(calc_mean(v), 85.624962; atol = voltage_err) 
+            @test isapprox(calc_std(v), 135.194889; atol = voltage_err)  
 
             q = StatsBase.nquantile(v, 4)
             @test isapprox(q[2], -5.034325; atol = voltage_err) # 1st quartile 
             @test isapprox(q[3], 131.693298; atol = voltage_err) # median
             @test isapprox(q[4], 175.112583; atol = voltage_err) # 3rd quartile
 
-            mu_m, std_m = StatsBase.mean_and_std(abs.(v), corrected=true)
-            @test isapprox(mu_m, 135.389907; atol = voltage_err) 
-            @test isapprox(std_m, 80.904958; atol = voltage_err)  
+            @test isapprox(calc_mean(abs.(v)), 135.389907; atol = voltage_err) 
+            @test isapprox(calc_std(abs.(v)), 80.904958; atol = voltage_err)  
 
             qm = StatsBase.nquantile(abs.(v), 4)
             @test isapprox(qm[2], 113.742239; atol = voltage_err) # 1st quartile 
