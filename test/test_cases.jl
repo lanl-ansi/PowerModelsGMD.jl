@@ -19,7 +19,7 @@ data_epri21_verification = "../test/data/pw_csv/verification/EpriCase_Mar2012_GI
 
 data_b4gic_vm = "../test/data/pw_csv/verification/B4GIC_Slack_Only_Bus_1Vkm.csv"
 data_epri21_vm = "../test/data/pw_csv/verification/EpriCase_Mar2012_Bus_1Vkm.csv"
-b4gic_default = "../test/data/matpower/b4gic.m"
+b4gic_default = "../test/data/matpower/b4gic_two_gens.m"
 b4gic_offbase = "../test/data/matpower/b4gic_offbase.m"
 autotransformer = "../test/data/matpower/autotransformer.m"
 epricase = "../test/data/matpower/epricase_aug2022_v22_fix.m"
