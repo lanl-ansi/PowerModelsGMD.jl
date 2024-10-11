@@ -85,8 +85,8 @@ function solution_gmd(v::Vector{Float64}, case::Dict{String,Any})
         if haskey(branch, "parent_type") && branch["parent_type"] == "branch"
             type = case["branch"]["$(branch["parent_index"])"]["type"]
             idc = calc_dc_current(branch, type, solution)
-            solution["gmd_branch"]["$n"]["dcf"] =  idc
-            solution["gmd_branch"]["$n"]["dcf"] = -idc
+            solution["gmd_branch"]["$n"]["dcf"] =  -idc
+            solution["gmd_branch"]["$n"]["dct"] =   idc
         else
             Memento.warn(_LOGGER, "Branch $n doesn't have parent_type, skipping")
         end
