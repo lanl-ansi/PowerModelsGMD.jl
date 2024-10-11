@@ -2,10 +2,16 @@ function generate_g_i_matrix(network::Dict{String, Any})
     diag_g = Dict{Int64, Float64}()
     inject_i = Dict{Int64, Float64}()
 
+    zb = Dict()
+
+    for blocker in values(network["gmd_blocker"])
+        zb[blocker["gmd_bus"]] = 1.0 - blocker["status"]
+    end
+
     for bus in values(network["gmd_bus"])
         if bus["status"] == 1
-            diag_g[bus["index"]] = bus["g_gnd"]
-            inject_i[bus["index"]] = 0
+            diag_g[bus["index"]] = zb[bus["index"]] * bus["g_gnd"]
+            inject_i[bus["index"]] = 0.0
         end
     end
 
