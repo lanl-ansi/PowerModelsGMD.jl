@@ -90,8 +90,9 @@ end
 
 
 "FUNCTION: solve the multi-time-series quasi-dc-pf problem"
-function solve_gmd_ts_decoupled(case, optimizer, waveform; setting=Dict{String,Any}(), thermal=false, kwargs...)
+function solve_gmd_ts_decoupled(base_case, optimizer, waveform; setting=Dict{String,Any}(), thermal=false, kwargs...)
     # TODO: consider deepcopy case to avoid errors
+    case = deepcopy(base_case)
 
     wf_time = waveform["time"]
     wf_waveforms = waveform["waveforms"]
