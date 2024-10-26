@@ -3,7 +3,7 @@
 Status:
 [![CI](https://github.com/lanl-ansi/PowerModelsGMD.jl/workflows/CI/badge.svg)](https://github.com/lanl-ansi/PowerModelsGMD.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl)
-[![Documentation](https://github.com/lanl-ansi/PowerModelsGMD.jl/workflows/Documentation/badge.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/stable/)
+<!--- [![Documentation](https://github.com/lanl-ansi/PowerModelsGMD.jl/workflows/Documentation/badge.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/stable/) --->
 </p>
 
 PowerModelsGMD (PMsGMD) is an open-source [Julia](https://julialang.org/) tool for evaluating the risks and mitigating the impacts of geomagnetic disturbances (GMDs) and E3 high-altitude electromagnetic pulse (HEMP) events on electrical power transmission networks.
