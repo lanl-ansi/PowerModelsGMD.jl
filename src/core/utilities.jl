@@ -4,13 +4,15 @@ function generate_g_i_matrix(network::Dict{String, Any})
 
     zb = Dict()
 
-    for blocker in values(network["gmd_blocker"])
-        zb[blocker["gmd_bus"]] = 1.0 - blocker["status"]
+    if "gmd_blocker" in keys(network)
+        for blocker in values(network["gmd_blocker"])
+            zb[blocker["gmd_bus"]] = 1.0 - blocker["status"]
+        end
     end
 
     for bus in values(network["gmd_bus"])
         if bus["status"] == 1
-            diag_g[bus["index"]] = zb[bus["index"]] * bus["g_gnd"]
+            diag_g[bus["index"]] = get(zb, bus["index"], 1.0) * bus["g_gnd"]
             inject_i[bus["index"]] = 0.0
         end
     end
