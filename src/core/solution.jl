@@ -110,7 +110,16 @@ function _convert_table!(solution::Dict{String, Any}, network::Dict{String, Any}
     new_table = Dict{Array, valType}()
 
     for (key, element) in solution[key_pair[1]]
-        new_table[network[key_pair[2]][key]["source_id"]] = element
+        source_id = network[key_pair[2]][key]["source_id"]
+        if source_id[1] == "transformer"
+            source_id = ["branch", source_id[2], source_id[3], source_id[5]]
+        end
+
+        if source_id[1] == "branch"
+            source_id[4] = parse(Int64, "$(source_id[4])")
+        end
+
+        new_table[source_id] = element
     end
 
     solution[key_pair[1]] = new_table

@@ -20,6 +20,12 @@ equatorial_radius = 6378.137
 eccentricity_squared = 0.00669437999014
 
 # Configures the line voltages and distances
+function load_voltages!(voltage_file::String, output::Dict{String, Any})
+    open(voltage_file, "r") do f
+        load_voltages!(f, output)
+    end
+end
+
 function load_voltages!(voltage_file::IO, output::Dict{String, Any})
     lines_info = CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
     load_voltages!(lines_info, output)
@@ -167,6 +173,7 @@ function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float
         R_low = R_high / ((turns_ratio - 1) ^ 2)
     else
         R_low = R_high / (turns_ratio ^ 2)
+        println(turns_ratio)
     end
 
     R_high = R_high == 0 ? 0.25 : R_high
@@ -259,7 +266,7 @@ function _add_substation_table!(gmd_bus::Dict{String, Dict}, gmd_bus_index::Int6
             else
                 g = 0.73 * bus_info[substation_index][2] + 4.2131
             end
-            g = 10
+            # g = 10
         else
             g = 1/r_g
         end
@@ -374,7 +381,7 @@ function _handle_normal_transformer!(branches::Dict{String, Dict{String, Any}}, 
         lo_side_winding = !raw_data["bus"]["$lo_bus"]["starbus"] # Not modeled if to starbus
     end
 
-    R_hi, R_lo = _calc_xfmr_resistances(transformer["xfmr_r"], transformer["turns_ratio"], transformer["hi_base_z"], true)
+    R_hi, R_lo = _calc_xfmr_resistances(transformer["xfmr_r"], transformer["turns_ratio"], transformer["hi_base_z"], false)
 
     if (hi_side_winding)
         branch_data = Dict{String, Any}(
@@ -599,6 +606,7 @@ function _handle_transformer!(branches::Dict{String, Dict{String, Any}}, gmd_3w_
     # If no transformer configuration given or non gwye-gwye auto transformer
     if length(strip(transformer["VECGRP"])) == 0 || (endswith(transformer["VECGRP"], r"a.*") && !startswith(transformer["VECGRP"],"YNa"))
         _set_default_config!(transformer, gen_buses, load_buses, branch)
+        transformer_map[Tuple(branch["source_id"][2:5])]["VECGRP"] = transformer["VECGRP"]
     end
 
     # Calculates/Fetches information for the transformer
