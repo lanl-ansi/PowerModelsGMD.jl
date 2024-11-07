@@ -1096,7 +1096,7 @@ function update_cost_multiplier!(data::Dict{String,<:Any})
     end
     if haskey(data, "gmd_ne_blocker")
         for (sub, m) in subs
-            data["gmd_ne_blocker"]["$sub"]["multipler"] = m
+            data["gmd_ne_blocker"]["$sub"]["multiplier"] = m
         end
     end
 end
