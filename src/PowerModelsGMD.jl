@@ -39,6 +39,9 @@ const _PMGMD = PowerModelsGMD
     import CSV
     using DataFrames
 
+    import Graphs
+    const _Gph = Graphs
+
     # Add core functions:
     include("core/base.jl")
     include("core/base_staged.jl")
@@ -79,6 +82,7 @@ const _PMGMD = PowerModelsGMD
     include("prob/gmd_mld.jl")
     include("prob/gmd_ots.jl")
     include("prob/gmd_ots_staged.jl")
+    include("prob/gmd_bounds.jl")
 
     include("prob/gmd_opf_staged.jl")
     include("prob/gmd_mld_staged.jl")

@@ -10,13 +10,34 @@
 
 "FUNCTION: calculate the minimum dc voltage at a gmd bus "
 function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return -1e6
+    gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
+    if haskey(gmd_bus, "vmin")
+        return gmd_bus["vmin"]
+    else
+        return -1e6
+    end
 end
 
 
 "FUNCTION: calculate the maximum dc voltage at a gmd bus "
 function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
-    return 1e6
+    gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
+    if haskey(gmd_bus, "vmax")
+        return gmd_bus["vmax"]
+    else
+        return 1e6
+    end
+end
+
+
+"FUNCTION: calculate the max q loss of xfmr in branch "
+function calc_max_q_loss(pm::_PM.AbstractPowerModel, l; nw::Int=pm.cnw)
+    branch = _PM.ref(pm, nw, :branch, l)
+    if haskey(branch, "qloss_max")
+        return branch["qloss_max"] 
+    else
+        return 1e6
+    end
 end
 
 
@@ -100,12 +121,7 @@ function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{String,Any}, sol
         if haskey(branch,"hi_3w_branch")
             return 0.0
         else
-            if haskey(solution["gmd_branch"]["$khi"], "dcf")
-                return abs(solution["gmd_branch"]["$khi"]["dcf"])
-            else
-                Memento.warn(_LOGGER, "Gwye-delta transformers $k doesn't have high-side dcf, skipping calculation of ieff")
-                return 0.0
-            end
+            return abs(solution["gmd_branch"]["$khi"]["dcf"])
         end
     end
 end
@@ -445,7 +461,7 @@ function calc_dc_current_line(branch, solution)
     g = 1 / branch["br_r"]
     vf = solution["gmd_bus"]["$nf"]["gmd_vdc"]
     vt = solution["gmd_bus"]["$nt"]["gmd_vdc"]
-    return g / 3 * (branch["br_v"] + (vf - vt))
+    return g * (branch["br_v"] + (vf - vt))
 end
 
 
@@ -455,7 +471,7 @@ function calc_dc_current_xfmr(branch, solution)
     g = 1 / branch["br_r"]
     vf = solution["gmd_bus"]["$nf"]["gmd_vdc"]
     vt = solution["gmd_bus"]["$nt"]["gmd_vdc"]
-    return g / 3 * (vf - vt)
+    return g * (vf - vt)
 end
 
 
@@ -472,14 +488,14 @@ end
 "FUNCTION: calculate the maximum DC current on a branch"
 function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, i)
+    ibase = calc_branch_ibase(pm, i, nw=nw)
 
-    ac_max = -Inf
-    for l in _PM.ids(pm, nw, :branch)
-        ac_max = max(calc_ac_current_mag_max(pm, l, nw=nw), ac_max)
+    if haskey(branch, "qloss_max")
+        dc_mag_max = branch["qloss_max"]/(1.1*branch["gmd_k"])*ibase
+    else
+        dc_mag_max = 1e6
     end
 
-    ibase = calc_branch_ibase(pm, i, nw=nw)
-    dc_mag_max = 2 * ac_max * ibase
 
     if dc_mag_max < 0
         Memento.warn(_LOGGER, "DC current max for branch $i has been calculated as < 0. This will cause many things to break")
@@ -490,17 +506,17 @@ function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 end
 
 
-"FUNCTION: calculate the ibase for a branch"
+"FUNCTION: calculate the ibase for a branch single phase"
 function calc_branch_ibase(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, i)
     bus = _PM.ref(pm, nw, :bus, branch["hi_bus"])
 
-    return branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus["base_kv"] * sqrt(3.0))
+    return branch["baseMVA"] * 1000.0 * sqrt(2.0) / (bus["base_kv"] * sqrt(3.0)) * 3
 end
 
 
 # ===   CALCULATIONS FOR QLOSS VARIABLES   === #
-
+"FUNCTION: returns qloss value in 3phase MVA"
 function calc_branch_K(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
      branch = _PM.ref(pm, nw, :branch, i)
      ibase = calc_branch_ibase(pm,i;nw=nw)
@@ -509,8 +525,16 @@ function calc_branch_K(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 return haskey(branch, "gmd_k") ? (branch["gmd_k"] * branch["baseMVA"]) / (ibase) : 0.0
 end
 
+# ===   CALCULATIONS FOR QLOSS VARIABLES   === #
 
-"FUNCTION: calculate qloss
+function calc_branch_K_pu(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
+    branch = _PM.ref(pm, nw, :branch, i)
+    ibase = calc_branch_ibase(pm,i;nw=nw)
+    
+   return haskey(branch, "gmd_k") ? (branch["gmd_k"]) / (ibase) / 3 : 0.0
+end
+
+"FUNCTION: calculate qloss returns MVA 
     "
 function calc_qloss(branch::Dict{String,Any}, case::Dict{String,Any}, solution::Dict{String,Any})
     if branch["type"] == "xfmr"
@@ -556,7 +580,7 @@ function calc_qloss(branch::Dict{String,Any}, case::Dict{String,Any}, solution::
             i_dc_mag = abs(solution["ieff"]["$(branch["index"])"]) / ibase
 
             K = branch["gmd_k"]
-        return K * i_dc_mag * vm * case["baseMVA"]
+        return K * i_dc_mag * vm * case["baseMVA"] # needs to be checked based off branch baseMVA
         end
 
     end
@@ -804,7 +828,7 @@ function adjust_gmd_phasing!(result)
 
     gmd_branches = result["solution"]["gmd_branch"]
     for branch in values(gmd_branches)
-        branch["dcf"] /= 3
+        branch["dcf"] = branch["dcf"] / 3
     end
 
     return result
@@ -1014,6 +1038,65 @@ function add_gmd_3w_branch!(data::Dict{String,<:Any})
                     branch[w] = "$(transformer[w])"
                 end
             end
+        end
+    end
+end
+
+
+function get_connected_components(data::Dict{String,<:Any})
+    g = build_adjacency_matrix(data)
+    c = _Gph.SimpleGraph(g)
+    return _Gph.connected_components(c)
+end
+
+
+function filter_gmd_ne_blockers!(data::Dict{String,<:Any})
+    connections = []
+    for connection in data["connected_components"]
+        if length(connection) > 1
+            for conn in connection
+                append!(connections, conn)
+            end
+        end
+    end
+    gmd_ne_blocker = Dict{String, Any}()
+    for (i, gmd_blocker) in data["gmd_ne_blocker"]
+        if gmd_blocker["index"] in connections
+            gmd_ne_blocker[i] = gmd_blocker
+        end
+    end
+    data["gmd_ne_blocker"] = gmd_ne_blocker
+end
+ 
+
+function update_cost_multiplier!(data::Dict{String,<:Any})
+    subs = Dict{Int,Any}()
+    for (i, branch) in data["branch"]
+        if branch["type"] == "xfmr"
+            sub = []
+            branch_keys = ["gmd_br_hi", "gmd_br_lo", "gmd_br_series", "gmd_br_common"]
+            for branch_key in branch_keys
+                if branch[branch_key] != -1
+                    gmd_branch = data["gmd_branch"]["$(branch[branch_key])"]
+                    f_bus = gmd_branch["f_bus"]
+                    t_bus = gmd_branch["t_bus"]
+                    if data["gmd_bus"]["$f_bus"]["sub"] != -1 && !(data["gmd_bus"]["$f_bus"]["sub"] in sub)
+                        append!(sub, data["gmd_bus"]["$f_bus"]["sub"])
+                    end
+                end
+            end
+            for s in sub
+                if haskey(subs, s)
+                    subs[s] += 1
+                else
+                    subs[s] = 1
+                end
+            end
+        end
+    end
+    if haskey(data, "gmd_ne_blocker")
+        for (sub, m) in subs
+            data["gmd_ne_blocker"]["$sub"]["multipler"] = m
         end
     end
 end

@@ -91,3 +91,26 @@ function ref_add_ieff!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     end
 end
 
+
+"REF: adds connections to ref" 
+function ref_add_gmd_connections!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    data_it  = _IM.ismultiinfrastructure(data) ? data["it"][pm_it_name] : data
+    nws_data = _IM.ismultinetwork(data_it) ? data_it["nw"] : Dict("0" => data_it)
+    for (n, nw_data) in nws_data
+        nw_id = parse(Int, n)
+        nw_ref = ref[:it][pm_it_sym][:nw][nw_id]
+        connected = Dict{Int, Any}()
+        for (i, nodes) in enumerate(nw_data["connected_components"])
+            n = length(nodes)
+            if length(nodes) > 1
+                connected[i] = []
+                for node in nodes
+                    for sub in nw_ref[:gmd_bus_ne_blockers][node]
+                        append!(connected[i], sub)
+                    end
+                end
+            end
+        end
+        nw_ref[:gmd_connections] = connected
+    end
+end

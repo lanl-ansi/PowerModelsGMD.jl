@@ -18,18 +18,24 @@ function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,A
         for (l, branch) in _PM.ref(pm,nw_id,:branch)
             key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
             branch_solution = nw_data["branch"][string(l)]
-            # println(JuMP.value.(_PM.var(pm,nw_id,:qloss,key)))
-            try
-                branch_solution["ieff"] = JuMP.value.(_PM.var(pm, nw_id, :i_dc_mag, l))
-            catch
-                Memento.warn(_LOGGER, "Could not set ieff for branch $l")
-            end
+            branch_solution["ieff"] = JuMP.value.(_PM.var(pm, nw_id, :i_dc_mag, l))
+            branch_solution["gmd_qloss"] = JuMP.value.(_PM.var(pm,nw_id,:qloss,key))
+        end
+    end
+end
 
-            try
-                branch_solution["gmd_qloss"] = JuMP.value.(_PM.var(pm,nw_id,:qloss,key))
-            catch
-                Memento.warn(_LOGGER, "Could not set qloss for branch $l")
-            end
+
+function solution_gmd_qloss_max!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+    nws_data = haskey(solution["it"][pm_it_name], "nw") ? solution["it"][pm_it_name]["nw"] : nws_data = Dict("0" => solution["it"][pm_it_name])
+
+    for (n, nw_data) in nws_data
+        nw_id = parse(Int64, n)
+        indices = keys(_PM.var(pm,nw_id,:qloss))
+
+        for (l, branch) in _PM.ref(pm,nw_id,:branch)
+            key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
+            branch_solution = nw_data["branch"][string(l)]
+            branch_solution["gmd_qloss"] = JuMP.value.(_PM.var(pm,nw_id,:qloss,key))
         end
     end
 end
@@ -52,7 +58,7 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
             i = branch["hi_bus"]
             j = branch["lo_bus"]
             i_eff = JuMP.value(_PM.var(pm, nw_id, :i_dc_mag, n)) / 3
-            q_loss = JuMP.value(_PM.var(pm, nw_id, :qloss)[(n,i,j)]) / 3
+            q_loss = JuMP.value(_PM.var(pm, nw_id, :qloss)[(n,i,j)])
             nw_data["ieff"]["$(n)"] = i_eff < 1e-12 ? 0.0 : i_eff
             nw_data["qloss"]["$(n)"] = q_loss < 1e-12 ? 0.0 : q_loss
         end
@@ -96,7 +102,7 @@ function solution_gmd(v::Vector{Float64}, case::Dict{String,Any})
     solution["ieff"] = Dict{String,Any}()
 
     for (n, branch) in case["branch"]
-        solution["ieff"][n] = calc_ieff_current_mag(branch, case, solution)
+        solution["ieff"][n] = calc_ieff_current_mag(branch, case, solution) / 3 # returns phase ieff
     end
 
     solution["qloss"] = Dict{String,Any}()
@@ -131,4 +137,60 @@ function _convert_table!(solution::Dict{String, Any}, network::Dict{String, Any}
     end
 
     solution[key_pair[1]] = new_table
+end
+
+
+function solution_add_qloss_bound_case!(case::Dict{String,Any}, results::Dict{String,Any})
+    for (i, result) in results
+        if result["max"]["termination_status"] == _PM.LOCALLY_SOLVED
+            case["branch"][i]["qloss_max"] = result["max"]["objective"]
+        end
+    end
+end
+
+
+function solution_get_qloss_bound(case::Dict{String,Any}, results::Dict{String,Any})
+    bounds = Dict{String, Any}(
+        "qloss" => Dict{String, Any}(),
+    )
+    for (i, result) in results
+        bounds["qloss"][i] = Dict{String, Any}()
+        if result["max"]["termination_status"] == _PM.LOCALLY_SOLVED
+            bounds["qloss"][i]["qloss_max"] = result["max"]["objective"]
+        end
+    end
+    return bounds
+end
+
+
+function solution_add_gmd_bus_v_bounds_case!(case::Dict{String,Any}, results::Dict{String,Any})
+    for (i, result) in results
+        if result["max"]["termination_status"] == _PM.LOCALLY_SOLVED
+            case["gmd_bus"][i]["vmax"] = result["max"]["objective"]
+        end
+        if result["min"]["termination_status"] == _PM.LOCALLY_SOLVED
+            case["gmd_bus"][i]["vmin"] = result["min"]["objective"]
+        end
+    end
+end
+
+
+function solution_get_gmd_bus_v_bounds(case::Dict{String,Any}, results::Dict{String,Any})
+    bounds = Dict{String, Any}(
+        "gmd_bus" => Dict{String, Any}(),
+    )
+    for (i, result) in results
+        bounds["gmd_bus"][i] = Dict{String, Any}()
+        if result["max"]["termination_status"] == _PM.LOCALLY_SOLVED
+            bounds["gmd_bus"][i]["vmax"] = result["max"]["objective"]
+        elseif result["max"]["termination_status"] == _PM.TIME_LIMIT
+            bounds["gmd_bus"][i]["vmax"] = result["max"]["objective_lb"]
+        end
+        if result["min"]["termination_status"] == _PM.LOCALLY_SOLVED
+            bounds["gmd_bus"][i]["vmin"] = result["min"]["objective"]
+        elseif result["min"]["termination_status"] == _PM.TIME_LIMIT
+            bounds["gmd_bus"][i]["vmin"] = result["min"]["objective_lb"]
+        end
+    end
+    return bounds
 end

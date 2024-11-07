@@ -1,5 +1,5 @@
 @testset "TEST GMD" begin
-@testset "linear solve of gmd" begin
+    @testset "linear solve of gmd" begin
         @testset "b4gic_default  case" begin
             result = _PMGMD.solve_gmd(b4gic_default)
             @test isapprox(result["solution"]["gmd_bus"]["1"]["gmd_vdc"], -13.26, rtol=1e-3)
