@@ -99,12 +99,16 @@ end
 
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractWRModel, n::Int, k, kh, ih, jh, ieff_max)
-
+    branch = _PM.ref(pm, n, :branch, k)
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
 
-    JuMP.@constraint(pm.model, ieff >= ihi)
-    JuMP.@constraint(pm.model, ieff >= -ihi)
+    if haskey(branch,"hi_3w_branch")
+        JuMP.@constraint(pm.model, ieff == 0.0)
+    else 
+        JuMP.@constraint(pm.model, ieff >= ihi)
+        JuMP.@constraint(pm.model, ieff >= -ihi)
+    end
 
     # TODO: use variable bounds for this
     if !isnothing(ieff_max)
@@ -260,9 +264,9 @@ end
 
 
 """
-CONSTRAINT: relaxed qloss calculcated from ac voltage and dc current
+CONSTRAINT: relaxed qloss calculcated for ac formulation single phase
 """
-function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, baseMVA, K)
+function constraint_qloss_pu(pm::_PM.AbstractWRModel, n::Int, k, i, j, K)
     branch    = _PM.ref(pm, n, :branch, k)
 
     qloss = _PM.var(pm, n, :qloss)
@@ -270,7 +274,8 @@ function constraint_qloss(pm::_PM.AbstractWRModel, n::Int, k, i, j, baseMVA, K)
     ieff = _PM.var(pm, n, :i_dc_mag, k)
 
     if branch["type"] == "xfmr"
-        scaled_relaxation_product(pm.model, K/(3.0 * baseMVA), ieff, vm, qloss[(k,i,j)])
+        # scaled_relaxation_product(pm.model, K/3.0, ieff, vm, qloss[(k,i,j)])
+        scaled_relaxation_product(pm.model, K, ieff, vm, qloss[(k,i,j)])
     else
         JuMP.@constraint(pm.model,
             qloss[(k,i,j)] == 0.0

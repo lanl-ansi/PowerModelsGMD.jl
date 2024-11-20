@@ -39,7 +39,7 @@ function solve_blocker_placement(case, model_type::Type, optimizer; kwargs...)
         ],
         solution_processors = [
             solution_gmd!,
-            solution_gmd_qloss!,
+            # solution_gmd_qloss!,
         ],
         kwargs...,
     )
@@ -87,7 +87,7 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        constraint_qloss(pm, i)
+        constraint_qloss_pu(pm, i)
         constraint_dc_current_mag(pm, i)
     end
 

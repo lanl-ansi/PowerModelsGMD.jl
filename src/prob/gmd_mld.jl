@@ -78,7 +78,7 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        constraint_qloss(pm, i)
+        constraint_qloss_pu(pm, i)
         constraint_dc_current_mag(pm, i)
     end
 
@@ -94,7 +94,8 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_ohms(pm, i)
     end
 
-    _PM.objective_max_loadability(pm)
+    # _PM.objective_max_loadability(pm)
+    objective_max_loadability(pm)
 end
 
 

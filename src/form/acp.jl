@@ -47,6 +47,7 @@ end
 
 "CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
 function constraint_dc_current_mag_gwye_gwye_xf_3w(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh)
+
     Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], 0.0")
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
@@ -94,17 +95,18 @@ end
 #     JuMP.@constraint(pm.model, qloss[(k,j,i)] == 0.0)
 # end
 
-"CONSTRAINT: qloss calculcated from dc current only"
-function constraint_qloss(pm::_PM.AbstractACPModel, n::Int, k, i, j, baseMVA, K)
+"CONSTRAINT: qloss calculcated for ac formulation single phase"
+function constraint_qloss_pu(pm::_PM.AbstractACPModel, n::Int, k, i, j, K)
     branch    = _PM.ref(pm, n, :branch, k)
 
     qloss = _PM.var(pm, n, :qloss)
     vm    = _PM.var(pm, n, :vm)[i]
     ieff = _PM.var(pm, n, :i_dc_mag, k)
-
+   
     if branch["type"] == "xfmr"
         JuMP.@constraint(pm.model,
-            qloss[(k,i,j)] == K / (3.0 * baseMVA) * ieff * vm 
+            # qloss[(k,i,j)] == K / 3.0 * ieff * vm 
+            qloss[(k,i,j)] == K * ieff * vm 
         )
 
     else

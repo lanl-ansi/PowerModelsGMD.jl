@@ -531,7 +531,7 @@ function calc_branch_K_pu(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, i)
     ibase = calc_branch_ibase(pm,i;nw=nw)
     
-   return haskey(branch, "gmd_k") ? (branch["gmd_k"]) / (ibase) / 3 : 0.0
+    return haskey(branch, "gmd_k") ? (branch["gmd_k"]) / (ibase) : 0.0 # waiting for response 
 end
 
 "FUNCTION: calculate qloss returns MVA 

@@ -23,7 +23,7 @@ function solve_bound_gmd_bus_v(case, model_type::Type, optimizer; kwargs...)
         if length(conn) > 1
             t = time()
             for i in conn
-            bus = _case["gmd_bus"]["$i"]
+                bus = _case["gmd_bus"]["$i"]
                 if bus["sub"] == -1
                     kwargs[:setting]["gmd_bus"] = bus["index"]
                     kwargs[:setting]["max"] = true

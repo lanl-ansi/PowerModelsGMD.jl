@@ -15,6 +15,8 @@ const _PMGMD = PowerModelsGMD
     import JSON
     import JuMP
     import Memento
+    import Ipopt
+    
 
     # Suppressing information and warning messages:
     const _LOGGER = Memento.getlogger(@__MODULE__)

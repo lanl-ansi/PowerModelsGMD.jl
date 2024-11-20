@@ -314,6 +314,23 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 end
 
 
+"CONSTRAINT: Calculation of qloss on a per edge basis"
+function constraint_qloss_pu(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch    = _PM.ref(pm, nw, :branch, k)
+
+    i         = branch["hi_bus"]
+    j         = branch["lo_bus"]
+
+    bus       = _PM.ref(pm, nw, :bus, i)
+
+    K         = calc_branch_K_pu(pm,k;nw=nw)
+
+    constraint_qloss_pu(pm, nw, k, i, j, K)
+
+end
+
+
 "CONSTRAINT: Calculation of qloss on a per edge basis where ieff is a constant"
 
 function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)

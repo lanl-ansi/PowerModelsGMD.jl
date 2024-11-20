@@ -330,7 +330,7 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i
         ==
         # Use this if we implement piecewise K
         # (pm.data["baseMVA"]) / branchMVA ) * (K * vm * ieff) / (3.0 * branchMVA)
-        (K * vm * ieff) / (3.0 * baseMVA)
+        (K * vm * ieff) / (3.0 * baseMVA) # need to change based on response 
             # K is per phase
     )
 
