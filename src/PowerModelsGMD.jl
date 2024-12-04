@@ -15,6 +15,8 @@ const _PMGMD = PowerModelsGMD
     import JSON
     import JuMP
     import Memento
+    import Ipopt
+    
 
     # Suppressing information and warning messages:
     const _LOGGER = Memento.getlogger(@__MODULE__)
@@ -38,6 +40,9 @@ const _PMGMD = PowerModelsGMD
 
     import CSV
     using DataFrames
+
+    import Graphs
+    const _Gph = Graphs
 
     # Add core functions:
     include("core/base.jl")
@@ -79,6 +84,7 @@ const _PMGMD = PowerModelsGMD
     include("prob/gmd_mld.jl")
     include("prob/gmd_ots.jl")
     include("prob/gmd_ots_staged.jl")
+    include("prob/gmd_bounds.jl")
 
     include("prob/gmd_opf_staged.jl")
     include("prob/gmd_mld_staged.jl")

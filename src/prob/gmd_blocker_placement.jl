@@ -1,27 +1,45 @@
 "FUNCTION: run GMD mitigation with nonlinear ac equations"
-function solve_ac_blocker_placement(file, optimizer; kwargs...)
-    return solve_blocker_placement(file, _PM.ACPPowerModel, optimizer; kwargs...)
+function solve_ac_blocker_placement(file::String, optimizer; kwargs...)
+    case = _PM.parse_file(file)
+    return solve_blocker_placement(case, _PM.ACPPowerModel, optimizer; kwargs...)
+end
+
+function solve_ac_blocker_placement(case::Dict{String,Any}, optimizer; kwargs...)
+    return solve_blocker_placement(case, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 "FUNCTION: run GMD mitigation with second order cone relaxation"
-function solve_soc_blocker_placement(file, optimizer; kwargs...)
-    return solve_blocker_placement(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
+function solve_soc_blocker_placement(file::String, optimizer; kwargs...)
+    case = _PM.parse_file(file)
+    return solve_blocker_placement(case, _PM.SOCWRPowerModel, optimizer; kwargs...)
+end
+
+function solve_soc_blocker_placement(case::Dict{String,Any}, optimizer; kwargs...)
+    return solve_blocker_placement(case, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
 
-function solve_blocker_placement(file, model_type::Type, optimizer; kwargs...)
+function solve_blocker_placement(case, model_type::Type, optimizer; kwargs...)
+    _case = deepcopy(case)
+    components = get_connected_components(_case)
+    
+    _case["connected_components"] = components
+    
+    filter_gmd_ne_blockers!(_case)
+
     return _PM.solve_model(
-        file,
+        _case,
         model_type,
         optimizer,
         build_blocker_placement;
         ref_extensions = [
-            ref_add_gmd!
-            ref_add_ne_blocker!
+            ref_add_gmd!,
+            ref_add_ne_blocker!,
+            ref_add_gmd_connections!,
         ],
         solution_processors = [
             solution_gmd!,
-            solution_gmd_qloss!,
+            # solution_gmd_qloss!,
         ],
         kwargs...,
     )
@@ -35,7 +53,8 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 #   built maximum loadability problem specification corresponds to the "MLD" specification of
 #   PowerModelsRestoration.jl (https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl)
 
-    variable_ne_blocker_indicator(pm)
+    blocker_relax = get(pm.setting,"blocker_relax",false)
+    variable_ne_blocker_indicator(pm, relax=blocker_relax)
     variable_bus_voltage(pm)
     _PM.variable_gen_power(pm)
     _PM.variable_branch_power(pm)
@@ -68,7 +87,7 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        constraint_qloss(pm, i)
+        constraint_qloss_pu(pm, i)
         constraint_dc_current_mag(pm, i)
     end
 
@@ -77,11 +96,15 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :gmd_bus)
-        constraint_dc_power_balance_ne_blocker(pm,i)
+        constraint_dc_kcl_ne_blocker(pm,i)
     end
 
     for i in _PM.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
+    end
+
+    for i in _PM.ids(pm, :gmd_connections)
+        constraint_gmd_connections(pm, i)
     end
 
     constraint_load_served(pm)
