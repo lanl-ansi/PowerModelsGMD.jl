@@ -7,9 +7,10 @@
 
 "OBJECTIVE: minimize cost of installing GIC blocker"
 function objective_blocker_placement_cost(pm::_PM.AbstractPowerModel)
+    # don't need to sum across all scenarios - objective will be somewhat confusing
     return JuMP.@objective(pm.model, Min,
         sum(
-            sum( blocker["multiplier"]*blocker["construction_cost"]*_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+            sum( get(blocker, "multiplier", 1.0) * get(blocker, "construction_cost", 1.0) *_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
         for (n, nw_ref) in _PM.nws(pm))
     )
 
