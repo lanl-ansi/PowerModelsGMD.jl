@@ -47,3 +47,24 @@ function objective_bound_gmd_bus_v(pm::_PM.AbstractPowerModel, nw::Int=nw_id_def
         )
     end
 end
+
+
+function objective_max_loadability(pm::_PM.AbstractPowerModel)
+    nws = _PM.nw_ids(pm)
+
+    z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
+    z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)
+    time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
+
+    total_load = sum(sqrt(load["pd"]^2+load["qd"]^2) for (i,load) in _PM.ref(pm, 0, :load))
+
+    return JuMP.@objective(pm.model, Max,
+        sum( 
+            ( 
+            time_elapsed[n]*(
+                sum(z_demand[n][i]*sqrt(load["pd"]^2+load["qd"]^2) for (i,load) in _PM.ref(pm, n, :load))/total_load
+                )
+            )
+            for n in nws)
+        )
+end
