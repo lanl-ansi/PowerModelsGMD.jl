@@ -104,19 +104,19 @@ function variable_hotspot(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bou
 
     if bounded
         hotspot = _PM.var(pm, nw)[:hsa] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_hotspot",
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_hotspot",
             lower_bound = 0,
-            upper_bound = _PM.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "hotspot_start")
+            upper_bound = _PM.ref(pm, nw, :transformer, i, "hotspot_instant_limit"),
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :transformer, i), "hotspot_start")
         )
     else
         hotspot = _PM.var(pm, nw)[:hsa] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_hotspot",
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "hotspot_start")
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_hotspot",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :transformer, i), "hotspot_start")
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :actual_hotspot, _PM.ids(pm, nw, :branch), hotspot)
+    report && _PM.sol_component_value(pm, nw, :transformer, :actual_hotspot, _PM.ids(pm, nw, :transformer), hotspot)
 end
 
 
@@ -127,19 +127,19 @@ function variable_delta_hotspot_ss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_def
 
     if bounded
         delta_hotspot_ss = _PM.var(pm, nw)[:hsss] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_delta_hotspot_ss",
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_delta_hotspot_ss",
             lower_bound = 0,
             upper_bound = tmax,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "delta_hotspot_ss_start")
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :transformer, i), "delta_hotspot_ss_start")
         )
     else
         delta_hotspot_ss = _PM.var(pm, nw)[:hsss] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_delta_hotspot_ss",
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "delta_oil_hotspot_start")
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_delta_hotspot_ss",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :transformer, i), "delta_oil_hotspot_start")
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :hotspot_rise_ss, _PM.ids(pm, nw, :branch), delta_hotspot_ss)
+    report && _PM.sol_component_value(pm, nw, :transformer, :hotspot_rise_ss, _PM.ids(pm, nw, :transformer), delta_hotspot_ss)
 
 end
 
@@ -151,19 +151,19 @@ function variable_delta_hotspot(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defaul
 
     if bounded
         delta_hotspot = _PM.var(pm, nw)[:hs] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_delta_hotspot",
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_delta_hotspot",
             lower_bound = 0,
             upper_bound = tmax,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "delta_hotspot_start")
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :transformer, i), "delta_hotspot_start")
         )
     else
         delta_hotspot = _PM.var(pm, nw)[:hs] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_delta_hotspot",
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "delta_hotspot_start")
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_delta_hotspot",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :transformer, i), "delta_hotspot_start")
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :hotspot_rise, _PM.ids(pm, nw, :branch), delta_hotspot)
+    report && _PM.sol_component_value(pm, nw, :transformer, :hotspot_rise, _PM.ids(pm, nw, :transformer), delta_hotspot)
 
 end
 
@@ -173,19 +173,19 @@ function variable_delta_oil_ss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default
 
     if bounded
         delta_oil_ss = _PM.var(pm, nw)[:ross] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_delta_oil_ss",
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_delta_oil_ss",
             lower_bound = 0,
-            upper_bound = _PM.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "delta_oil_ss_start")
+            upper_bound = _PM.ref(pm, nw, :transformer, i, "hotspot_instant_limit"),
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :transformer, i), "delta_oil_ss_start")
         )
     else
         delta_oil_ss = _PM.var(pm, nw)[:ross] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_delta_oil_ss",
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "delta_oil_ss_start")
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_delta_oil_ss",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :transformer, i), "delta_oil_ss_start")
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :topoil_rise_ss, _PM.ids(pm, nw, :branch), delta_oil_ss)
+    report && _PM.sol_component_value(pm, nw, :transformer, :topoil_rise_ss, _PM.ids(pm, nw, :transformer), delta_oil_ss)
 
 end
 
@@ -195,19 +195,19 @@ function variable_delta_oil(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, b
 
     if bounded
         delta_oil = _PM.var(pm, nw)[:ro] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_delta_oil",
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_delta_oil",
             lower_bound = 0,
-            upper_bound = _PM.ref(pm, nw, :branch, i, "hotspot_instant_limit"),
+            upper_bound = _PM.ref(pm, nw, :transformer, i, "hotspot_instant_limit"),
             start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "delta_oil_start")
         )
     else
         delta_oil = _PM.var(pm, nw)[:ro] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_delta_oil",
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "delta_oil_start")
+            [i in _PM.ids(pm, nw, :transformer)], base_name="$(nw)_delta_oil",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :branctransformerh, i), "delta_oil_start")
         )
     end
 
-    report && _PM.sol_component_value(pm, nw, :branch, :topoil_rise, _PM.ids(pm, nw, :branch), delta_oil)
+    report && _PM.sol_component_value(pm, nw, :transformer, :topoil_rise, _PM.ids(pm, nw, :transformer), delta_oil)
 
 end
 

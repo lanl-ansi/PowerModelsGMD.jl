@@ -114,3 +114,33 @@ function ref_add_gmd_connections!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:A
         nw_ref[:gmd_connections] = connected
     end
 end
+
+
+function ref_add_transformers!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    data_it  = _IM.ismultiinfrastructure(data) ? data["it"][pm_it_name] : data
+    nws_data = _IM.ismultinetwork(data_it) ? data_it["nw"] : Dict("0" => data_it)
+
+    for (n, nw_data) in nws_data
+        nw_id = parse(Int, n)
+        nw_ref = ref[:it][pm_it_sym][:nw][nw_id]
+        transformers = Dict{Int, Any}()
+        
+        for (i, branch) in nw_ref[:branch]
+            if branch["br_status"] == _PM.pm_component_status_inactive["branch"]
+                continue
+            end
+
+            if get(branch, "type", "unknown") != "xfmr"
+                continue
+            end
+            
+            # if !branch["transformer"]
+            #     continue
+            # end
+            
+            transformers[i] = branch
+        end
+        
+        nw_ref[:transformer] = transformers
+    end
+end

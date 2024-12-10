@@ -136,6 +136,7 @@ function solve_blocker_placement_multi_scenario(file, model_type::Type, optimize
             ref_add_gmd!,
             ref_add_ne_blocker!,
             ref_add_gmd_connections!,
+            ref_add_transformers!,
         ],
         solution_processors = [
             solution_gmd!,
@@ -213,10 +214,10 @@ function build_blocker_placement_multi_scenario(pm::_PM.AbstractPowerModel; kwar
             # d_hs = d_hs_ss
             # ths = d_hs + d_to
             if get_warn(pm.setting, "ts", false) 
-                constraint_temperature_state_ss(pm, i, nw=n)
-                constraint_hotspot_temperature_state_ss(pm, i, nw=n)
-                constraint_hotspot_temperature_state(pm, i, nw=n)
-                constraint_absolute_hotspot_temperature_state(pm, i, nw=n)
+                # constraint_temperature_state_ss(pm, i, nw=n)
+                # constraint_hotspot_temperature_state_ss(pm, i, nw=n)
+                # constraint_hotspot_temperature_state(pm, i, nw=n)
+                # constraint_absolute_hotspot_temperature_state(pm, i, nw=n)
             end
         end
 
@@ -241,19 +242,19 @@ function build_blocker_placement_multi_scenario(pm::_PM.AbstractPowerModel; kwar
         constraint_load_served(pm, nw=n)
     end
  
-    if get_warn(pm.setting, "ts", false) 
-        for i in _PM.ids(pm, :branch, nw=n_1)
-            constraint_temperature_state(pm, i, nw=n_1)
-        end
+    # if get_warn(pm.setting, "ts", false) 
+    #     for i in _PM.ids(pm, :branch, nw=n_1)
+    #         constraint_temperature_state(pm, i, nw=n_1)
+    #     end
 
-        for n_2 in network_ids[2:end]
-            for i in _PM.ids(pm, :branch, nw=n_2)
-                constraint_temperature_state(pm, i, n_1, n_2)
-            end
+    #     for n_2 in network_ids[2:end]
+    #         for i in _PM.ids(pm, :branch, nw=n_2)
+    #             constraint_temperature_state(pm, i, n_1, n_2)
+    #         end
             
-            n_1 = n_2
-        end
-    end
+    #         n_1 = n_2
+    #     end
+    # end
     
     objective_blocker_placement_cost_multi_scenario(pm)
 end
