@@ -10,7 +10,7 @@ function objective_blocker_placement_cost(pm::_PM.AbstractPowerModel)
     # don't need to sum across all scenarios - objective will be somewhat confusing
     return JuMP.@objective(pm.model, Min,
         sum(
-            sum( get(blocker, "multiplier", 1.0) * get(blocker, "construction_cost", 1.0) *_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+            sum( get_warn(blocker, "multiplier", 1.0) * get_warn(blocker, "construction_cost", 1.0) *_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
         for (n, nw_ref) in _PM.nws(pm))
     )
 
@@ -23,7 +23,7 @@ function objective_blocker_placement_cost_multi_scenario(pm::_PM.AbstractPowerMo
 
 
     return JuMP.@objective(pm.model, Min,
-        sum( get(blocker, "multiplier", 1.0) * get(blocker, "construction_cost", 1.0) *_PM.var(pm, n, :z_blocker, i) for (i,blocker) in _PM.ref(pm, n)[:gmd_ne_blocker] )
+        sum( get_warn(blocker, "multiplier", 1.0) * get_warn(blocker, "construction_cost", 1.0) *_PM.var(pm, n, :z_blocker, i) for (i,blocker) in _PM.ref(pm, n)[:gmd_ne_blocker] )
     )
 
 end
@@ -31,7 +31,7 @@ end
 
 "OBJECTIVE: maximize the qloss of the ac model"
 function objective_max_qloss(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default)
-    k = get(pm.setting,"qloss_branch",false)
+    k = get_warn(pm.setting, "qloss_branch", false)
     branch = _PM.ref(pm, nw, :branch)[k]
     i = branch["hi_bus"]
     j = branch["lo_bus"]

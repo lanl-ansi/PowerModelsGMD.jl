@@ -207,6 +207,17 @@ function build_blocker_placement_multi_scenario(pm::_PM.AbstractPowerModel; kwar
             # consider using constraint_qloss_vnom
             constraint_qloss_pu(pm, i, nw=n)
             constraint_dc_current_mag(pm, i, nw=n)
+
+            # TODO: we have a number of redundant decision variables that 
+            # can be combined here, e.g.
+            # d_hs = d_hs_ss
+            # ths = d_hs + d_to
+            if get_warn(pm.setting, "ts", false) 
+                constraint_temperature_state_ss(pm, i, nw=n)
+                constraint_hotspot_temperature_state_ss(pm, i, nw=n)
+                constraint_hotspot_temperature_state(pm, i, nw=n)
+                constraint_absolute_hotspot_temperature_state(pm, i, nw=n)
+            end
         end
 
         for i in _PM.ids(pm, :dcline, nw=n)
@@ -229,8 +240,12 @@ function build_blocker_placement_multi_scenario(pm::_PM.AbstractPowerModel; kwar
 
         constraint_load_served(pm, nw=n)
     end
+ 
+    if get_warn(pm.setting, "ts", false) 
+        for i in _PM.ids(pm, :branch, nw=n_1)
+            constraint_temperature_state(pm, i, nw=n_1)
+        end
 
-    if get(pm.setting, "ts", false)
         for n_2 in network_ids[2:end]
             for i in _PM.ids(pm, :branch, nw=n_2)
                 constraint_temperature_state(pm, i, n_1, n_2)

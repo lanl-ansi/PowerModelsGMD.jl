@@ -1,5 +1,10 @@
-# function get_warn(x::Dict, k)
-#     xf 
+function get_warn(x::Dict, k, x_default)
+    if !haskey(x, k)
+        Memento.warn(_LOGGER, "Network data should specify time_elapsed, using $x_default as a default.")
+    end
+
+    return get(x, k, x_default)
+end
 
 
 function generate_g_i_matrix(network::Dict{String, Any})
