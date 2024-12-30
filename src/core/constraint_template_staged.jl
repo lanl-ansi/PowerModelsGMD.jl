@@ -279,46 +279,6 @@ function constraint_temperature_state_ss(pm::_PM.AbstractPowerModel, i::Int; nw:
 end
 
 
-"CONSTRAINT: temperature state"
-function constraint_temperature_state(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-    branch = _PM.ref(pm, nw, :branch, i)
-
-    if branch["topoil_time_const"] >= 0
-        f_bus = branch["f_bus"]
-        t_bus = branch["t_bus"]
-        f_idx = (i, f_bus, t_bus)
-
-        if branch["topoil_initialized"] > 0
-            constraint_temperature_state_initial(pm, nw, i, f_idx, branch["topoil_init"])
-        else
-            constraint_temperature_state_initial(pm, nw, i, f_idx)
-        end
-    end
-end
-
-
-"CONSTRAINT: temperature state"
-function constraint_temperature_state(pm::_PM.AbstractPowerModel, i::Int, nw_1::Int, nw_2::Int)
-    branch = _PM.ref(pm, nw_1, :branch, i)
-
-    if branch["topoil_time_const"] >= 0
-        tau_oil = branch["topoil_time_const"]
-        delta_t = 5
-
-        if haskey(_PM.ref(pm, nw_1), :time_elapsed)
-            delta_t = _PM.ref(pm, nw_1, :time_elapsed)
-        else
-            Memento.warn(_LOGGER, "Network data should specify time_elapsed, using $delta_t as a default.")
-        end
-
-        tau = 2 * tau_oil / delta_t
-        constraint_temperature_state(pm, nw_1, nw_2, i, tau)
-
-    end
-
-end
-
-
 "CONSTRAINT: steady-state hot-spot temperature state"
 function constraint_hotspot_temperature_state_ss(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)

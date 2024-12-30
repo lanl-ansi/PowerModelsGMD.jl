@@ -391,3 +391,31 @@ function constraint_gmd_connections(pm::_PM.AbstractPowerModel, n::Int, connecti
         sum([1 - _PM.var(pm, n, :z_blocker)[sub] for sub in connections]) >= 1
     )
 end
+
+
+"CONSTRAINT: initial temperature state"
+function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i, f_idx)
+    delta_oil_ss = _PM.var(pm, n, :ross, i)
+    delta_oil = _PM.var(pm, n, :ro, i)
+    JuMP.@constraint(pm.model, delta_oil == delta_oil_ss)
+end
+
+
+"CONSTRAINT: initial temperature state"
+function constraint_temperature_state_initial(pm::_PM.AbstractPowerModel, n::Int, i, f_idx, delta_oil_init)
+    delta_oil = _PM.var(pm, n, :ro, i)
+    JuMP.@constraint(pm.model, delta_oil == delta_oil_init)
+end
+
+
+"CONSTRAINT: temperature state"
+function constraint_temperature_state(pm::_PM.AbstractPowerModel, n_1::Int, n_2::Int, i, tau)
+    delta_oil_ss_prev = _PM.var(pm, n_1, :ross, i)
+    delta_oil_ss = _PM.var(pm, n_2, :ross, i)
+    delta_oil_prev = _PM.var(pm, n_1, :ro, i)
+    delta_oil = _PM.var(pm, n_2, :ro, i)
+
+    JuMP.@constraint(pm.model,
+        (1 + tau) * delta_oil == delta_oil_ss + delta_oil_ss_prev - (1 - tau) * delta_oil_prev
+    )
+end
