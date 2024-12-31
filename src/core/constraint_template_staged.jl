@@ -265,66 +265,6 @@ function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, k; nw::
 end
 
 
-"CONSTRAINT: steady-state temperature state"
-function constraint_temperature_state_ss(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-    branch = _PM.ref(pm, nw, :branch, i)
-
-    if branch["topoil_time_const"] >= 0
-        f_bus = branch["f_bus"]
-        t_bus = branch["t_bus"]
-        f_idx = (i, f_bus, t_bus)
-        rate_a = branch["rate_a"]
-        constraint_temperature_steady_state(pm, nw, i, f_idx, rate_a, branch["topoil_rated"])
-    end
-end
-
-
-"CONSTRAINT: steady-state hot-spot temperature state"
-function constraint_hotspot_temperature_state_ss(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-    branch = _PM.ref(pm, nw, :branch, i)
-
-    if branch["topoil_time_const"] >= 0
-        f_bus = branch["f_bus"]
-        t_bus = branch["t_bus"]
-        f_idx = (i, f_bus, t_bus)
-        rate_a = branch["rate_a"]
-        Re = get_warn(branch, "hotspot_coeff", 0.63)
-        constraint_hotspot_temperature_steady_state(pm, nw, i, f_idx, rate_a, Re)
-    end
-end
-
-
-"CONSTRAINT: hot-spot temperature state"
-function constraint_hotspot_temperature_state(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-    branch = _PM.ref(pm, nw, :branch, i)
-
-    if branch["topoil_time_const"] >= 0
-        f_bus = branch["f_bus"]
-        t_bus = branch["t_bus"]
-        f_idx = (i, f_bus, t_bus)
-
-        constraint_hotspot_temperature(pm, nw, i, f_idx)
-    end
-end
-
-
-"CONSTRAINT: absolute hot-spot temperature state"
-function constraint_absolute_hotspot_temperature_state(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-    branch = _PM.ref(pm, nw, :branch, i)
-
-    if branch["topoil_time_const"] >= 0
-        f_bus = branch["f_bus"]
-        t_bus = branch["t_bus"]
-        f_idx = (i, f_bus, t_bus)
-
-        # TODO: use get_warn with defaults
-        temp_ambient = branch["temperature_ambient"]
-
-        constraint_absolute_hotspot_temperature(pm, nw, i, f_idx, temp_ambient)
-    end
-end
-
-
 "CONSTRAINT: average absolute hot-spot temperature state"
 function constraint_avg_absolute_hotspot_temperature_state(pm::_PM.AbstractPowerModel, i::Int)
     branch = _PM.ref(pm, 1, :branch, i)

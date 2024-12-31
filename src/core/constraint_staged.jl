@@ -203,68 +203,6 @@ function constraint_qloss_decoupled_vnom_mld(pm::_PM.AbstractPowerModel, n::Int,
 end
 
 
-# ===   THERMAL CONSTRAINTS   === #
-
-
-"CONSTRAINT: steady-state temperature state"
-function constraint_temperature_steady_state(pm::_PM.AbstractPowerModel, n::Int, i, f_idx, rate_a, delta_oil_rated)
-    p_fr = _PM.var(pm, n, :p, f_idx)
-    q_fr = _PM.var(pm, n, :q, f_idx)
-    delta_oil_ss = _PM.var(pm, n, :ross, i)
-
-    JuMP.@constraint(pm.model,
-        rate_a^2 * delta_oil_ss/delta_oil_rated >= p_fr^2 + q_fr^2
-    )
-end
-
-
-"CONSTRAINT: steady-state hot-spot temperature state"
-function constraint_hotspot_temperature_steady_state(pm::_PM.AbstractPowerModel, n::Int, i, f_idx, rate_a, Re)
-    delta_hotspot_ss = _PM.var(pm, n, :hsss, i)
-    ieff = _PM.var(pm, n, :i_dc_mag)[i]
-    JuMP.@constraint(pm.model,  delta_hotspot_ss == Re*ieff)
-end
-
-
-"CONSTRAINT: hot-spot temperature state"
-function constraint_hotspot_temperature(pm::_PM.AbstractPowerModel, n::Int, i, f_idx)
-    delta_hotspot_ss = _PM.var(pm, n, :hsss, i)
-    delta_hotspot = _PM.var(pm, n, :hs, i)
-    # oil_temp = _PM.var(pm, n, :ro, i)
-    JuMP.@constraint(pm.model, delta_hotspot == delta_hotspot_ss)
-end
-
-
-"CONSTRAINT: absolute hot-spot temperature state"
-function constraint_absolute_hotspot_temperature(pm::_PM.AbstractPowerModel, n::Int, i, f_idx, temp_ambient)
-    hotspot = _PM.var(pm, n, :hsa, i)
-    delta_hotspot = _PM.var(pm, n, :hs, i)
-    oil_temp = _PM.var(pm, n, :ro, i)
-    JuMP.@constraint(pm.model, hotspot == delta_hotspot + oil_temp + temp_ambient)
-end
-
-
-"CONSTRAINT: average absolute hot-spot temperature state"
-function constraint_avg_absolute_hotspot_temperature(pm::_PM.AbstractPowerModel, i, f_idx, max_temp)
-    N = length(_PM.nws(pm))
-
-    JuMP.@constraint(pm.model,
-        sum(_PM.var(pm, n, :hsa, i) for (n, nw_ref) in _PM.nws(pm)) <= N*max_temp
-    )
-end
-
-
-"CONSTRAINT: thermal protection of transformers"
-function constraint_thermal_protection(pm::_PM.AbstractPowerModel, n::Int, i, coeff, ibase)
-    i_ac_mag = _PM.var(pm, n, :i_ac_mag)[i]
-    ieff = _PM.var(pm, n, :i_dc_mag)[i]
-
-    JuMP.@constraint(pm.model, 
-        i_ac_mag <= coeff[1] + coeff[2] * ieff/ibase + coeff[3] * ieff^2/ibase^2
-    )
-end
-
-
 # ===   GIC BLOCKER CONSTRAINTS   === #
 
 
