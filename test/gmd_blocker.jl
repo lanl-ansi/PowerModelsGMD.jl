@@ -105,26 +105,16 @@
 
     @testset "Time-extended blocker placement"
         @testset "NE BLOCKER DATA" begin
-            setting = Dict{String,Any}("ts" => false, "output" => Dict{String,Any}("branch_flows" => true))
-            thermal = true
+            ts_setting = deepcopy(setting) 
+            ts_setting["ts"] = false        
             
-            net_path = "../PowerModelsGMD.jl/test/data/matpower/b4gic.m"
-            #net_path = "../PowerModelsGMD.jl/test/data/matpower/b4gic_ne_blocker.m"
-            wf_path = "../PowerModelsGMD.jl/test/data/suppl/b4gic-gmd-waveform.json"
-            
-            net = PowerModels.parse_file(net_path)
+            net = PowerModels.parse_file(data_b4gic)
             net["load_served_ratio"] = 0.90
-            
-            components = _PMG.get_connected_components(net)
-            
+            components = get_connected_components(net)
             net["connected_components"] = components
-            
-            _PMG.add_blockers!(net)
-            
-            # doesn't work for time-series extended. Run this before calling PowerModels.replicate?
-            _PMG.filter_gmd_ne_blockers!(net)
-            
-            
+            add_blockers!(net)
+            filter_gmd_ne_blockers!(net)   # doesn't work for time-series extended. Run this before calling PowerModels.replicate?
+
             io = open(wf_path)
             waveform = JSON.parse(io)
             close(io)
@@ -157,18 +147,7 @@
                 end
             end
             
-            dc_result = PowerModelsGMD.solve_gmd(net, ipopt_solver; setting=setting)
-            
-            branch = to_df(net, "branch", dc_result)[:,split("index f_bus t_bus source_id s_gmd_idc_mag s_qlossf s_qlosst", " ")]
-            df_to_dict = (k,v,x) -> DataFrame(k=>collect(keys(x)), v=>collect(values(x)))
-            ieff = df_to_dict(:Bus,:Ieff, dc_result["solution"]["ieff"])
-            
-            #result = PowerModelsGMD.solve_gmd_mld_decoupled(net, PowerModels.ACPPowerModel, ipopt_solver; setting=setting)
-            # result = PowerModelsGMD.solve_ac_gmd_mld_decoupled(net, ipopt_solver; setting=setting)
-            
-            #placement_result = solve_soc_blocker_placement_ts(net, juniper_solver; setting=setting)
-            # placement_result = solve_soc_blocker_placement_multi_scenario(ts_net, juniper_solver; setting=setting)
-            placement_result = _PMG.solve_ac_blocker_placement_multi_scenario(ts_net, juniper_solver; setting=setting)
+            placement_result = solve_ac_blocker_placement_multi_scenario(ts_net, juniper_solver; setting=setting)
             
             placement_result["solution"]["nw"]["1"]["gmd_ne_blocker"]
         end
