@@ -1100,3 +1100,28 @@ function update_cost_multiplier!(data::Dict{String,<:Any})
         end
     end
 end
+
+
+function add_blockers!(net)
+    blockers = Dict{String,Any}()
+    blocker_count = 0
+
+    for (k, bus) in net["gmd_bus"]
+        if bus["g_gnd"] <= 0.0
+            continue
+        end
+
+        blocker_count += 1
+        blocker = Dict{String,Any}()
+        blocker["index"] = blocker_count
+        blocker["source_id"] = ["gmd_ne_blocker", blocker_count]
+        blocker["gmd_bus"] = bus["index"]
+        blocker["status"] = 1
+        blocker["multiplier"] = 1.0
+        blocker["construction_cost"] = 1.0
+
+        blockers["$blocker_count"] = blocker
+    end
+
+    net["gmd_ne_blocker"] = blockers
+end
