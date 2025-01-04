@@ -104,7 +104,7 @@
     #end
 
     @testset "Time-extended blocker placement"
-        @testset "NE BLOCKER DATA" begin
+        @testset "b4gic case" begin
             ts_setting = deepcopy(setting) 
             ts_setting["ts"] = false        
             
@@ -119,7 +119,6 @@
             waveform = JSON.parse(io)
             close(io)
             
-            n = length(waveform["time"])
             n = 2
             ts_net = PowerModels.replicate(net, n)
             
@@ -129,11 +128,8 @@
             
             base_mva = net["baseMVA"]
             δ_t = wf_time[2] - wf_time[1]
-            
-            # TODO: add optional parameter of ac solve for transformer loading, or add sequential ac solve
-            results = []
-            
-            #for (i,t) in enumerate(wf_time)
+                        
+            # TODO: move this to a function 
             for i = 1:n
                 j = wf_ids[i]
             
@@ -147,9 +143,9 @@
                 end
             end
             
-            placement_result = solve_ac_blocker_placement_multi_scenario(ts_net, juniper_solver; setting=setting)
-            
-            placement_result["solution"]["nw"]["1"]["gmd_ne_blocker"]
+            result = solve_ac_blocker_placement_multi_scenario(ts_net, juniper_solver; setting=setting)
+            @test result["termination_status"] == _PM.LOCALLY_SOLVED
+
         end
     end
 end

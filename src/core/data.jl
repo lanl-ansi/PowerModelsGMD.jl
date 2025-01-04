@@ -1125,3 +1125,25 @@ function add_blockers!(net)
 
     net["gmd_ne_blocker"] = blockers
 end
+
+
+function create_ts_net(net, waveform; n=0, scaling=1.0)
+    if n <= 0
+        n = length(waveform["time"])
+    end
+
+    ts_net = PowerModels.replicate(net, n)
+
+    for i = 1:n
+        j = wf_ids[i]
+    
+        for (k, wf) in waveform["waveforms"]
+            otype = wf["parent_type"]
+            field  = wf["parent_field"]
+
+            ts_net["nw"]["$i"][otype][k][field] = scaling * wf["values"][j]
+        end
+    end
+    
+    return ts_net
+end
