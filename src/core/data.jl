@@ -1127,15 +1127,18 @@ function add_blockers!(net)
 end
 
 
-function create_ts_net(net, waveform; n=0, scaling=1.0)
-    if n <= 0
+function create_ts_net(net, waveform; ids=[], scaling=1.0)
+    n = length(ids)
+    
+    if length(ids) == 0
         n = length(waveform["time"])
+        ids = collect(range(length=n))
     end
 
     ts_net = PowerModels.replicate(net, n)
 
     for i = 1:n
-        j = wf_ids[i]
+        j = ids[i]
     
         for (k, wf) in waveform["waveforms"]
             otype = wf["parent_type"]

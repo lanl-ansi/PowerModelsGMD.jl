@@ -130,22 +130,10 @@
             δ_t = wf_time[2] - wf_time[1]
                         
             # TODO: move this to a function 
-            for i = 1:n
-                j = wf_ids[i]
-            
-                if (waveform !== nothing && waveform["waveforms"] !== nothing)
-                    for (k, wf) in waveform["waveforms"]
-                        otype = wf["parent_type"]
-                        field  = wf["parent_field"]
-            
-                        ts_net["nw"]["$i"][otype][k][field] = 10 * wf["values"][j]
-                    end
-                end
-            end
-            
+            ts_net = create_ts_net(net, waveform, ids=wf_ids, scaling=10.0)            
             result = solve_ac_blocker_placement_multi_scenario(ts_net, juniper_solver; setting=setting)
             @test result["termination_status"] == _PM.LOCALLY_SOLVED
-
+            @test isapprox(result["objective"], 1.0; atol = 1e-1)
         end
     end
 end

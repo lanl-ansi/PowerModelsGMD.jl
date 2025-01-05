@@ -1,4 +1,4 @@
-########################
+    ########################
 # Solution Definitions #
 ########################
 
@@ -18,7 +18,7 @@ function solution_gmd_qloss!(pm::_PM.AbstractPowerModel, solution::Dict{String,A
         for (l, branch) in _PM.ref(pm,nw_id,:branch)
             key = (branch["index"], branch["hi_bus"], branch["lo_bus"])
             branch_solution = nw_data["branch"][string(l)]
-            branch_solution["ieff"] = JuMP.value.(_PM.var(pm, nw_id, :i_dc_mag, l))
+            branch_solution["ieff"] = JuMP.value.(_PM.var(pm, nw_id, :ieff, l))
             branch_solution["gmd_qloss"] = JuMP.value.(_PM.var(pm,nw_id,:qloss,key))
         end
     end
