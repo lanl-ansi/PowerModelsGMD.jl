@@ -24,4 +24,4 @@ b4gic_offbase = "../test/data/matpower/b4gic_offbase.m"
 autotransformer = "../test/data/matpower/autotransformer.m"
 epricase = "../test/data/matpower/epricase_aug2022_v22_fix.m"
 
-data_b4gic_wf = "../PowerModelsGMD.jl/test/data/suppl/b4gic-gmd-waveform.json"
+data_b4gic_wf = "../test/data/suppl/b4gic-gmd-waveform.json"

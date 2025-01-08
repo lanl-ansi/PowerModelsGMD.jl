@@ -1043,6 +1043,13 @@ function add_gmd_3w_branch!(data::Dict{String,<:Any})
 end
 
 
+function add_connected_components!(data::Dict{String,<:Any})
+    components = get_connected_components(data)
+    data["connected_components"] = components
+    return components
+end    
+
+
 function get_connected_components(data::Dict{String,<:Any})
     g = build_adjacency_matrix(data)
     c = _Gph.SimpleGraph(g)

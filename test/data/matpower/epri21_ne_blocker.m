@@ -373,7 +373,7 @@ mpc.branch_sourceid = [
 
 %% gmd_blocker data
 %column_names% gmd_bus status construction_cost
-mpc.gmd_blocker = {
+mpc.gmd_ne_blocker = {
 	1	  1 1.0
 	2	  1	1.0
 	3	  1	1.0

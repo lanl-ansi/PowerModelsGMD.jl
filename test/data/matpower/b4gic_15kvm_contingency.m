@@ -60,12 +60,12 @@ mpc.gmd_bus = {
 
 
 %% gmd_branch data
-%column_names% f_bus t_bus parent_index br_status br_r br_v len_km name
+%column_names% f_bus t_bus parent_type parent_index br_status br_r br_v len_km name
 mpc.gmd_branch = {
-	3	1	1	1	0.1	0	0	'dc_xf1_hi'
-	3	4	2	1	1.00073475	2561.82886	170.78806587354	'dc_br1'
-	4	2	3	1	0.1	0	0	'dc_xf2_hi'
-};
+	3	1	'branch'	1	1	0.1	0	0	'dc_xf1_hi'
+	3	4	'branch'	2	1	1.00073475	2561.82886	170.78806587354	'dc_br1'
+	4	2	'branch'	3	1	0.1	0	0	'dc_xf2_hi'
+};'branch'	
 
 
 %% branch_gmd data
