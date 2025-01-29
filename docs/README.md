@@ -2,9 +2,9 @@
 
 Building the documentation for PMsGMD is done with [Documenter.jl](https://github.com/JuliaDocs/Documenter.jl).
 
-To preview the HTML output, run the following command:
+To preview the HTML output, run the following command from the project root folder:
 ```
-julia --color=yes make.jl
+julia --project=docs docs/make.jl
 ```
 After that documents can be viewed in `build/index.html`.
 

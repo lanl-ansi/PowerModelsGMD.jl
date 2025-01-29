@@ -2,6 +2,7 @@
 # GIC AC-PF #
 #############
 
+"FUNCTION: solve coupled GMD PF problem"
 function solve_gmd_pf(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,

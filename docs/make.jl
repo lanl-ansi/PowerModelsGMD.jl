@@ -7,9 +7,11 @@ makedocs(
     authors = "Arthur Barnes, Adam Mate, and contributors.",
     pages = [
         "Home" => "index.md",
-    ]
+    ],
+    warnonly = :missing_docs,
+    checkdocs = :exports,
 )
 
-deploydocs(
-    repo = "github.com/lanl-ansi/PowerModelsGMD.jl.git",
-)
+# deploydocs(
+#     repo = "github.com/lanl-ansi/PowerModelsGMD.jl.git",
+# )
