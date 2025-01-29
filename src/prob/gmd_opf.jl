@@ -92,18 +92,17 @@ function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-
-
-
 "FUNCTION: solve basic GMD OPF model with nonlinear ac polar where the gic is an input parameter (uncoupled)"
 function solve_ac_gmd_opf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_opf_uncoupled( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
+
 "FUNCTION: solve basic GMD OPF model with second order cone ac polar relaxation"
 function solve_soc_gmd_opf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_opf_uncoupled( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
+
 
 "FUNCTION: solve basic GMD OPF model"
 function solve_gmd_opf_uncoupled(file, model_type::Type, optimizer; kwargs...)
@@ -160,5 +159,4 @@ function build_gmd_opf_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     _PM.objective_min_fuel_cost(pm)
-
 end

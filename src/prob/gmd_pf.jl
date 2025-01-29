@@ -99,20 +99,23 @@ function build_gmd_pf(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: solve GMD PF mitigation with nonlinear ac equations"
+"FUNCTION: solve sequential GMD PF problem with nonlinear ac equations"
 function solve_ac_gmd_pf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_pf_uncoupled(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-"FUNCTION: solve GMD PF mitigation with second order cone relaxation"
+
+"FUNCTION: solve sequential GMD PF problem with second order cone relaxation"
 function solve_soc_gmd_pf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_pf_uncoupled(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
-"FUNCTION: solve GMD PF mitigation with nonlinear ac equations"
+
+"FUNCTION: solve sequential GMD PF problem with nonlinear ac equations"
 function solve_qc_gmd_pf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_pf_uncoupled(file, _PM.QCRMPowerModel , optimizer; kwargs...)
 end
+
 
 function solve_gmd_pf_uncoupled(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(

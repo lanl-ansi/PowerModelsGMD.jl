@@ -28,4 +28,24 @@ solve_soc_gmd_pf_uncoupled
 solve_qc_gmd_pf_uncoupled
 ```
 
+### GIC-OPF
+
+```@docs
+solve_ac_gmd_opf
+
+solve_soc_gmd_opf
+
+solve_gmd_opf
+
+build_gmd_opf
+
+solve_ac_gmd_opf_uncoupled
+
+solve_soc_gmd_opf_uncoupled
+
+solve_gmd_opf_uncoupled
+
+build_gmd_opf_uncoupled
+```
+
 
