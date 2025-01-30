@@ -20,7 +20,7 @@ function solve_gmd_pf(file, model_type::Type, optimizer; kwargs...)
     )
 end
 
-
+"FUNCTION: build the coupled GMD PF problem"
 function build_gmd_pf(pm::_PM.AbstractPowerModel; kwargs...)
     bound_voltage = get(pm.setting,"bound_voltage",false)
 
@@ -117,6 +117,8 @@ function solve_qc_gmd_pf_uncoupled(file, optimizer; kwargs...)
 end
 
 
+# TODO: use solve_gmd_uncoupled in algo.jl for this
+"FUNCTION: solve sequential GMD PF problem with arbitrary formulation"
 function solve_gmd_pf_uncoupled(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -134,9 +136,8 @@ function solve_gmd_pf_uncoupled(file, model_type::Type, optimizer; kwargs...)
     )
 end
 
-
-"FUNCTION: build the ac minimum loadshedding coupled with quasi-dc-pf problem
-as a maximum loadability problem on shunts and loads where the dc pf flow is uncoupled from the ac calculations"
+# Note: assumes that ieff is provided for each branch in the input case
+"FUNCTION: build the sequential GMD PF problem"
 function build_gmd_pf_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
     bound_voltage = get(pm.setting,"bound_voltage",false)
 

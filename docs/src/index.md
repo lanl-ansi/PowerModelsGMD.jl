@@ -13,6 +13,8 @@ CurrentModule = PowerModelsGMD
 ```@docs
 solve_gmd
 
+build_gmd
+
 solve_gmd_ts_decoupled
 ```
 
@@ -20,6 +22,8 @@ solve_gmd_ts_decoupled
 
 ```@docs
 solve_gmd_pf
+
+build_gmd_pf
 
 solve_ac_gmd_pf_uncoupled
 
@@ -48,4 +52,10 @@ solve_gmd_opf_uncoupled
 build_gmd_opf_uncoupled
 ```
 
+## Data Management
 
+```@docs
+add_blockers!
+
+create_ts_net
+```

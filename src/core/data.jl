@@ -1109,6 +1109,8 @@ function update_cost_multiplier!(data::Dict{String,<:Any})
 end
 
 
+"FUNCTION: Add network expansion blocker objects at all substation
+neutral GMD buses"
 function add_blockers!(net)
     blockers = Dict{String,Any}()
     blocker_count = 0
@@ -1134,6 +1136,8 @@ function add_blockers!(net)
 end
 
 
+"FUNCTION: Create a multinetwork object from a single network and
+dictionary structure of time-series coupled voltage waveforms"
 function create_ts_net(net, waveform; ids=[], scaling=1.0)
     n = length(ids)
     
