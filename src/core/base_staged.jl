@@ -1,7 +1,7 @@
 # ===   STATUS CHECK   === #
 
 
-"FUNCTION: check gmd branch parent status"
+"check gmd branch parent status"
 function check_gmd_branch_parent_status(ref, i, gmd_branch)
 
     parent_id = gmd_branch["parent_index"]

@@ -1,4 +1,4 @@
-"FUNCTION: run GMD mitigation with nonlinear ac equations"
+"run GMD mitigation with nonlinear ac equations"
 function solve_ac_blocker_placement(file::String, optimizer; kwargs...)
     case = _PM.parse_file(file)
     return solve_blocker_placement(case, _PM.ACPPowerModel, optimizer; kwargs...)
@@ -8,7 +8,7 @@ function solve_ac_blocker_placement(case::Dict{String,Any}, optimizer; kwargs...
     return solve_blocker_placement(case, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-"FUNCTION: run GMD mitigation with second order cone relaxation"
+"run GMD mitigation with second order cone relaxation"
 function solve_soc_blocker_placement(file::String, optimizer; kwargs...)
     case = _PM.parse_file(file)
     return solve_blocker_placement(case, _PM.SOCWRPowerModel, optimizer; kwargs...)
@@ -46,7 +46,7 @@ function solve_blocker_placement(case, model_type::Type, optimizer; kwargs...)
 end
 
 
-"FUNCTION: build the ac minimum loadshed coupled with quasi-dc power flow problem
+"build the ac minimum loadshed coupled with quasi-dc power flow problem
 as a maximum loadability problem with relaxed generator and bus participation"
 function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
@@ -113,13 +113,13 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: run GMD mitigation with nonlinear ac equations"
+"run GMD mitigation with nonlinear ac equations"
 function solve_ac_blocker_placement_multi_scenario(file, optimizer; kwargs...)
     return solve_blocker_placement_multi_scenario(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 
-"FUNCTION: run GMD mitigation with second order cone relaxation"
+"run GMD mitigation with second order cone relaxation"
 function solve_soc_blocker_placement_multi_scenario(file, optimizer; kwargs...)
     return solve_blocker_placement_multi_scenario(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
@@ -147,7 +147,7 @@ function solve_blocker_placement_multi_scenario(file, model_type::Type, optimize
 end
 
 
-"FUNCTION: build the multi-scenario or time-series blocker placement problem"
+"build the multi-scenario or time-series blocker placement problem"
 function build_blocker_placement_multi_scenario(pm::_PM.AbstractPowerModel; kwargs...)
     # Reference:
     #   built minimum loadshedding problem specification corresponds to the "Model C4" of

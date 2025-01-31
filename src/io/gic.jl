@@ -67,6 +67,15 @@ const _gic_has_ID = Dict{String, String}(
     "BUS" => "ID"
 )
 
+"Parse a GIC file given a file path and return as a dictionary structure"
+function parse_gic(file::String)::Dict
+    # TODO: need to close io?
+    io = open(file)
+    return parse_gic(io)
+end
+
+
+"Parse a GIC file given a file handle and return as a dictionary structure"
 function parse_gic(io::IO)::Dict
     data = _parse_gic(io)
 
@@ -85,11 +94,6 @@ function parse_gic(io::IO)::Dict
     return data
 end
 
-function parse_gic(file::String)::Dict
-    # TODO: need to close io?
-    io = open(file)
-    return parse_gic(io)
-end
 
 function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractString, line_number::Int, ID::Int)
     section_data = Dict{String, Any}()

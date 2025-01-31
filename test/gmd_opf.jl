@@ -104,7 +104,7 @@
         # ===   COUPLED AC-OPF-TS   === #
 
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_opf_ts"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_opf_ts"
 
 
     end
@@ -146,7 +146,7 @@
         # ===   DECOUPLED AC-OPF-TS   === #
 
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_opf_ts_decoupled"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_opf_ts_decoupled"
 
 
         # ===   COUPLED AC-OPF   === #
@@ -183,7 +183,7 @@
         # ===   COUPLED AC-OPF-TS   === #
 
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_opf_ts"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_opf_ts"
 
 
     end
@@ -215,7 +215,7 @@
         # ===   DECOUPLED AC-OPF-TS   === #
 
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_opf_ts_decoupled"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_opf_ts_decoupled"
 
 
         # ===   COUPLED AC-OPF   === #
@@ -248,7 +248,7 @@
         # ===   COUPLED AC-OPF-TS   === #
 
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_opf_ts"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_opf_ts"
 
 
     end
@@ -291,7 +291,7 @@
         # ===   DECOUPLED AC-OPF-TS   === #
 
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_opf_ts_decoupled"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_opf_ts_decoupled"
 
 
         # ===   COUPLED AC-OPF   === #
@@ -312,7 +312,7 @@
         # ===   COUPLED AC-OPF-TS   === #
 
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_opf_ts"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_opf_ts"
 
 
     end

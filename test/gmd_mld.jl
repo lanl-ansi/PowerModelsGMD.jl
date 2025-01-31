@@ -13,7 +13,7 @@
 #         @test result["termination_status"] == _PM.LOCALLY_SOLVED
 #         @test isapprox(result["objective"], 490.0; atol=1e-2)
 
-#         # FIXME: add actual fully automated testing for "solve_soc_gmd_mld_uncoupled"
+#         # FIXME: add actual fully automated testing for "Solve_soc_gmd_mld_uncoupled"
 
 
 #         # ===   DECOUPLED GMD CASCADE MLD   === #
@@ -25,7 +25,7 @@
 #         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
 #         # @test isapprox(result["objective"], 0.0000; atol=1e2)
 
-#         # FIXME: add actual fully automated testing for "solve_soc_gmd_cascade_mld_uncoupled"
+#         # FIXME: add actual fully automated testing for "Solve_soc_gmd_cascade_mld_uncoupled"
 
 
 #         # ===   COUPLED GMD MLS   === #
@@ -67,7 +67,7 @@
 #         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
 #         # @test isapprox(result["objective"], 0.0000; atol=1e2)
 
-#         # FIXME: add actual fully automated testing for "solve_soc_gmd_mld_uncoupled"
+#         # FIXME: add actual fully automated testing for "Solve_soc_gmd_mld_uncoupled"
 
 
 #         # ===   DECOUPLED GMD CASCADE MLD   === #
@@ -79,7 +79,7 @@
 #         # @test result["termination_status"] == _PM.LOCALLY_SOLVED
 #         # @test isapprox(result["objective"], 0.0000; atol=1e2)
 
-#         # FIXME: add actual fully automated testing for "solve_soc_gmd_cascade_mld_uncoupled"
+#         # FIXME: add actual fully automated testing for "Solve_soc_gmd_cascade_mld_uncoupled"
 
 
 #         # ===   COUPLED GMD MLS   === #

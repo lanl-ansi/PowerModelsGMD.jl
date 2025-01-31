@@ -8,7 +8,7 @@
 # ===   CALCULATIONS FOR VOLTAGE VARIABLES   === #
 
 
-"FUNCTION: calculate the minimum dc voltage at a gmd bus "
+"calculate the minimum dc voltage at a gmd bus "
 function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     if haskey(gmd_bus, "vmin")
@@ -19,7 +19,7 @@ function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 end
 
 
-"FUNCTION: calculate the maximum dc voltage at a gmd bus "
+"calculate the maximum dc voltage at a gmd bus "
 function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     if haskey(gmd_bus, "vmax")
@@ -30,7 +30,7 @@ function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 end
 
 
-"FUNCTION: calculate the max q loss of xfmr in branch "
+"calculate the max q loss of xfmr in branch "
 function calc_max_q_loss(pm::_PM.AbstractPowerModel, l; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, l)
     if haskey(branch, "qloss_max")
@@ -41,7 +41,7 @@ function calc_max_q_loss(pm::_PM.AbstractPowerModel, l; nw::Int=pm.cnw)
 end
 
 
-"FUNCTION: calculate the maximum dc voltage difference between gmd buses"
+"calculate the maximum dc voltage difference between gmd buses"
 function calc_max_dc_voltage_difference(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return calc_max_dc_voltage(pm, i; nw=nw) - calc_min_dc_voltage(pm, i; nw=nw)
 end
@@ -49,13 +49,13 @@ end
 # ===   CALCULATIONS FOR CURRENT VARIABLES   === #
 
 
-"FUNCTION: calculate the minimum absolute value AC current on a branch"
+"calculate the minimum absolute value AC current on a branch"
 function calc_ac_positive_current_mag_min(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return 0
 end
 
 
-"FUNCTION: calculate the maximum absolute value AC current on a branch"
+"calculate the maximum absolute value AC current on a branch"
 function calc_ac_current_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus = _PM.ref(pm, nw, :bus, branch["f_bus"])
@@ -66,7 +66,7 @@ function calc_ac_current_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 end
 
 
-"FUNCTION: calculate ieff current magnitude for branches"
+"calculate ieff current magnitude for branches"
 function calc_ieff_current_mag(branch, case::Dict{String,Any}, solution)
     if branch["transformer"] == 0
         return calc_ieff_current_mag_line(branch, case, solution)
@@ -97,18 +97,18 @@ function calc_ieff_current_mag(branch, case::Dict{String,Any}, solution)
 end
 
 
-"FUNCTION: dc current on normal lines"
+"dc current on normal lines"
 function calc_ieff_current_mag_line(branch, case::Dict{String,Any}, solution)
    return 0.0
 end
 
-"FUNCTION: dc current on grounded transformers"
+"dc current on grounded transformers"
 function calc_ieff_current_mag_grounded_xf(branch, case::Dict{String,Any}, solution)
     return 0.0
 end
 
 
-"FUNCTION: dc current on ungrounded gwye-delta transformers"
+"dc current on ungrounded gwye-delta transformers"
 function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{String,Any}, solution)
     k   = branch["index"]
     khi = branch["gmd_br_hi"]
@@ -127,7 +127,7 @@ function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{String,Any}, sol
 end
 
 
-"FUNCTION: dc current on ungrounded gwye-gwye transformers"
+"dc current on ungrounded gwye-gwye transformers"
 function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{String,Any}, solution)
     k = branch["index"]
     khi = branch["gmd_br_hi"]
@@ -159,7 +159,7 @@ function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{String,Any}, solu
 end
 
 
-"FUNCTION: dc current on ungrounded gwye-gwye auto transformers"
+"dc current on ungrounded gwye-gwye auto transformers"
 function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{String,Any}, solution)
     if haskey(branch, "hi_3w_branch")
         if "$(branch["index"])" == branch["hi_3w_branch"]
@@ -228,7 +228,7 @@ function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{String,Any},
 end
 
 
-"FUNCTION: dc current on three-winding transformers"
+"dc current on three-winding transformers"
 function calc_ieff_current_mag_3w_xf(branch, case::Dict{String,Any}, solution)
     k = branch["index"]
     khi = branch["gmd_br_hi"]
@@ -271,7 +271,7 @@ function calc_ieff_current_mag_3w_xf(branch, case::Dict{String,Any}, solution)
 end
 
 
-"FUNCTION: calculate ieff current magnitude for branches"
+"calculate ieff current magnitude for branches"
 function calc_ieff_current_mag(branch, case::Dict{Symbol,Any}, solution)
 
     if branch["transformer"] == 0
@@ -303,19 +303,19 @@ function calc_ieff_current_mag(branch, case::Dict{Symbol,Any}, solution)
 end
 
 
-"FUNCTION: dc current on normal lines"
+"dc current on normal lines"
 function calc_ieff_current_mag_line(branch, case::Dict{Symbol,Any}, solution)
     return 0.0
 end
 
 
-"FUNCTION: dc current on grounded transformers"
+"dc current on grounded transformers"
 function calc_ieff_current_mag_grounded_xf(branch, case::Dict{Symbol,Any}, solution)
     return 0.0
 end
 
 
-"FUNCTION: dc current on ungrounded gwye-delta transformers"
+"dc current on ungrounded gwye-delta transformers"
 function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{Symbol,Any}, solution)
     k   = branch["index"]
     khi = branch["gmd_br_hi"]
@@ -330,7 +330,7 @@ function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{Symbol,Any}, sol
 end
 
 
-"FUNCTION: dc current on ungrounded gwye-gwye transformers"
+"dc current on ungrounded gwye-gwye transformers"
 function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{Symbol,Any}, solution)
     k = branch["index"]
     khi = branch["gmd_br_hi"]
@@ -361,7 +361,7 @@ function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{Symbol,Any}, solu
 end
 
 
-"FUNCTION: dc current on ungrounded gwye-gwye auto transformers"
+"dc current on ungrounded gwye-gwye auto transformers"
 function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{Symbol,Any}, solution)
     k = branch["index"]
     ks = branch["gmd_br_series"]
@@ -395,7 +395,7 @@ function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{Symbol,Any},
 end
 
 
-"FUNCTION: dc current on three-winding transformers"
+"dc current on three-winding transformers"
 function calc_ieff_current_mag_3w_xf(branch, case::Dict{Symbol,Any}, solution)
 
     k = branch["index"]
@@ -485,7 +485,7 @@ function calc_dc_current_sub(branch, solution)
 end
 
 
-"FUNCTION: calculate the maximum DC current on a branch"
+"calculate the maximum DC current on a branch"
 function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, i)
     ibase = calc_branch_ibase(pm, i, nw=nw)
@@ -506,7 +506,7 @@ function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 end
 
 
-"FUNCTION: calculate the ibase for a branch single phase"
+"calculate the ibase for a branch single phase"
 function calc_branch_ibase(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, i)
     bus = _PM.ref(pm, nw, :bus, branch["hi_bus"])
@@ -516,7 +516,7 @@ end
 
 
 # ===   CALCULATIONS FOR QLOSS VARIABLES   === #
-"FUNCTION: returns qloss value in 3phase MVA"
+"returns qloss value in 3phase MVA"
 function calc_branch_K(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
      branch = _PM.ref(pm, nw, :branch, i)
      ibase = calc_branch_ibase(pm,i;nw=nw)
@@ -534,7 +534,7 @@ function calc_branch_K_pu(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return haskey(branch, "gmd_k") ? (branch["gmd_k"]) / (ibase) : 0.0 # waiting for response 
 end
 
-"FUNCTION: calculate qloss returns MVA 
+"calculate qloss returns MVA 
     "
 function calc_qloss(branch::Dict{String,Any}, case::Dict{String,Any}, solution::Dict{String,Any})
     if branch["type"] == "xfmr"
@@ -640,7 +640,7 @@ function calc_hotspot_temp!(branch)
 end
 
 
-"FUNCTION: calculate hotspot temperature rise"
+"calculate hotspot temperature rise"
 function calc_delta_hotspotrise!(branch, result, δ_t)
     if branch["type"] ∉ Set(("xfmr", "xf", "transformer"))
         return
@@ -663,7 +663,7 @@ function calc_delta_hotspotrise!(branch, result, δ_t)
 end
 
 
-"FUNCTION: calculate steady-state top-oil temperature rise"
+"calculate steady-state top-oil temperature rise"
 function calc_delta_topoilrise_ss(branch, result, base_mva)
     if branch["type"] ∉ Set(("xfmr", "xf", "transformer"))
         return
@@ -686,7 +686,7 @@ function calc_delta_topoilrise_ss(branch, result, base_mva)
 end
 
 
-"FUNCTION: calculate top-oil temperature rise"
+"calculate top-oil temperature rise"
 function calc_delta_topoilrise!(branch, result, base_mva, δ_t)
     topoil_time_const = get(branch, "topoil_time_const", 60.0*default_topoil_time_const_mins)
     δ_to_ss = calc_delta_topoilrise_ss(branch, result, base_mva)
@@ -703,7 +703,7 @@ end
 # ===   GENERAL SETTINGS AND FUNCTIONS   === #
 
 
-"FUNCTION: apply function"
+"apply function"
 function _apply_func!(data::Dict{String,Any}, key::String, func)
 
     if haskey(data, key)
@@ -713,7 +713,7 @@ function _apply_func!(data::Dict{String,Any}, key::String, func)
 end
 
 
-"FUNCTION: apply a JSON file or a dictionary of mods"
+"apply a JSON file or a dictionary of mods"
 function apply_mods!(net, modsfile::AbstractString)
 
     if modsfile !== nothing
@@ -729,7 +729,7 @@ function apply_mods!(net, modsfile::AbstractString)
 end
 
 
-"FUNCTION: apply a dictionary of mods"
+"apply a dictionary of mods"
 function apply_mods!(net, mods::AbstractDict{String,Any})
 
     net_by_sid = create_sid_map(net)
@@ -769,7 +769,7 @@ function apply_mods!(net, mods::AbstractDict{String,Any})
 end
 
 
-"FUNCTION: correct parent branches for gmd branches after applying mods"
+"correct parent branches for gmd branches after applying mods"
 function fix_gmd_indices!(net)
 
     branch_map = Dict(map(x -> x["source_id"] => x["index"], values(net["branch"])))
@@ -787,7 +787,7 @@ function fix_gmd_indices!(net)
 end
 
 
-"FUNCTION: index mods dictionary by source id"
+"index mods dictionary by source id"
 function create_sid_map(net)
 
     net_by_sid = Dict()
@@ -818,7 +818,7 @@ end
 # ===   UNIT CONVERSION FUNCTIONS   === #
 
 
-"FUNCTION: convert effective GIC to PowerWorld to-phase convention"
+"convert effective GIC to PowerWorld to-phase convention"
 function adjust_gmd_phasing!(result)
 
     gmd_buses = result["solution"]["gmd_bus"]
@@ -836,7 +836,7 @@ function adjust_gmd_phasing!(result)
 end
 
 
-"FUNCTION: add GMD data"
+"add GMD data"
 function add_gmd_data!(case::Dict{String,Any}, solution::Dict{String,<:Any}; decoupled=false)
 
     @assert !_IM.ismultinetwork(case)
@@ -888,7 +888,7 @@ function add_gmd_data!(case::Dict{String,Any}, solution::Dict{String,<:Any}; dec
 end
 
 
-"FUNCTION: make GMD mixed units"
+"make GMD mixed units"
 function make_gmd_mixed_units!(solution::Dict{String,Any}, mva_base::Real)
 
     rescale = x -> (x * mva_base)
@@ -974,7 +974,7 @@ function make_gmd_mixed_units!(solution::Dict{String,Any}, mva_base::Real)
 end
 
 
-"FUNCTION: make GMD per unit"
+"make GMD per unit"
 function make_gmd_per_unit!(data::Dict{String,<:Any})
 
     @assert !_IM.ismultinetwork(case)
@@ -990,7 +990,7 @@ function make_gmd_per_unit!(data::Dict{String,<:Any})
 end
 
 
-"FUNCTION: make GMD per unit"
+"make GMD per unit"
 function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
 
     @assert !_IM.ismultinetwork(case)
@@ -1109,7 +1109,7 @@ function update_cost_multiplier!(data::Dict{String,<:Any})
 end
 
 
-"FUNCTION: Add network expansion blocker objects at all substation
+"Add network expansion blocker objects at all substation
 neutral GMD buses"
 function add_blockers!(net)
     blockers = Dict{String,Any}()
@@ -1136,7 +1136,7 @@ function add_blockers!(net)
 end
 
 
-"FUNCTION: Create a multinetwork object from a single network and
+"Create a multinetwork object from a single network and
 dictionary structure of time-series coupled voltage waveforms"
 function create_ts_net(net, waveform; ids=[], scaling=1.0)
     n = length(ids)

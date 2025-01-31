@@ -1,17 +1,17 @@
 
-"FUNCTION: solve GMD OTS mitigation with nonlinear ac polar relaxation"
+"Solve GMD OTS mitigation with nonlinear ac polar relaxation"
 function solve_ac_gmd_ots(file, optimizer; kwargs...)
     return solve_gmd_ots( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 
-"FUNCTION:  solve GMD MLS OTS mitigation with second order cone relaxation"
+" solve GMD MLS OTS mitigation with second order cone relaxation"
 function solve_soc_gmd_ots(file, optimizer; kwargs...)
     return solve_gmd_ots( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
 
-"FUNCTION:  solve GMD MLS OTS mitigation with quadratic constrained least squares relaxation"
+" solve GMD MLS OTS mitigation with quadratic constrained least squares relaxation"
 function solve_qc_gmd_ots(file, optimizer; kwargs...)
     return solve_gmd_ots( file, _PM.QCLSPowerModel, optimizer; kwargs...)
 end

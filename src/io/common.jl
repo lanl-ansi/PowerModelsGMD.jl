@@ -1,3 +1,7 @@
+"Parse a file given a file path and return as a
+dictionary structure
+
+File type is inferred based on the file extension"
 function parse_file(file::String; kwargs...)::Dict
     filetype = lowercase(splitext(file)[end])
     if filetype != ".gic"
@@ -10,6 +14,10 @@ function parse_file(file::String; kwargs...)::Dict
 end
 
 # TODO: handle csv voltage file?
+"Parse a set of files given their paths and return as multinetwork 
+dictionary structure
+
+File type is inferred based on the file extension"
 function parse_files(files::String...; kwargs...)::Dict
     mn_data = Dict{String, Any}(
         "nw" => Dict{String, Any}(),
