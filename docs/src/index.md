@@ -63,6 +63,14 @@ create_sid_map
 
 add_gmd_data!
 
+make_gmd_mixed_units!
+
+make_gmd_per_unit!
+
+add_connected_components!
+
+get_connected_components
+
 add_blockers!
 
 create_ts_net

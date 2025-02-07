@@ -713,14 +713,12 @@ function add_gmd_data!(case::Dict{String,Any}, solution::Dict{String,<:Any}; dec
 end
 
 
-"make GMD mixed units"
+"Make GMD mixed units"
 function make_gmd_mixed_units!(solution::Dict{String,Any}, mva_base::Real)
-
     rescale = x -> (x * mva_base)
     rescale_dual = x -> (x / mva_base)
 
     if haskey(solution, "bus")
-
         for (i, bus) in solution["bus"]
             _apply_func!(bus, "pd", rescale)
             _apply_func!(bus, "qd", rescale)
@@ -730,16 +728,18 @@ function make_gmd_mixed_units!(solution::Dict{String,Any}, mva_base::Real)
             _apply_func!(bus, "lam_kcl_r", rescale_dual)
             _apply_func!(bus, "lam_kcl_i", rescale_dual)
         end
-
     end
 
     branches = []
+
     if haskey(solution, "branch")
         append!(branches, values(solution["branch"]))
     end
+
     if haskey(solution, "ne_branch")
         append!(branches, values(solution["ne_branch"]))
     end
+
     for branch in branches
         _apply_func!(branch, "rate_a", rescale)
         _apply_func!(branch, "rate_b", rescale)
@@ -756,9 +756,11 @@ function make_gmd_mixed_units!(solution::Dict{String,Any}, mva_base::Real)
     end
 
     dclines =[]
+
     if haskey(solution, "dcline")
         append!(dclines, values(solution["dcline"]))
     end
+
     for dcline in dclines
         _apply_func!(dcline, "loss0", rescale)
         _apply_func!(dcline, "pf", rescale)
@@ -783,11 +785,13 @@ function make_gmd_mixed_units!(solution::Dict{String,Any}, mva_base::Real)
             _apply_func!(gen, "pmin", rescale)
             _apply_func!(gen, "qmax", rescale)
             _apply_func!(gen, "qmin", rescale)
+
             if "model" in keys(gen) && "cost" in keys(gen)
                 if gen["model"] != 2
                     Memento.warn(_LOGGER, "Skipping generator cost model of type other than 2")
                 else
                     degree = length(gen["cost"])
+
                     for (i, item) in enumerate(gen["cost"])
                         gen["cost"][i] = item / (mva_base^(degree-i))
                     end
@@ -799,58 +803,29 @@ function make_gmd_mixed_units!(solution::Dict{String,Any}, mva_base::Real)
 end
 
 
-"make GMD per unit"
+"Make GMD per unit"
 function make_gmd_per_unit!(data::Dict{String,<:Any})
-
     @assert !_IM.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
     if !haskey(data, "GMDperUnit") || data["GMDperUnit"] == false
-
         make_gmd_per_unit(data["baseMVA"], data)
         data["GMDperUnit"] = true
-
     end
-
 end
 
 
-"make GMD per unit"
+"Make GMD per unit"
 function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
-
     @assert !_IM.ismultinetwork(case)
     @assert !haskey(case, "conductors")
 
     for bus in data["bus"]
-
         zb = bus["base_kv"]^2/mva_base
         bus["gmd_gs"] *= zb
-
     end
-
 end
 
-
-"FUNCTION to make time series networks"
-function make_time_series(data::Dict{String,<:Any}, waveforms::String; loads::String) 
-    wf_filetype = split(lowercase(waveforms), '.')[end]
-    io = open(waveforms)
-    if wf_filetype == "json"
-        wf_data = JSON.parse(io)
-    end
-    n = length(wf_data["time"])
-    nws = _PM.replicate(data, n)
-    for (i, t) in enumerate(wf_data["time"])
-        nws["nw"][string(i)]["time"] = t
-    end
-    return nws
-end
-
-
-function make_time_series(data::String, waveforms::String; loads::String="")
-    pm_data = _PM.parse_file(data)
-    return make_time_series(pm_data, waveforms; loads=loads) 
-end
 
 
 function add_gmd_3w_branch!(data::Dict{String,<:Any})
@@ -868,6 +843,9 @@ function add_gmd_3w_branch!(data::Dict{String,<:Any})
 end
 
 
+"Add connected components to the network data structure. 
+This information is used when setting variable bounds
+associated with GMD quantities"
 function add_connected_components!(data::Dict{String,<:Any})
     components = get_connected_components(data)
     data["connected_components"] = components
@@ -875,6 +853,9 @@ function add_connected_components!(data::Dict{String,<:Any})
 end    
 
 
+"Return connected components for the network data structure.
+This information is used when setting variable bounds
+associated with GMD quantities"
 function get_connected_components(data::Dict{String,<:Any})
     g = build_adjacency_matrix(data)
     c = _Gph.SimpleGraph(g)
@@ -963,7 +944,7 @@ end
 
 "Create a multinetwork object from a single network and
 dictionary structure of time-series coupled voltage waveforms"
-function create_ts_net(net, waveform; ids=[], scaling=1.0)
+function create_ts_net(net::Dict{String,<:Any}, waveform; ids=[], scaling=1.0)
     n = length(ids)
     
     if length(ids) == 0
@@ -986,3 +967,5 @@ function create_ts_net(net, waveform; ids=[], scaling=1.0)
     
     return ts_net
 end
+
+
