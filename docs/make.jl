@@ -12,6 +12,6 @@ makedocs(
     checkdocs = :exports,
 )
 
-# deploydocs(
-#     repo = "github.com/lanl-ansi/PowerModelsGMD.jl.git",
-# )
+deploydocs(
+    repo = "github.com/lanl-ansi/PowerModelsGMD.jl.git",
+)
