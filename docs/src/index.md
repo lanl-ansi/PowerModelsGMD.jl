@@ -73,6 +73,10 @@ get_connected_components
 
 add_blockers!
 
+filter_gmd_ne_blockers!
+
+update_cost_multiplier!
+
 create_ts_net
 ```
 

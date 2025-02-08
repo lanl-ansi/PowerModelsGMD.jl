@@ -862,9 +862,12 @@ function get_connected_components(data::Dict{String,<:Any})
     return _Gph.connected_components(c)
 end
 
-
+"Remove network expansion blockers corresponding to
+connected components with a cardinality of 1 or 
+less"
 function filter_gmd_ne_blockers!(data::Dict{String,<:Any})
     connections = []
+
     for connection in data["connected_components"]
         if length(connection) > 1
             for conn in connection
@@ -872,32 +875,41 @@ function filter_gmd_ne_blockers!(data::Dict{String,<:Any})
             end
         end
     end
+
     gmd_ne_blocker = Dict{String, Any}()
+
     for (i, gmd_blocker) in data["gmd_ne_blocker"]
         if gmd_blocker["index"] in connections
             gmd_ne_blocker[i] = gmd_blocker
         end
     end
+
     data["gmd_ne_blocker"] = gmd_ne_blocker
 end
  
-
+"Scale network expansion blocker cost proportional
+to the number of transfomers present at the 
+corresponding substation" 
 function update_cost_multiplier!(data::Dict{String,<:Any})
     subs = Dict{Int,Any}()
+
     for (i, branch) in data["branch"]
         if branch["type"] == "xfmr"
             sub = []
             branch_keys = ["gmd_br_hi", "gmd_br_lo", "gmd_br_series", "gmd_br_common"]
+
             for branch_key in branch_keys
                 if branch[branch_key] != -1
                     gmd_branch = data["gmd_branch"]["$(branch[branch_key])"]
                     f_bus = gmd_branch["f_bus"]
                     t_bus = gmd_branch["t_bus"]
+
                     if data["gmd_bus"]["$f_bus"]["sub"] != -1 && !(data["gmd_bus"]["$f_bus"]["sub"] in sub)
                         append!(sub, data["gmd_bus"]["$f_bus"]["sub"])
                     end
                 end
             end
+
             for s in sub
                 if haskey(subs, s)
                     subs[s] += 1
@@ -907,6 +919,7 @@ function update_cost_multiplier!(data::Dict{String,<:Any})
             end
         end
     end
+
     if haskey(data, "gmd_ne_blocker")
         for (sub, m) in subs
             data["gmd_ne_blocker"]["$sub"]["multiplier"] = m

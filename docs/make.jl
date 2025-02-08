@@ -13,5 +13,8 @@ makedocs(
 )
 
 deploydocs(
+    # Remote push: git@github.com:lanl-ansi/PowerModelsGMD.jl.git
+    # From https://documenter.juliadocs.org/stable/lib/public/#Documenter.deploydocs
+    # Do not specify any protocol - "https://" or "git@" should not be present. 
     repo = "github.com/lanl-ansi/PowerModelsGMD.jl.git",
 )
