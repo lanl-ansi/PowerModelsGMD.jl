@@ -77,11 +77,31 @@ function add_coupled_voltages!(lines_info::DataFrame, output::Dict{String, Any})
         branch_map[source_id] = branch["index"]
     end
 
-    dc_voltages = lines_info[!, "GICInducedDCVolt"]
+    dc_voltage_field = "GICInducedDCVolt"
+    from_bus_field = "BusNumFrom"
+    to_bus_field = "BusNumTo"
+    ckt_field = "Circuit"
 
-    froms = lines_info[!, "BusNumFrom"]
-    tos = lines_info[!, "BusNumTo"]
-    ckts = lines_info[!, "Circuit"]
+    if "GICObjectInputDCVolt" in names(lines_info)
+        dc_voltage_field = "GICObjectInputDCVolt"
+    end
+
+    if "BusNum" in names(lines_info)
+        from_bus_field = "BusNum"
+    end
+
+    if "BusNum:1" in names(lines_info)
+        to_bus_field = "BusNum:1"
+    end
+
+    if "LineCircuit" in names(lines_info)
+        ckt_field = "LineCircuit"
+    end
+
+    dc_voltages = lines_info[!, dc_voltage_field]
+    froms = lines_info[!, from_bus_field]
+    tos = lines_info[!, to_bus_field]
+    ckts = lines_info[!, ckt_field]
 
     for (from, to, ckt, dc_voltage) in zip(froms, tos, ckts, dc_voltages)
         source_id = ["branch", from, to, "$ckt"]
