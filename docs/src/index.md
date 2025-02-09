@@ -52,6 +52,12 @@ solve_gmd_opf_uncoupled
 build_gmd_opf_uncoupled
 ```
 
+## Objectives
+
+```@docs
+objective_blocker_placement_cost
+```
+
 ## Data Management
 
 ```@docs

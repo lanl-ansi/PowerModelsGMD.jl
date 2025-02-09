@@ -5,7 +5,7 @@
 
 # ===   GMD OBJECTIVES   === #
 
-"OBJECTIVE: minimize cost of installing GIC blocker"
+"Minimize cost of installing GIC blocker"
 function objective_blocker_placement_cost(pm::_PM.AbstractPowerModel)
     # don't need to sum across all scenarios - objective will be somewhat confusing
     return JuMP.@objective(pm.model, Min,
@@ -16,7 +16,7 @@ function objective_blocker_placement_cost(pm::_PM.AbstractPowerModel)
 
 end
 
-"OBJECTIVE: minimize cost of installing GIC blocker"
+"Minimize cost of installing GIC blocker"
 function objective_blocker_placement_cost_multi_scenario(pm::_PM.AbstractPowerModel)
     # don't need to sum across all scenarios - objective will be somewhat confusing
     n = first(sort(collect(_PM.nw_ids(pm))))
@@ -29,7 +29,7 @@ function objective_blocker_placement_cost_multi_scenario(pm::_PM.AbstractPowerMo
 end
 
 
-"OBJECTIVE: maximize the qloss of the ac model"
+"Maximize the qloss of the ac model"
 function objective_max_qloss(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default)
     k = get_warn(pm.setting, "qloss_branch", false)
     branch = _PM.ref(pm, nw, :branch)[k]
@@ -42,7 +42,7 @@ function objective_max_qloss(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default)
 end
 
 
-"OBJECTIVE: max/min the dc voltage at the sub station"
+"Max/min the dc voltage at the sub station"
 function objective_bound_gmd_bus_v(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default)
 
     bus = get(pm.setting,"gmd_bus",false)
@@ -61,6 +61,7 @@ function objective_bound_gmd_bus_v(pm::_PM.AbstractPowerModel, nw::Int=nw_id_def
 end
 
 
+"Maximize power delivered to loads"
 function objective_max_loadability(pm::_PM.AbstractPowerModel)
     nws = _PM.nw_ids(pm)
 
