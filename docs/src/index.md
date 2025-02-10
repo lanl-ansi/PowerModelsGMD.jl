@@ -1,6 +1,6 @@
 # PowerModelsGMD.jl Documentation
 
-PowerModelsGMD.jl is a Julia package built on top of InfrastructureModels.jl for analysis of geomagnetic disturbances in the context of power systems optimization problems.
+PowerModelsGMD.jl is a Julia package built on top of [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl/) and [InfrastructureModels.jl](https://github.com/lanl-ansi/InfrastructureModels.jl) for analysis of geomagnetic disturbances in the context of power systems optimization problems.
 
 ```@meta
 CurrentModule = PowerModelsGMD
