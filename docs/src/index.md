@@ -56,6 +56,201 @@ build_gmd_opf_uncoupled
 
 ```@docs
 objective_blocker_placement_cost
+
+objective_blocker_placement_cost_multi_scenario
+
+objective_max_qloss
+
+objective_bound_gmd_bus_v
+
+objective_max_loadability
+
+objective_gmd_min_fuel
+
+objective_gmd_min_error
+
+objective_gmd_mls_on_off
+
+objective_gmd_min_mls
+
+objective_gmd_min_transformer_heating
+```
+
+## Constraints
+
+```@docs
+constraint_load_served
+
+constraint_gmd_connections
+```
+
+### Voltage Constraints
+
+```@docs
+constraint_model_voltage
+
+constraint_model_voltage_on_off
+```
+
+### DC Current Constraints
+
+```@docs
+constraint_dc_current_mag_gwye_delta_xf
+
+constraint_dc_current_mag_gwye_gwye_xf
+
+constraint_dc_current_mag_gwye_gwye_auto_xf
+```
+
+### Power Balance Constraints
+
+```@docs
+constraint_power_balance_gmd
+
+constraint_power_balance_gmd_shunt
+
+constraint_power_balance_gmd_shunt_ls
+
+constraint_dc_kcl
+
+constraint_dc_power_balance_ne_blocker
+
+constraint_dc_kcl_ne_blocker
+```
+
+### Ohm's Law Constraints
+
+```@docs
+constraint_dc_ohms
+```
+
+### Qloss Constraints
+
+```@docs
+constraint_qloss_gmd
+
+constraint_qloss
+
+constraint_qloss_pu
+
+constraint_qloss_constant_ieff
+```
+
+### Transformer Temperature Constraints
+
+```@docs
+constraint_temperature_state
+
+constraint_temperature_state_ss
+
+constraint_hotspot_temperature_state_ss
+
+constraint_hotspot_temperature_state
+
+constraint_absolute_hotspot_temperature_state
+```
+
+## Variables
+
+Not found: `variable_iv`
+
+```@docs
+variable_bus_voltage
+
+variable_bus_voltage_on_off
+
+variable_gic_current
+
+variable_dc_current_mag
+
+
+variable_ac_positive_current_mag
+
+variable_ac_current_mag_sqr
+
+variable_ne_blocker_indicator
+```
+
+### Voltage Variables
+
+```@docs
+variable_dc_voltage
+
+variable_dc_voltage_difference
+
+variable_dc_voltage_on_off
+```
+
+### Power Balance Variables
+
+Not found: `variable_dc_bus_flow`
+
+```@docs
+variable_dc_line_flow
+
+variable_dc_gen_flow
+```
+
+### Qloss Variables
+
+```@docs
+variable_qloss
+```
+
+### Transformer Heating Variables
+
+```@docs
+variable_hotspot
+
+variable_delta_hotspot_ss
+
+variable_delta_hotspot
+
+variable_delta_oil_ss
+
+variable_delta_oil
+```
+
+## Solution Builders
+
+```@docs
+solution_gmd_qloss!
+
+solution_gmd!
+
+solution_gmd
+
+add_ieff_solution!
+
+source_id_keys!
+
+solution_add_qloss_bound_case!
+
+solution_get_qloss_bound
+
+solution_add_gmd_bus_v_bounds_case!
+
+solution_get_gmd_bus_v_bounds
+```
+
+## Reference Dictionary Builders
+
+```@docs
+ref_add_gmd!
+
+ref_add_ne_blocker!
+
+ref_add_ieff!
+
+ref_add_gmd_connections!
+
+ref_add_transformers!
+```
+
+## Base
+
+```@docs
+check_gmd_branch_parent_status
 ```
 
 ## Data Management
