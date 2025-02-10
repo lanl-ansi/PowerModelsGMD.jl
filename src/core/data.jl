@@ -6,7 +6,7 @@
 
 
 # ===   CALCULATIONS FOR VOLTAGE VARIABLES   === #
-"calculate the minimum dc voltage at a gmd bus "
+"Calculate the minimum dc voltage at a gmd bus "
 function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     if haskey(gmd_bus, "vmin")
@@ -17,7 +17,7 @@ function calc_min_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 end
 
 
-"calculate the maximum dc voltage at a gmd bus "
+"Calculate the maximum dc voltage at a gmd bus "
 function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     if haskey(gmd_bus, "vmax")
@@ -28,7 +28,7 @@ function calc_max_dc_voltage(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 end
 
 
-"calculate the max q loss of xfmr in branch "
+"Calculate the max q loss of xfmr in branch "
 function calc_max_q_loss(pm::_PM.AbstractPowerModel, l; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, l)
     if haskey(branch, "qloss_max")
@@ -39,7 +39,7 @@ function calc_max_q_loss(pm::_PM.AbstractPowerModel, l; nw::Int=pm.cnw)
 end
 
 
-"calculate the maximum dc voltage difference between gmd buses"
+"Calculate the maximum dc voltage difference between gmd buses"
 function calc_max_dc_voltage_difference(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return calc_max_dc_voltage(pm, i; nw=nw) - calc_min_dc_voltage(pm, i; nw=nw)
 end
@@ -320,7 +320,7 @@ function calc_dc_current_sub(branch, solution)
 end
 
 
-"calculate the maximum DC current on a branch"
+"Calculate the maximum DC current on a branch"
 function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, i)
     ibase = calc_branch_ibase(pm, i, nw=nw)
@@ -340,7 +340,7 @@ function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 end
 
 
-"calculate the ibase for a branch single phase"
+"Calculate the ibase for a branch single phase"
 function calc_branch_ibase(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, i)
     bus = _PM.ref(pm, nw, :bus, branch["hi_bus"])
@@ -368,8 +368,7 @@ function calc_branch_K_pu(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     return haskey(branch, "gmd_k") ? (branch["gmd_k"]) / (ibase) : 0.0 # waiting for response 
 end
 
-"calculate qloss returns MVA 
-    "
+"Calculate qloss returns MVA"
 function calc_qloss(branch::Dict{String,Any}, case::Dict{String,Any}, solution::Dict{String,Any})
     if branch["type"] == "xfmr"
         if haskey(branch, "hi_3w_branch")

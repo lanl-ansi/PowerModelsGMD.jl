@@ -52,6 +52,52 @@ solve_gmd_opf_uncoupled
 build_gmd_opf_uncoupled
 ```
 
+### GIC-MLD
+
+```@docs
+solve_ac_gmd_mld
+
+solve_soc_gmd_mld
+
+solve_qc_gmd_mld
+
+build_gmd_mld
+
+solve_ac_gmd_mld_uncoupled
+
+solve_soc_gmd_mld_uncoupled
+
+solve_qc_gmd_mld_uncoupled
+
+build_gmd_mld_uncoupled
+```
+
+### GIC-OTS
+
+```@docs
+solve_ac_gmd_ots
+
+solve_soc_gmd_ots
+
+solve_qc_gmd_ots
+```
+
+### Blocker Placement
+
+```@docs
+solve_ac_blocker_placement
+
+solve_soc_blocker_placement
+
+build_blocker_placement
+
+solve_ac_blocker_placement_multi_scenario
+
+solve_soc_blocker_placement_multi_scenario
+
+build_blocker_placement_multi_scenario
+```
+
 ## Objectives
 
 ```@docs

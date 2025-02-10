@@ -31,7 +31,7 @@ function solve_gmd_opf(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"build the coupled quasi-dc-pf and ac-opf problem
+"Build the coupled quasi-dc-pf and ac-opf problem
 as generator dispatch minimization problem
 
 [1] M. Ryu, H. Nagarajan and R. Bent, Mitigating the Impacts of Uncertain Geomagnetic
@@ -43,7 +43,6 @@ doi: 10.1109/TPWRS.2022.3147104.
 GIC equations
 "
 function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
-
     variable_bus_voltage(pm)
     _PM.variable_gen_power(pm)
     _PM.variable_branch_power(pm)
@@ -123,11 +122,10 @@ function solve_gmd_opf_uncoupled(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"build the coupled quasi-dc-pf and ac-opf problem
+"Build the coupled quasi-dc-pf and ac-opf problem
 as generator dispatch minimization problem
 "
 function build_gmd_opf_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
-
     variable_bus_voltage(pm)
     _PM.variable_gen_power(pm)
     _PM.variable_branch_power(pm)

@@ -23,7 +23,7 @@ function solve_gmd(file, optimizer; kwargs...)
 end
 
 
-"build the quasi-dc-pf problem
+"Build the quasi-dc-pf problem
 as a linear constraint satisfaction problem"
 function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
 
