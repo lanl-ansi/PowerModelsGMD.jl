@@ -173,7 +173,6 @@ function _calc_xfmr_resistances(positive_sequence_r::Float64, turns_ratio::Float
         R_low = R_high / ((turns_ratio - 1) ^ 2)
     else
         R_low = R_high / (turns_ratio ^ 2)
-        println(turns_ratio)
     end
 
     R_high = R_high == 0 ? 0.25 : R_high
