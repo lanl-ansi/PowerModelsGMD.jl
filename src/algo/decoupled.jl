@@ -19,10 +19,15 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
         branch["ieff"] = calc_ieff_current_mag(branch, ac_case, dc_solution)
     end
     # Assumes solver_ac valid
-    ac_result = ac_prob_method(ac_case, model_constructor, solver_ac, setting=setting; solution_processors = [
+
+    if (solver_ac == None)
+        solver_ac = _PM.compute_ac_pf(ac_case)
+    else
+        ac_result = ac_prob_method(ac_case, model_constructor, solver_ac, setting=setting; solution_processors = [
         solution_gmd_qloss!,
-    ],
-    )
+        ],
+        )
+    end
 
     for (i, branch) in ac_case["branch"]
         ac_result["solution"]["branch"][i]["gmd_idc_mag"] = branch["ieff"]
