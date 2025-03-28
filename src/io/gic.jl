@@ -148,6 +148,10 @@ function _parse_gic_line!(gic_data::Dict, elements::Array, section::AbstractStri
     end
 
     if haskey(_gic_has_ID, "$section")
+        if !haskey(section_data, _gic_has_ID["$section"])
+            Memento.error(_LOGGER, "At line $line_number, ID $(_gic_has_ID["$section"]) missing from section_data\nElements: $elements\nsection_data: $section_data")
+        end
+
         ID = section_data["$(_gic_has_ID["$section"])"]
     end
 
@@ -225,6 +229,7 @@ end
 
 const _comment_split = r"(?!\B[\'][^\']*)[\/](?![^\']*[\']\B)"
 const _split_string = r",(?=(?:[^']*'[^']*')*[^']*$)"
+# const _split_string = ","
 
 function _get_line_elements(line::AbstractString, line_number::Int)
     if count(i->(i=='\''), line) % 2 == 1
