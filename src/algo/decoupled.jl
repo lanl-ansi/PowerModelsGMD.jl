@@ -7,11 +7,13 @@ end
 
 function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solver_ac, solver_dc, gic_prob_method, ac_prob_method;  return_dc=false, kwargs...)
     setting = kwargs[:setting]
-    if (solver_dc != None)
-        dc_result = gic_prob_method(dc_case, solver_dc)
+    if (solver_dc == None)
+        dc_result = gic_prob_method(dc_case); # Change to linear result, currently limited to solve_gmd
+        
     else
-        dc_result = gic_prob_method(dc_case); # Change to linear result
+        dc_result = gic_prob_method(dc_case, solver_dc)
     end
+
     dc_solution = dc_result["solution"]
     ac_case = deepcopy(dc_case)
 
@@ -21,7 +23,7 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
     # Assumes solver_ac valid
 
     if (solver_ac == None)
-        solver_ac = _PM.compute_ac_pf(ac_case)
+        solver_ac = ac_prob_method(ac_case) # Use native solver, currently limited to calc_ac_pf
     else
         ac_result = ac_prob_method(ac_case, model_constructor, solver_ac, setting=setting; solution_processors = [
         solution_gmd_qloss!,
