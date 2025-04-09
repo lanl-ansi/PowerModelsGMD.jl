@@ -41,26 +41,7 @@ After the installation of its dependencies, PMsGMD can be installed from the Jul
 add https://github.com/lanl-ansi/PowerModelsGMD.jl.git
 ```
 
-To verify that all implemented specifications work as designed, test PMsGMD:
-```
-test PowerModelsGMD
-```
-
-
-
-## Quick Start
-
-The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers throughout the network.
-For example:
-```
-using PowerModels, PowerModelsGMD, JuMP, Ipopt
-
-network_data = joinpath(dirname(pathof(PowerModelsGMD)), "../test/data/matpower/epri21.m")
-network_case = PowerModels.parse_file(network_data)
-optimizer = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
-
-result = PowerModelsGMD.solve_ac_gmd_opf(network_case, optimizer)
-```
+Note that some of the tests don't work. 
 
 
 
@@ -98,7 +79,16 @@ Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc
 This specification was implemented with nonlinear ac polar relaxation.
 For example:
 ```
-solve_ac_gmd_opf_decoupled(network_case, optimizer)
+#configure local setting for GIC solver
+setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
+local_setting = Dict{String,Any}("bound_voltage" => true)
+        merge!(local_setting, setting)
+
+network_case = PowerModelsGMD.parse_file("C:\\Users\\skyle\\OneDrive - Montana State University\\EELE 491\\150_sync\\uiuc150bus_10.m")
+
+#----------CONFIGURE SOLVER, RUN ---------------------------------------------------------
+solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes")
+result = PowerModelsGMD.solve_gmd_decoupled(network_case, PowerModels.ACPPowerModel, solver, PowerModelsGMD.solve_gmd, PowerModelsGMD.solve_gmd_pf; setting=local_setting)
 ```
 
 #### GIC + AC-OPF
