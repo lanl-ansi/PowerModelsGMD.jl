@@ -1,4 +1,0 @@
-Changes made to this fork from the PowerModelsGMD master branch on LANL-ANSI's page: 
-- I have been working with Jose Tabarez and Adam Mate on fixing some of the solver functions present in the master branch. Notable are the errors with per-unit variable declarations in Constraint.jl and gmd_pf.jl. 
-- In this fork, I've copied my working files from the src folder in my PowerModelsGMD install (julia/packages/PowerModelsGMD/AfgmT/src) here. 
-- If there are issues with your PMGMD install not respecting the changes, copy the src folder from this fork into the filepath mentioned above. 
