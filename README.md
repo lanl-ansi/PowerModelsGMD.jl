@@ -41,7 +41,7 @@ After the installation of its dependencies, PMsGMD can be installed from the Jul
 add https://github.com/lanl-ansi/PowerModelsGMD.jl.git
 ```
 
-Note that some of the tests don't work. 
+Note that some of the tests are commented out, and do not work. 
 
 
 
@@ -76,6 +76,7 @@ solve_gmd(network_case, optimizer; setting)
 #### GIC → AC-OPF
 
 Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-OPF optimal power flow specification and calculates the increase in transformer reactive power consumption.
+Configure the setting first, then run. Note that the solve_gmd_decoupled function requires the PowerModels AC polar power model, and therefore depends on PowerModels.jl. 
 This specification was implemented with nonlinear ac polar relaxation.
 For example:
 ```
