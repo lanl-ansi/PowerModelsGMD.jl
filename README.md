@@ -176,7 +176,7 @@ The primary developers are [Arthur Barnes](https://github.com/bluejuniper) and [
 Special thanks to:
 * Mowen Lu and Russell Bent for developing and implementing the MLS and OTS problem specifications, which are used in the GIC AC-OPF and GIC AC-MLS problem specifications;
 * Noah Rhodes and Carleton Coffrin for developing and implementing the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification, which is used in the GIC AC-MLS problem specification;
-* Michael Rivera for a reference implementation of the Latingen-Pijirola matrix optimizer.
+* Michael Rivera for a reference implementation of the Lehtinen-Pirjola matrix optimizer.
 
 
 ### Development Funding Sources
