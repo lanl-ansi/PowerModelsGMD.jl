@@ -104,10 +104,11 @@ function add_coupled_voltages!(lines_info::DataFrame, output::Dict{String, Any})
     end
 end
 
+
 # Main Function for generating DC network
 # TODO: use rectangular coordinates instead of polar coordinates?
 "Load a network dictionary from a pair of GIC/RAW dictionary structures and calculate coupled voltages with a uniform field"
-function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=0.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # Sets up output network dictionary
     output = Dict{String, Any}()
     output["source_type"] = "gic"
