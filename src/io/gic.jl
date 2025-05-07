@@ -51,7 +51,8 @@ const _fixed_shunt_defaults = Dict{String, Any}(
 
 const _branch_defaults = Dict{String, Any}(
     "RLNSHI" => 0,
-    "RLNSHJ" => 0
+    "RLNSHJ" => 0,
+    "INDVP" => 0
 )
 
 const _gic_defaults = Dict{String, Dict}(
