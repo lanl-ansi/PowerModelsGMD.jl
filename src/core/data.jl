@@ -488,14 +488,11 @@ end
 "FUNCTION: calculate the maximum DC current on a branch"
 function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     branch = _PM.ref(pm, nw, :branch, i)
-    ibase = calc_branch_ibase(pm, i, nw=nw)
-
-    if haskey(branch, "qloss_max")
-        dc_mag_max = branch["qloss_max"]/(1.1*branch["gmd_k"])*ibase
+    if haskey(branch,"ieff_max")
+        dc_mag_max = branch["ieff_max"]
     else
         dc_mag_max = 1e6
     end
-
 
     if dc_mag_max < 0
         Memento.warn(_LOGGER, "DC current max for branch $i has been calculated as < 0. This will cause many things to break")

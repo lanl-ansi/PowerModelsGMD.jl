@@ -102,6 +102,46 @@ end
 
 constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag(pm, nw, k)
 
+
+# ===   POWER BALANCE CONSTRAINTS   === #
+
+"CONSTRAINT: computing the dc current magnitude"
+function constraint_dc_current_mag_bound(pm::_PM.AbstractPowerModel, n::Int, k)
+
+    branch = _PM.ref(pm, n, :branch, k)
+
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
+        constraint_dc_current_mag_line(pm, k, nw=n)
+
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
+        constraint_dc_current_mag_ungrounded_xf(pm, k, nw=n)
+
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
+        constraint_dc_current_mag_gwye_delta_xf_bound(pm, k, nw=n)
+
+    elseif branch["config"] == "gwye-gwye"
+        constraint_dc_current_mag_gwye_gwye_xf_bound(pm, k, nw=n)
+
+    elseif branch["config"] == "gwye-gwye-auto"
+        constraint_dc_current_mag_gwye_gwye_auto_xf_bound(pm, k, nw=n)
+
+    elseif branch["config"] == "three-winding"
+        # TODO: need to support 3W transformers in optimization problems
+
+        ieff = _PM.var(pm, n, :i_dc_mag)
+        JuMP.@constraint(pm.model,
+            ieff[k]
+            ==
+            0.0
+        )
+
+    end
+
+end
+
+constraint_dc_current_mag_bound(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_bound(pm, nw, k)
+
 # ===   POWER BALANCE CONSTRAINTS   === #
 
 

@@ -151,6 +151,49 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractWRModel, n:
 end
 
 
+
+# ===   DC BOUNDS CONSTRAINTS   === #
+
+
+"CONSTRAINT: dc current on ungrounded gwye-delta transformers"
+function constraint_dc_current_mag_gwye_delta_xf_bound(pm::_PM.AbstractWRModel, n::Int, k, kh, ih, jh, ieff_max)
+    branch = _PM.ref(pm, n, :branch, k)
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+
+    if haskey(branch,"hi_3w_branch")
+        JuMP.@constraint(pm.model, ieff == 0.0)
+    else 
+        JuMP.@constraint(pm.model, ieff == ihi)
+    end
+
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
+function constraint_dc_current_mag_gwye_gwye_xf_bound(pm::_PM.AbstractWRModel, n::Int, k, kh, ih, jh, kl, il, jl, a, ieff_max)
+    Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+    ilo = _PM.var(pm, n, :dc)[(kl,il,jl)]
+    # JuMP.@constraint(pm.model, ieff == 0.0)
+    JuMP.@constraint(pm.model, ieff == (a * ihi + ilo) / a)
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye auto transformers"
+function constraint_dc_current_mag_gwye_gwye_auto_xf_bound(pm::_PM.AbstractWRModel, n::Int, k, ks, is, js, kc, ic, jc, a, ieff_max)
+
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    is = _PM.var(pm, n, :dc)[(ks,is,js)]
+    ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
+    # JuMP.@constraint(pm.model, ieff == 0.0)
+    JuMP.@constraint(pm.model, ieff == (a*is + ic) / (a + 1.0))
+
+end
+
+
 "
   Constraint: constraints on modeling bus voltages that is primarly a pass through to _PMR.constraint_bus_voltage_on_off
   There are a few situations where the GMD problem formulations have additional voltage modeling than what _PMR provides.
@@ -252,9 +295,9 @@ function constraint_dc_kcl_ne_blocker(pm::_PM.AbstractWRModel, n::Int, i, j, dc_
 
     if length(gmd_bus_arcs) > 0
 
-        if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
-            Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
-        end
+        # if (JuMP.lower_bound(v_dc) > 0 || JuMP.upper_bound(v_dc) < 0)
+        #     Memento.warn(_LOGGER, "DC voltage cannot go to 0. This could make the DC power balance constraint overly constrained in switching applications.")
+        # end
 
         _IM.relaxation_product(pm.model, z, v_dc, zv_dc)
             

@@ -78,6 +78,34 @@ function variable_dc_current_mag(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defau
 end
 
 
+"
+VARIABLE: Declaration of variables associated with modeling of injected GIC bound
+"
+function variable_gic_current_bound(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    variable_dc_current_mag_bound(pm; nw=nw, bounded=bounded,report=report)
+end
+
+"VARIABLE: bound dc current magnitude"
+function variable_dc_current_mag_bound(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+
+    if bounded
+        i_dc_mag = _PM.var(pm, nw)[:i_dc_mag] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_dc_mag",
+            lower_bound = -Inf,
+            upper_bound = Inf,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_dc_mag_start")
+        )
+    else
+        i_dc_mag = _PM.var(pm, nw)[:i_dc_mag] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_dc_mag",
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_dc_mag_start")
+        )
+    end
+
+    report && _PM.sol_component_value(pm, nw, :branch, :gmd_idc_mag, _PM.ids(pm, nw, :branch), i_dc_mag)
+
+end
+
 
 
 # ===   POWER BALANCE VARIABLES   === #
