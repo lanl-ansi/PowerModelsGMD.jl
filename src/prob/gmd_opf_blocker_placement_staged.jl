@@ -2,7 +2,7 @@ export run_ac_gmd_opf_blocker_placement
 export run_gmd_opf_blocker_placement
 
 
-"FUNCTION: run basic GMD model with nonlinear ac equations"
+"run basic GMD model with nonlinear ac equations"
 function run_ac_gmd_opf_blocker_placement(file, optimizer; kwargs...)
     return run_gmd_opf( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
@@ -25,7 +25,7 @@ function run_gmd_opf_blocker_placement(file, model_type::Type, optimizer; kwargs
 end
 
 
-"FUNCTION: build the ac optimal power flow coupled with quasi-dc power flow problem
+"build the ac optimal power flow coupled with quasi-dc power flow problem
 as a generator dispatch minimization problem"
 function build_gmd_opf_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_bus_voltage(pm)

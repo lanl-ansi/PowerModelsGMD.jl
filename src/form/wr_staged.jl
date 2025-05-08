@@ -1,6 +1,6 @@
 
 
-"FUNCTION: ac current"
+"ac current"
 #function variable_ac_current(pm::_PM.AbstractWRModel; kwargs...)
 #    nw = nw_id_default
 
@@ -202,12 +202,12 @@ function constraint_thermal_protection(pm::_PM.AbstractWRModel, n::Int, i::Int, 
 end
 
 
-"FUNCTION: ac current on/off"
+"ac current on/off"
 function variable_ac_current_on_off(pm::_PM.AbstractWRModel; kwargs...)
    variable_ac_current_mag(pm; bounded=false, kwargs...)
 end
 
-"FUNCTION: dc current"
+"dc current"
 function variable_dc_current(pm::_PM.AbstractWRModel; kwargs...)
     variable_dc_current_mag(pm; kwargs...)
     variable_dc_current_mag_sqr(pm; kwargs...)

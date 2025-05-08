@@ -40,7 +40,7 @@ sol = _PMGMD.solve_gmd("../test/data/pti/epri.raw", "../test/data/gic/epri.gic",
 high_error = 1e-2 # abs(value) >= .0001
 low_error = 1 # abs(value) < .0001
 
-@testset "solve of gmd" begin
+@testset "Solve of gmd" begin
 	@testset "dc bus voltage" begin
 		@test isapprox(sol["solution"]["gmd_bus"]["1"]["gmd_vdc"], -41.76016235, rtol=high_error)
 		@test isapprox(sol["solution"]["gmd_bus"]["2"]["gmd_vdc"], -20.61961174, rtol=high_error)

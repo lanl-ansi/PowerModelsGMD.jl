@@ -132,12 +132,15 @@ function solution_gmd(v::Vector{Float64}, case::Dict{String,Any})
 end
 
 
+"Add ieff field  from solution into network"
 function add_ieff_solution!(data::Dict{String,Any}, dc_sol::Dict{String,Any})
     if !(haskey(data, "ieff"))
         data["ieff"] = dc_sol["solution"]["ieff"]
     end
 end
 
+
+"Re-index solution values by component source_id"
 function source_id_keys!(solution::Dict{String, Any}, network::Dict{String, Any})
     solution_keys_pairs = [["qloss", "branch"], ["gmd_branch", "gmd_branch"], ["gmd_bus", "gmd_bus"], ["ieff", "branch"]]
 
@@ -158,6 +161,7 @@ function _convert_table!(solution::Dict{String, Any}, network::Dict{String, Any}
 end
 
 
+"Set upper bound for branch qloss based on qloss maximization solution"
 function solution_add_qloss_bound_case!(case::Dict{String,Any}, results::Dict{String,Any})
     for (i, result) in results
         if result["max"]["termination_status"] == _PM.LOCALLY_SOLVED
@@ -167,6 +171,7 @@ function solution_add_qloss_bound_case!(case::Dict{String,Any}, results::Dict{St
 end
 
 
+"Get upper bound for branch qloss from qloss maximization solution"
 function solution_get_qloss_bound(case::Dict{String,Any}, results::Dict{String,Any})
     bounds = Dict{String, Any}(
         "qloss" => Dict{String, Any}(),
@@ -177,10 +182,12 @@ function solution_get_qloss_bound(case::Dict{String,Any}, results::Dict{String,A
             bounds["qloss"][i]["qloss_max"] = result["max"]["objective"]
         end
     end
+
     return bounds
 end
 
 
+"Add GMD bus voltage bounds into the case based on voltage maximization/minimization solutions"
 function solution_add_gmd_bus_v_bounds_case!(case::Dict{String,Any}, results::Dict{String,Any})
     for (i, result) in results
         if result["max"]["termination_status"] == _PM.LOCALLY_SOLVED
@@ -193,22 +200,28 @@ function solution_add_gmd_bus_v_bounds_case!(case::Dict{String,Any}, results::Di
 end
 
 
+"Get GMD bus voltage bounds based on  voltage maximization/minimization solutions"
 function solution_get_gmd_bus_v_bounds(case::Dict{String,Any}, results::Dict{String,Any})
     bounds = Dict{String, Any}(
         "gmd_bus" => Dict{String, Any}(),
     )
+
     for (i, result) in results
         bounds["gmd_bus"][i] = Dict{String, Any}()
+
         if result["max"]["termination_status"] == _PM.LOCALLY_SOLVED
             bounds["gmd_bus"][i]["vmax"] = result["max"]["objective"]
         elseif result["max"]["termination_status"] == _PM.TIME_LIMIT
             bounds["gmd_bus"][i]["vmax"] = result["max"]["objective_lb"]
         end
+
         if result["min"]["termination_status"] == _PM.LOCALLY_SOLVED
             bounds["gmd_bus"][i]["vmin"] = result["min"]["objective"]
         elseif result["min"]["termination_status"] == _PM.TIME_LIMIT
             bounds["gmd_bus"][i]["vmin"] = result["min"]["objective_lb"]
         end
     end
+
     return bounds
 end
+

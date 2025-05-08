@@ -1,3 +1,4 @@
+"Retrieve value from dictionary and print warning if default is used"
 function get_warn(x::Dict, k, x_default)
     if !haskey(x, k)
         Memento.warn(_LOGGER, "Network data should specify time_elapsed, using $x_default as a default.")
@@ -6,7 +7,7 @@ function get_warn(x::Dict, k, x_default)
     return get(x, k, x_default)
 end
 
-
+"Create sparse admittance matrix and current injection vector from network data"
 function generate_g_i_matrix(network::Dict{String, Any})
     diag_g = Dict{Int64, Float64}()
     inject_i = Dict{Int64, Float64}()
@@ -28,6 +29,7 @@ function generate_g_i_matrix(network::Dict{String, Any})
 
     offDiag_g = Dict{Int64, Dict}()
     offDiag_counter = 0
+
     for branch in values(network["gmd_branch"])
         if branch["br_status"] != 1
             continue
@@ -43,6 +45,7 @@ function generate_g_i_matrix(network::Dict{String, Any})
         if !haskey(offDiag_g, bus_from)
             offDiag_g[bus_from] = Dict{Int64, Float64}()
         end
+
         if !haskey(offDiag_g, bus_to)
             offDiag_g[bus_to] = Dict{Int64, Float64}()
         end
@@ -51,6 +54,7 @@ function generate_g_i_matrix(network::Dict{String, Any})
             offDiag_g[bus_from][bus_to] = 0.0
             offDiag_counter += 1
         end
+
         if !haskey(offDiag_g[bus_to], bus_from)
             offDiag_g[bus_to][bus_from] = 0.0
             offDiag_counter += 1
@@ -77,12 +81,14 @@ function generate_g_i_matrix(network::Dict{String, Any})
     columns = zeros(Int64, length(keys(diag_g)) + offDiag_counter)
     content = zeros(Float64, length(keys(diag_g)) + offDiag_counter)
     n = 1
+
     for (i, val) in diag_g
         rows[n] = i
         columns[n] = i
         content[n] = val
         n += 1
     end
+
     for (i, ent) in offDiag_g
         for (j, val) in ent
             rows[n] = i
@@ -91,16 +97,19 @@ function generate_g_i_matrix(network::Dict{String, Any})
             n += 1
         end
     end
-    g = SparseArrays.sparse(rows, columns, content)
 
+    g = SparseArrays.sparse(rows, columns, content)
     i_inj = zeros(Float64, length(keys(inject_i)))
+
     for (i, val) in inject_i
         i_inj[i] = val
     end
+
     return [g, i_inj]
 end
 
 
+"Create adjacency matrix from network data"
 function build_adjacency_matrix(network::Dict{String, Any})
     diag_g = Dict{Int64, Float64}()
 
@@ -112,6 +121,7 @@ function build_adjacency_matrix(network::Dict{String, Any})
 
     offDiag_g = Dict{Int64, Dict}()
     offDiag_counter = 0
+
     for branch in values(network["gmd_branch"])
         if branch["br_status"] != 1
             continue
@@ -131,6 +141,7 @@ function build_adjacency_matrix(network::Dict{String, Any})
         if !haskey(offDiag_g, bus_from)
             offDiag_g[bus_from] = Dict{Int64, Float64}()
         end
+
         if !haskey(offDiag_g, bus_to)
             offDiag_g[bus_to] = Dict{Int64, Float64}()
         end
@@ -139,6 +150,7 @@ function build_adjacency_matrix(network::Dict{String, Any})
             offDiag_g[bus_from][bus_to] = 0.0
             offDiag_counter += 1
         end
+
         if !haskey(offDiag_g[bus_to], bus_from)
             offDiag_g[bus_to][bus_from] = 0.0
             offDiag_counter += 1
@@ -162,12 +174,14 @@ function build_adjacency_matrix(network::Dict{String, Any})
     columns = zeros(Int64, length(keys(diag_g)) + offDiag_counter)
     content = zeros(Float64, length(keys(diag_g)) + offDiag_counter)
     n = 1
+
     for (i, val) in diag_g
         rows[n] = i
         columns[n] = i
         content[n] = val
         n += 1
     end
+
     for (i, ent) in offDiag_g
         for (j, val) in ent
             rows[n] = i
@@ -176,7 +190,7 @@ function build_adjacency_matrix(network::Dict{String, Any})
             n += 1
         end
     end
-    g = SparseArrays.sparse(rows, columns, content)
 
-    return g
+    return SparseArrays.sparse(rows, columns, content)
 end
+

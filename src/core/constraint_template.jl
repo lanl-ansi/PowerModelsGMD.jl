@@ -15,7 +15,6 @@ import Memento
 
 
 # ===   VOLTAGE CONSTRAINTS   === #
-
 "
   Constraint: constraints on modeling bus voltages that is primarly a pass through to _PM.constraint_model_voltage
   There are a few situations where the GMD problem formulations have additional voltage modeling than what _PM provides.
@@ -45,6 +44,7 @@ end
 # end
 
 
+# ===   DC CURRENT CONSTRAINTS   === #
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
@@ -166,11 +166,8 @@ end
 
 
 # ===   POWER BALANCE CONSTRAINTS   === #
-
-
 "CONSTRAINT: nodal power balance with gmd"
 function constraint_power_balance_gmd(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-
     bus = _PM.ref(pm, nw, :bus, i)
     bus_arcs = _PM.ref(pm, nw, :bus_arcs, i)
     bus_arcs_dc = _PM.ref(pm, nw, :bus_arcs_dc, i)
@@ -183,13 +180,11 @@ function constraint_power_balance_gmd(pm::_PM.AbstractPowerModel, i::Int; nw::In
     bus_qd = Dict(k => _PM.ref(pm, nw, :load, k, "qd") for k in bus_loads)
 
     constraint_power_balance_gmd(pm, nw, i, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd)
-
 end
 
 
 "CONSTRAINT: nodal power balance with gmd and shunts"
 function constraint_power_balance_gmd_shunt(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-
     bus = _PM.ref(pm, nw, :bus, i)
     bus_arcs = _PM.ref(pm, nw, :bus_arcs, i)
     bus_arcs_dc = _PM.ref(pm, nw, :bus_arcs_dc, i)
@@ -206,13 +201,11 @@ function constraint_power_balance_gmd_shunt(pm::_PM.AbstractPowerModel, i::Int; 
     bus_bs = Dict(k => _PM.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
 
     constraint_power_balance_gmd_shunt(pm, nw, i, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-
 end
 
 
 "CONSTRAINT: nodal power balance with gmd, shunts, and constant power factor load shedding"
 function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-
     bus = _PM.ref(pm, nw, :bus, i)
     bus_arcs = _PM.ref(pm, nw, :bus_arcs, i)
     bus_arcs_dc = _PM.ref(pm, nw, :bus_arcs_dc, i)
@@ -229,13 +222,11 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractPowerModel, i::In
     bus_bs = Dict(k => _PM.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
 
     constraint_power_balance_gmd_shunt_ls(pm, nw, i, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-
 end
 
 
 "CONSTRAINT: nodal kcl for dc circuits with shunts"
 function constraint_dc_kcl(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-
     dc_expr = pm.model.ext[:nw][nw][:dc_expr]
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
@@ -249,11 +240,8 @@ end
 
 
 # ===   OHM'S LAW CONSTRAINTS   === #
-
-
 "CONSTRAINT: ohms constraint for dc circuits"
 function constraint_dc_ohms(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-
     branch = _PM.ref(pm, nw, :gmd_branch, i)
 
     f_bus = branch["f_bus"]
@@ -271,7 +259,6 @@ function constraint_dc_ohms(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_de
     end
 
     constraint_dc_ohms(pm, nw, i, f_bus, t_bus, f_idx, t_idx, vs, gs)
-
 end
 
 
@@ -279,7 +266,6 @@ end
 # ===   QLOSS CONSTRAINTS   === #
 "CONSTRAINT: Calculation of qloss on a per edge basis gmd where vm is parameter"
 function constraint_qloss_gmd(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
-
     branch    = _PM.ref(pm, nw, :branch, k)
     baseMVA   = _PM.ref(pm, :baseMVA)
     branchMVA    = branch["baseMVA"]
@@ -293,12 +279,10 @@ function constraint_qloss_gmd(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_defau
     K         = calc_branch_K(pm,k;nw=nw)
 
     constraint_qloss(pm, nw, k, i, j, baseMVA, branchMVA, vm, busKV, K)
-    
 end
 
 "CONSTRAINT: Calculation of qloss on a per edge basis"
 function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
-
     branch    = _PM.ref(pm, nw, :branch, k)
     baseMVA   = _PM.ref(pm, :baseMVA)
 
@@ -310,13 +294,11 @@ function constraint_qloss(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
     K         = calc_branch_K(pm,k;nw=nw)
 
     constraint_qloss(pm, nw, k, i, j, baseMVA, K)
-
 end
 
 
 "CONSTRAINT: Calculation of qloss on a per edge basis"
 function constraint_qloss_pu(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
-
     branch    = _PM.ref(pm, nw, :branch, k)
 
     i         = branch["hi_bus"]
@@ -327,14 +309,11 @@ function constraint_qloss_pu(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_defaul
     K         = calc_branch_K_pu(pm,k;nw=nw)
 
     constraint_qloss_pu(pm, nw, k, i, j, K)
-
 end
 
 
 "CONSTRAINT: Calculation of qloss on a per edge basis where ieff is a constant"
-
 function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
-
     branch    = _PM.ref(pm, nw, :branch, k)
     baseMVA   = _PM.ref(pm, :baseMVA)
     ieff      = branch["ieff"]
@@ -347,11 +326,9 @@ function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=n
     K         = calc_branch_K(pm,k;nw=nw)
 
     constraint_qloss_constant_ieff(pm, nw, k, i, j, baseMVA, K, ieff)
-
 end
 
 "CONSTRAINT: more than a specified percentage of load is served"
-
 function constraint_load_served(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default)
 
     load_ratio = _PM.ref(pm, nw, :load_served_ratio)
@@ -371,7 +348,6 @@ end
 
 "CONSTRAINT: nodal power balance for dc circuits with GIC blockers and shunts"
 function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-
     dc_expr = pm.model.ext[:nw][nw][:dc_expr]
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
@@ -390,13 +366,11 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, i::I
     else
         constraint_dc_kcl(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
     end
-
 end
 
 
 "CONSTRAINT: nodal current balance for dc circuits with GIC blockers and shunts"
 function constraint_dc_kcl_ne_blocker(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-
     dc_expr = pm.model.ext[:nw][nw][:dc_expr]
     gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
     gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)

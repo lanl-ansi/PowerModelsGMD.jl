@@ -1,6 +1,5 @@
-"OBJECTIVE: minimize fuel"
+"Minimize fuel"
 function objective_gmd_min_fuel(pm::_PM.AbstractPowerModel)
-
     return JuMP.@objective(pm.model, Min,
     sum(
         sum(
@@ -13,11 +12,11 @@ function objective_gmd_min_fuel(pm::_PM.AbstractPowerModel)
             ) for (i, branch) in nw_ref[:branch]
             ) for (n, nw_ref) in _PM.nws(pm)
     ))
-
 end
 
 
-"OBJECTIVE: minimize generator error"
+"Minimize the sum-squared error between generator powers and their 
+real/reactive power setpoints"
 function objective_gmd_min_error(pm::_PM.AbstractPowerModel)
     # Keep generators as close as possible to original setpoints.
 
@@ -36,16 +35,12 @@ function objective_gmd_min_error(pm::_PM.AbstractPowerModel)
                 -100.0 * M_p^2 * _PM.var(pm, :z_demand, i, nw=n) for (i, load) in _PM.ref(pm, n, :load)
                 ) for (n, nw_ref) in _PM.nws(pm)
     ))
-
 end
 
 
 # ===   LOAD SHEDDING AND LOADABILITY OBJECTIVES   === #
-
-
-"OBJECTIVE: minimize load shedding and fuel cost"
+"Minimize load shedding and fuel cost"
 function objective_gmd_mls_on_off(pm::_PM.AbstractPowerModel)
-
     @assert all(!_PM.ismulticonductor(pm) for n in _PM.nws(pm))
 
     shed_cost = calc_load_shed_cost(pm)
@@ -63,13 +58,11 @@ function objective_gmd_mls_on_off(pm::_PM.AbstractPowerModel)
                 ) for (i, load) in nw_ref[:load]
             ) for (n, nw_ref) in _PM.nws(pm)
     ))
-
 end
 
 
-"OBJECTIVE: minimize load shedding and fuel cost"
+"Minimize load shedding and fuel cost"
 function objective_gmd_min_mls(pm::_PM.AbstractPowerModel)
-
     @assert all(!_PM.ismulticonductor(pm) for n in _PM.nws(pm))
 
     shed_cost = calc_load_shed_cost(pm)
@@ -87,16 +80,12 @@ function objective_gmd_min_mls(pm::_PM.AbstractPowerModel)
                 ) for (i, load) in nw_ref[:load]
             ) for (n, nw_ref) in _PM.nws(pm)
     ))
-
 end
 
 
 # ===   THERMAL OBJECTIVES   === #
-
-
-"OBJECTIVE: minimize transfomer heating caused by GIC"
+"Minimize transfomer heating caused by GIC"
 function objective_gmd_min_transformer_heating(pm::_PM.AbstractPowerModel)
-
     # TODO: add i_dc_mag minimization
 
     return JuMP.@objective(pm.model, Min,
@@ -106,5 +95,5 @@ function objective_gmd_min_transformer_heating(pm::_PM.AbstractPowerModel)
                 ) for (i, branch) in nw_ref[:branch]
             ) for (n, nw_ref) in _PM.nws(pm)
         ))
-
 end
+

@@ -1,7 +1,7 @@
 # ===   DECOUPLED GMD MLD   === #
 
 
-"FUNCTION: solve GMD MLD mitigation with second order cone relaxation"
+"Solve GMD MLD mitigation with second order cone relaxation"
 function solve_soc_gmd_mld_qloss_vnom(file, solver; kwargs...)
     return solve_gmd_mld_qloss_vnom(file, _PM.SOCWRPowerModel, solver; kwargs...)
 end
@@ -24,7 +24,7 @@ function solve_gmd_mld_qloss_vnom(file, model_constructor, solver; kwargs...)
 end
 
 
-"FUNCTION: build the sequential quasi-dc-pf and maximum loadability problem
+"build the sequential quasi-dc-pf and maximum loadability problem
 as a maximum loadability problem"
 function build_gmd_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
@@ -88,7 +88,7 @@ end
 # ===   DECOUPLED GMD CASCADE MLD   === #
 
 
-"FUNCTION: solve GMD CASCADE MLD mitigation with second order cone relaxation"
+"Solve GMD CASCADE MLD mitigation with second order cone relaxation"
 function solve_soc_gmd_cascade_mld_qloss_vnom(file, solver; kwargs...)
     return solve_gmd_cascade_mld_qloss_vnom(file, _PM.SOCWRPowerModel, solver; kwargs...)
 end
@@ -112,7 +112,7 @@ function solve_gmd_cascade_mld_qloss_vnom(file, model_constructor, solver; kwarg
 end
 
 
-"FUNCTION: build the sequential quasi-dc-pf and cascade maximum loadability
+"build the sequential quasi-dc-pf and cascade maximum loadability
 problem as a maximum loadability problem where line limits are disabled"
 function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 
@@ -168,7 +168,7 @@ function build_gmd_cascade_mld_qloss_vnom(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"FUNCTION: solve the quasi-dc-pf problem followed the cascading maximum loadability problem
+"Solve the quasi-dc-pf problem followed the cascading maximum loadability problem
 with second order cone relaxation"
 function solve_soc_gmd_cascade_mld_decoupled(file::String, solver; setting=Dict(), kwargs...)
     data = _PM.parse_file(file)

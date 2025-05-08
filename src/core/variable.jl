@@ -3,7 +3,6 @@
 ########################
 
 # Commonly used variables are defined here.
-
 "
   Declaration of the bus voltage variables. This is a pass through to _PM.variable_bus_voltage except for those forms where vm is not
   created and it is needed for the GIC.  For example, the WR models are formulated in the space of V^2, so there is no vm variable,
@@ -31,10 +30,8 @@ function variable_gic_current(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default,
 end
 
 # ===   VOLTAGE VARIABLES   === #
-
 "VARIABLE: bus dc voltage"
 function variable_dc_voltage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
     if bounded
         v_dc = _PM.var(pm, nw)[:v_dc] = JuMP.@variable(pm.model,
             [i in _PM.ids(pm, nw, :gmd_bus)], base_name="$(nw)_v_dc",
@@ -54,11 +51,8 @@ function variable_dc_voltage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, 
 end
 
 
-
-
 "VARIABLE: dc current magnitude"
 function variable_dc_current_mag(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
     if bounded
         i_dc_mag = _PM.var(pm, nw)[:i_dc_mag] = JuMP.@variable(pm.model,
             [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_dc_mag",
@@ -78,10 +72,7 @@ function variable_dc_current_mag(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defau
 end
 
 
-
-
 # ===   POWER BALANCE VARIABLES   === #
-
 "VARIABLE: dc line flow"
 function variable_dc_line_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 
@@ -113,12 +104,11 @@ function variable_dc_line_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default
     end
 
     pm.model.ext[:nw][nw][:dc_expr] = dc_expr
-
 end
+
 
 "VARIABLE: gen xfrm flow"
 function variable_dc_gen_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
     if bounded
         dc = _PM.var(pm, nw)[:dc_gen_flow] = JuMP.@variable(pm.model,
             [(l,i,j) in _PM.ref(pm, nw, :gmd_arcs_imxfrm)], base_name="$(nw)_dc_gen_flow",
@@ -136,8 +126,8 @@ function variable_dc_gen_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default,
 end
 
 
+"VARIABLE: bus sub flow"
 function variable_dc_bus_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
     if bounded
         dc = _PM.var(pm, nw)[:dc_bus_sub_flow] = JuMP.@variable(pm.model,
             [(i,j) in _PM.ref(pm, nw, :gmd_arcs_bus_g)], base_name="$(nw)_dc_bus_sub_flow",
@@ -154,11 +144,8 @@ function variable_dc_bus_flow(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default,
 end
 
 # ===   QLOSS VARIABLES   === #
-
-
 "VARIABLE: qloss"
 function variable_qloss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
     if bounded
         qloss = _PM.var(pm, nw)[:qloss] = JuMP.@variable(pm.model,
             [(l,i,j) in _PM.ref(pm, nw, :arcs)], base_name="$(nw)_qloss",
@@ -177,22 +164,19 @@ function variable_qloss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bound
 end
 
 
-#"VARIABLE: iv"
+"VARIABLE: iv"
 function variable_iv(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
-
     iv = _PM.var(pm, nw)[:iv] = JuMP.@variable(pm.model,
         [(l,i,j) in _PM.ref(pm, nw, :arcs)], base_name="$(nw)_iv",
         start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "iv_start")
     )
 
     report && _IM.sol_component_value_edge(pm, pm_it_sym, nw, :branch, :ivf, :ivt, _PM.ref(pm, nw, :arcs_from), _PM.ref(pm, nw, :arcs_to), iv)
-
 end
 
 
 "VARIABLE: ac current magnitude"
 function variable_ac_positive_current_mag(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
     if bounded
         i_ac_mag = _PM.var(pm, nw)[:i_ac_mag] = JuMP.@variable(pm.model,
             [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_ac_mag",
@@ -208,13 +192,11 @@ function variable_ac_positive_current_mag(pm::_PM.AbstractPowerModel; nw::Int=nw
     end
 
     report && _PM.sol_component_value(pm, nw, :branch, :i_ac_mag, _PM.ids(pm, nw, :branch), i_ac_mag)
-
 end
 
 
 "VARIABLE: dc current magnitude squared"
 function variable_ac_current_mag_sqr(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
     if bounded
         i_ac_mag_sqr = _PM.var(pm, nw)[:i_ac_mag_sqr] = JuMP.@variable(pm.model,
             [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_ac_mag_sqr",
@@ -230,13 +212,11 @@ function variable_ac_current_mag_sqr(pm::_PM.AbstractPowerModel; nw::Int=nw_id_d
     end
 
     report && _PM.sol_component_value(pm, nw, :branch, :i_ac_mag_sqr, _PM.ids(pm, nw, :branch), i_ac_mag_sqr)
-
 end
 
 
 "VARIABLE: bus dc voltage difference"
 function variable_dc_voltage_difference(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-
     if bounded
         v_dc_diff = _PM.var(pm, nw)[:v_dc_diff] = JuMP.@variable(pm.model,
             [i in _PM.ids(pm, nw, :gmd_branch)], base_name="$(nw)_v_dc_diff",
@@ -252,7 +232,6 @@ function variable_dc_voltage_difference(pm::_PM.AbstractPowerModel; nw::Int=nw_i
     end
 
     report && _PM.sol_component_value(pm, nw, :gmd_branch, :v_dc_diff, _PM.ids(pm, nw, :gmd_branch), v_dc_diff)
-
 end
 
 "VARIABLE: bus dc voltage on/off"
@@ -274,7 +253,6 @@ end
 
 "VARIABLE: gic ne_blocker indicator"
 function variable_ne_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default, relax::Bool=false, report::Bool=true)
-
     if !relax
         z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
             [i in _PM.ids(pm, nw, :gmd_ne_blocker)], base_name="$(nw)_z_blocker",
@@ -404,3 +382,4 @@ function variable_delta_oil(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, b
 
     report && _PM.sol_component_value(pm, nw, :transformer, :topoil_rise, _PM.ids(pm, nw, :transformer), delta_oil)
 end
+

@@ -7,7 +7,7 @@ function solve_ac_bound_gmd_bus_v(case, optimizer; kwargs...)
     return return solve_bound_gmd_bus_v(case, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-"solves for the dv voltage bounds at substations"
+"Solves for the dv voltage bounds at substations"
 function solve_bound_gmd_bus_v(case, model_type::Type, optimizer; kwargs...)
     _case = deepcopy(case)
 
@@ -107,7 +107,7 @@ function solve_ac_bound_qloss(case, optimizer; kwargs...)
     return return solve_bound_qloss(case, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-"solve for max q at ac buses"
+"Solve for max q at ac buses"
 function solve_bound_qloss(case, model_type::Type, optimizer; kwargs...)
     _case = deepcopy(case)
 

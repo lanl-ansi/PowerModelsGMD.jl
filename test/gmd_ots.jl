@@ -27,15 +27,15 @@
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["objective"], 0.0000; atol=1e-2)
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_mls_ots"
 
 
         # ===   COUPLED AC-MLS-OTS-TS   === #
 
 
-        # FIXME: add actual fully automated testing for "solve_soc_gmd_mls_ots_ts"
+        # FIXME: add actual fully automated testing for "Solve_soc_gmd_mls_ots_ts"
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots_ts"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_mls_ots_ts"
 
 
     end
@@ -67,15 +67,15 @@
         @test result["termination_status"] == _PM.LOCALLY_SOLVED
         @test isapprox(result["objective"], 0.0000; atol=1e-2)
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_mls_ots"
 
 
         # ===   COUPLED AC-MLS-OTS-TS   === #
 
 
-        # FIXME: add actual fully automated testing for "solve_soc_gmd_mls_ots_ts"
+        # FIXME: add actual fully automated testing for "Solve_soc_gmd_mls_ots_ts"
 
-        # FIXME: add actual fully automated testing for "solve_ac_gmd_mls_ots_ts"
+        # FIXME: add actual fully automated testing for "Solve_ac_gmd_mls_ots_ts"
 
 
     end

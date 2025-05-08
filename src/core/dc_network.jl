@@ -20,6 +20,7 @@ equatorial_radius = 6378.137
 eccentricity_squared = 0.00669437999014
 
 # TODO: include add_3w_xf! function here?
+"Load a network dictionary from a set of GIC/RAW/CSV file paths"
 function generate_dc_data(gic_file::String, raw_file::String, voltage_file::String)
     # TODO: add gz support to parse_file
     net =  generate_dc_data(gic_file, raw_file, 0.0)
@@ -27,7 +28,9 @@ function generate_dc_data(gic_file::String, raw_file::String, voltage_file::Stri
     return net
 end
 
-function generate_dc_data(gic_file::String, raw_file::String, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+
+"Load a network dictionary from a pair of GIC/RAW file paths and calculate coupled voltages with a uniform field"
+function generate_dc_data(gic_file::String, raw_file::String, field_mag::Float64=0.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # TODO: add gz support to parse_file
     gic_data = parse_gic(gic_file)
     raw_data = _PM.parse_file(raw_file)
@@ -35,18 +38,24 @@ function generate_dc_data(gic_file::String, raw_file::String, field_mag::Float64
     return net
 end
 
+
+"Load a network dictionary from a pair of GIC/RAW file handles and calculate coupled voltages with a uniform field"
 function generate_dc_data(gic_file::IO, raw_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     return generate_dc_data_psse(gic_file, raw_file, field_mag, field_dir, min_line_length)
 end
 
-function generate_dc_data_matpower(gic_file::IO, raw_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+
+"Load a network dictionary from a pair of GIC/MatPower file handles and calculate coupled voltages with a uniform field"
+function generate_dc_data_matpower(gic_file::IO, mp_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
     gic_data = parse_gic(gic_file)
-    raw_data = _PM.parse_matpower(raw_file)
-    return generate_dc_data(gic_data, raw_data, field_mag, field_dir, min_line_length)
+    mp_data = _PM.parse_matpower(mp_file)
+    return generate_dc_data(gic_data, mp_data, field_mag, field_dir, min_line_length)
 end
 
+
+"Load a network dictionary from a pair of GIC/RAW file handles and calculate coupled voltages with a uniform field"
 function generate_dc_data_psse(gic_file::IO, raw_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # This produces an annoying warning about the number of columns in the first row
     # TODO: How to get rid of it?
@@ -55,17 +64,22 @@ function generate_dc_data_psse(gic_file::IO, raw_file::IO, field_mag::Float64=1.
     return generate_dc_data(gic_data, raw_data, field_mag, field_dir, min_line_length)
 end
 
+
 # Configures the line voltages and distances
+"Add coupled line voltages from a CSV file path into the branch table"
 function add_coupled_voltages!(voltage_file::String, output::Dict{String, Any})
     lines_info = CSV.read(voltage_file, DataFrame; header=2)
     add_coupled_voltages!(lines_info, output)
 end
 
+
+"Add coupled line voltages from a file handle into the branch table"
 function add_coupled_voltages!(voltage_file::IO, output::Dict{String, Any})
     lines_info = CSV.read(voltage_file, DataFrame; header=2, buffer_in_memory=true)
     add_coupled_voltages!(lines_info, output)
 end
 
+"Add coupled line voltages from a dataframe into the branch table"
 function add_coupled_voltages!(lines_info::DataFrame, output::Dict{String, Any})
     branch_map = Dict{Array, Int64}()
     for branch in values(output["gmd_branch"])
@@ -110,9 +124,11 @@ function add_coupled_voltages!(lines_info::DataFrame, output::Dict{String, Any})
     end
 end
 
+
 # Main Function for generating DC network
 # TODO: use rectangular coordinates instead of polar coordinates?
-function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+"Load a network dictionary from a pair of GIC/RAW dictionary structures and calculate coupled voltages with a uniform field"
+function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=0.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # Sets up output network dictionary
     output = Dict{String, Any}()
     output["source_type"] = "gic"
@@ -128,9 +144,10 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
 
     # Creates a link between AC branches and gic transformers
     transformer_map = gen_transformer_map(gic_data)
+    branch_map = gen_branch_map(gic_data)
 
     # Generates gmd_branch table
-    _generate_gmd_branch!(output, raw_data, dc_bus_map, transformer_map)
+    _generate_gmd_branch!(output, gic_data, raw_data, dc_bus_map, transformer_map, branch_map)
 
     # Generates the rest of the AC Data
     _generate_ac_data!(output, gic_data, raw_data, transformer_map)
@@ -150,6 +167,7 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
     return output
 end
 
+
 # Adds AC information into the output network
 function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
     # Adds bus table to network
@@ -163,6 +181,7 @@ function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, An
 
     _add_branch_table!(output, raw_data, transformer_map)
 end
+
 
 # Generates gmd_bus table
 function _generate_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any})
@@ -183,7 +202,7 @@ function _generate_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, An
 end
 
 # Generate gmd_branch table
-function _generate_gmd_branch!(output::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
+function _generate_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}}, branch_map::Dict{Tuple{Int64, Int64, String}, Dict{String, Any}})
     branches = Dict{String, Dict{String, Any}}()
     gmd_3w_branch = Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Int64}}()
 
@@ -211,7 +230,7 @@ function _generate_gmd_branch!(output::Dict{String, Any}, raw_data::Dict{String,
         branch["lo_bus"] = lo_bus
 
         # Updates gmd_branch_index after adding to the branches dictionary
-        gmd_branch_index = _set_branch_data!(branches, gmd_3w_branch, three_winding_resistances, branch, raw_data, dc_bus_map, transformer_map, gmd_branch_index, gen_buses, load_buses)
+        gmd_branch_index = _set_branch_data!(branches, gmd_3w_branch, three_winding_resistances, branch, gic_data, raw_data, dc_bus_map, transformer_map, branch_map, gmd_branch_index, gen_buses, load_buses)
     end
 
     # Adds a gmd_branch from each bus to substation
@@ -286,6 +305,17 @@ function gen_transformer_map(gic_data::Dict{String, Any})
     return transformer_map
 end
 
+# Defines a link between ac branch and gic transformer table
+function gen_branch_map(gic_data::Dict{String, Any})
+    branch_map = Dict{Tuple{Int64, Int64, String}, Dict{String, Any}}()
+    for branch in values(gic_data["BRANCH"])
+        key = (branch["BUSI"], branch["BUSJ"], branch["CKT"])
+        branch_map[key] = branch
+    end
+
+    return branch_map
+end
+
 # Adds substations to the gmd_bus table
 function _add_substation_table!(gmd_bus::Dict{String, Dict}, gmd_bus_index::Int64, gic_data::Dict{String, Any}, raw_data::Dict{String, Any})
     # Generates bus_info for each substation; needed for R_g assumption for substations
@@ -353,6 +383,7 @@ function _add_substation_table!(gmd_bus::Dict{String, Dict}, gmd_bus_index::Int6
     return gmd_bus_index, substation_map
 end
 
+
 # Adds ac buses to the gmd_bus table
 function _add_gmd_bus_table!(gmd_bus::Dict{String, Dict}, substation_map::Dict{Int64, Int64}, gmd_bus_index::Int64, raw_data::Dict{String, Any})
     bus_map = Dict{Int64, Int64}()
@@ -385,6 +416,7 @@ function _add_gmd_bus_table!(gmd_bus::Dict{String, Dict}, substation_map::Dict{I
     return bus_map
 end
 
+
 # Combines transformer resistances for primary-secondary positive sequence resistance of three winding transformers
 function _generate_3w_resistances(raw_data::Dict{String, Any})
     # TODO calculate resistances for tertiary too by storing coil resistances instead of pu resistances in array
@@ -405,6 +437,7 @@ function _generate_3w_resistances(raw_data::Dict{String, Any})
     return three_winding_resistances
 end
 
+
 # Compiles arrays of gen and load buses
 function _gen_load_buses(raw_data::Dict{String, Any})
     # Compile all generator buses to array
@@ -421,6 +454,7 @@ function _gen_load_buses(raw_data::Dict{String, Any})
 
     return gen_buses, load_buses
 end
+
 
 # Generates transformer branches for non-auto xfmrs
 function _handle_normal_transformer!(branches::Dict{String, Dict{String, Any}}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, branch::Dict{String, Any}, transformer::Dict{String, Any}, gmd_branch_index::Int64)
@@ -495,6 +529,7 @@ function _handle_normal_transformer!(branches::Dict{String, Dict{String, Any}}, 
     return gmd_branch_index
 end
 
+
 # Generates branches for auto transformers
 function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc_bus_map::Dict{Int64, Int64}, branch::Dict{String, Any}, transformer::Dict{String, Any}, gmd_branch_index::Int64)
     hi_bus = branch["hi_bus"]
@@ -568,6 +603,7 @@ function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc
     return gmd_branch_index
 end
 
+
 # Adjusts transformer configuration to match specific AC branch
 function _create_pseudo_3w_config!(transformer::Dict{String, Any}, branch::Dict{String, Any})
     if branch["source_id"][3] == branch["f_bus"]
@@ -609,6 +645,7 @@ function _handle_3w_transformer!(transformer::Dict{String, Any}, gmd_3w_branch::
     _create_pseudo_3w_config!(transformer, branch)
 end
 
+
 # Determines assumed configurations according to PowerWorld rules
 function _set_default_config!(transformer::Dict{String, Any}, gen_buses::Vector{Any}, load_buses::Vector{Any}, branch::Dict{String, Any})
     if transformer["hi_side_bus_kv"] >= KVMIN && (transformer["lo_side_bus_kv"] < KVMIN || transformer["lo_side_bus"] in load_buses)
@@ -643,6 +680,7 @@ function _set_default_config!(transformer::Dict{String, Any}, gen_buses::Vector{
 
     Memento.warn(_LOGGER, "Transformer configuration corresponding to index $(branch["index"]) in the raw branch table was assumed as $(transformer["VECGRP"])")
 end
+
 
 # Calls other functions to create branches for any transformer
 function _handle_transformer!(branches::Dict{String, Dict{String, Any}}, gmd_3w_branch::Dict{Tuple{Int64, Int64, Int64, String}}, three_winding_resistances::Dict{Tuple{Int64, Int64, Int64, String}, Float64}, branch::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}}, gmd_branch_index::Int64, gen_buses::Vector{Any}, load_buses::Vector{Any})
@@ -691,10 +729,12 @@ function _handle_transformer!(branches::Dict{String, Dict{String, Any}}, gmd_3w_
     return _handle_normal_transformer!(branches, raw_data, dc_bus_map, branch, transformer, gmd_branch_index)
 end
 
+
 # Creates a gmd_branch equivalent for a given ac branch
-function _set_branch_data!(branches::Dict{String, Dict{String, Any}}, gmd_3w_branch::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Int64}}, three_winding_resistances::Dict{Tuple{Int64, Int64, Int64, String}, Float64}, branch::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}}, gmd_branch_index::Int64, gen_buses::Vector{Any}, load_buses::Vector{Any})
+function _set_branch_data!(branches::Dict{String, Dict{String, Any}}, gmd_3w_branch::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Int64}}, three_winding_resistances::Dict{Tuple{Int64, Int64, Int64, String}, Float64}, branch::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}}, branch_map::Dict{Tuple{Int64, Int64, String}, Dict{String, Any}}, gmd_branch_index::Int64, gen_buses::Vector{Any}, load_buses::Vector{Any})
     if !branch["transformer"]
         # Branch is a line
+
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[branch["f_bus"]],
             "t_bus" => dc_bus_map[branch["t_bus"]],
@@ -705,7 +745,7 @@ function _set_branch_data!(branches::Dict{String, Dict{String, Any}}, gmd_3w_bra
             "parent_index" => branch["index"],
             "parent_type" => "branch",
             "source_id" => branch["source_id"],
-            "br_v" => 0.0,
+            "br_v" => branch_map[Tuple(branch["source_id"][2:4])]["INDVP"],
             "len_km" => 0.0,
         )
 
@@ -716,6 +756,7 @@ function _set_branch_data!(branches::Dict{String, Dict{String, Any}}, gmd_3w_bra
 
     _handle_transformer!(branches, gmd_3w_branch, three_winding_resistances, branch, raw_data, dc_bus_map, transformer_map, gmd_branch_index, gen_buses, load_buses)
 end
+
 
 # Makes a unique branch for each bus to its substation
 function _generate_bus_gmd_branches!(branches::Dict{String, Dict{String, Any}}, dc_bus_map::Dict{Int64, Int64}, raw_data::Dict{String, Any}, gmd_branch_index::Int64)
@@ -780,6 +821,7 @@ function _generate_implicit_gsu!(branches::Dict{String, Dict{String, Any}}, dc_b
     end
 end
 
+
 # Compiles all the three winding transformers to gmd_3w_branch table
 function _generate_3w_branch_table!(output::Dict{String, Any}, gmd_3w_branch::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Int64}})
     gmd_3w_branch_index = 1
@@ -790,6 +832,7 @@ function _generate_3w_branch_table!(output::Dict{String, Any}, gmd_3w_branch::Di
         gmd_3w_branch_index += 1
     end
 end
+
 
 # Adds bus table to network
 function _add_bus_table!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any})
@@ -817,6 +860,7 @@ function _add_sub_table!(output::Dict{String, Any}, gic_data::Dict{String, Any},
         output["sub"][sub_id] = sub_data
     end
 end
+
 
 # Adds branch table to network
 # TODO: Add fields: hotspot coeff, gmd_k, pt, topoil_init, hotspot_instant_limit, topoil_rated, topoil_initialized, topoil_time_const, pf, qf, temperature_ambient, qt, hotspot_avg_limit, hotspot_rated
