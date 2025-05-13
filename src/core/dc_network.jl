@@ -734,18 +734,26 @@ end
 function _set_branch_data!(branches::Dict{String, Dict{String, Any}}, gmd_3w_branch::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Int64}}, three_winding_resistances::Dict{Tuple{Int64, Int64, Int64, String}, Float64}, branch::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}}, branch_map::Dict{Tuple{Int64, Int64, String}, Dict{String, Any}}, gmd_branch_index::Int64, gen_buses::Vector{Any}, load_buses::Vector{Any})
     if !branch["transformer"]
         # Branch is a line
+        gic_branch = branch_map[Tuple(branch["source_id"][2:4])]
+        r = 0.0005
+
+        if gic_branch["RBRN"] > 0.0
+            r = gic_branch["RBRN"]/3.0
+        elseif branch["br_r"] > 0.0
+            r = branch["br_r"] * (raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] ^ 2) / (3.0 * raw_data["baseMVA"]) 
+        end
 
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[branch["f_bus"]],
             "t_bus" => dc_bus_map[branch["t_bus"]],
-            "br_r" => branch["br_r"] != 0 ? branch["br_r"] * (raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] ^ 2) / (3 * raw_data["baseMVA"]) : 0.0005, # TODO add 1e-4 ohms per km
+            "br_r" => r, # TODO add 1e-4 ohms per km
             "name" => "dc_br$(gmd_branch_index)",
             "br_status" => 1,
             "index" => gmd_branch_index,
             "parent_index" => branch["index"],
             "parent_type" => "branch",
             "source_id" => branch["source_id"],
-            "br_v" => branch_map[Tuple(branch["source_id"][2:4])]["INDVP"],
+            "br_v" => gic_branch["INDVP"],
             "len_km" => 0.0,
         )
 
