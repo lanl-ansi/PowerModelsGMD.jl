@@ -30,7 +30,7 @@ end
 
 
 "Load a network dictionary from a pair of GIC/RAW file paths and calculate coupled voltages with a uniform field"
-function generate_dc_data(gic_file::String, raw_file::String, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+function generate_dc_data(gic_file::String, raw_file::String, field_mag::Float64=0.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # TODO: add gz support to parse_file
     gic_data = parse_gic(gic_file)
     raw_data = _PM.parse_file(raw_file)
@@ -91,11 +91,31 @@ function add_coupled_voltages!(lines_info::DataFrame, output::Dict{String, Any})
         branch_map[source_id] = branch["index"]
     end
 
-    dc_voltages = lines_info[!, "GICInducedDCVolt"]
+    dc_voltage_field = "GICInducedDCVolt"
+    from_bus_field = "BusNumFrom"
+    to_bus_field = "BusNumTo"
+    ckt_field = "Circuit"
 
-    froms = lines_info[!, "BusNumFrom"]
-    tos = lines_info[!, "BusNumTo"]
-    ckts = lines_info[!, "Circuit"]
+    if "GICObjectInputDCVolt" in names(lines_info)
+        dc_voltage_field = "GICObjectInputDCVolt"
+    end
+
+    if "BusNum" in names(lines_info)
+        from_bus_field = "BusNum"
+    end
+
+    if "BusNum:1" in names(lines_info)
+        to_bus_field = "BusNum:1"
+    end
+
+    if "LineCircuit" in names(lines_info)
+        ckt_field = "LineCircuit"
+    end
+
+    dc_voltages = lines_info[!, dc_voltage_field]
+    froms = lines_info[!, from_bus_field]
+    tos = lines_info[!, to_bus_field]
+    ckts = lines_info[!, ckt_field]
 
     for (from, to, ckt, dc_voltage) in zip(froms, tos, ckts, dc_voltages)
         source_id = ["branch", from, to, "$ckt"]
@@ -104,10 +124,11 @@ function add_coupled_voltages!(lines_info::DataFrame, output::Dict{String, Any})
     end
 end
 
+
 # Main Function for generating DC network
 # TODO: use rectangular coordinates instead of polar coordinates?
 "Load a network dictionary from a pair of GIC/RAW dictionary structures and calculate coupled voltages with a uniform field"
-function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, field_mag::Float64=0.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
     # Sets up output network dictionary
     output = Dict{String, Any}()
     output["source_type"] = "gic"
@@ -123,9 +144,10 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
 
     # Creates a link between AC branches and gic transformers
     transformer_map = gen_transformer_map(gic_data)
+    branch_map = gen_branch_map(gic_data)
 
     # Generates gmd_branch table
-    _generate_gmd_branch!(output, raw_data, dc_bus_map, transformer_map)
+    _generate_gmd_branch!(output, gic_data, raw_data, dc_bus_map, transformer_map, branch_map)
 
     # Generates the rest of the AC Data
     _generate_ac_data!(output, gic_data, raw_data, transformer_map)
@@ -180,7 +202,7 @@ function _generate_gmd_bus!(output::Dict{String, Any}, gic_data::Dict{String, An
 end
 
 # Generate gmd_branch table
-function _generate_gmd_branch!(output::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
+function _generate_gmd_branch!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}}, branch_map::Dict{Tuple{Int64, Int64, String}, Dict{String, Any}})
     branches = Dict{String, Dict{String, Any}}()
     gmd_3w_branch = Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Int64}}()
 
@@ -208,7 +230,7 @@ function _generate_gmd_branch!(output::Dict{String, Any}, raw_data::Dict{String,
         branch["lo_bus"] = lo_bus
 
         # Updates gmd_branch_index after adding to the branches dictionary
-        gmd_branch_index = _set_branch_data!(branches, gmd_3w_branch, three_winding_resistances, branch, raw_data, dc_bus_map, transformer_map, gmd_branch_index, gen_buses, load_buses)
+        gmd_branch_index = _set_branch_data!(branches, gmd_3w_branch, three_winding_resistances, branch, gic_data, raw_data, dc_bus_map, transformer_map, branch_map, gmd_branch_index, gen_buses, load_buses)
     end
 
     # Adds a gmd_branch from each bus to substation
@@ -281,6 +303,17 @@ function gen_transformer_map(gic_data::Dict{String, Any})
     end
 
     return transformer_map
+end
+
+# Defines a link between ac branch and gic transformer table
+function gen_branch_map(gic_data::Dict{String, Any})
+    branch_map = Dict{Tuple{Int64, Int64, String}, Dict{String, Any}}()
+    for branch in values(gic_data["BRANCH"])
+        key = (branch["BUSI"], branch["BUSJ"], branch["CKT"])
+        branch_map[key] = branch
+    end
+
+    return branch_map
 end
 
 # Adds substations to the gmd_bus table
@@ -699,20 +732,29 @@ end
 
 
 # Creates a gmd_branch equivalent for a given ac branch
-function _set_branch_data!(branches::Dict{String, Dict{String, Any}}, gmd_3w_branch::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Int64}}, three_winding_resistances::Dict{Tuple{Int64, Int64, Int64, String}, Float64}, branch::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}}, gmd_branch_index::Int64, gen_buses::Vector{Any}, load_buses::Vector{Any})
+function _set_branch_data!(branches::Dict{String, Dict{String, Any}}, gmd_3w_branch::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Int64}}, three_winding_resistances::Dict{Tuple{Int64, Int64, Int64, String}, Float64}, branch::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}}, branch_map::Dict{Tuple{Int64, Int64, String}, Dict{String, Any}}, gmd_branch_index::Int64, gen_buses::Vector{Any}, load_buses::Vector{Any})
     if !branch["transformer"]
         # Branch is a line
+        gic_branch = branch_map[Tuple(branch["source_id"][2:4])]
+        r = 0.0005
+
+        if gic_branch["RBRN"] > 0.0
+            r = gic_branch["RBRN"]/3.0
+        elseif branch["br_r"] > 0.0
+            r = branch["br_r"] * (raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] ^ 2) / (3.0 * raw_data["baseMVA"]) 
+        end
+
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[branch["f_bus"]],
             "t_bus" => dc_bus_map[branch["t_bus"]],
-            "br_r" => branch["br_r"] != 0 ? branch["br_r"] * (raw_data["bus"]["$(branch["f_bus"])"]["base_kv"] ^ 2) / (3 * raw_data["baseMVA"]) : 0.0005, # TODO add 1e-4 ohms per km
+            "br_r" => r, # TODO add 1e-4 ohms per km
             "name" => "dc_br$(gmd_branch_index)",
             "br_status" => 1,
             "index" => gmd_branch_index,
             "parent_index" => branch["index"],
             "parent_type" => "branch",
             "source_id" => branch["source_id"],
-            "br_v" => 0.0,
+            "br_v" => gic_branch["INDVP"],
             "len_km" => 0.0,
         )
 

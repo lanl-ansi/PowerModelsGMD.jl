@@ -29,29 +29,33 @@ const _gic_data_forms = Dict{String, Array}(
 const _substation_defaults = Dict{String, Any}(
     "RG" => 0.1,
     "EARTH_MODEL" => "Activity Optn",
-    "RG_FLAG" => "Assumed"
+    "RG_FLAG" => "Assumed",
 )
 const _transformer_defaults = Dict{String, Any}(
     # "WRI" => ,
     # "WRJ" => , 
     # "WRK" => , 
-    "GICBDI" => 0,
-    "GICBDJ" => 0,
-    "GICBDK" => 0,
-    "CORE" => 0,
-    "KFACTOR" => 0,
-    "GRDRI" => 0,
-    "GRDRJ" => 0,
-    "GRDRK" => 0,
-    "TMODEL" => 0
+    "GICBDI" => 0.0,
+    "GICBDJ" => 0.0,
+    "GICBDK" => 0.0,
+    "CORE" => 0.0,
+    "KFACTOR" => 0.0,
+    "GRDRI" => 0.0,
+    "GRDRJ" => 0.0,
+    "GRDRK" => 0.0,
+    "TMODEL" => 0.0,
 )
+
 const _fixed_shunt_defaults = Dict{String, Any}(
-    "RG" => 0
+    "RG" => 0.0,
 )
 
 const _branch_defaults = Dict{String, Any}(
-    "RLNSHI" => 0,
-    "RLNSHJ" => 0
+    "RBRN" => 0.0,
+    "INDVP" => 0.0,
+    "INDVQ" => 0.0,	    
+    "RLNSHI" => 0.0,
+    "RLNSHJ" => 0.0,
 )
 
 const _gic_defaults = Dict{String, Dict}(
@@ -64,7 +68,7 @@ const _gic_defaults = Dict{String, Dict}(
 
 const _gic_has_ID = Dict{String, String}(
     "SUBSTATION" => "SUBSTATION",
-    "BUS" => "ID"
+    "BUS" => "ID",
 )
 
 "Parse a GIC file given a file path and return as a dictionary structure"
