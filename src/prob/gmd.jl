@@ -97,6 +97,7 @@ matrix solver given dictionary input"
 function solve_gmd(case::Dict{String,Any}; kwargs...)
     g, i_inj = generate_g_i_matrix(case)
     v = g\i_inj
+    println(g, i_inj, v)
     return solution_gmd(v, case)
 end
 

@@ -35,21 +35,23 @@ function solve_gmd(name; kwargs...)
 
     case = generate_dc_data(gic_data, raw_data, 1.0, 90.0, 1.0)
 
+    add_coupled_voltages!("data/lines/$name.csv", case)
+
     PowerModelsGMD.add_gmd_3w_branch!(case)
 
-    # open("../temp_data/network_$name.json", "w") do f
-    #     JSON.print(f, case)
-    # end
+    open("../temp_data/network_$name.json", "w") do f
+        JSON.print(f, case)
+    end
 
     output = PowerModelsGMD.solve_gmd(case; kwargs...)
 
     PowerModelsGMD.source_id_keys!(output, case)
 
-    println(output)
-
     # open("../temp_data/output_$name.json", "w") do f
     #     JSON.print(f, output)
     # end
+
+    return case
 end
 
 function save_solution(name)
@@ -61,16 +63,73 @@ function save_solution(name)
     end
 
     output = PowerModelsGMD.solve_gmd(case)
-    open("../temp_data/solution_$(name).json", "w") do f
-        JSON.print(f, output)
-    end
+    # open("../temp_data/solution_$(name).json", "w") do f
+    #     JSON.print(f, output)
+    # end
+
+    return case
 end
 
 if !isdir("../temp_data/")
     mkdir("../temp_data/")
 end
 
-solve_gmd("epri")
+network = solve_gmd("circulating_case")
+
+answer = save_solution("circulating_case")
+
+g, i_inj_a = generate_g_i_matrix(network)
+print(g)
+
+# g_a, i_inj = generate_g_i_matrix(answer)
+
+# i = 1
+# for (x,y,v) in zip(findnz(g_a)...)
+#     if (!isapprox(g[x,y], v, rtol=1e-2))
+#         println(x,' ',y,' ', v, ' ', g[x,y])
+#     end
+# end
+
+# for (key, value) in network
+#     if (key != "bus" && key != "gmd_branch" && key != "branch" && key != "gmd_bus") 
+#         continue
+#     end
+#     item_s = 0
+#     information_s = 0
+#     for (item, information) in value
+#         if (key == "bus" || key == "branch")
+#             item_s = item
+#             information_s = answer[key][item]
+#         else
+#             for (item_a, information_a) in answer[key]
+#                 if (key == "gmd_bus")
+#                     if (information["parent_index"] == information_a["parent_index"])
+#                         information_s = information_a
+#                         item_s = item_a
+#                         break
+#                     end
+#                 else
+#                     if (information["parent_index"] == information_a["parent_index"])
+#                         information_s = information_a
+#                         item_s = item_a
+#                         break
+#                     end
+#                 end
+#             end
+#         end
+        
+#         for (i, j) in information
+#             if (i == "name" || i == "source_id" || i == "index" || i == "parent_index") 
+#                 continue
+#             end
+#             if (haskey(information_s, i))
+#                 if (!isapprox(j, information_s[i], rtol=1e-2))
+#                     println("Section: ", key, " Item: ", item, " Item_s: ", item_s, " Key: ", i)
+#                 end
+#             end
+#         end
+#     end
+# end
 
 # ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes")
 # setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
@@ -185,24 +244,30 @@ solve_gmd("epri")
 
 # answers = CSV.read("../temp_data/answers_2000.csv", DataFrame; header=2)
 
-# name = "b4gic3wydd"
+# name = "epri"
 
 # data = PowerModelsGMD.parse_files("../test/data/gic/$name.gic", "../test/data/pti/$name.raw")
 
 # gic_data = data["nw"]["1"]
 # raw_data = data["nw"]["2"]
 
-# case1 = gen_dc_data(gic_data, raw_data, "../test/data/lines/$name.csv")
+# case1 = generate_dc_data(gic_data, raw_data, 1.0, 90.0, 1.0)
 
 # PowerModelsGMD.add_gmd_3w_branch!(case1)
 
-# g, i_inj = gen_g_i_matrix(case1)
+# # load_voltages!("../test/data/lines/$name.csv", case1)
+
+# open("../temp_data/network_$name.json", "w") do f
+#     JSON.print(f, case1)
+# end
+
+# g, i_inj = generate_g_i_matrix(case1)
 
 # output1 = PowerModelsGMD.solve_gmd(case1)["solution"]
 
 # case2 = PowerModelsGMD.parse_file("../test/data/matpower/$name.m")
 # PowerModelsGMD.add_gmd_3w_branch!(case2)
-# g2, i_inj2 = gen_g_i_matrix(case2)
+# g2, i_inj2 = generate_g_i_matrix(case2)
 
 # output2 = PowerModelsGMD.solve_gmd(case2)["solution"]
 
@@ -218,11 +283,11 @@ solve_gmd("epri")
 #     transformer_map_3w[key] = case2["branch"]["$(transformer["hi_3w_branch"])"]["t_bus"]
 # end
 
-# # transformer_map = Dict{Tuple{Int64, Int64, Int64, String}, Dict}()
-# # for transformer in values(gic_data["TRANSFORMER"])
-# #     key = (transformer["BUSI"], transformer["BUSJ"], transformer["BUSK"], transformer["CKT"])
-# #     transformer_map[key] = transformer
-# # end
+# transformer_map = Dict{Tuple{Int64, Int64, Int64, String}, Dict}()
+# for transformer in values(gic_data["TRANSFORMER"])
+#     key = (transformer["BUSI"], transformer["BUSJ"], transformer["BUSK"], transformer["CKT"])
+#     transformer_map[key] = transformer
+# end
 
 # for (x, y, z) in zip(findnz(g)...)
 #     if case1["gmd_bus"]["$x"]["parent_type"] != "sub" 
@@ -246,11 +311,10 @@ solve_gmd("epri")
 #     else
 #         y2 = y
 #     end
-    
 #     raw_x = case1["gmd_bus"]["$x"]["parent_index"]
 #     raw_y = case1["gmd_bus"]["$y"]["parent_index"]
 
-#     if !isapprox(g2[x2, y2], z, rtol=0.1)
+#     if !isapprox(g2[x2, y2], z, rtol=0.01)
 #         println(x, " ", y, " ", z, " ", x2, " ", y2, " ", g2[x2,y2])
 #     end
 # end

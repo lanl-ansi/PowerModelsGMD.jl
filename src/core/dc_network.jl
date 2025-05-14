@@ -322,7 +322,7 @@ function _add_substation_table!(gmd_bus::Dict{String, Dict}, gmd_bus_index::Int6
             else
                 g = 0.73 * bus_info[substation_index][2] + 4.2131
             end
-            g = 10
+            # g = 10
         else
             g = 1/r_g
         end
@@ -441,7 +441,7 @@ function _handle_normal_transformer!(branches::Dict{String, Dict{String, Any}}, 
         lo_side_winding = !raw_data["bus"]["$lo_bus"]["starbus"] # Not modeled if to starbus
     end
 
-    R_hi, R_lo = _calc_xfmr_resistances(transformer["xfmr_r"], transformer["turns_ratio"], transformer["hi_base_z"], true)
+    R_hi, R_lo = _calc_xfmr_resistances(transformer["xfmr_r"], transformer["turns_ratio"], transformer["hi_base_z"], false)
 
     if (hi_side_winding)
         branch_data = Dict{String, Any}(
@@ -670,6 +670,7 @@ function _handle_transformer!(branches::Dict{String, Dict{String, Any}}, gmd_3w_
     # If no transformer configuration given or non gwye-gwye auto transformer
     if length(strip(transformer["VECGRP"])) == 0 || (endswith(transformer["VECGRP"], r"a.*") && !startswith(transformer["VECGRP"],"YNa"))
         _set_default_config!(transformer, gen_buses, load_buses, branch)
+        transformer_map[Tuple(branch["source_id"][2:5])]["VECGRP"] = transformer["VECGRP"]
     end
 
     # Calculates/Fetches information for the transformer
