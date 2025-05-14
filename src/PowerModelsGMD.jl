@@ -75,6 +75,7 @@ const _PMGMD = PowerModelsGMD
     include("form/wr.jl")
     include("form/wr_staged.jl")
     include("form/wrm.jl")
+    include("form/acr.jl")
 
     # Add problem specifications:
     include("prob/gmd.jl")

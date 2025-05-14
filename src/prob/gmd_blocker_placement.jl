@@ -1,3 +1,45 @@
+import Infiltrator
+
+"FUNCTION: run GMD mitigation with nonlinear ac equations"
+function solve_acr_blocker_placement(file::String, optimizer; kwargs...)
+    case = _PM.parse_file(file)
+    return solve_blocker_placement(case, _PM.ACRPowerModel, optimizer; kwargs...)
+end
+
+function solve_acr_blocker_placement(case::Dict{String,Any}, optimizer; kwargs...)
+    return solve_blocker_placement(case, _PM.ACRPowerModel, optimizer; kwargs...)
+end
+
+"FUNCTION: run GMD mitigation with qc equations"
+function solve_qc_blocker_placement(file::String, optimizer; kwargs...)
+    case = _PM.parse_file(file)
+    return solve_blocker_placement(case, _PM.QCRMPowerModel, optimizer; kwargs...)
+end
+
+function solve_qc_blocker_placement(case::Dict{String,Any}, optimizer; kwargs...)
+    return solve_blocker_placement(case, _PM.QCRMPowerModel, optimizer; kwargs...)
+end
+
+"FUNCTION: run GMD mitigation with lpac equations"
+function solve_bfa_blocker_placement(file::String, optimizer; kwargs...)
+    case = _PM.parse_file(file)
+    return solve_blocker_placement(case, _PM.BFAPowerModel, optimizer; kwargs...)
+end
+
+function solve_bfa_blocker_placement(case::Dict{String,Any}, optimizer; kwargs...)
+    return solve_blocker_placement(case, _PM.BFAPowerModel, optimizer; kwargs...)
+end
+
+"FUNCTION: run GMD mitigation with lpac equations"
+function solve_lpac_blocker_placement(file::String, optimizer; kwargs...)
+    case = _PM.parse_file(file)
+    return solve_blocker_placement(case, _PM.LPACCPowerModel, optimizer; kwargs...)
+end
+
+function solve_lpac_blocker_placement(case::Dict{String,Any}, optimizer; kwargs...)
+    return solve_blocker_placement(case, _PM.LPACCPowerModel, optimizer; kwargs...)
+end
+
 "FUNCTION: run GMD mitigation with nonlinear ac equations"
 function solve_ac_blocker_placement(file::String, optimizer; kwargs...)
     case = _PM.parse_file(file)
@@ -54,7 +96,9 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 #   PowerModelsRestoration.jl (https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl)
 
     blocker_relax = get(pm.setting,"blocker_relax",false)
-    variable_ne_blocker_indicator(pm, relax=blocker_relax)
+    fixed_placements = get(pm.setting,"fixed_placements",false)
+    variable_ne_blocker_indicator(pm, relax=blocker_relax, fix=fixed_placements)
+    # Infiltrator.@infiltrate
     variable_bus_voltage(pm)
     _PM.variable_gen_power(pm)
     _PM.variable_branch_power(pm)
@@ -108,8 +152,13 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     constraint_load_served(pm)
+    # constraint_max_blockers(pm)
+    # constraint_obj_max(pm)
+    # constraint_obj_min(pm)
 
     objective_blocker_placement_cost(pm)
+    # objective_max_loadability(pm)
+    # Infiltrator.@infiltrate
 end
 
 

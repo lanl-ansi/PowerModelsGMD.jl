@@ -369,6 +369,21 @@ function constraint_load_served(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defaul
 end
 
 
+"CONSTRAINT: max investments set"
+
+function constraint_max_blockers(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default)
+    max_blockers = _PM.ref(pm, nw, :max_blockers)
+    constraint_max_blockers(pm, max_blockers)
+end
+
+function constraint_obj_max(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default)
+    constraint_obj_max(pm)
+end
+
+function constraint_obj_min(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default)
+    constraint_obj_min(pm)
+end
+
 "CONSTRAINT: nodal power balance for dc circuits with GIC blockers and shunts"
 function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
 

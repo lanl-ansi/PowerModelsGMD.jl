@@ -195,7 +195,7 @@ end
 
 "CONSTRAINT: nodal power balance with gmd, shunts, and constant power factor load shedding"
 function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWConvexModels, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-    println(ooo)
+    # println(ooo)
     w = _PM.var(pm, n, :w, i)
     p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
     q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
@@ -357,6 +357,34 @@ function constraint_load_served(pm::_PM.AbstractPowerModel, n::Int, pds, min_loa
 
 end
 
+
+"CONSTRAINT: more than a specified percentage of load is served"
+function constraint_max_blockers(pm::_PM.AbstractPowerModel, max_blockers)
+    JuMP.@constraint(pm.model,
+        sum(sum(_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+        for (n, nw_ref) in _PM.nws(pm))
+        <=
+        max_blockers)
+
+end
+
+"CONSTRAINT: more than a specified percentage of load is served"
+function constraint_obj_max(pm::_PM.AbstractPowerModel)
+    JuMP.@constraint(pm.model,
+        sum(sum(blocker["multiplier"]*blocker["construction_cost"]*_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+        for (n, nw_ref) in _PM.nws(pm))
+        <=
+        90.0)
+end
+
+"CONSTRAINT: more than a specified percentage of load is served"
+function constraint_obj_min(pm::_PM.AbstractPowerModel)
+    JuMP.@constraint(pm.model,
+        sum(sum(blocker["multiplier"]*blocker["construction_cost"]*_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+        for (n, nw_ref) in _PM.nws(pm))
+        >=
+        70.0)
+end
 
 "CONSTRAINT: nodal power balance for dc circuits with GIC blockers"
 function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, n::Int, i, j, dc_expr, gmd_bus_arcs, gs)

@@ -1,7 +1,7 @@
 ########################
 # Variable Definitions #
 ########################
-
+import Infiltrator
 # Commonly used variables are defined here.
 
 "
@@ -273,7 +273,7 @@ end
 
 
 "VARIABLE: gic ne_blocker indicator"
-function variable_ne_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default, relax::Bool=false, report::Bool=true)
+function variable_ne_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default, relax::Bool=false, report::Bool=true, fix::Bool=false)
 
     if !relax
         z_gic_blocker = _PM.var(pm, nw)[:z_blocker] = JuMP.@variable(pm.model,
@@ -288,6 +288,16 @@ function variable_ne_blocker_indicator(pm::_PM.AbstractPowerModel; nw::Int=_PM.n
             upper_bound = 1,
             start = _PM.comp_start_value(_PM.ref(pm, nw, :gmd_ne_blocker, i), "z_blocker_start", 1.0)
         )
+    end
+    # Infiltrator.@infiltrate
+    if fix
+        for (b, b_dict) in pm.data["gmd_ne_blocker"]
+            if b_dict["blocker_placed"]
+                JuMP.fix(z_gic_blocker[parse(Int,b)],1)
+            else
+                JuMP.fix(z_gic_blocker[parse(Int,b)],0)
+            end
+        end
     end
 
     zv_dc = _PM.var(pm, nw)[:zv_dc] = JuMP.@variable(pm.model,
