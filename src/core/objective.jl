@@ -67,3 +67,22 @@ function objective_max_loadability(pm::_PM.AbstractPowerModel)
             for n in nws)
         )
 end
+
+
+"OBJECTIVE: max/min the dc voltage at the sub station"
+function objective_bound_ieff(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default)
+
+    branch = get(pm.setting,"ieff_branch",false)
+
+    if get(pm.setting,"max",false)
+        return JuMP.@objective(pm.model, Max,
+            sum(_PM.var(pm, n, :i_dc_mag)[branch]
+            for (n, nw_ref) in _PM.nws(pm))
+        )
+    else
+        return JuMP.@objective(pm.model, Min,
+            sum(_PM.var(pm, n, :i_dc_mag)[branch]
+            for (n, nw_ref) in _PM.nws(pm))
+        )
+    end
+end

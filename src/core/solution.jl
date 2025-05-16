@@ -194,3 +194,24 @@ function solution_get_gmd_bus_v_bounds(case::Dict{String,Any}, results::Dict{Str
     end
     return bounds
 end
+
+
+function  solution_get_ieff_bounds(case::Dict{String,Any}, results::Dict{String,Any})
+    bounds = Dict{String, Any}(
+        "branch" => Dict{String, Any}(),
+    )
+    for (i, result) in results
+        bounds["branch"][i] = Dict{String, Any}()
+        if result["max"]["termination_status"] == _PM.LOCALLY_SOLVED
+            bounds["branch"][i]["vmax"] = result["max"]["objective"]
+        elseif result["max"]["termination_status"] == _PM.TIME_LIMIT
+            bounds["branch"][i]["vmax"] = result["max"]["objective_lb"]
+        end
+        if result["min"]["termination_status"] == _PM.LOCALLY_SOLVED
+            bounds["branch"][i]["vmin"] = result["min"]["objective"]
+        elseif result["min"]["termination_status"] == _PM.TIME_LIMIT
+            bounds["branch"][i]["vmin"] = result["min"]["objective_lb"]
+        end
+    end
+    return bounds
+end
