@@ -22,6 +22,13 @@ include("../src/core/utilities.jl")
 function solve_gmd(name; kwargs...)
     data = PowerModelsGMD.parse_files("../test/data/gic/$name.gic", "../test/data/pti/$name.raw")
 
+    gic_file = open("../test/data/gic/$name.gic")
+    raw_file = open("../test/data/pti/$name.raw")
+
+    open("../temp_data/test.raw", "w") do f
+        JSON.print(f, readlines(raw_file))
+    end
+
     gic_data = data["nw"]["1"]
     raw_data = data["nw"]["2"]
 
