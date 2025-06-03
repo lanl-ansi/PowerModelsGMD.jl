@@ -122,10 +122,10 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
     dc_bus_map = _generate_gmd_bus!(output, gic_data, raw_data)
 
     # Creates a link between AC branches and gic transformers
-    transformer_map = gen_transformer_map(gic_data) # check creation here
+    transformer_map = gen_transformer_map(gic_data)
 
     # Generates gmd_branch table
-    _generate_gmd_branch!(output, raw_data, dc_bus_map, transformer_map) 
+    _generate_gmd_branch!(output, raw_data, dc_bus_map, transformer_map)
 
     # Generates the rest of the AC Data
     _generate_ac_data!(output, gic_data, raw_data, transformer_map)
@@ -652,14 +652,7 @@ end
 # Calls other functions to create branches for any transformer
 function _handle_transformer!(branches::Dict{String, Dict{String, Any}}, gmd_3w_branch::Dict{Tuple{Int64, Int64, Int64, String}}, three_winding_resistances::Dict{Tuple{Int64, Int64, Int64, String}, Float64}, branch::Dict{String, Any}, raw_data::Dict{String, Any}, dc_bus_map::Dict{Int64, Int64}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}}, gmd_branch_index::Int64, gen_buses::Vector{Any}, load_buses::Vector{Any})
     # Branch is a transformer
-    sid = branch["source_id"]
-
-    try
-        transformer = deepcopy(transformer_map[Tuple(sid[2:5])])
-    catch
-        Memento.warn(_LOGGER, "Transformer $sid not found, skipping dc equivalent creation. Check that key values are not permuted between raw/gic tables.")
-        return
-    end
+    transformer = deepcopy(transformer_map[Tuple(branch["source_id"][2:5])])
 
     # Determines the high and low bus out of the primary and secondary sides of the transformers
     transformer["hi_side_bus"] = raw_data["bus"]["$(branch["source_id"][2])"]["base_kv"] >= raw_data["bus"]["$(branch["source_id"][3])"]["base_kv"] ? branch["source_id"][2] : branch["source_id"][3]
