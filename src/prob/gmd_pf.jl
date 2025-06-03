@@ -70,7 +70,7 @@ function build_gmd_pf(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_ohms_yt_from(pm, i)
         _PM.constraint_ohms_yt_to(pm, i)
 
-        constraint_qloss(pm, i)
+        constraint_qloss_pu(pm, i)
         constraint_dc_current_mag(pm, i)
     end
 
