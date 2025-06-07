@@ -11,13 +11,13 @@
 # ===   COUPLED AC-MLS-OTS-TS   === #
 
 
-"Solve the multi-time-series GMD model with nonlinear ac polar relaxation"
+"FUNCTION: solve the multi-time-series GMD model with nonlinear ac polar relaxation"
 function solve_ac_gmd_mls_ots_ts(file, optimizer; kwargs...)
     return solve_gmd_mls_ots_ts( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 
-"Solve the multi-time-series GMD model with second order cone relaxation"
+"FUNCTION: solve the multi-time-series GMD model with second order cone relaxation"
 function solve_soc_gmd_mls_ots_ts(file, optimizer; kwargs...)
     return solve_gmd_mls_ots_ts( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
@@ -43,7 +43,7 @@ function solve_gmd_mls_ots_ts(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"build the multi-time-series coupled quasi-dc-pf and ac-ots with ac-mls problem
+"FUNCTION: build the multi-time-series coupled quasi-dc-pf and ac-ots with ac-mls problem
 as a generator dispatch minimization problem"
 function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
 # Reference:
@@ -143,7 +143,7 @@ function build_gmd_mls_ots_ts(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"build coupled quasi-dc-pf and ac-ots with ac-mls problem
+"FUNCTION: build coupled quasi-dc-pf and ac-ots with ac-mls problem
 as a generator dispatch minimization and load shedding problem
 
 Based on the model described in

@@ -1,14 +1,14 @@
-"Solve basic GMD OPF model with nonlinear ac polar where the GIC currents are constant"
+"FUNCTION: solve basic GMD OPF model with nonlinear ac polar where the GIC currents are constant"
 function solve_ac_gmd_opf_temp(file, optimizer; kwargs...)
     return solve_gmd_opf( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-"Solve basic GMD OPF model with second order cone ac polar relaxation where the GIC currents are constant"
+"FUNCTION: solve basic GMD OPF model with second order cone ac polar relaxation where the GIC currents are constant"
 function solve_soc_gmd_opf_temp(file, optimizer; kwargs...)
     return solve_gmd_opf( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
-"Solve basic GMD OPF model where the GIC currents are constant"
+"FUNCTION: solve basic GMD OPF model where the GIC currents are constant"
 function solve_gmd_opf_temp(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -26,7 +26,7 @@ function solve_gmd_opf_temp(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"build the coupled quasi-dc-pf and ac-opf problem
+"FUNCTION: build the coupled quasi-dc-pf and ac-opf problem
 as generator dispatch minimization problem and the GIC currents are constant
 "
 function build_gmd_opf_temp(pm::_PM.AbstractPowerModel; kwargs...)
@@ -78,7 +78,7 @@ end
 # ===   DECOUPLED AC-OPF   === #
 
 
-"Solve basic GMD model with nonlinear ac polar relaxation"
+"FUNCTION: solve basic GMD model with nonlinear ac polar relaxation"
 function solve_ac_opf_qloss(file, optimizer; kwargs...)
     return solve_opf_qloss( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
@@ -115,7 +115,7 @@ function solve_opf_qloss_vnom(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"build the sequential quasi-dc-pf and ac-opf problem
+"FUNCTION: build the sequential quasi-dc-pf and ac-opf problem
 as a generator dispatch minimization problem with calculated ieff"
 function build_opf_qloss(pm::_PM.AbstractPowerModel; kwargs...)
     use_vnom = false
@@ -174,7 +174,7 @@ end
 
 # TODO: move to gmd_opf_ts.jl
 
-"Solve the multi-time-series quasi-dc-pf problem followed by the ac-opf problem with qloss constraints"
+"FUNCTION: solve the multi-time-series quasi-dc-pf problem followed by the ac-opf problem with qloss constraints"
 function solve_ac_gmd_opf_ts_decoupled(case, optimizer, waveform; setting=Dict{String,Any}(), disable_thermal=true, kwargs...)
 
     wf_time = waveform["time"]

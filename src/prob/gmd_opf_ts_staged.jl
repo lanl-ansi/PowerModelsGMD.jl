@@ -6,7 +6,7 @@
 # ===   COUPLED AC-OPF-TS   === #
 
 
-"Solve the multi-time-series GMD model with nonlinear ac polar relaxation"
+"FUNCTION: solve the multi-time-series GMD model with nonlinear ac polar relaxation"
 function solve_ac_gmd_opf_ts(file, optimizer; kwargs...)
     return solve_gmd_opf_ts(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
@@ -31,7 +31,7 @@ function solve_gmd_opf_ts(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"build the multi-time-series coupled quasi-dc-pf and ac-opf problem with qloss constraints
+"FUNCTION: build the multi-time-series coupled quasi-dc-pf and ac-opf problem with qloss constraints
 as a transformer heating minimization problem"
 function build_gmd_opf_ts(pm::_PM.AbstractPowerModel; kwargs...)
 

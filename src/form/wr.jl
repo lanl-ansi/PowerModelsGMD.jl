@@ -57,7 +57,7 @@ function variable_gic_current(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bo
 end
 
 
-"ac current"
+"FUNCTION: ac current"
 function variable_ac_positive_current(pm::_PM.AbstractWRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     variable_ac_positive_current_mag(pm; nw=nw, bounded=bounded, report=report)
     variable_ac_current_mag_sqr(pm; nw=nw, bounded=bounded, report=report)

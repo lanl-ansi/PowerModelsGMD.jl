@@ -2,17 +2,17 @@
 # GIC AC-OPF #
 ##############
 
-"Solve basic GMD OPF model with nonlinear ac polar"
+"FUNCTION: solve basic GMD OPF model with nonlinear ac polar"
 function solve_ac_gmd_opf(file, optimizer; kwargs...)
     return solve_gmd_opf( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-"Solve basic GMD OPF model with second order cone ac polar relaxation"
+"FUNCTION: solve basic GMD OPF model with second order cone ac polar relaxation"
 function solve_soc_gmd_opf(file, optimizer; kwargs...)
     return solve_gmd_opf( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
-"Solve basic GMD OPF model"
+"FUNCTION: solve basic GMD OPF model"
 function solve_gmd_opf(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -31,7 +31,7 @@ function solve_gmd_opf(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"Build the coupled quasi-dc-pf and ac-opf problem
+"FUNCTION: build the coupled quasi-dc-pf and ac-opf problem
 as generator dispatch minimization problem
 
 [1] M. Ryu, H. Nagarajan and R. Bent, Mitigating the Impacts of Uncertain Geomagnetic
@@ -43,6 +43,7 @@ doi: 10.1109/TPWRS.2022.3147104.
 GIC equations
 "
 function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
+
     variable_bus_voltage(pm)
     _PM.variable_gen_power(pm)
     _PM.variable_branch_power(pm)
@@ -91,19 +92,20 @@ function build_gmd_opf(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"Solve basic GMD OPF model with nonlinear ac polar where the gic is an input parameter (uncoupled)"
+
+
+
+"FUNCTION: solve basic GMD OPF model with nonlinear ac polar where the gic is an input parameter (uncoupled)"
 function solve_ac_gmd_opf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_opf_uncoupled( file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-
-"Solve basic GMD OPF model with second order cone ac polar relaxation"
+"FUNCTION: solve basic GMD OPF model with second order cone ac polar relaxation"
 function solve_soc_gmd_opf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_opf_uncoupled( file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
-
-"Solve basic GMD OPF model"
+"FUNCTION: solve basic GMD OPF model"
 function solve_gmd_opf_uncoupled(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -122,10 +124,11 @@ function solve_gmd_opf_uncoupled(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"Build the coupled quasi-dc-pf and ac-opf problem
+"FUNCTION: build the coupled quasi-dc-pf and ac-opf problem
 as generator dispatch minimization problem
 "
 function build_gmd_opf_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
+
     variable_bus_voltage(pm)
     _PM.variable_gen_power(pm)
     _PM.variable_branch_power(pm)
@@ -157,4 +160,5 @@ function build_gmd_opf_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     _PM.objective_min_fuel_cost(pm)
+
 end

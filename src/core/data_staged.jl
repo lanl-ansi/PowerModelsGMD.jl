@@ -70,7 +70,7 @@ function update_qloss_decoupled_vnom!(case::Dict{String,Any})
 end
 
 
-"POLYFIT"
+"FUNCTION: POLYFIT"
 function poly_fit(x, y, n)
 # Fits a polynomial of degree `n` through a set of points.
 # Simple algorithm that does not use orthogonal polynomials or any such thing
@@ -114,7 +114,7 @@ end
 
 
 # I think that this is used for Mowen's OTS paper
-"compute the thermal coeffieicents for a branch"
+"FUNCTION: compute the thermal coeffieicents for a branch"
 function calc_branch_thermal_coeff(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
 
     branch = _PM.ref(pm, nw, :branch, i)

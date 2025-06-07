@@ -94,7 +94,7 @@ end
 # end
 
 
-"ac current"
+"FUNCTION: ac current"
 function variable_ac_positive_current(pm::_PM.AbstractWRMModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
 
     variable_ac_positive_current_mag(pm; nw=nw, bounded=bounded, report=report)

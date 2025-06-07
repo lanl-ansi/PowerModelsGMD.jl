@@ -6,7 +6,7 @@
 # ===   COUPLED AC-MSSE   === #
 
 
-"Solve basic GMD model with nonlinear ac polar relaxation"
+"FUNCTION: solve basic GMD model with nonlinear ac polar relaxation"
 function solve_ac_gmd_msse(file, optimizer; kwargs...)
     return solve_msse_qloss(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
@@ -30,7 +30,7 @@ function solve_msse_qloss(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"build the distance minimization from a specified setpoint problem
+"FUNCTION: build the distance minimization from a specified setpoint problem
 as a generator dispatch minimization problem"
 function build_msse_qloss(pm::_PM.AbstractPowerModel; kwargs...)
 

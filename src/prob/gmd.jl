@@ -4,8 +4,9 @@
 
 
 # ===   WITH OPTIMIZER   === #
-"Solve GIC current model with an optimizer given input file
-in extended MatPower format"
+
+
+"FUNCTION: solve GIC current model"
 function solve_gmd(file, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -22,8 +23,7 @@ function solve_gmd(file, optimizer; kwargs...)
     )
 end
 
-
-"Build the quasi-dc-pf problem
+"FUNCTION: build the quasi-dc-pf problem
 as a linear constraint satisfaction problem"
 function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
 
@@ -48,9 +48,7 @@ function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-# ===   WITH MATRIX SOLVER   === #
-"Solve GIC current model with Lehtinen–Pirjola (LP)
-matrix solver given RAW/GIC/CSV file path inputs"
+# ===   WITH MATRIX SOLVE   === #
 function solve_gmd(ac_file::String, gic_file::String, csv_file::String; kwargs...)
     ac_data = _PM.parse_file(ac_file)
     gic_data = parse_gic(gic_file)
@@ -60,9 +58,6 @@ function solve_gmd(ac_file::String, gic_file::String, csv_file::String; kwargs..
     return solve_gmd(case; kwargs)
 end
 
-
-"Solve GIC current model with Lehtinen–Pirjola (LP)
-matrix solver given RAW/GIC/CSV file handle inputs"
 function solve_gmd(raw_file::IO, gic_file::IO, csv_file::IO; kwargs...)
     raw_data = _PM.parse_psse(raw_file)
     gic_data = parse_gic(gic_file)
@@ -72,10 +67,7 @@ function solve_gmd(raw_file::IO, gic_file::IO, csv_file::IO; kwargs...)
     return solve_gmd(case; kwargs)
 end
 
-
-"Solve GIC current model with Lehtinen–Pirjola (LP)
-matrix solver given with RAW/GICfile paths and specified field
-magnitude/direction for a uniform electric field"
+"FUNCTION: solve GIC matrix solve"
 function solve_gmd(raw_file::String, gic_file::String, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0; kwargs...)
     # TODO: pass coupling arguments
     case = generate_dc_data_raw(raw_file, gic_file)
@@ -83,25 +75,21 @@ function solve_gmd(raw_file::String, gic_file::String, field_mag::Float64=1.0, f
     return solve_gmd(case; kwargs)
 end
 
-
-"Solve GIC current model with Lehtinen–Pirjola (LP)
-matrix solver given extended MatPower file path"
 function solve_gmd(file::String; kwargs...)
     data = parse_file(file)
     return solve_gmd(data; kwargs...)
 end
 
-
-"Solve GIC current model with Lehtinen–Pirjola (LP)
-matrix solver given dictionary input"
 function solve_gmd(case::Dict{String,Any}; kwargs...)
     g, i_inj = generate_g_i_matrix(case)
+
     v = g\i_inj
+    
     return solution_gmd(v, case)
 end
 
 
-"Solve the multi-time-series quasi-dc-pf problem"
+"FUNCTION: solve the multi-time-series quasi-dc-pf problem"
 function solve_gmd_ts_decoupled(base_case, optimizer, waveform; setting=Dict{String,Any}(), thermal=false, kwargs...)
     # TODO: consider deepcopy case to avoid errors
     case = deepcopy(base_case)

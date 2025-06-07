@@ -3,17 +3,19 @@
 ##############
 
 # ===   COUPLED MLD   === #
-"Solve GMD MLD mitigation with nonlinear ac equations"
+
+
+"FUNCTION: solve GMD MLD mitigation with nonlinear ac equations"
 function solve_ac_gmd_mld(file, optimizer; kwargs...)
     return solve_gmd_mld(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-"Solve GMD MLD mitigation with second order cone relaxation"
+"FUNCTION: solve GMD MLD mitigation with second order cone relaxation"
 function solve_soc_gmd_mld(file, optimizer; kwargs...)
     return solve_gmd_mld(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
-"Solve GMD MLD mitigation with nonlinear ac equations"
+"FUNCTION: solve GMD MLD mitigation with nonlinear ac equations"
 function solve_qc_gmd_mld(file, optimizer; kwargs...)
     return solve_gmd_mld(file, _PM.QCRMPowerModel , optimizer; kwargs...)
 end
@@ -36,7 +38,7 @@ function solve_gmd_mld(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"Build the ac minimum loadshedding coupled with quasi-dc-pf problem
+"FUNCTION: build the ac minimum loadshedding coupled with quasi-dc-pf problem
 as a maximum loadability problem with relaxed generator and bus participation"
 function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
 
@@ -98,17 +100,17 @@ end
 
 
 
-"Solve GMD MLD mitigation with nonlinear ac equations"
+"FUNCTION: solve GMD MLD mitigation with nonlinear ac equations"
 function solve_ac_gmd_mld_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_mld_uncoupled(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-"Solve GMD MLD mitigation with second order cone relaxation"
+"FUNCTION: solve GMD MLD mitigation with second order cone relaxation"
 function solve_soc_gmd_mld_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_mld_uncoupled(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
-"Solve GMD MLD mitigation with nonlinear ac equations"
+"FUNCTION: solve GMD MLD mitigation with nonlinear ac equations"
 function solve_qc_gmd_mld_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_mld_uncoupled(file, _PM.QCRMPowerModel , optimizer; kwargs...)
 end
@@ -131,9 +133,10 @@ function solve_gmd_mld_uncoupled(file, model_type::Type, optimizer; kwargs...)
 end
 
 
-"Build the ac minimum loadshedding coupled with quasi-dc-pf problem
+"FUNCTION: build the ac minimum loadshedding coupled with quasi-dc-pf problem
 as a maximum loadability problem on shunts and loads where the dc pf flow is uncoupled from the ac calculations"
 function build_gmd_mld_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
+
 # Reference:
 #   built problem specification corresponds to the "MLD" specification outlined in PowerModels.jl
 #   (https://github.com/lanl-ansi/PowerModels.jl/blob/master/src/prob/test.jl)
@@ -175,5 +178,5 @@ function build_gmd_mld_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     _PM.objective_max_loadability(pm)
-end
 
+end

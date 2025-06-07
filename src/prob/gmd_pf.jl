@@ -2,7 +2,6 @@
 # GIC AC-PF #
 #############
 
-"Solve coupled GMD PF problem"
 function solve_gmd_pf(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -20,7 +19,7 @@ function solve_gmd_pf(file, model_type::Type, optimizer; kwargs...)
     )
 end
 
-"Build the coupled GMD PF problem"
+
 function build_gmd_pf(pm::_PM.AbstractPowerModel; kwargs...)
     bound_voltage = get(pm.setting,"bound_voltage",false)
 
@@ -70,7 +69,7 @@ function build_gmd_pf(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_ohms_yt_from(pm, i)
         _PM.constraint_ohms_yt_to(pm, i)
 
-        constraint_qloss(pm, i)
+        constraint_qloss_pu(pm, i)
         constraint_dc_current_mag(pm, i)
     end
 
@@ -99,26 +98,21 @@ function build_gmd_pf(pm::_PM.AbstractPowerModel; kwargs...)
 end
 
 
-"Solve sequential GMD PF problem with nonlinear ac equations"
+"FUNCTION: solve GMD PF mitigation with nonlinear ac equations"
 function solve_ac_gmd_pf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_pf_uncoupled(file, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
-
-"Solve sequential GMD PF problem with second order cone relaxation"
+"FUNCTION: solve GMD PF mitigation with second order cone relaxation"
 function solve_soc_gmd_pf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_pf_uncoupled(file, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
-
-"Solve sequential GMD PF problem with nonlinear ac equations"
+"FUNCTION: solve GMD PF mitigation with nonlinear ac equations"
 function solve_qc_gmd_pf_uncoupled(file, optimizer; kwargs...)
     return solve_gmd_pf_uncoupled(file, _PM.QCRMPowerModel , optimizer; kwargs...)
 end
 
-
-# TODO: use solve_gmd_uncoupled in algo.jl for this
-"Solve sequential GMD PF problem with arbitrary formulation"
 function solve_gmd_pf_uncoupled(file, model_type::Type, optimizer; kwargs...)
     return _PM.solve_model(
         file,
@@ -136,8 +130,9 @@ function solve_gmd_pf_uncoupled(file, model_type::Type, optimizer; kwargs...)
     )
 end
 
-# Note: assumes that ieff is provided for each branch in the input case
-"Build the sequential GMD PF problem"
+
+"FUNCTION: build the ac minimum loadshedding coupled with quasi-dc-pf problem
+as a maximum loadability problem on shunts and loads where the dc pf flow is uncoupled from the ac calculations"
 function build_gmd_pf_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
     bound_voltage = get(pm.setting,"bound_voltage",false)
 
