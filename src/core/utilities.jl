@@ -109,6 +109,15 @@ function generate_g_i_matrix(network::Dict{String, Any})
 end
 
 
+function generate_g_matrix_labels(network::Dict{String, Any})
+    gmd_bus = case["gmd_bus"]
+    # TODO: use integer sorthing instead of string sorting
+    # indices = sort([x["index"] for x in values(gmd_bus)])
+    # return [(gmd_bus["$i"]["parent_type"], gmd_bus["$i"]["parent_index"]) for i in indices]
+    return [(gmd_bus[k]["parent_type"], gmd_bus[k]["parent_index"]) for k in keys(gmd_bus)]
+end
+
+
 "Create adjacency matrix from network data"
 function build_adjacency_matrix(network::Dict{String, Any})
     diag_g = Dict{Int64, Float64}()
