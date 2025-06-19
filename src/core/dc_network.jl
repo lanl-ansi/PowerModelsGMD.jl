@@ -538,17 +538,36 @@ function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc
     lo_bus = branch["lo_bus"]
     
     # Auto transformer case
-    R_s, R_c = _calc_xfmr_resistances(transformer["xfmr_r"], transformer["turns_ratio"], transformer["hi_base_z"], true)
 
-    R_s_gic = (lo_bus == transformer["BUSI"]) ? transformer["WRI"]/3 : transformer["WRJ"]/3
-    R_c_gic = (hi_bus == transformer["BUSI"]) ? transformer["WRI"]/3 : transformer["WRJ"]/3
+    # Read in winding resistances from the GIC file
+    R_s = (lo_bus == transformer["BUSI"]) ? transformer["WRI"]/3 : transformer["WRJ"]/3
+    R_c = (hi_bus == transformer["BUSI"]) ? transformer["WRI"]/3 : transformer["WRJ"]/3
 
-    if R_s_gic > 0.0
-        R_s = R_s_gic
+    # Calculate winding resistances based on the ac resistance
+    R_s_default, R_c_default = _calc_xfmr_resistances(transformer["xfmr_r"], transformer["turns_ratio"], transformer["hi_base_z"], true)
+
+    # In this case R_c is calculated as Inf, but should be defaulted to = R_s
+    if (transformer["turns_ratio"] == 1)
+        R_c_default = R_s_default
     end
 
-    if R_c_gic > 0.0
-        R_c = R_c_gic
+    # Models the two transformers (primary-star and secondary-star) to behave like a singular transformer
+    if transformer["three_winding"] && transformer["hi_side_bus"] == branch["f_bus"]
+        Memento.debug(_LOGGER, "Setting Rc = 1e6")
+        R_c_default = 1e6
+    end
+
+    if transformer["three_winding"] && transformer["lo_side_bus"] == branch["f_bus"]
+        Memento.debug(_LOGGER, "Setting Rs = 1e-6")
+        R_s_default = 1e-6
+    end
+
+    if R_s == 0
+        R_s = R_s_default
+    end
+
+    if R_c == 0.0
+        R_c = R_c_default
     end
 
     i = transformer["BUSI"]
@@ -562,21 +581,6 @@ function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc
     Memento.debug(_LOGGER, "Transformer high-side bus: $(transformer["hi_side_bus"])")
     Memento.debug(_LOGGER, "Transformer low-side bus: $(transformer["lo_side_bus"])")
 
-    # In this case R_c is calculated as Inf, but should be defaulted to = R_s
-    if (transformer["turns_ratio"] == 1)
-        R_c = R_s
-    end
-
-    # Models the two transformers (primary-star and secondary-star) to behave like a singular transformer
-    if transformer["three_winding"] && transformer["hi_side_bus"] == branch["f_bus"]
-        Memento.debug(_LOGGER, "Setting Rc = 1e6")
-        R_c = 1e6
-    end
-
-    if transformer["three_winding"] && transformer["lo_side_bus"] == branch["f_bus"]
-        Memento.debug(_LOGGER, "Setting Rs = 1e-6")
-        R_s = 1e-6
-    end
 
     # Creates gmd_branch for common side of the auto transformer
     common_data = Dict{String, Any}(
