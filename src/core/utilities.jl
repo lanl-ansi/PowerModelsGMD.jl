@@ -8,10 +8,10 @@ function get_warn(x::Dict, k, x_default)
 end
 
 "Create sparse admittance matrix and current injection vector from network data"
-function generate_g_i_matrix(network::Dict{String, Any})
+function generate_g_i_matrix(network::Dict{String, Any}; sort_keys=false)
     diag_g = Dict{Int64, Float64}()
     inject_i = Dict{Int64, Float64}()
-
+   
     zb = Dict()
 
     if "gmd_blocker" in keys(network)
@@ -20,7 +20,15 @@ function generate_g_i_matrix(network::Dict{String, Any})
         end
     end
 
-    for bus in values(network["gmd_bus"])
+    bus_keys = [x["index"] for x in values(network["gmd_bus"])]
+
+    if sort_keys
+        sort!(bus_keys)
+    end
+
+    for i in bus_keys
+        bus = network["gmd_bus"]["$i"]
+
         if bus["status"] == 1
             diag_g[bus["index"]] = get(zb, bus["index"], 1.0) * bus["g_gnd"]
             inject_i[bus["index"]] = 0.0
@@ -29,6 +37,8 @@ function generate_g_i_matrix(network::Dict{String, Any})
 
     offDiag_g = Dict{Int64, Dict}()
     offDiag_counter = 0
+
+    branch_keys = [x["index"] for x in values(network["gmd_bus"])]
 
     for branch in values(network["gmd_branch"])
         if branch["br_status"] != 1
@@ -71,6 +81,8 @@ function generate_g_i_matrix(network::Dict{String, Any})
         inject_i[bus_to] += (branch["br_v"] == 0 ? 0.0 : branch["br_v"]/branch["br_r"])
     end
 
+    bus_ids = [network["gmd_bus"]["$i"]["source_id"] for i in bus_keys]
+
     for (i, val) in diag_g
         if val == 0.0
             diag_g[i] = 1
@@ -105,7 +117,7 @@ function generate_g_i_matrix(network::Dict{String, Any})
         i_inj[i] = val
     end
 
-    return [g, i_inj]
+    return [g, i_inj, bus_ids]
 end
 
 
