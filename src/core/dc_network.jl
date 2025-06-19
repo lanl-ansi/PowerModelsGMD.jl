@@ -540,8 +540,9 @@ function _handle_auto_transformer!(branches::Dict{String, Dict{String, Any}}, dc
     # Auto transformer case
 
     # Read in winding resistances from the GIC file
-    R_s = (lo_bus == transformer["BUSI"]) ? transformer["WRI"]/3 : transformer["WRJ"]/3
-    R_c = (hi_bus == transformer["BUSI"]) ? transformer["WRI"]/3 : transformer["WRJ"]/3
+    R_s = (hi_bus == transformer["BUSI"]) ? transformer["WRI"]/3 : transformer["WRJ"]/3
+    R_c = (lo_bus == transformer["BUSI"]) ? transformer["WRI"]/3 : transformer["WRJ"]/3
+    
 
     # Calculate winding resistances based on the ac resistance
     R_s_default, R_c_default = _calc_xfmr_resistances(transformer["xfmr_r"], transformer["turns_ratio"], transformer["hi_base_z"], true)
