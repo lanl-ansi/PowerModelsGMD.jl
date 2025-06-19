@@ -41,7 +41,8 @@ After the installation of its dependencies, PMsGMD can be installed from the Jul
 add https://github.com/lanl-ansi/PowerModelsGMD.jl.git
 ```
 
-To verify that all implemented specifications work as designed, test PMsGMD:
+To verify that all implemented specifications work as designed, test PMsGMD. Note that some of the tests are commented out, and do not work. 
+
 ```
 test PowerModelsGMD
 ```
@@ -95,10 +96,20 @@ solve_gmd(network_case, optimizer; setting)
 #### GIC → AC-OPF
 
 Solves for the quasi-dc voltages and currents, then uses the calculated quasi-dc currents through the transformer windings as inputs to an AC-OPF optimal power flow specification and calculates the increase in transformer reactive power consumption.
+Configure the setting first, then run. Note that the solve_gmd_decoupled function requires the PowerModels AC polar power model, and therefore depends on PowerModels.jl. 
 This specification was implemented with nonlinear ac polar relaxation.
 For example:
-```
-solve_ac_gmd_opf_decoupled(network_case, optimizer)
+``` Julia
+# configure local setting for GIC solver 
+setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
+local_setting = Dict{String,Any}("bound_voltage" => true)
+        merge!(local_setting, setting)
+
+network_case = PowerModelsGMD.parse_file("C:\\Users\\skyle\\OneDrive - Montana State University\\EELE 491\\150_sync\\uiuc150bus_10.m")
+
+#----------CONFIGURE SOLVER, RUN ---------------------------------------------------------
+solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes")
+result = PowerModelsGMD.solve_gmd_decoupled(network_case, PowerModels.ACPPowerModel, solver, PowerModelsGMD.solve_gmd, PowerModelsGMD.solve_gmd_pf; setting=local_setting)
 ```
 
 #### GIC + AC-OPF
@@ -185,7 +196,7 @@ The primary developers are [Arthur Barnes](https://github.com/bluejuniper) and [
 Special thanks to:
 * Mowen Lu and Russell Bent for developing and implementing the MLS and OTS problem specifications, which are used in the GIC AC-OPF and GIC AC-MLS problem specifications;
 * Noah Rhodes and Carleton Coffrin for developing and implementing the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification, which is used in the GIC AC-MLS problem specification;
-* Michael Rivera for a reference implementation of the Latingen-Pijirola matrix optimizer.
+* Michael Rivera for a reference implementation of the Lehtinen-Pirjola matrix optimizer.
 
 
 ### Development Funding Sources

@@ -266,6 +266,175 @@ function calc_ieff_current_mag_3w_xf(branch, case::Dict{String,Any}, solution)
 end
 
 
+"FUNCTION: calculate ieff current magnitude for branches"
+function calc_ieff_current_mag(branch, case::Dict{Symbol,Any}, solution)
+
+    if branch["transformer"] == 0
+        return calc_ieff_current_mag_line(branch, case, solution)
+
+    elseif !("config" in keys(branch))
+        k = branch["index"]
+        Memento.warn(_LOGGER, "No winding configuration for transformer $k, treating as line")
+        return calc_ieff_current_mag_line(branch, case, solution)
+
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        return calc_ieff_current_mag_grounded_xf(branch, case, solution)
+
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
+        return calc_ieff_current_mag_gwye_delta_xf(branch, case, solution)
+
+    elseif branch["config"] == "gwye-gwye"
+        return calc_ieff_current_mag_gwye_gwye_xf(branch, case, solution)
+
+    elseif branch["config"] == "gwye-gwye-auto"
+        return calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case, solution)
+
+    elseif branch["config"] in ["three-winding", "gwye-gwye-delta", "gwye-gwye-gwye", "gywe-delta-delta"]
+         return calc_ieff_current_mag_3w_xf(branch, case, solution)
+
+    end
+
+    return 0.0
+end
+
+
+"FUNCTION: dc current on normal lines"
+function calc_ieff_current_mag_line(branch, case::Dict{Symbol,Any}, solution)
+    return 0.0
+end
+
+
+"FUNCTION: dc current on grounded transformers"
+function calc_ieff_current_mag_grounded_xf(branch, case::Dict{Symbol,Any}, solution)
+    return 0.0
+end
+
+
+"FUNCTION: dc current on ungrounded gwye-delta transformers"
+function calc_ieff_current_mag_gwye_delta_xf(branch, case::Dict{Symbol,Any}, solution)
+    k   = branch["index"]
+    khi = branch["gmd_br_hi"]
+
+    if khi == -1 || khi === nothing
+        Memento.warn(_LOGGER, "khi for gwye-delta transformer $k is -1")
+        return 0.0
+    else
+        return abs(solution["gmd_branch"]["$khi"]["dcf"])
+    end
+
+end
+
+
+
+"FUNCTION: dc current on ungrounded gwye-gwye transformers"
+function calc_ieff_current_mag_gwye_gwye_xf(branch, case::Dict{Symbol,Any}, solution)
+    k = branch["index"]
+    khi = branch["gmd_br_hi"]
+    klo = branch["gmd_br_lo"]
+
+    ihi = 0.0
+    ilo = 0.0
+
+    if khi == -1 || khi === nothing
+        Memento.warn(_LOGGER, "khi for gwye-gwye transformer $k is -1")
+    else
+        ihi = solution["gmd_branch"]["$khi"]["dcf"]
+    end
+
+    if klo == -1 || klo === nothing
+        Memento.warn(_LOGGER, "klo for gwye-gwye transformer $k is -1")
+    else
+        ilo = solution["gmd_branch"]["$klo"]["dcf"]
+    end
+
+    jfr = branch["f_bus"]
+    jto = branch["t_bus"]
+    vhi = max(case[:bus][jfr]["base_kv"], case[:bus][jto]["base_kv"])
+    vlo = min(case[:bus][jfr]["base_kv"], case[:bus][jfr]["base_kv"])
+    a = vhi/vlo
+
+    return abs( (a * ihi + ilo) / a )
+end
+
+
+"FUNCTION: dc current on ungrounded gwye-gwye auto transformers"
+function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{Symbol,Any}, solution)
+    k = branch["index"]
+    ks = branch["gmd_br_series"]
+    kc = branch["gmd_br_common"]
+
+    is = 0.0
+    ic = 0.0
+
+    if ks == -1 || ks === nothing
+        Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
+    else
+        is = solution["gmd_branch"]["$ks"]["dcf"]
+    end
+
+    if kc == -1 || kc === nothing
+        Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
+    else
+        ic = solution["gmd_branch"]["$kc"]["dcf"]
+    end
+
+#    ihi = -is
+#    ilo = ic + is
+
+    jfr = branch["f_bus"]
+    jto = branch["t_bus"]
+    vhi = max(case[:bus][jfr]["base_kv"], case[:bus][jto]["base_kv"])
+    vlo = min(case[:bus][jfr]["base_kv"], case[:bus][jfr]["base_kv"])
+    a = vhi/vlo - 1
+
+    return abs(a * is + ic) / (a + 1.0)
+end
+
+
+"FUNCTION: dc current on three-winding transformers"
+function calc_ieff_current_mag_3w_xf(branch, case::Dict{Symbol,Any}, solution)
+
+    k = branch["index"]
+    khi = branch["gmd_br_hi"]
+    klo = branch["gmd_br_lo"]
+    kter = branch["gmd_br_ter"]
+
+    ihi = 0.0
+    ilo = 0.0
+    iter = 0.0
+
+    if khi == -1 || khi === nothing
+        Memento.warn(_LOGGER, "khi for three-winding transformer $k is -1")
+    else
+        ihi = solution["gmd_branch"]["$khi"]["dcf"]
+    end
+
+    if klo == -1 || klo === nothing
+        Memento.warn(_LOGGER, "klo for three-winding transformer $k is -1")
+    else
+        ilo = solution["gmd_branch"]["$klo"]["dcf"]
+    end
+
+    if kter == -1 || kter === nothing
+        Memento.warn(_LOGGER, "kter for three-winding transformer $k is -1")
+    else
+        iter = solution["gmd_branch"]["$ter"]["dcf"]
+    end
+
+    jfr = branch["source_id"][2]
+    jto = branch["source_id"][3]
+    jter = branch["source_id"][4]
+    vhi = max(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
+    vlo = min(case["bus"]["$jfr"]["base_kv"], case["bus"]["$jto"]["base_kv"])
+    vter = case["bus"]["$jter"]["base_kv"]
+    a = vhi/vlo
+    b = vhi/vter
+
+    # Boteler 2016, Equation (51)
+    return abs( ihi + ilo / a + iter / b )
+end
+
+
 "Calculate dc current for an ac branch component based on node 
 voltages from GMD solve"
 function calc_dc_current(branch, type, solution)
@@ -565,11 +734,12 @@ end
 function apply_mods!(net, modsfile::AbstractString)
     if modsfile !== nothing
         io = open(modsfile)
-        apply_mods!(net, io)
+        mods = JSON.parse(io)
         close(io)
-    end
-end
 
+        apply_mods!(net, mods)
+    end
+end        
 
 "Apply mods given a file stream to a JSON file"
 function apply_mods!(net, modsfile::IO)
@@ -825,6 +995,27 @@ function make_gmd_per_unit!(mva_base::Number, data::Dict{String,<:Any})
     end
 end
 
+
+"FUNCTION to make time series networks"
+function make_time_series(data::Dict{String,<:Any}, waveforms::String; loads::String) 
+    wf_filetype = split(lowercase(waveforms), '.')[end]
+    io = open(waveforms)
+    if wf_filetype == "json"
+        wf_data = JSON.parse(io)
+    end
+    n = length(wf_data["time"])
+    nws = _PM.replicate(data, n)
+    for (i, t) in enumerate(wf_data["time"])
+        nws["nw"][string(i)]["time"] = t
+    end
+    return nws
+end
+
+
+function make_time_series(data::String, waveforms::String; loads::String="")
+    pm_data = _PM.parse_file(data)
+    return make_time_series(pm_data, waveforms; loads=loads) 
+end
 
 
 function add_gmd_3w_branch!(data::Dict{String,<:Any})
