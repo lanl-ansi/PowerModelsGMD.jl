@@ -1,12 +1,13 @@
 
 " Generic algorithm that solves GIC optimization in a decoupled fashion, where first the gic flows are solved and then the ac flows"
 
-function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solver, gic_prob_method, ac_prob_method;  return_dc=false, kwargs...)
-    return solve_gmd_decoupled(dc_case, model_constructor, solver, solver, gic_prob_method, ac_prob_method; return_dc, kwargs)
+function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solver, gic_prob_method, ac_prob_method;  kwargs...)
+    return solve_gmd_decoupled(dc_case, model_constructor, solver, solver, gic_prob_method, ac_prob_method; kwargs)
 end
 
-function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solver_ac, solver_dc, gic_prob_method, ac_prob_method;  return_dc=false, kwargs...)
+function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solver_ac, solver_dc, gic_prob_method, ac_prob_method;  return_dc=false, setting=Dict{String,Any}(), kwargs...)
     setting = kwargs[:setting]
+    
     if (solver_dc == None)
         dc_result = gic_prob_method(dc_case); # Change to linear result, currently limited to solve_gmd
         

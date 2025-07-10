@@ -20,15 +20,12 @@ function generate_g_i_matrix(network::Dict{String, Any}; sort_keys=false)
         end
     end
 
-    bus_keys = [x["index"] for x in values(network["gmd_bus"])]
+    # if sort_keys
+    #     sort!(bus_keys)
+    # end
 
-    if sort_keys
-        sort!(bus_keys)
-    end
 
-    for i in bus_keys
-        bus = network["gmd_bus"]["$i"]
-
+    for bus in values(network["gmd_bus"])
         if bus["status"] == 1
             diag_g[bus["index"]] = get(zb, bus["index"], 1.0) * bus["g_gnd"]
             inject_i[bus["index"]] = 0.0
@@ -37,8 +34,6 @@ function generate_g_i_matrix(network::Dict{String, Any}; sort_keys=false)
 
     offDiag_g = Dict{Int64, Dict}()
     offDiag_counter = 0
-
-    branch_keys = [x["index"] for x in values(network["gmd_bus"])]
 
     for branch in values(network["gmd_branch"])
         if branch["br_status"] != 1
@@ -81,7 +76,6 @@ function generate_g_i_matrix(network::Dict{String, Any}; sort_keys=false)
         inject_i[bus_to] += (branch["br_v"] == 0 ? 0.0 : branch["br_v"]/branch["br_r"])
     end
 
-    bus_ids = [network["gmd_bus"]["$i"]["source_id"] for i in bus_keys]
 
     for (i, val) in diag_g
         if val == 0.0
@@ -110,6 +104,8 @@ function generate_g_i_matrix(network::Dict{String, Any}; sort_keys=false)
         end
     end
 
+    # this could be very sparse depending on bus numbering scheme
+    # should we re-index as a full matrix?
     g = SparseArrays.sparse(rows, columns, content)
     i_inj = zeros(Float64, length(keys(inject_i)))
 
@@ -117,17 +113,13 @@ function generate_g_i_matrix(network::Dict{String, Any}; sort_keys=false)
         i_inj[i] = val
     end
 
-    return [g, i_inj, bus_ids]
+    gmd_bus_nums = sort([x["index"] for x in values(network["gmd_bus"])])
+    bus_nums = [network["gmd_bus"]["$i"]["source_id"][2] for i in gmd_bus_nums]
+    bus_types = [network["gmd_bus"]["$i"]["source_id"][1] for i in gmd_bus_nums]
+
+    return [g, i_inj, bus_nums, bus_types]
 end
 
-
-function generate_g_matrix_labels(network::Dict{String, Any})
-    gmd_bus = case["gmd_bus"]
-    # TODO: use integer sorthing instead of string sorting
-    # indices = sort([x["index"] for x in values(gmd_bus)])
-    # return [(gmd_bus["$i"]["parent_type"], gmd_bus["$i"]["parent_index"]) for i in indices]
-    return [(gmd_bus[k]["parent_type"], gmd_bus[k]["parent_index"]) for k in keys(gmd_bus)]
-end
 
 
 "Create adjacency matrix from network data"

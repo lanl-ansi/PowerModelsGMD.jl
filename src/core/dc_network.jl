@@ -169,7 +169,6 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
     return output
 end
 
-
 # Adds AC information into the output network
 function _generate_ac_data!(output::Dict{String, Any}, gic_data::Dict{String, Any}, raw_data::Dict{String, Any}, transformer_map::Dict{Tuple{Int64, Int64, Int64, String}, Dict{String, Any}})
     # Adds bus table to network
@@ -350,14 +349,21 @@ function _add_substation_table!(gmd_bus::Dict{String, Dict}, gmd_bus_index::Int6
         # Calculates conductance to ground value for substation
         # TODO: Make sure it works
         r_g = substation["RG"]
+
+
         if r_g == 0
             # Piecewise function for calculating assumed g value of a substation
-            if bus_info[substation_index][1] <= 230
-                g = 0.4778 * bus_info[substation_index][2] + 1.6841
+            if substation_index in keys(bus_info)
+                if bus_info[substation_index][1] <= 230
+                    g = 0.4778 * bus_info[substation_index][2] + 1.6841
+                else
+                    g = 0.73 * bus_info[substation_index][2] + 4.2131
+                end
             else
-                g = 0.73 * bus_info[substation_index][2] + 4.2131
+                g = 10.0
+                Memento.warn(_LOGGER, "No bus info associated with substation $substation_index, setting to default of $g Siemens")
+                # g = 10
             end
-            # g = 10
         else
             g = 1/r_g
         end
