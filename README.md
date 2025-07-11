@@ -17,7 +17,7 @@ Additionally, it relies on and was optimized for [PowerModelsRestoration](https:
 Automated testing of PMsGMD problem specifications is done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v1.2.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.9.1 packages.
 Alternatively, commercial [KNITRO](https://github.com/jump-dev/KNITRO.jl) or [Gurobi](https://github.com/jump-dev/Gurobi.jl), or open-source [SCS](https://github.com/jump-dev/SCS.jl), [Pajarito](https://github.com/jump-dev/Pajarito.jl), [Pavito](https://github.com/jump-dev/Pavito.jl), or [SCIP](https://github.com/scipopt/SCIP.jl) optimizers may be used for specific problems.
 
-
+Addititional network cases are provided in [PowerModelsGMDLib](https://github.com/lanl-ansi/PowerModelsGMDLib)
 
 ## Core Problem Specifications
 
