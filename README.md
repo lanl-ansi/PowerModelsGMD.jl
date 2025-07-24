@@ -38,7 +38,7 @@ At the moment, the following common industry and academic specifications are imp
 
 After the installation of its dependencies, PMsGMD can be installed from the Julia package manager:
 ```
-add https://github.com/lanl-ansi/PowerModelsGMD.jl.git
+add PowerModelsGMD
 ```
 
 To verify that all implemented specifications work as designed, test PMsGMD. Note that some of the tests are commented out, and do not work. 

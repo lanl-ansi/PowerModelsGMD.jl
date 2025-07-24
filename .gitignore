@@ -16,3 +16,7 @@ temp_data/
 *.swp
 *.swo
 
+*.png
+*.docx
+*.pdf
+*.html
