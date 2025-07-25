@@ -12,12 +12,10 @@ It solves for quasi-dc line flow and ac power flow problems in a system subjecte
 ## PMsGMD Dependencies
 
 PMsGMD directly builds on [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.19 - a package for electrical power transmission network modeling and optimization - of the [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.7 open-source software ecosystem.
-Additionally, it relies on and was optimized for [PowerModelsRestoration](https://github.com/lanl-ansi/PowerModelsRestoration.jl) v0.7, [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v1.9, and [Memento](https://github.com/invenia/Memento.jl) v1.4 packages.
+Additionally, it relies on and was optimized for [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v1.9, and [Memento](https://github.com/invenia/Memento.jl) v1.4 packages.
 
 Automated testing of PMsGMD problem specifications is done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v1.2.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.9.1 packages.
 Alternatively, commercial [KNITRO](https://github.com/jump-dev/KNITRO.jl) or [Gurobi](https://github.com/jump-dev/Gurobi.jl), or open-source [SCS](https://github.com/jump-dev/SCS.jl), [Pajarito](https://github.com/jump-dev/Pajarito.jl), [Pavito](https://github.com/jump-dev/Pavito.jl), or [SCIP](https://github.com/scipopt/SCIP.jl) optimizers may be used for specific problems.
-
-Addititional network cases are provided in [PowerModelsGMDLib](https://github.com/lanl-ansi/PowerModelsGMDLib)
 
 ## Core Problem Specifications
 
@@ -30,6 +28,11 @@ At the moment, the following common industry and academic specifications are imp
 * GIC AC-MLD: ac maximum loadability and minimum loadshedding with sequential/coupled quasi-dc power flow
 * GIC AC-OTS: ac optimal transmission switching with minimum loadshedding coupled with a quasi-dc power flow
 
+## Input Cases
+
+A selection of small test cases used for unit tests are provided in the `test/data` subfolder. Test cases are provided in both 
+extended MatPower format and PTI `.raw` V33/`.gic` V3 format. Addititional, larger network cases are provided in 
+[PowerModelsGMDLib](https://github.com/lanl-ansi/PowerModelsGMDLib). New cases can be created with [gmd-tools](http://github.com/bluejuniper/gmd-tools) from PowerWorld Simulator `.pwb` input files. 
 
 
 ## Installation
@@ -102,7 +105,7 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 solve_gmd(network_case, optimizer; setting)
 ```
 
-**Warning!** The default post-processing Qloss calculations used for the GMD and sequential (uncoupled??) GMD-AC*PF formtulations uses the per-unit voltages specified in the base case
+**Warning!** The default post-processing Qloss calculations used for the GMD and sequential (uncoupled??) GMD-AC*PF formulations uses the per-unit voltages specified in the base case
 
 ### GIC AC-OPF
 
