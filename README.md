@@ -34,7 +34,23 @@ At the moment, the following common industry and academic specifications are imp
 
 ## Installation
 
-...
+Before installing PowerModelsGMD.jl, it is necessary to install its dependencies. This involves first
+installing the Julia language version 1.x, where is available on the Julia website https://julianlang.org.
+
+PowerModelsGMD.jl requires the installation of some Julia package dependencies. This includes the 
+JuMP library for that provides a high-level interface to optization solvers, the Julia
+interface to Ipopt and the Juniper library for solving mixed integer nonlinear problems. For using
+the built-in LP solver, the Julia LinearAlgebra and SparseArrays packages are required. Finally,
+the CSV package is required for parsing coupled voltage input files. These can be installed with 
+the Julia package REPL by first typing `]', then entering
+
+``` bash
+add Ipopt
+add Juniper
+add LinearAlgebra
+add SparseArrays
+add CSV
+```
 
 After the installation of its dependencies, PMsGMD can be installed from the Julia package manager:
 ```
@@ -53,17 +69,14 @@ test PowerModelsGMD
 
 The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers throughout the network.
 For example:
+
+``` Julia
+using PowerModelsGMD
+gic_file = "test/data/gic/bus4.gic"
+raw_file = "test/data/pti/bus4.raw"
+data = PowerModelsGMD.parse_files(gic_file, raw_file)
+result = PowerModelsGMD.solve_gmd(data)
 ```
-using PowerModels, PowerModelsGMD, JuMP, Ipopt
-
-network_data = joinpath(dirname(pathof(PowerModelsGMD)), "../test/data/matpower/epri21.m")
-network_case = PowerModels.parse_file(network_data)
-optimizer = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
-
-result = PowerModelsGMD.solve_ac_gmd_opf(network_case, optimizer)
-```
-
-
 
 ## Problem Specification Reference
 
