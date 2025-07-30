@@ -5,21 +5,15 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
     return solve_gmd_decoupled(dc_case, model_constructor, solver, solver, gic_prob_method, ac_prob_method; kwargs)
 end
 
+# How to use kwargs: function f(x; y=0, kwargs...)
+# kwargs is immutable key-value iterator over named tuple
+# Source: https://docs.julialang.org/en/v1/manual/functions/
+
 function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solver_ac, solver_dc, gic_prob_method, ac_prob_method;  return_dc=false, setting=Dict{String,Any}(), kwargs...)
-    setting = kwargs[:setting]
+    # setting = kwargs[:setting]
     
-    if (solver_dc == None)
-        dc_result = gic_prob_method(dc_case); # Change to linear result, currently limited to solve_gmd
-        
-    else
-        dc_result = gic_prob_method(dc_case, solver_dc)
-    end
-    
-    if (solver_dc == None)
-        dc_result = gic_prob_method(dc_case); # Change to linear result
-    else
-        dc_result = gic_prob_method(dc_case, solver_dc)
-    end
+    # Change to linear result if solver is nothing, currently limited to solve_gmd 
+    dc_result = isnothing(solver_dc) ? gic_prob_method(dc_case) : gic_prob_method(dc_case, solver_dc)
 
     dc_solution = dc_result["solution"]
     ac_case = deepcopy(dc_case)
@@ -29,15 +23,8 @@ function solve_gmd_decoupled(dc_case::Dict{String,Any}, model_constructor, solve
     end
     # Assumes solver_ac valid
 
-    if (solver_ac == None)
-        solver_ac = ac_prob_method(ac_case) # Default to Newton Raphson # Use native solver, currently limited to calc_ac_pf
-    else
-        ac_result = ac_prob_method(ac_case, model_constructor, solver_ac, setting=setting; solution_processors = [
-        solution_gmd_qloss!,
-        ],
-        )
-    end
-
+    ac_result = isnothing(solver_ac) ? ac_prob_method(ac_case) : ac_prob_method(ac_case, model_constructor, solver_ac, setting=setting;     solution_processors = [solution_gmd_qloss!])
+    
     for (i, branch) in ac_case["branch"]
         ac_result["solution"]["branch"][i]["gmd_idc_mag"] = branch["ieff"]
     end
