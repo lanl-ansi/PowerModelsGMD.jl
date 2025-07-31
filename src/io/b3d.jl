@@ -193,3 +193,159 @@ function read_b3d(io::IO)
 
     return b3d
 end
+
+function coupling(net, b3d)
+    if length(ARGS) >= 1 
+        #event = ARGS[2]
+        #output_event = replace(lowercase(event), "-" => "_")
+        branch_geo = ARGS[1]
+    end
+
+    if length(ARGS) >= 2
+        #network = ARGS[1]
+        #output_network = replace(lowercase(network), "-" => "_")
+        input_folder = ARGS[2]
+    end
+
+    if length(ARGS) >= 3
+        output_folder = ARGS[3]
+    end
+
+    files = readdir(input_folder)
+    e_field_files = filter(x->endswith(x, ".csv"), files)
+
+    mkpath(output_folder)
+
+
+    f = open(branch_geo)
+    branch_collection = JSON.parse(f)
+    close(f)
+
+    num_time_steps = length(e_field_files)
+
+    nearest_field_index = Dict()
+
+    for (time_step,e_field_file) in enumerate(sort(e_field_files))
+        # println("Processing time $time_step/$num_time_steps")
+
+        in_path = "$input_folder/$e_field_file"
+
+        output_file = replace(e_field_file, "geoe_grid_full_full_res_1_e" => "e_field_")
+        output_file = replace(output_file, "-" => "_")
+        output_file = replace(output_file, ".csv" => ".geojson")
+        out_path = "$output_folder/$output_file"
+
+        # println("Input: $in_path\nOutput: $out_path\n")
+        println("Time step: $time_step/$num_time_steps\nInput: $in_path\nOutput: $out_path\n")
+
+        E = DelimitedFiles.readdlm(in_path, ',', Float64, skipstart=1);
+
+        line_collection = Dict()
+        line_collection["type"] = "FeatureCollection"
+        line_collection["features"] = []
+
+        num_branches = length(branch_collection["features"])
+
+        for (branch_number,branch_feature) in enumerate(branch_collection["features"])
+            # println("Branch $branch_number/$num_branches")
+            # println("Processing time $time_step/$num_time_steps, branch $branch_number/$num_branches")
+
+            if "BranchDeviceType" in keys(branch_feature["properties"]) && branch_feature["properties"]["BranchDeviceType"] != "Line"
+                continue
+            end
+
+            # feature = deepcopy(branch_feature)
+            feature = branch_feature
+
+            coords = feature["geometry"]["coordinates"]
+            lon1 = coords[1][1]
+            lat1 = coords[1][2]
+
+            lon2 = coords[end][1]
+            lat2 = coords[end][2]
+
+            Dlon = lon2 - lon1
+            Dlat = lat2 - lat1
+
+            lon_mp = (lon1 + lon2)/2
+            lat_mp = (lat1 + lat2)/2
+            
+            alpha = (pi/180)*lat_mp
+
+            Dn = 111.2*Dlat
+            De = 111.2*Dlon*sin(pi/2 - alpha)
+
+            line_length = sqrt(De^2 + Dn^2)
+            angle = atand(Dn, De)
+
+
+            if !((lon_mp, lat_mp) in keys(nearest_field_index))
+                nearest_field_index[(lon_mp, lat_mp)] = 1
+                e_lat = E[1,1]
+                e_lon = E[1,2]
+
+                if e_lon >= 180
+                    e_lon = 360 - e_lon
+                end
+
+                dmin = (e_lon - lon_mp)^2 + (e_lat - lat_mp)^2
+
+                for j = 1:size(E,1)
+                    e_lat = E[j,1]
+                    e_lon = E[j,2]
+
+                    if e_lon >= 180
+                    e_lon = 360 - e_lon
+                    end
+
+
+                    d = (e_lon - lon_mp)^2 + (e_lat - lat_mp)^2
+
+                    if d < dmin
+                        nearest_field_index[(lon_mp, lat_mp)] = j
+                        dmin = d
+                    end
+                end
+
+                #println("Setting nearest point for ($lon_mp,$lat_mp) to $(nearest_field_index[(lon_mp, lat_mp)])")
+            end
+
+            i = nearest_field_index[(lon_mp, lat_mp)]
+
+
+            e_lat = E[i,1]
+            e_lon = E[i,2]
+
+            #println("Nearest point to ($lon_mp,$lat_mp) is E[$i] at ($e_lon,$e_lat)")
+
+            Ee = E[i,3]
+            En = E[i,4]
+            Em = sqrt(Ee^2 + En^2)
+            Ea = atand(En, Ee)
+
+            vdc = De*Ee + Dn*En
+
+            feature["properties"]["DiplacementNorth"] = De
+            feature["properties"]["DisplacementEast"] = Dn
+            feature["properties"]["Distance"] = line_length
+            feature["properties"]["DisplacementAngle"] = angle
+            feature["properties"]["EEast"] = Ee
+            feature["properties"]["ENorth"] = En
+            feature["properties"]["EMagnitude"] = Em
+            feature["properties"]["EAngle"] = Ea
+            feature["properties"]["Vdc"] = vdc
+            feature["properties"]["MidpointLatitude"] = lat_mp
+            feature["properties"]["MidpointLongitude"] = lon_mp
+            feature["properties"]["EFieldLatitude"] = e_lat
+            feature["properties"]["EFieldLongitude"] = e_lon
+
+            push!(line_collection["features"], feature)
+        end
+
+
+        fo = open(out_path, "w")
+        JSON.print(fo, line_collection)
+        close(fo)
+    end
+end
+
