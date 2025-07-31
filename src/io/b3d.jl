@@ -1,5 +1,3 @@
-using Memento, Printf
-
 B3D_MAGIC_NUMBER = UInt32(34280)
 
 function read_byte(io)
@@ -31,12 +29,11 @@ function read_null_terminated_string(io)
     return String(buf)
 end
 
-function read_b3d_header(b3d_file::IO)
+function read_b3d_header(io::IO)
     b3d = Dict()
     magic_number = read_uint32(io)
 
     Memento.debug(_LOGGER, "Magic number: $magic_number")
-    # Memento.warn(_LOGGER, "$section data is not supported by this parser and will be ignored.")
 
     if magic_number != B3D_MAGIC_NUMBER
         throw(ErrorException("Invalid B3D file with magic number $magic_number, expecting $B3D_MAGIC_NUMBER"))
@@ -56,13 +53,14 @@ function read_b3d_header(b3d_file::IO)
 
     meta_strings = []
 
-    for _ in 1:n_meta_strings
-        push!(meta_strings, read_null_terminated_string(io))
+    for i in 1:n_meta_strings
+        meta_string = read_null_terminated_string(io)
+        push!(meta_strings, meta_string)
+        Memento.info(_LOGGER, "Comment $i: $meta_string")
     end
 
     # Note: 2nd string may be used for dimensions of 2d point array
     comments = join(meta_strings, '\n')
-    Memento.info(_LOGGER, "\nComments:\n$comments\n")
     b3d["comments"] = comments
 
     n_float_channels = read_uint32(io)
@@ -78,7 +76,7 @@ function read_b3d_header(b3d_file::IO)
     b3d["n_byte_channels"] = n_byte_channels
  
     loc_format = read_uint32(io)
-    Memento.debug(_LOGGER, "Location format: $loc_format")
+    Memento.info(_LOGGER, "Location format: $loc_format")
     b3d["loc_format"] = loc_format
     
     if loc_format != 1
@@ -109,7 +107,7 @@ function read_b3d_header(b3d_file::IO)
     b3d["dist_to_measurement_station"] = dist_to_measurement_station
 
     start_time = read_uint32(io)
-    Memento.info(_LOGGER, "Start time in seconds since epoch: $start_time")
+    Memento.debug(_LOGGER, "Start time in seconds since epoch: $start_time")
     b3d["start_time"] = start_time
 
     # const (
@@ -130,7 +128,7 @@ function read_b3d_header(b3d_file::IO)
     b3d["time_unit"] = time_unit
 
     time_offset_raw = read_uint32(io)
-    Memento.info(_LOGGER, "Time offset in time units: $time_offset_raw")
+    Memento.debug(_LOGGER, "Time offset in time units: $time_offset_raw")
     # b3d["time_offset_raw"] = time_offset_raw
 
     time_offset = time_unit*convert(Float64, time_offset_raw)
@@ -146,20 +144,22 @@ function read_b3d_header(b3d_file::IO)
     b3d["time_step"] = time_step
 
     n_times = read_uint32(io)
-    Memento.info(_LOGGER, "Number of time points: $n_times")
+    Memento.info(_LOGGER, "Number of time steps: $n_times")
     b3d["n_times"] = n_times
 
     return b3d
 end
 
-function read_b3d(gic_file::String)
-    io = open(gic_file)
-    return read_b3d(io)
+function read_b3d(b3d_file::String)
+    io = open(b3d_file)
+    b3d = read_b3d(io)
+    close(io)
+    return b3d
 end
 
-function read_b3d(gic_file::IO)
-    b3d = Dict()
-    b3d["header"] = read_b3d_header(gic_file)
+function read_b3d(io::IO)
+    b3d = Dict{String,Any}()
+    b3d["header"] = read_b3d_header(io)
     n_times = b3d["header"]["n_times"]
     n_points = b3d["header"]["n_points"]
     time_unit = b3d["header"]["time_unit"]
@@ -178,13 +178,11 @@ function read_b3d(gic_file::IO)
 
     Memento.info(_LOGGER, "Start reading electric field points")
 
-    @time begin
-        for i in 1:n_times
-            # Memento.info(_LOGGER, "Reading time $i/$n_times")
-            for j in 1:n_points
-                Ex[i,j] = read_float32(io)
-                Ey[i,j] = read_float32(io)
-            end
+    for i in 1:n_times
+        # Memento.info(_LOGGER, "Reading time $i/$n_times")
+        for j in 1:n_points
+            Ex[i,j] = read_float32(io)
+            Ey[i,j] = read_float32(io)
         end
     end
 
