@@ -66,6 +66,7 @@ const _PMGMD = PowerModelsGMD
     # Add IO functions
     include("io/common.jl")
     include("io/gic.jl")
+    include("io/b3d.jl")
 
     # Add network formulations:
     include("form/acp.jl")
