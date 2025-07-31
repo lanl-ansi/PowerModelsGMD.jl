@@ -194,59 +194,16 @@ function read_b3d(io::IO)
     return b3d
 end
 
-function coupling(net, b3d)
-    if length(ARGS) >= 1 
-        #event = ARGS[2]
-        #output_event = replace(lowercase(event), "-" => "_")
-        branch_geo = ARGS[1]
-    end
-
-    if length(ARGS) >= 2
-        #network = ARGS[1]
-        #output_network = replace(lowercase(network), "-" => "_")
-        input_folder = ARGS[2]
-    end
-
-    if length(ARGS) >= 3
-        output_folder = ARGS[3]
-    end
-
-    files = readdir(input_folder)
-    e_field_files = filter(x->endswith(x, ".csv"), files)
-
-    mkpath(output_folder)
-
-
-    f = open(branch_geo)
-    branch_collection = JSON.parse(f)
-    close(f)
-
-    num_time_steps = length(e_field_files)
+function nn_coupling(net, b3d)
+    num_time_steps = b3d["header"]["n_times"]
 
     nearest_field_index = Dict()
 
-    for (time_step,e_field_file) in enumerate(sort(e_field_files))
+    for time_step in 1:num_time_steps
         # println("Processing time $time_step/$num_time_steps")
+        num_branches = length(net["branch"])
 
-        in_path = "$input_folder/$e_field_file"
-
-        output_file = replace(e_field_file, "geoe_grid_full_full_res_1_e" => "e_field_")
-        output_file = replace(output_file, "-" => "_")
-        output_file = replace(output_file, ".csv" => ".geojson")
-        out_path = "$output_folder/$output_file"
-
-        # println("Input: $in_path\nOutput: $out_path\n")
-        println("Time step: $time_step/$num_time_steps\nInput: $in_path\nOutput: $out_path\n")
-
-        E = DelimitedFiles.readdlm(in_path, ',', Float64, skipstart=1);
-
-        line_collection = Dict()
-        line_collection["type"] = "FeatureCollection"
-        line_collection["features"] = []
-
-        num_branches = length(branch_collection["features"])
-
-        for (branch_number,branch_feature) in enumerate(branch_collection["features"])
+        for (branch_number,branch_feature) in net["gmd_branch"]
             # println("Branch $branch_number/$num_branches")
             # println("Processing time $time_step/$num_time_steps, branch $branch_number/$num_branches")
 
@@ -341,11 +298,6 @@ function coupling(net, b3d)
 
             push!(line_collection["features"], feature)
         end
-
-
-        fo = open(out_path, "w")
-        JSON.print(fo, line_collection)
-        close(fo)
     end
 end
 
