@@ -74,6 +74,10 @@ function read_b3d_header(io::IO)
     n_byte_channels = read_uint32(io)
     Memento.debug(_LOGGER, "Number of byte channels: $n_byte_channels")
     b3d["n_byte_channels"] = n_byte_channels
+
+    if n_byte_channels >= 1
+        throw(ErrorException("File contains $n_byte_channels byte channels which are currently unspported"))
+    end
  
     loc_format = read_uint32(io)
     Memento.info(_LOGGER, "Location format: $loc_format")
