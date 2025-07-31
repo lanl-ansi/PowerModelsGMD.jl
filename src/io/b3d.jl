@@ -194,7 +194,7 @@ function read_b3d(io::IO)
     return b3d
 end
 
-function nn_coupling(net, b3d)
+function nn_coupling!(net, b3d)
     num_time_steps = b3d["header"]["n_times"]
 
     nearest_field_index = Dict()
@@ -203,13 +203,20 @@ function nn_coupling(net, b3d)
         # println("Processing time $time_step/$num_time_steps")
         num_branches = length(net["branch"])
 
-        for (branch_number,branch_feature) in net["gmd_branch"]
+        for gmd_branch in values(net["gmd_branch"])
             # println("Branch $branch_number/$num_branches")
             # println("Processing time $time_step/$num_time_steps, branch $branch_number/$num_branches")
 
             if "BranchDeviceType" in keys(branch_feature["properties"]) && branch_feature["properties"]["BranchDeviceType"] != "Line"
                 continue
             end
+
+            # get from & to gmd buses
+
+            # get from & to substations
+
+            # get substation locations
+
 
             # feature = deepcopy(branch_feature)
             feature = branch_feature
@@ -282,21 +289,19 @@ function nn_coupling(net, b3d)
 
             vdc = De*Ee + Dn*En
 
-            feature["properties"]["DiplacementNorth"] = De
-            feature["properties"]["DisplacementEast"] = Dn
-            feature["properties"]["Distance"] = line_length
-            feature["properties"]["DisplacementAngle"] = angle
-            feature["properties"]["EEast"] = Ee
-            feature["properties"]["ENorth"] = En
-            feature["properties"]["EMagnitude"] = Em
-            feature["properties"]["EAngle"] = Ea
-            feature["properties"]["Vdc"] = vdc
-            feature["properties"]["MidpointLatitude"] = lat_mp
-            feature["properties"]["MidpointLongitude"] = lon_mp
-            feature["properties"]["EFieldLatitude"] = e_lat
-            feature["properties"]["EFieldLongitude"] = e_lon
-
-            push!(line_collection["features"], feature)
+            gmd_branch["DiplacementNorth"] = De
+            gmd_branch["DisplacementEast"] = Dn
+            gmd_branch["Distance"] = line_length
+            gmd_branch["DisplacementAngle"] = angle
+            gmd_branch["EEast"] = Ee
+            gmd_branch["ENorth"] = En
+            gmd_branch["EMagnitude"] = Em
+            gmd_branch["EAngle"] = Ea
+            gmd_branch["Vdc"] = vdc
+            gmd_branch["MidpointLatitude"] = lat_mp
+            gmd_branch["MidpointLongitude"] = lon_mp
+            gmd_branch["EFieldLatitude"] = e_lat
+            gmd_branch["EFieldLongitude"] = e_lon
         end
     end
 end
