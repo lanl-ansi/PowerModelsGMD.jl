@@ -32,13 +32,13 @@ function solve_gmd(name; kwargs...)
     gic_data = data["nw"]["1"]
     raw_data = data["nw"]["2"]
 
-    # open("../temp_data/gic_$name.json", "w") do f
-    #     JSON.print(f, gic_data)
-    # end
+    open("../temp_data/gic_$name.json", "w") do f
+        JSON.print(f, gic_data)
+    end
 
-    # open("../temp_data/raw_$name.json", "w") do f
-    #     JSON.print(f, raw_data)
-    # end
+    open("../temp_data/raw_$name.json", "w") do f
+        JSON.print(f, raw_data)
+    end
 
     case = generate_dc_data(gic_data, raw_data, 1.0, 90.0, 1.0)
 
