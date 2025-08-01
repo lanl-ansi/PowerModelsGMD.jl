@@ -79,5 +79,10 @@ function generate_g_i_matrix(network::Dict{String, Any})
     for (i, val) in inject_i
         i_inj[i] = val
     end
-    return [g, i_inj]
+
+    gmd_bus_nums = sort([x["index"] for x in values(network["gmd_bus"])])
+    bus_nums = [network["gmd_bus"]["$i"]["source_id"][2] for i in gmd_bus_nums]
+    bus_types = [network["gmd_bus"]["$i"]["source_id"][1] for i in gmd_bus_nums]
+
+    return [g, i_inj, bus_nums, bus_types]    
 end
