@@ -1,4 +1,4 @@
-function generate_g_i_matrix(network::Dict{String, Any})
+function generate_g_i_matrix(network::Dict{String, Any}; sort_keys=false)
     diag_g = Dict{Int64, Float64}()
     inject_i = Dict{Int64, Float64}()
 

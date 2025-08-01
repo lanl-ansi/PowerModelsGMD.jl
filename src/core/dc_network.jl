@@ -19,7 +19,52 @@ R_g_default = 25000.00
 equatorial_radius = 6378.137
 eccentricity_squared = 0.00669437999014
 
-# Configures the line voltages and distances
+"Load a network dictionary from a set of GIC/RAW/CSV file paths"
+function generate_dc_data(gic_file::String, raw_file::String, voltage_file::String)
+    # TODO: add gz support to parse_file
+    net =  generate_dc_data(gic_file, raw_file, 0.0)
+    add_coupled_voltages!(voltage_file, net)
+    return net
+end
+
+
+"Load a network dictionary from a pair of GIC/RAW file paths and calculate coupled voltages with a uniform field"
+function generate_dc_data(gic_file::String, raw_file::String, field_mag::Float64=0.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+    # TODO: add gz support to parse_file
+    gic_data = parse_gic(gic_file)
+    raw_data = _PM.parse_file(raw_file)
+    net =  generate_dc_data(gic_data, raw_data, field_mag, field_dir, min_line_length)
+    return net
+end
+
+
+"Load a network dictionary from a pair of GIC/RAW file handles and calculate coupled voltages with a uniform field"
+function generate_dc_data(gic_file::IO, raw_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+    return generate_dc_data_psse(gic_file, raw_file, field_mag, field_dir, min_line_length)
+end
+
+
+"Load a network dictionary from a pair of GIC/MatPower file handles and calculate coupled voltages with a uniform field"
+function generate_dc_data_matpower(gic_file::IO, mp_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+    # This produces an annoying warning about the number of columns in the first row
+    # TODO: How to get rid of it?
+    gic_data = parse_gic(gic_file)
+    mp_data = _PM.parse_matpower(mp_file)
+    return generate_dc_data(gic_data, mp_data, field_mag, field_dir, min_line_length)
+end
+
+
+"Load a network dictionary from a pair of GIC/RAW file handles and calculate coupled voltages with a uniform field"
+function generate_dc_data_psse(gic_file::IO, raw_file::IO, field_mag::Float64=1.0, field_dir::Float64=90.0, min_line_length::Float64=1.0)
+    # This produces an annoying warning about the number of columns in the first row
+    # TODO: How to get rid of it?
+    gic_data = parse_gic(gic_file)
+    raw_data = _PM.parse_psse(raw_file)
+    return generate_dc_data(gic_data, raw_data, field_mag, field_dir, min_line_length)
+end
+
+
+ # Configures the line voltages and distances
 function load_voltages!(voltage_file::String, output::Dict{String, Any})
     open(voltage_file, "r") do f
         load_voltages!(f, output)
