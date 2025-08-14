@@ -17,6 +17,8 @@ const _PMGMD = PowerModelsGMD
     import Memento
     import Ipopt
     
+    import Interpolations
+    
 
     # Suppressing information and warning messages:
     const _LOGGER = Memento.getlogger(@__MODULE__)
