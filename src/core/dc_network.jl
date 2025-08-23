@@ -1,16 +1,16 @@
 # For the implicit transformer branch resistances
 impxfrm = Dict{Float64, Float64}(
-    765.0 => 1.0892000157158984e-05,
-    500.0 => 1.666666666676272e-05,
-    345.0 => 2.4155598209192887e-05,
-    230.0 => 3.623188405928273e-05,
-    161.0 => 5.175983436949935e-05,
-    138.0 => 6.038901527172248e-05,
-    115.0 => 7.246376811370438e-05,
+    115.0 => 13800.0000,
+    138.0 => 16559.3030,
+    161.0 => 19320.0000,
+    230.0 => 27600.0000,
+    345.0 => 41398.2710,
+    500.0 => 60000.0000,
+    765.0 => 91810.5018,
 )
 
 gen_v = sort(collect(keys(impxfrm)))
-gen_r = sort(collect(values(impxfrm)))
+gen_g = sort(collect(values(impxfrm)))
 
 # Create a linear interpolation object
 # itp = Interpolations.interpolate(gen_r, Interpolations.BSpline(Interpolations.Linear()))
@@ -20,7 +20,7 @@ gen_r = sort(collect(values(impxfrm)))
 # function itp_scaled(x)
 #     return impxfrm[x]
 # end
-itp_scaled = Interpolations.linear_interpolation(gen_v, gen_r, extrapolation_bc=Interpolations.Line())
+itp_scaled = Interpolations.linear_interpolation(gen_v, gen_g, extrapolation_bc=Interpolations.Line())
 
 # Auto Transformer high side minimum kV
 KVMIN = 50
@@ -880,11 +880,14 @@ function _generate_implicit_gsu!(branches::Dict{String, Dict{String, Any}}, dc_b
 
         # Impedance base for the generator helps determine the assumed resistance of the transformer
         z_base = (gen_base_kv ^ 2) / gen["mbase"]
+        gpu = itp_scaled(gen_base_kv)
+        rpu = 1.0/gpu
+        rsi = rpu *z_base
 
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[gen["gen_bus"]],
             "t_bus" => raw_data["bus"]["$gen_bus"]["sub"],
-            "br_r" => itp_scaled(gen_base_kv) * z_base,
+            "br_r" =>  rsi,
             "name" => "dc_gen$gen_id",
             "br_status" => 1,
             "parent_index" => gen_id,

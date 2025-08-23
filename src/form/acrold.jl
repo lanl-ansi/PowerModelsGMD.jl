@@ -1,7 +1,6 @@
 ####################################################
 # Quadratic Relaxations in the Rectangular W-Space #
 ####################################################
-import Infiltrator
 
 # ===   VOLTAGE VARIABLES   === #
 

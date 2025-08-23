@@ -1,7 +1,6 @@
 #############################################
 # Polar Form of the Non-Convex AC Equations #
 #############################################
-import Infiltrator
 
 # ===   CURRENT VARIABLES   === #
 
