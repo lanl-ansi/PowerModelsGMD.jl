@@ -401,6 +401,29 @@ function constraint_gmd_connections(pm::_PM.AbstractPowerModel, i::Int; nw::Int=
 end
 
 
+function constraint_dc_kcl_ground(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+
+    dc_expr = pm.model.ext[:nw][nw][:dc_expr]
+    gmd_bus = _PM.ref(pm, nw, :gmd_bus, i)
+    gmd_bus_arcs = _PM.ref(pm, nw, :gmd_bus_arcs, i)
+    ne_blockers = get(_PM.ref(pm,nw,:gmd_bus_ne_blockers),i, Dict())
+    blockers = get(_PM.ref(pm,nw,:gmd_bus_blockers),i,Dict())
+
+    gs = gmd_bus["g_gnd"]
+    blocker_status = length(blockers) > 0 ? 1 : 0
+
+    if blocker_status == 0 && length(ne_blockers) > 0
+        if (length(ne_blockers) > 1)
+            Memento.warn(_LOGGER, "Bus ", i, " has more than one expansion blocker defined for it. Only using one of them")
+        end
+
+        constraint_dc_kcl_ne_blocker(pm, nw, i, ne_blockers[1], dc_expr, gmd_bus_arcs, gs)
+    else
+        constraint_dc_kcl(pm, nw, i, dc_expr, gmd_bus_arcs, gs, blocker_status)
+    end
+end
+
+
 "CONSTRAINT: temperature state"
 function constraint_temperature_state(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)

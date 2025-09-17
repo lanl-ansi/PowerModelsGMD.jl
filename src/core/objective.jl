@@ -59,24 +59,62 @@ function objective_bound_gmd_bus_v(pm::_PM.AbstractPowerModel, nw::Int=nw_id_def
 end
 
 
-"Maximize power delivered to loads"
+# "Maximize power delivered to loads"
+# function objective_max_loadability(pm::_PM.AbstractPowerModel)
+#     nws = _PM.nw_ids(pm)
+
+#     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
+#     z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)
+#     time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
+
+#     total_load = sum(sqrt(load["pd"]^2+load["qd"]^2) for (i,load) in _PM.ref(pm, 0, :load))
+
+#     return JuMP.@objective(pm.model, Max,
+#         sum( 
+#             ( 
+#             time_elapsed[n]*(
+#                 sum(z_demand[n][i]*sqrt(load["pd"]^2+load["qd"]^2) for (i,load) in _PM.ref(pm, n, :load))/total_load
+#                 )
+#             )
+#             for n in nws)
+#         )
+# end
+
+
 function objective_max_loadability(pm::_PM.AbstractPowerModel)
     nws = _PM.nw_ids(pm)
 
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
-    z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)
     time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
 
-    total_load = sum(sqrt(load["pd"]^2+load["qd"]^2) for (i,load) in _PM.ref(pm, 0, :load))
+    total_load = sum(abs(load["pd"]) for (i,load) in _PM.ref(pm, 0, :load))
 
     return JuMP.@objective(pm.model, Max,
         sum( 
             ( 
             time_elapsed[n]*(
-                sum(z_demand[n][i]*sqrt(load["pd"]^2+load["qd"]^2) for (i,load) in _PM.ref(pm, n, :load))/total_load
+                sum(z_demand[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load))/total_load
                 )
             )
             for n in nws)
         )
 end
 
+
+"OBJECTIVE: max/min the dc voltage at the sub station"
+function objective_bound_ieff(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default)
+
+    branch = get(pm.setting,"ieff_branch",false)
+
+    if get(pm.setting,"max",false)
+        return JuMP.@objective(pm.model, Max,
+            sum(_PM.var(pm, n, :i_dc_mag)[branch]
+            for (n, nw_ref) in _PM.nws(pm))
+        )
+    else
+        return JuMP.@objective(pm.model, Min,
+            sum(_PM.var(pm, n, :i_dc_mag)[branch]
+            for (n, nw_ref) in _PM.nws(pm))
+        )
+    end
+end

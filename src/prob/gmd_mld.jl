@@ -3,9 +3,14 @@
 ##############
 
 # ===   COUPLED MLD   === #
-"Solve GMD MLD mitigation with nonlinear ac equations"
-function solve_ac_gmd_mld(file, optimizer; kwargs...)
-    return solve_gmd_mld(file, _PM.ACPPowerModel, optimizer; kwargs...)
+"FUNCTION: solve GMD MLD mitigation with nonlinear ac equations"
+function solve_ac_gmd_mld(file::String, optimizer; kwargs...)
+    case = _PM.parse_file(file)
+    return solve_gmd_mld(case, _PM.ACPPowerModel, optimizer; kwargs...)
+end
+
+function solve_ac_gmd_mld(case::Dict{String,Any}, optimizer; kwargs...)
+    return solve_gmd_mld(case, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 "Solve GMD MLD mitigation with second order cone relaxation"

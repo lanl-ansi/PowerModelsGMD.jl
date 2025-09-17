@@ -95,6 +95,8 @@ function build_bound_gmd_bus_v(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_gmd_connections(pm, i)
     end
 
+    # constraint_dc_kcl_ground(pm)
+
     objective_bound_gmd_bus_v(pm)
 end
 
@@ -187,4 +189,91 @@ function build_bound_qloss(pm)
     constraint_load_served(pm)
 
     objective_max_qloss(pm)
+end
+
+
+"solves for the i effective current max"
+function solve_bound_ieff(case, model_type::Type, optimizer; kwargs...)
+    _case = deepcopy(case)
+
+    components = get_connected_components(_case)
+
+    _case["connected_components"] = components
+
+    results = Dict{String,Any}()
+
+    for (i, branch) in _case["branch"]
+        if branch["type"] == "xfmr"
+            kwargs[:setting]["ieff_branch"] = branch["index"]
+            kwargs[:setting]["max"] = true
+            result_max = _PM.solve_model(
+                    _case,
+                    model_type,
+                    optimizer,
+                    build_bound_ieff;
+                    ref_extensions = [
+                        ref_add_gmd!,
+                        ref_add_ne_blocker!,
+                        ref_add_gmd_connections!,
+                    ],
+                    solution_processors = [],
+                    kwargs...,
+            )
+            kwargs[:setting]["max"] = false
+            result_min = _PM.solve_model(
+                    _case,
+                    model_type,
+                    optimizer,
+                    build_bound_ieff;
+                    ref_extensions = [
+                        ref_add_gmd!,
+                        ref_add_ne_blocker!,
+                        ref_add_gmd_connections!,
+                    ],
+                    solution_processors = [],
+                    kwargs...,
+            )
+            results["$i"] = Dict{String,Any}(
+                "max" => result_max,
+                "min" => result_min,
+            )
+        end
+    end
+   
+    if kwargs[:setting]["add2case"]
+        solution_add_ieff_bounds_case!(case, results)
+        return case
+    else
+        return solution_get_ieff_bounds(case, results)
+    end
+end
+
+
+function build_bound_ieff(pm::_PM.AbstractPowerModel; kwargs...)
+    variable_dc_voltage(pm)
+    variable_dc_line_flow(pm)
+    variable_gic_current_bound(pm)
+
+    blocker_relax = get(pm.setting,"blocker_relax",false)
+    variable_ne_blocker_indicator(pm, relax=blocker_relax)
+
+    for i in _PM.ids(pm, :gmd_bus)
+        constraint_dc_kcl_ne_blocker(pm, i)
+    end
+
+    for i in _PM.ids(pm, :branch)
+        constraint_dc_current_mag_bound(pm, i)
+    end
+
+    for i in _PM.ids(pm, :gmd_branch)
+        constraint_dc_ohms(pm, i)
+    end
+
+    for i in _PM.ids(pm, :gmd_connections)
+        constraint_gmd_connections(pm, i)
+    end
+
+    constraint_dc_kcl_ground(pm)
+
+    objective_bound_ieff(pm)
 end
