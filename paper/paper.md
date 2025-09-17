@@ -1,41 +1,88 @@
-# PowerModelsGMD.jl
+---
+title: 'PowerModelsGMD.jl: A Julia/JuMP package of analysi of geomagnetic events on bulk electric power systems'
+tags:
+  - Julia
+  - space weather
+  - power systems analysis
+  - power systems optimization
+authors:
+  - name: Arthur K. Barnes
+    orcid:  0000-0001-9718-3197
+    corresponding: true # (This is how to denote the corresponding author)
+    affiliation: 1
+  - name: Jose E. Tabarez
+    orcid: 0000-0003-4800-6340
+    affiliation: 1
+  - name: Adam Mate
+    orcid: 0000-0002-5628-6509
+    affiliation: 1
+  - name: Russell W. Bent
+    orcid: 0000-0002-7300-151X
+    affiliation: 2
+affiliations:
+ - name: Analytics and Modeling Group, Los Alamos National National Laboratory, Los Alamos, NM, USA
+   index: 1
+   ror: 00hx57361
+ - name: Applied Mathematics and Plasma Physics Group, Los Alamos National Laboratory, Los Alamos, NM, USA
+   index: 2
+date: 1 September 2025
+bibliography: paper.bib
 
-Status:
-[![CI](https://github.com/lanl-ansi/PowerModelsGMD.jl/workflows/CI/badge.svg)](https://github.com/lanl-ansi/PowerModelsGMD.jl/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/lanl-ansi/PowerModelsGMD.jl)
-<!--- [![Documentation](https://github.com/lanl-ansi/PowerModelsGMD.jl/workflows/Documentation/badge.svg)](https://lanl-ansi.github.io/PowerModelsGMD.jl/stable/) --->
-</p>
+# Optional fields if submitting to a AAS journal too, see this blog post:
+# https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
+# aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
+# aas-journal: Astrophysical Journal <- The name of the AAS journal.
+---
 
-PowerModelsGMD (PMsGMD) is an open-source [Julia](https://julialang.org/) tool for evaluating the risks and mitigating the impacts of geomagnetic disturbances (GMDs) and E3 high-altitude electromagnetic pulse (HEMP) events on electrical power transmission networks.
-It solves for quasi-dc line flow and ac power flow problems in a system subjected to geomagnetically induced currents (GIC) and calculates GICs based on pre-determined geoelectric fields and takes in the coupled line voltages as inputs.
+# Summary
 
-## PMsGMD Dependencies
+PowerModelsGMD (PMsGMD) is an open-source Julia tool for evaluating the risks
+and mitigating the impacts of geomagnetic disturbances (GMDs) and E3 high-
+altitude electromagnetic pulse (HEMP) events on electrical power transmission
+networks. It solves for quasi-dc line flow and ac power flow problems in a
+system subjected to geomagnetically induced currents (GIC) and calculates GICs
+based on pre-determined geoelectric fields and takes in the coupled line
+voltages as inputs.
 
-PMsGMD directly builds on [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) v0.19 - a package for electrical power transmission network modeling and optimization - of the [InfrastructureModels](https://github.com/lanl-ansi/InfrastructureModels.jl) v0.7 open-source software ecosystem.
-Additionally, it relies on and was optimized for [JSON](https://github.com/JuliaIO/JSON.jl) v0.21, [JuMP](https://github.com/jump-dev/JuMP.jl) v1.9, and [Memento](https://github.com/invenia/Memento.jl) v1.4 packages.
+# Statement of need
 
-Automated testing of PMsGMD problem specifications is done with [Ipopt](https://github.com/jump-dev/Ipopt.jl) v1.2.0 and [Juniper](https://github.com/lanl-ansi/Juniper.jl) v0.9.1 packages.
-Alternatively, commercial [KNITRO](https://github.com/jump-dev/KNITRO.jl) or [Gurobi](https://github.com/jump-dev/Gurobi.jl), or open-source [SCS](https://github.com/jump-dev/SCS.jl), [Pajarito](https://github.com/jump-dev/Pajarito.jl), [Pavito](https://github.com/jump-dev/Pavito.jl), or [SCIP](https://github.com/scipopt/SCIP.jl) optimizers may be used for specific problems.
+- Geomagnetic Disturbances (GMDs) resulting from solar events can have adverse
+imparts on the bulk electric system by causing geomagcnetically induced currents
+(GICs)
+- Impact could be blackouts or destruction of grid components with long lead times
+such as large power transformers (LPTs)
+- Varying claims as to the impact of severity of geomagnetic disturbances motivate
+the need for rigorous analysis workflows to quanitfy the impact of GMD events on the
+bulk power system in terms of metrics that can be interpreted by utility professionals
+to guide reasonable investment in mitigation technologies and strategies
+- High cost of mitigation technologies further motivates the development of optimal
+placement strategies, especially as existing research suggests that a relatively
+sparse placement of such devices can provide significant benefits
+- Addressing mitigation strategies such as placement of GIC blocking devices or 
+operational methods such as line switching or load shedding motivates the use of 
+mathematical optimization methods. 
+- Compared with existing software packages that perform GIC analysis, PowerModelsGMD.jl
+provides flexibility in terms of separation of problem formulation, problem specification,
+and solvers, allowing for changing power systems relaxations and numerical solvers employed
+with minimal code changes
+- The implementation in pure Julia and permissive license allows for cross-platform deployment on both 
+desktop, high-performance computing, and commodity cloud computing resources 
 
-## Core Problem Specifications
+# Capabilities
 
 PMsGMD solves for quasi-dc line flow and ac power flow problems in a network subjected to GIC.
 It also solves for mitigation strategies, such as minimum loadshedding or treating the transformer overheating problem as an optimal transmission switching problem.
 
 At the moment, the following common industry and academic specifications are implemented:
-* GIC DC: quasi-dc power flow
-* GIC AC-OPF: ac optimal power flow with sequential/coupled quasi-dc power flow
-* GIC AC-MLD: ac maximum loadability and minimum loadshedding with sequential/coupled quasi-dc power flow
-* GIC AC-OTS: ac optimal transmission switching with minimum loadshedding coupled with a quasi-dc power flow
+- GIC DC: quasi-dc power flow
+- GIC AC-OPF: ac optimal power flow with sequential/coupled quasi-dc power flow
+- GIC AC-MLD: ac maximum loadability and minimum loadshedding with sequential/coupled quasi-dc power flow
+- GIC AC-OTS: ac optimal transmission switching with minimum loadshedding coupled with a quasi-dc power flow
 
-## Input Cases
-
-A selection of small test cases used for unit tests are provided in the `test/data` subfolder. Test cases are provided in both 
-extended MatPower format and PTI `.raw` V33/`.gic` V3 format. Addititional, larger network cases are provided in 
-[PowerModelsGMDLib](https://github.com/lanl-ansi/PowerModelsGMDLib). New cases can be created with [gmd-tools](http://github.com/bluejuniper/gmd-tools) from PowerWorld Simulator `.pwb` input files. 
+While the focus of PowerModelsGMD.jl is on 
 
 
-## Installation
+# Installation
 
 Before installing PowerModelsGMD.jl, it is necessary to install its dependencies. This involves first
 installing the Julia language version 1.x, where is available on the Julia website https://julianlang.org.
@@ -56,6 +103,7 @@ add CSV
 ```
 
 After the installation of its dependencies, PMsGMD can be installed from the Julia package manager:
+
 ```
 add PowerModelsGMD
 ```
@@ -66,12 +114,9 @@ To verify that all implemented specifications work as designed, test PMsGMD. Not
 test PowerModelsGMD
 ```
 
+# Quick Start
 
-
-## Quick Start
-
-The most common use case is a quasi-dc solve followed by an AC-OPF where the currents from the quasi-dc solve are constant parameters that determine the reactive power consumption of transformers throughout the network.
-For example:
+A simple test case can be run with the following code. From within the PowerModelsGMD.jl folder run:
 
 ``` Julia
 using PowerModelsGMD
@@ -81,7 +126,7 @@ data = PowerModelsGMD.parse_files(gic_file, raw_file)
 result = PowerModelsGMD.solve_gmd(data)
 ```
 
-## Problem Specification Reference
+# Problem Specification Reference
 
 
 ### GIC DC
@@ -105,7 +150,7 @@ setting = Dict{String,Any}("output" => Dict{String,Any}("branch_flows" => true))
 solve_gmd(network_case, optimizer; setting)
 ```
 
-**Warning!** The default post-processing Qloss calculations used for the GMD and sequential (uncoupled??) GMD-AC*PF formulations uses the per-unit voltages specified in the base case
+**Warning!** The default post-processing Qloss calculations used for the GMD and sequential (uncoupled??) GMD-AC*PF formtulations uses the per-unit voltages specified in the base case
 
 ### GIC AC-OPF
 
@@ -199,9 +244,9 @@ For example:
 solve_ac_gmd_mls_ots_ts(multi_network_case, optimizer)
 ```
 
+# Software Architecture
 
-
-## Acknowledgments
+# Acknowledgements
 
 This code has been developed as part of the [Advanced Network Science Initiative](https://github.com/lanl-ansi) at [Los Alamos National Laboratory](https://www.lanl.gov/) (LANL).
 The primary developers are [Arthur Barnes](https://github.com/bluejuniper) and [Adam Mate](https://github.com/adammate), with significant contributions from:
@@ -214,8 +259,7 @@ Special thanks to:
 * Noah Rhodes and Carleton Coffrin for developing and implementing the [MLD](https://github.com/lanl-ansi/PowerModelsRestoration.jl/blob/master/src/prob/mld.jl) problem specification, which is used in the GIC AC-MLS problem specification;
 * Michael Rivera for a reference implementation of the Lehtinen-Pirjola matrix optimizer.
 
-
-### Development Funding Sources
+## Development Funding Sources
 
 This code has been developed as part of the following projects, with associated funding agency listed:
 * DOE Office of Electricity (OE) -- Space Weather Mitigation Planning project (2022-)
@@ -223,21 +267,4 @@ This code has been developed as part of the following projects, with associated 
 * DOE Office of Cybersecurity, Energy Security, and Emergency Response (CESER) -- Electricity Subsector Risk Characterization project (2021-22)
 * LANL Laboratory Directed Research & Development (LDRD) -- Impacts of Extreme Space Weather Events on Power Grid Infrastructure project (2018-19)
 
-
-### Community-Driven Development
-
-Development and enhancement of PMsGMD are welcomed and encouraged. Please feel free to fork this repository and share your contributions to the #master branch with pull requests.
-With questions, please reach out to the primary developers of PMsGMD.
-
-
-### Citing PMsGMD
-
-If you find PMsGMD useful in your work, we kindly request that you cite the following publication(s):
-* A. Mate, A. K. Barnes, R. W. Bent, and E. Cotilla-Sanchez, "[Analyzing and Mitigating the Impacts of GMD and EMP Events on the Electrical Grid with PowerModelsGMD.jl](https://arxiv.org/abs/2101.05042)"
-* A. Mate, A. K. Barnes, S. K. Morley, J. A. Friz-Trillo, E. Cotilla-Sanchez, and S. P. Blake, "[Relaxation Based Modeling of GMD Induced Cascading Failures in PowerModelsGMD.jl](https://arxiv.org/abs/2108.06585)"
-
-
-
-## License
-
-This code is provided under a [BSD license](https://github.com/lanl-ansi/PowerModelsGMD.jl/blob/master/LICENSE.md) as part of the Multi-Infrastructure Control and Optimization Toolkit (MICOT) project, LA-CC-13-108.
+# References

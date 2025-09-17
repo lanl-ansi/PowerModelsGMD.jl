@@ -42,7 +42,7 @@ const voltage_err = 0.01
         end
 
         @testset "Run Coupling" begin
-            data = PowerModelsGMD.generate_dc_data(gic_file, raw_file)
+            data = PowerModelsGMD.generate_dc_data(gic_file, raw_file, 1.0, 90.0)
             @test isapprox(data["gmd_branch"]["1"]["br_v"], 170.788589; atol = voltage_err)
         end        
     end
@@ -107,7 +107,7 @@ const voltage_err = 0.01
         end
 
         @testset "Run coupling" begin
-            data = PowerModelsGMD.generate_dc_data(gic_file, raw_file)
+            data = PowerModelsGMD.generate_dc_data(gic_file, raw_file, 1.0, 90.0)
             branch_voltage_map = create_branch_voltage_map(data)
             @test isapprox(branch_voltage_map[[2, 3, "1 "]], 120.603544; atol = voltage_err) # first line
             @test isapprox(branch_voltage_map[[17, 20, "1 "]], 158.178009; atol = voltage_err) # last line

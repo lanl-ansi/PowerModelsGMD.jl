@@ -1,7 +1,7 @@
 
 # # Parse test cases:
 data_b4gic = "../test/data/matpower/b4gic.m"
-# data_b4gic3w = "../test/data/pti/b4gic3w.raw"
+data_b4gic3w = "../test/data/pti/b4gic3w.raw"
 data_b6gic_nerc = "../test/data/matpower/b6gic_nerc.m"
 data_epri21 = "../test/data/matpower/epri21.m"
 data_ieee_rts_0 = "../test/data/matpower/ieee_rts_0.m"

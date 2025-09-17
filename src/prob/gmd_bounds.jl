@@ -73,7 +73,7 @@ end
 
 function build_bound_gmd_bus_v(pm::_PM.AbstractPowerModel; kwargs...)
     variable_dc_voltage(pm)
-    variable_gic_current(pm)
+    # variable_gic_current(pm)
     variable_dc_line_flow(pm)
 
     blocker_relax = get(pm.setting,"blocker_relax",false)
@@ -83,9 +83,9 @@ function build_bound_gmd_bus_v(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_kcl_ne_blocker(pm, i)
     end
     
-    for i in _PM.ids(pm, :branch)
-        constraint_dc_current_mag(pm, i)
-    end
+    # for i in _PM.ids(pm, :branch)
+    #     constraint_dc_current_mag(pm, i)
+    # end
 
     for i in _PM.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
@@ -192,7 +192,17 @@ function build_bound_qloss(pm)
 end
 
 
-"solves for the i effective current max"
+
+
+function solve_soc_bound_ieff(case, optimizer; kwargs...)
+    return return solve_bound_ieff(case, _PM.SOCWRPowerModel, optimizer; kwargs...)
+end
+
+function solve_ac_bound_ieff(case, optimizer; kwargs...)
+    return return solve_bound_ieff(case, _PM.ACPPowerModel, optimizer; kwargs...)
+end
+
+"solves for the dv voltage bounds at substations"
 function solve_bound_ieff(case, model_type::Type, optimizer; kwargs...)
     _case = deepcopy(case)
 
@@ -248,11 +258,10 @@ function solve_bound_ieff(case, model_type::Type, optimizer; kwargs...)
     end
 end
 
-
 function build_bound_ieff(pm::_PM.AbstractPowerModel; kwargs...)
     variable_dc_voltage(pm)
-    variable_dc_line_flow(pm)
     variable_gic_current_bound(pm)
+    variable_dc_line_flow(pm)
 
     blocker_relax = get(pm.setting,"blocker_relax",false)
     variable_ne_blocker_indicator(pm, relax=blocker_relax)
@@ -272,8 +281,6 @@ function build_bound_ieff(pm::_PM.AbstractPowerModel; kwargs...)
     for i in _PM.ids(pm, :gmd_connections)
         constraint_gmd_connections(pm, i)
     end
-
-    constraint_dc_kcl_ground(pm)
 
     objective_bound_ieff(pm)
 end

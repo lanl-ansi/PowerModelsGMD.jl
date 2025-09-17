@@ -95,8 +95,9 @@ end
 "Solve GIC current model with Lehtinen–Pirjola (LP)
 matrix solver given dictionary input"
 function solve_gmd(case::Dict{String,Any}; kwargs...)
-    g, i_inj = generate_g_i_matrix(case)
+    g, i_inj, _, _ = generate_g_i_matrix(case)
     v = g\i_inj
+    # println(g, i_inj, v)
     return solution_gmd(v, case)
 end
 

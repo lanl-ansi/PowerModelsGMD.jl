@@ -101,7 +101,7 @@ function objective_max_loadability(pm::_PM.AbstractPowerModel)
 end
 
 
-"OBJECTIVE: max/min the dc voltage at the sub station"
+"Minimize or maximize sum of ieff"
 function objective_bound_ieff(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default)
 
     branch = get(pm.setting,"ieff_branch",false)

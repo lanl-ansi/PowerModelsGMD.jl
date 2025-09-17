@@ -102,6 +102,46 @@ end
 
 constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag(pm, nw, k)
 
+
+# ===   POWER BALANCE CONSTRAINTS   === #
+
+"CONSTRAINT: computing the dc current magnitude"
+function constraint_dc_current_mag_bound(pm::_PM.AbstractPowerModel, n::Int, k)
+
+    branch = _PM.ref(pm, n, :branch, k)
+
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
+        constraint_dc_current_mag_line(pm, k, nw=n)
+
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
+        constraint_dc_current_mag_ungrounded_xf(pm, k, nw=n)
+
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
+        constraint_dc_current_mag_gwye_delta_xf_bound(pm, k, nw=n)
+
+    elseif branch["config"] == "gwye-gwye"
+        constraint_dc_current_mag_gwye_gwye_xf_bound(pm, k, nw=n)
+
+    elseif branch["config"] == "gwye-gwye-auto"
+        constraint_dc_current_mag_gwye_gwye_auto_xf_bound(pm, k, nw=n)
+
+    elseif branch["config"] == "three-winding"
+        # TODO: need to support 3W transformers in optimization problems
+
+        ieff = _PM.var(pm, n, :i_dc_mag)
+        JuMP.@constraint(pm.model,
+            ieff[k]
+            ==
+            0.0
+        )
+
+    end
+
+end
+
+constraint_dc_current_mag_bound(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_bound(pm, nw, k)
+
 # ===   POWER BALANCE CONSTRAINTS   === #
 
 
@@ -195,7 +235,7 @@ end
 
 "CONSTRAINT: nodal power balance with gmd, shunts, and constant power factor load shedding"
 function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWConvexModels, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-    println(ooo)
+    # println(ooo)
     w = _PM.var(pm, n, :w, i)
     p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
     q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
@@ -357,6 +397,34 @@ function constraint_load_served(pm::_PM.AbstractPowerModel, n::Int, pds, min_loa
 
 end
 
+
+"CONSTRAINT: more than a specified percentage of load is served"
+function constraint_max_blockers(pm::_PM.AbstractPowerModel, max_blockers)
+    JuMP.@constraint(pm.model,
+        sum(sum(_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+        for (n, nw_ref) in _PM.nws(pm))
+        <=
+        max_blockers)
+
+end
+
+"CONSTRAINT: more than a specified percentage of load is served"
+function constraint_obj_max(pm::_PM.AbstractPowerModel)
+    JuMP.@constraint(pm.model,
+        sum(sum(blocker["multiplier"]*blocker["construction_cost"]*_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+        for (n, nw_ref) in _PM.nws(pm))
+        <=
+        90.0)
+end
+
+"CONSTRAINT: more than a specified percentage of load is served"
+function constraint_obj_min(pm::_PM.AbstractPowerModel)
+    JuMP.@constraint(pm.model,
+        sum(sum(blocker["multiplier"]*blocker["construction_cost"]*_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+        for (n, nw_ref) in _PM.nws(pm))
+        >=
+        70.0)
+end
 
 "CONSTRAINT: nodal power balance for dc circuits with GIC blockers"
 function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, n::Int, i, j, dc_expr, gmd_bus_arcs, gs)

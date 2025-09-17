@@ -17,6 +17,8 @@ const _PMGMD = PowerModelsGMD
     import Memento
     import Ipopt
     
+    import Interpolations
+    
 
     # Suppressing information and warning messages:
     const _LOGGER = Memento.getlogger(@__MODULE__)
@@ -66,6 +68,7 @@ const _PMGMD = PowerModelsGMD
     # Add IO functions
     include("io/common.jl")
     include("io/gic.jl")
+    include("io/b3d.jl")
 
     # Add network formulations:
     include("form/acp.jl")
@@ -75,6 +78,7 @@ const _PMGMD = PowerModelsGMD
     include("form/wr.jl")
     include("form/wr_staged.jl")
     include("form/wrm.jl")
+    include("form/acr.jl")
 
     # Add problem specifications:
     include("prob/gmd.jl")

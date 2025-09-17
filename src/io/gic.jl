@@ -11,7 +11,7 @@ const _gic_sections = ["GICFILEVRSN", "SUBSTATION", "BUS", "TRANSFORMER", "FIXED
 const _substation_data = [("SUBSTATION", Int), ("NAME", String), ("BUS", Int), ("LAT", Float64), ("LONG", Float64), ("RG", Float64), ("EARTH_MODEL", String)]
 # BUS doesn't seem to be a list, as stated in the spreadsheet, but rather a different section. EARTH_MODEL doesn't clarify what the options for the setting are supposed to be.
 const _bus_data = [("ID", Int), ("SUBSTATION", Int)] # Assumed, as not stated elsewhere
-const _transformer_data = [("BUSI", Int), ("BUSJ", Int), ("BUSK", Int), ("CKT", String), ("WRI", Float64), ("WRJ", Float64), ("WRK", Float64), ("GICBDI", Int), ("GICBDJ", Int), ("GICBDK", Int), ("VECGRP", String), ("CORE", Int), ("KFACTOR", Float64), ("GRDRI", Int), ("GRDRJ", Int), ("GRDRK", Int), ("TMODEL", Int)]
+const _transformer_data = [("BUSI", Int), ("BUSJ", Int), ("BUSK", Int), ("CKT", String), ("WRI", Float64), ("WRJ", Float64), ("WRK", Float64), ("GICBDI", Int), ("GICBDJ", Int), ("GICBDK", Int), ("VECGRP", String), ("CORE", Int), ("KFACTOR", Float64), ("GRDRI", Float64), ("GRDRJ", Float64), ("GRDRK", Float64), ("TMODEL", Int)]
 const _fixed_shunt_data = [("BUS", Int), ("ID", Int), ("R", Float64), ("RG", Float64)]
 const _branch_data = [("BUSI", Int), ("BUSJ", Int), ("CKT", String), ("RBRN", Float64), ("INDVP", Float64), ("INDVQ", Float64)]
 # const _earth_data = [("", String)] # Not sure the format yet
@@ -29,29 +29,33 @@ const _gic_data_forms = Dict{String, Array}(
 const _substation_defaults = Dict{String, Any}(
     "RG" => 0.1,
     "EARTH_MODEL" => "Activity Optn",
-    "RG_FLAG" => "Assumed"
+    "RG_FLAG" => "Assumed",
 )
 const _transformer_defaults = Dict{String, Any}(
     # "WRI" => ,
     # "WRJ" => , 
     # "WRK" => , 
-    "GICBDI" => 0,
-    "GICBDJ" => 0,
-    "GICBDK" => 0,
-    "CORE" => 0,
-    "KFACTOR" => 0,
-    "GRDRI" => 0,
-    "GRDRJ" => 0,
-    "GRDRK" => 0,
-    "TMODEL" => 0
+    "GICBDI" => 0.0,
+    "GICBDJ" => 0.0,
+    "GICBDK" => 0.0,
+    "CORE" => 0.0,
+    "KFACTOR" => 0.0,
+    "GRDRI" => 0.0,
+    "GRDRJ" => 0.0,
+    "GRDRK" => 0.0,
+    "TMODEL" => 0.0,
 )
+
 const _fixed_shunt_defaults = Dict{String, Any}(
-    "RG" => 0
+    "RG" => 0.0,
 )
 
 const _branch_defaults = Dict{String, Any}(
-    "RLNSHI" => 0,
-    "RLNSHJ" => 0
+    "RBRN" => 0.0,
+    "INDVP" => 0.0,
+    "INDVQ" => 0.0,	    
+    "RLNSHI" => 0.0,
+    "RLNSHJ" => 0.0,
 )
 
 const _gic_defaults = Dict{String, Dict}(
@@ -64,7 +68,7 @@ const _gic_defaults = Dict{String, Dict}(
 
 const _gic_has_ID = Dict{String, String}(
     "SUBSTATION" => "SUBSTATION",
-    "BUS" => "ID"
+    "BUS" => "ID",
 )
 
 "Parse a GIC file given a file path and return as a dictionary structure"

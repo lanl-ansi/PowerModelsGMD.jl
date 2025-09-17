@@ -8,10 +8,10 @@ function get_warn(x::Dict, k, x_default)
 end
 
 "Create sparse admittance matrix and current injection vector from network data"
-function generate_g_i_matrix(network::Dict{String, Any})
+function generate_g_i_matrix(network::Dict{String, Any}; sort_keys=false)
     diag_g = Dict{Int64, Float64}()
     inject_i = Dict{Int64, Float64}()
-
+   
     zb = Dict()
 
     if "gmd_blocker" in keys(network)
@@ -19,6 +19,11 @@ function generate_g_i_matrix(network::Dict{String, Any})
             zb[blocker["gmd_bus"]] = 1.0 - blocker["status"]
         end
     end
+
+    # if sort_keys
+    #     sort!(bus_keys)
+    # end
+
 
     for bus in values(network["gmd_bus"])
         if bus["status"] == 1
@@ -71,6 +76,7 @@ function generate_g_i_matrix(network::Dict{String, Any})
         inject_i[bus_to] += (branch["br_v"] == 0 ? 0.0 : branch["br_v"]/branch["br_r"])
     end
 
+
     for (i, val) in diag_g
         if val == 0.0
             diag_g[i] = 1
@@ -98,6 +104,8 @@ function generate_g_i_matrix(network::Dict{String, Any})
         end
     end
 
+    # this could be very sparse depending on bus numbering scheme
+    # should we re-index as a full matrix?
     g = SparseArrays.sparse(rows, columns, content)
     i_inj = zeros(Float64, length(keys(inject_i)))
 
@@ -105,8 +113,13 @@ function generate_g_i_matrix(network::Dict{String, Any})
         i_inj[i] = val
     end
 
-    return [g, i_inj]
+    gmd_bus_nums = sort([x["index"] for x in values(network["gmd_bus"])])
+    bus_nums = [network["gmd_bus"]["$i"]["source_id"][2] for i in gmd_bus_nums]
+    bus_types = [network["gmd_bus"]["$i"]["source_id"][1] for i in gmd_bus_nums]
+
+    return [g, i_inj, bus_nums, bus_types]
 end
+
 
 
 "Create adjacency matrix from network data"

@@ -163,18 +163,22 @@ function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{String,Any},
             
             ks = branch["gmd_br_series"]
             kc = lo_3w_branch["gmd_br_common"]
+
+            if kc == -1
+                kc = branch["gmd_br_common"]
+            end
             
             is = 0.0
             ic = 0.0
 
             if ks == -1 || ks === nothing
-                Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
+                Memento.warn(_LOGGER, "ks for autotransformer $k ($(branch["source_id"])) is -1")
             else
                 is = solution["gmd_branch"]["$ks"]["dcf"]
             end
 
             if kc == -1 || kc === nothing
-                Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
+                Memento.warn(_LOGGER, "kc for autotransformer $k ($(branch["source_id"])) is -1")
             else
                 ic = solution["gmd_branch"]["$kc"]["dcf"]
             end
@@ -198,13 +202,13 @@ function calc_ieff_current_mag_gwye_gwye_auto_xf(branch, case::Dict{String,Any},
         ic = 0.0
 
         if ks == -1 || ks === nothing
-            Memento.warn(_LOGGER, "ks for autotransformer $k is -1")
+            Memento.warn(_LOGGER, "ks for autotransformer $k ($(branch["source_id"])) is -1")
         else
             is = solution["gmd_branch"]["$ks"]["dcf"]
         end
 
         if kc == -1 || kc === nothing
-            Memento.warn(_LOGGER, "kc for autotransformer $k is -1")
+            Memento.warn(_LOGGER, "kc for autotransformer $k ($(branch["source_id"])) is -1")
         else
             ic = solution["gmd_branch"]["$kc"]["dcf"]
         end
@@ -499,7 +503,6 @@ function calc_dc_mag_max(pm::_PM.AbstractPowerModel, i; nw::Int=pm.cnw)
     else
         dc_mag_max = 1e6
     end
-
 
     if dc_mag_max < 0
         Memento.warn(_LOGGER, "DC current max for branch $i has been calculated as < 0. This will cause many things to break")
