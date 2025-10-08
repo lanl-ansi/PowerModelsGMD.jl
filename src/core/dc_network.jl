@@ -1,16 +1,16 @@
 # For the implicit transformer branch resistances
 impxfrm = Dict{Float64, Float64}(
-    115.0 => 13800.0000,
-    138.0 => 16559.3030,
-    161.0 => 19320.0000,
-    230.0 => 27600.0000,
-    345.0 => 41398.2710,
-    500.0 => 60000.0000,
-    765.0 => 91810.5018,
+    115.0 => 0.009583,
+    138.0 => 0.011500,
+    161.0 => 0.013417,
+    230.0 => 0.019167,
+    345.0 => 0.028751,
+    500.0 => 0.041667,
+    765.0 => 0.063743,
 )
 
 gen_v = sort(collect(keys(impxfrm)))
-gen_g = sort(collect(values(impxfrm)))
+gen_r = sort(collect(values(impxfrm)))
 
 # Create a linear interpolation object
 # itp = Interpolations.interpolate(gen_r, Interpolations.BSpline(Interpolations.Linear()))
@@ -20,7 +20,7 @@ gen_g = sort(collect(values(impxfrm)))
 # function itp_scaled(x)
 #     return impxfrm[x]
 # end
-itp_scaled = Interpolations.linear_interpolation(gen_v, gen_g, extrapolation_bc=Interpolations.Line())
+itp_scaled = Interpolations.linear_interpolation(gen_v, gen_r, extrapolation_bc=Interpolations.Line())
 
 # Auto Transformer high side minimum kV
 KVMIN = 50
@@ -145,12 +145,12 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
     Memento.debug(_LOGGER, "Start creating dc network from raw/gic data")
 
     # Sets up output network dictionary
-    output = Dict{String, Any}()
+    output = deepcopy(raw_data)
     output["source_type"] = "gic"
 
-    if haskey(raw_data, "name")
-        output["name"] = raw_data["name"]
-    end
+    # if haskey(raw_data, "name")
+    #     output["name"] = raw_data["name"]
+    # end
 
     output["source_version"] = "3"
 
@@ -172,12 +172,12 @@ function generate_dc_data(gic_data::Dict{String, Any}, raw_data::Dict{String, An
     end
 
     # Copies over identical AC data
-    output["dcline"] = raw_data["dcline"]
-    output["storage"] = raw_data["storage"]
-    output["switch"] = raw_data["switch"]
-    output["baseMVA"] = raw_data["baseMVA"]
-    output["load"] = raw_data["load"]
-    output["shunt"] = raw_data["shunt"]
+    # output["dcline"] = raw_data["dcline"]
+    # output["storage"] = raw_data["storage"]
+    # output["switch"] = raw_data["switch"]
+    # output["baseMVA"] = raw_data["baseMVA"]
+    # output["load"] = raw_data["load"]
+    # output["shunt"] = raw_data["shunt"]
 
     return output
 end
@@ -879,10 +879,7 @@ function _generate_implicit_gsu!(branches::Dict{String, Dict{String, Any}}, dc_b
         end
 
         # Impedance base for the generator helps determine the assumed resistance of the transformer
-        z_base = (gen_base_kv ^ 2) / gen["mbase"]
-        gpu = itp_scaled(gen_base_kv)
-        rpu = 1.0/gpu
-        rsi = rpu *z_base
+        rsi = itp_scaled(gen_base_kv)
 
         branch_data = Dict{String, Any}(
             "f_bus" => dc_bus_map[gen["gen_bus"]],
