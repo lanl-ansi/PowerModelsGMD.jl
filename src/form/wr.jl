@@ -311,6 +311,14 @@ function constraint_dc_kcl_ne_blocker(pm::_PM.AbstractWRModel, n::Int, i, j, dc_
 end
 
 
+"CONSTRAINT: nodal current balance for dc circuits with GIC blockers"
+function constraint_dc_kcl_ground(pm::_PM.AbstractWRModel; n::Int=nw_id_default)
+    dc_expr = Dict{Any,Any}( i => _PM.ref(pm, n, :gmd_bus, i, "g_gnd") * (_PM.var(pm, n, :v_dc)[i] - _PM.var(pm, n, :zv_dc)[i]) 
+                for i in _PM.ids(pm, n, :gmd_ne_blocker))
+    JuMP.@constraint(pm.model, sum(dc_expr[i] for i in _PM.ids(pm, n, :gmd_ne_blocker)) == 0.0)
+end
+
+
 """
 CONSTRAINT: relaxed qloss calculcated for ac formulation single phase
 """

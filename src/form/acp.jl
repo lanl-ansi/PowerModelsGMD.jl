@@ -211,3 +211,12 @@ function constraint_dc_kcl_ne_blocker(pm::_PM.AbstractACPModel, n::Int, i, j, dc
         )
     end
 end
+
+
+"CONSTRAINT: nodal current balance for dc circuits with GIC blockers"
+function constraint_dc_kcl_ground(pm::_PM.AbstractACPModel; n::Int=nw_id_default)
+    dc_expr = Dict{Any,Any}( i => _PM.ref(pm, n, :gmd_bus, i, "g_gnd") * (_PM.var(pm, n, :v_dc)[i] - _PM.var(pm, n, :v_dc)[i]*_PM.var(pm, n, :z_blocker)[i]) 
+                for i in _PM.ids(pm, n, :gmd_ne_blocker))
+
+     JuMP.@constraint(pm.model, sum(dc_expr[i] for i in _PM.ids(pm, n, :gmd_ne_blocker)) == 0.0)
+end

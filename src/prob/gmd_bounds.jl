@@ -95,6 +95,8 @@ function build_bound_gmd_bus_v(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_gmd_connections(pm, i)
     end
 
+    # constraint_dc_kcl_ground(pm)
+
     objective_bound_gmd_bus_v(pm)
 end
 
