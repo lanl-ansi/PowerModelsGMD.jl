@@ -24,7 +24,8 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractACPModel, n::In
     if haskey(branch,"hi_3w_branch")
         JuMP.@constraint(pm.model, ieff == 0.0)
     else
-        JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
+        # JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
+        JuMP.@NLconstraint(pm.model, ieff == log(cosh(ihi)))
     end
     
     # TODO: use variable bounds for this
@@ -41,7 +42,8 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractACPModel, n::Int
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
     ilo = _PM.var(pm, n, :dc)[(kl,il,jl)]
 
-    JuMP.@NLconstraint(pm.model, ieff == abs(a*ihi + ilo)/a)
+    # JuMP.@NLconstraint(pm.model, ieff == abs(a*ihi + ilo)/a)
+    JuMP.@NLconstraint(pm.model, ieff == log(cosh(a*ihi + ilo))/a)
 end
 
 
@@ -52,7 +54,8 @@ function constraint_dc_current_mag_gwye_gwye_xf_3w(pm::_PM.AbstractACPModel, n::
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
 
-    JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
+    # JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
+    JuMP.@NLconstraint(pm.model, ieff == log(cosh(ihi)))
     
     # TODO: use variable bounds for this
     if !isnothing(ieff_max)
@@ -66,7 +69,8 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractACPModel, n
     ieff = _PM.var(pm, n, :i_dc_mag)[k]
     is = _PM.var(pm, n, :dc)[(ks,is,js)]
     ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
-    JuMP.@NLconstraint(pm.model, ieff == abs(a*is + ic)/(a + 1.0))
+    # JuMP.@NLconstraint(pm.model, ieff == abs(a*is + ic)/(a + 1.0))
+    JuMP.@NLconstraint(pm.model, ieff == log(cosh(a*is + ic))/(a + 1.0))
 
     # TODO: use variable bounds for this
     if !isnothing(ieff_max)

@@ -73,7 +73,7 @@ end
 
 function build_bound_gmd_bus_v(pm::_PM.AbstractPowerModel; kwargs...)
     variable_dc_voltage(pm)
-    # variable_gic_current(pm)
+    variable_gic_current(pm)
     variable_dc_line_flow(pm)
 
     blocker_relax = get(pm.setting,"blocker_relax",false)
@@ -83,9 +83,9 @@ function build_bound_gmd_bus_v(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_dc_kcl_ne_blocker(pm, i)
     end
     
-    # for i in _PM.ids(pm, :branch)
-    #     constraint_dc_current_mag(pm, i)
-    # end
+    for i in _PM.ids(pm, :branch)
+        constraint_dc_current_mag(pm, i)
+    end
 
     for i in _PM.ids(pm, :gmd_branch)
         constraint_dc_ohms(pm, i)
@@ -95,7 +95,7 @@ function build_bound_gmd_bus_v(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_gmd_connections(pm, i)
     end
 
-    # constraint_dc_kcl_ground(pm)
+    constraint_dc_kcl_ground(pm)
 
     objective_bound_gmd_bus_v(pm)
 end

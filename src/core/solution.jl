@@ -222,13 +222,21 @@ function solution_get_gmd_bus_v_bounds(case::Dict{String,Any}, results::Dict{Str
 
         if result["max"]["termination_status"] == _PM.LOCALLY_SOLVED
             bounds["gmd_bus"][i]["vmax"] = result["max"]["objective"]
+        elseif result["max"]["termination_status"] == _PM.ITERATION_LIMIT
+            Memento.warn(_LOGGER, "Solver for vmax terminated on iteration limit")
+            bounds["gmd_bus"][i]["vmax"] = result["max"]["objective"]
         elseif result["max"]["termination_status"] == _PM.TIME_LIMIT
+            Memento.warn(_LOGGER, "Solver for vmax terminated on time limit, using objective lower bound as vmax")
             bounds["gmd_bus"][i]["vmax"] = result["max"]["objective_lb"]
         end
 
         if result["min"]["termination_status"] == _PM.LOCALLY_SOLVED
             bounds["gmd_bus"][i]["vmin"] = result["min"]["objective"]
+        elseif result["max"]["termination_status"] == _PM.ITERATION_LIMIT
+            Memento.warn(_LOGGER, "Solver for vmin terminated on iteration limit")            
+            bounds["gmd_bus"][i]["vmin"] = result["min"]["objective"]
         elseif result["min"]["termination_status"] == _PM.TIME_LIMIT
+            Memento.warn(_LOGGER, "Solver for vmin terminated on time limit, using objective lower bound as vmin")            
             bounds["gmd_bus"][i]["vmin"] = result["min"]["objective_lb"]
         end
     end

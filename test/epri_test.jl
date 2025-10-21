@@ -29,20 +29,20 @@ import Ipopt
 import Juniper
 # import SCIP
 import Gurobi
-import SCIP
-import SCIP_jll
+# import SCIP
+# import SCIP_jll
 
 import MathOptInterface
 const MOI = MathOptInterface
 # MOI.set(model, SCIP.StringParameter("lp_solver"), "ma27")
-scip_solver = JuMP.optimizer_with_attributes(SCIP.Optimizer, "display/verblevel"=> 5, "nlpi/ipopt/linear_solver" => "ma27", "nlpi/ipopt/optfile"=> "\"hsllib\"=>HSL_jll.libhsl_path, \"linear_solver\"=>\"ma27\", \"print_level\" => 5")
+# scip_solver = JuMP.optimizer_with_attributes(SCIP.Optimizer, "display/verblevel"=> 5, "nlpi/ipopt/linear_solver" => "ma27", "nlpi/ipopt/optfile"=> "\"hsllib\"=>HSL_jll.libhsl_path, \"linear_solver\"=>\"ma27\", \"print_level\" => 5")
 # Setup default optimizers:
 ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 5, "sb" => "yes", "hsllib"=>HSL_jll.libhsl_path, "linear_solver"=>"ma27")
 # scip_solver = JuMP.optimizer_with_attributes(SCIP.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes")
 juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => _PM.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-4, "print_level" => 0, "sb" => "yes"), "log_levels" => [], "time_limit"=>600)
 
 # const GRB_ENV = Gurobi.Env()
-gurobi_solver = JuMP.optimizer_with_attributes(Gurobi.Optimizer,"OutputFlag" => 0)
+# gurobi_solver = JuMP.optimizer_with_attributes(Gurobi.Optimizer,"OutputFlag" => 0)
 
 # juniper_solver2 = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver" => _PM.optimizer_with_attributes(SCIP.Optimizer))
 # look for dual 
@@ -97,24 +97,24 @@ _PMGMD.update_cost_multiplier!(case)
 
 
 # #problem formulations start below
-# setting["blocker_relax"] = false
-# t = @elapsed begin
-#     soc_binary = _PMGMD.solve_soc_blocker_placement(case, juniper_solver; setting=setting)
-# end
-# solved = false
-# opt = 99999999
-# blockers = []
-# if soc_binary["termination_status"] == _PM.LOCALLY_SOLVED 
-#     solved = true
-#     opt = soc_binary["objective"]
-#     for (idx, blocker) in soc_binary["solution"]["gmd_ne_blocker"]
-#         if blocker["blocker_placed"] == 1
-#             global blockers
-#             push!(blockers, idx)
-#         end
-#     end
-# end
-# println("Time to complete SOC binary $t Solved: $solved Opt: $opt Blockers: $blockers")
+setting["blocker_relax"] = false
+t = @elapsed begin
+    soc_binary = _PMGMD.solve_soc_blocker_placement(case, juniper_solver; setting=setting)
+end
+solved = false
+opt = 99999999
+blockers = []
+if soc_binary["termination_status"] == _PM.LOCALLY_SOLVED 
+    solved = true
+    opt = soc_binary["objective"]
+    for (idx, blocker) in soc_binary["solution"]["gmd_ne_blocker"]
+        if blocker["blocker_placed"] == 1
+            global blockers
+            push!(blockers, idx)
+        end
+    end
+end
+println("Time to complete SOC binary $t Solved: $solved Opt: $opt Blockers: $blockers")
 
 
 
@@ -175,25 +175,25 @@ println("Time to complete AC binary $t Solved: $solved Opt: $opt Blockers: $bloc
 
 
 
-setting["blocker_relax"] = false
-gurobi_solver = JuMP.optimizer_with_attributes(Gurobi.Optimizer,"OutputFlag" => 1, "NonConvex"=>2)
-t = @elapsed begin
-    mld_acr_binary = _PMGMD.solve_acr_blocker_placement(case, gurobi_solver; setting=setting)
-end
-solved = false
-opt = 99999999
-blockers = []
-if mld_acr_binary["termination_status"] == _PM.LOCALLY_SOLVED
-    solved = true
-    opt = mld_acr_binary["objective"]
-    for (idx, blocker) in mld_acr_binary["solution"]["gmd_ne_blocker"]
-        if blocker["blocker_placed"] == 1
-            global blockers
-            push!(blockers, idx)
-        end
-    end
-end
-println("Time to complete ACR binary $t Solved: $solved Opt: $opt Blockers: $blockers")
+# setting["blocker_relax"] = false
+# gurobi_solver = JuMP.optimizer_with_attributes(Gurobi.Optimizer,"OutputFlag" => 1, "NonConvex"=>2)
+# t = @elapsed begin
+#     mld_acr_binary = _PMGMD.solve_acr_blocker_placement(case, gurobi_solver; setting=setting)
+# end
+# solved = false
+# opt = 99999999
+# blockers = []
+# if mld_acr_binary["termination_status"] == _PM.LOCALLY_SOLVED
+#     solved = true
+#     opt = mld_acr_binary["objective"]
+#     for (idx, blocker) in mld_acr_binary["solution"]["gmd_ne_blocker"]
+#         if blocker["blocker_placed"] == 1
+#             global blockers
+#             push!(blockers, idx)
+#         end
+#     end
+# end
+# println("Time to complete ACR binary $t Solved: $solved Opt: $opt Blockers: $blockers")
 
 
 
@@ -237,26 +237,26 @@ println("Time to complete ACR binary $t Solved: $solved Opt: $opt Blockers: $blo
 
 # scip_solver = JuMP.optimizer_with_attributes(SCIP.Optimizer, "display/vrerblevel"=> 5, "nlpi/ipopt/linear_solver" => "ma27", "nlpi/ipopt/optfile"=> "\"hsllib\"=>HSL_jll.libhsl_path, \"linear_solver\"=>\"ma27\", \"print_level\" => 5")
 
-scip_solver = JuMP.optimizer_with_attributes(SCIP.Optimizer, "lp/initalgorithm"=>'b', "lp/resolvealgorithm" => 's', "lp/scaling" = 2)#"nlpi/ipopt/priority" => 1000, "nlpi/ipopt/linear_solver" => "ma27", "nlpi/ipopt/optfile"=> "\"hsllib\"=>HSL_jll.libhsl_path")
+# scip_solver = JuMP.optimizer_with_attributes(SCIP.Optimizer, "lp/initalgorithm"=>'b', "lp/resolvealgorithm" => 's', "lp/scaling" = 2)#"nlpi/ipopt/priority" => 1000, "nlpi/ipopt/linear_solver" => "ma27", "nlpi/ipopt/optfile"=> "\"hsllib\"=>HSL_jll.libhsl_path")
 
-setting["blocker_relax"] = false
-t = @elapsed begin
-    mld_ac_binary_scip = _PMGMD.solve_ac_blocker_placement(case, scip_solver; setting=setting)
-end
-solved = false
-opt = 99999999
-blockers = []
-if mld_ac_binary_scip["termination_status"] == _PM.LOCALLY_SOLVED
-    solved = true
-    opt = mld_ac_binary_scip["objective"]
-    for (idx, blocker) in mld_ac_binary_scip["solution"]["gmd_ne_blocker"]
-        if blocker["blocker_placed"] == 1
-            global blockers
-            push!(blockers, idx)
-        end
-    end
-end
-println("Time to complete SCIP AC binary $t Solved: $solved Opt: $opt Blockers: $blockers")
+# setting["blocker_relax"] = false
+# t = @elapsed begin
+#     mld_ac_binary_scip = _PMGMD.solve_ac_blocker_placement(case, scip_solver; setting=setting)
+# end
+# solved = false
+# opt = 99999999
+# blockers = []
+# if mld_ac_binary_scip["termination_status"] == _PM.LOCALLY_SOLVED
+#     solved = true
+#     opt = mld_ac_binary_scip["objective"]
+#     for (idx, blocker) in mld_ac_binary_scip["solution"]["gmd_ne_blocker"]
+#         if blocker["blocker_placed"] == 1
+#             global blockers
+#             push!(blockers, idx)
+#         end
+#     end
+# end
+# println("Time to complete SCIP AC binary $t Solved: $solved Opt: $opt Blockers: $blockers")
 
 
 # for (b,b_dict) in case["gmd_ne_blocker"]
