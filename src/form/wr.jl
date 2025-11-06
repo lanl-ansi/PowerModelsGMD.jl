@@ -117,6 +117,21 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractWRModel, n::Int
 end
 
 
+"CONSTRAINT: dc current on ungrounded gwye-delta transformers"
+function constraint_dc_current_mag_gwye_delta_xf_binary(pm::_PM.AbstractWRModel, n::Int, k, kh, ih, jh, ieff_max)
+    branch = _PM.ref(pm, n, :branch, k)
+    idc = _PM.var(pm, n, :i_dc)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+
+    if haskey(branch,"hi_3w_branch")
+        JuMP.@constraint(pm.model, idc == 0.0)
+    else 
+        JuMP.@constraint(pm.model, idc == ihi)
+    end
+
+end
+
+
 "CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
 function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractWRModel, n::Int, k, kh, ih, jh, kl, il, jl, a, ieff_max)
     Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
@@ -134,6 +149,19 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractWRModel, n::Int,
 end
 
 
+"CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
+function constraint_dc_current_mag_gwye_gwye_xf_binary(pm::_PM.AbstractWRModel, n::Int, k, kh, ih, jh, kl, il, jl, a, ieff_max)
+    Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+
+    idc = _PM.var(pm, n, :i_dc)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+    ilo = _PM.var(pm, n, :dc)[(kl,il,jl)]
+
+    JuMP.@constraint(pm.model, idc == (a * ihi + ilo) / a)
+
+end
+
+
 "CONSTRAINT: dc current on ungrounded gwye-gwye auto transformers"
 function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractWRModel, n::Int, k, ks, is, js, kc, ic, jc, a, ieff_max)
 
@@ -148,6 +176,18 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractWRModel, n:
     if !isnothing(ieff_max)
         JuMP.@constraint(pm.model, ieff <= ieff_max)
     end
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye auto transformers"
+function constraint_dc_current_mag_gwye_gwye_auto_xf_binary(pm::_PM.AbstractWRModel, n::Int, k, ks, is, js, kc, ic, jc, a, ieff_max)
+
+    idc = _PM.var(pm, n, :i_dc)[k]
+    is = _PM.var(pm, n, :dc)[(ks,is,js)]
+    ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
+
+    JuMP.@constraint(pm.model, idc == (a*is + ic) / (a + 1.0))
+
 end
 
 
@@ -359,3 +399,15 @@ function scaled_relaxation_product(m::JuMP.Model, K::Float64, x::JuMP.VariableRe
 end
 
 
+function constraint_dc_current_abs_xfrm(pm::_PM.AbstractWRModel, k; nw::Int=_PM.nw_id_default)
+
+    i_dc = _PM.var(pm, nw, :i_dc, k)
+    z = _PM.var(pm, nw, :i_dc_mag_z, k)
+    ieff = _PM.var(pm, nw, :i_dc_mag, k)
+    m = _PM.var(pm, nw, :i_dc_mag_m, k)
+
+    _IM.relaxation_product(pm.model, z, i_dc, m)
+
+    JuMP.@constraint(pm.model, ieff == m - i_dc + m)
+
+end

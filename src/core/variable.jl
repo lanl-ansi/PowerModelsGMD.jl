@@ -22,12 +22,18 @@ function variable_bus_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_d
     _PM.variable_bus_voltage_on_off(pm;nw=nw, report=report)
 end
 
+
 "
 VARIABLE: Declaration of variables associated with modeling of injected GIC
 "
 function variable_gic_current(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     variable_dc_current_mag(pm; nw=nw, bounded=bounded,report=report)
 end
+
+function variable_gic_current_binary(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    variable_dc_current_mag_binary(pm; nw=nw, bounded=bounded,report=report)
+end
+
 
 # ===   VOLTAGE VARIABLES   === #
 "VARIABLE: bus dc voltage"
@@ -71,6 +77,35 @@ function variable_dc_current_mag(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defau
 
 end
 
+
+"VARIABLE: dc current magnitude"
+function variable_dc_current_mag_binary(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    i_dc_mag = _PM.var(pm, nw)[:i_dc_mag] = JuMP.@variable(pm.model,
+        [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_dc_mag",
+        lower_bound = 0,
+        upper_bound = calc_dc_mag_max(pm, i, nw=nw),
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_dc_mag_start")
+    )
+    i_dc_mag_z = _PM.var(pm, nw)[:i_dc_mag_z] = JuMP.@variable(pm.model,
+        [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_dc_mag_z",
+        binary = true,
+    )
+    i_dc_mag_m = _PM.var(pm, nw)[:i_dc_mag_m] = JuMP.@variable(pm.model,
+        [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_dc_mag_m",
+        lower_bound = 0,
+        upper_bound = calc_dc_mag_max(pm, i, nw=nw),
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_dc_mag_start")
+    )
+    i_dc = _PM.var(pm, nw)[:i_dc] = JuMP.@variable(pm.model,
+        [i in _PM.ids(pm, nw, :branch)], base_name="$(nw)_i_dc",
+        lower_bound = -calc_dc_mag_max(pm, i, nw=nw),
+        upper_bound = calc_dc_mag_max(pm, i, nw=nw),
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, i), "i_dc_mag_start")
+    )
+
+    report && _PM.sol_component_value(pm, nw, :branch, :gmd_idc_mag, _PM.ids(pm, nw, :branch), i_dc_mag)
+
+end
 
 "
 VARIABLE: Declaration of variables associated with modeling of injected GIC bound
@@ -187,7 +222,6 @@ function variable_qloss(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bound
             start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "qloss_start")
         )
      end
-
     report && _IM.sol_component_value_edge(pm, pm_it_sym, nw, :branch, :qlossf, :qlosst, _PM.ref(pm, nw, :arcs_from), _PM.ref(pm, nw, :arcs_to), qloss)
 end
 

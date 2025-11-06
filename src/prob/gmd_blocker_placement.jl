@@ -105,7 +105,7 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_shunt_admittance_factor(pm, relax=true)
 
     variable_dc_voltage(pm)
-    variable_gic_current(pm)
+    variable_gic_current_binary(pm)
     variable_dc_line_flow(pm)
     variable_qloss(pm)
 
@@ -129,7 +129,8 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_to(pm, i)
 
         constraint_qloss_pu(pm, i)
-        constraint_dc_current_mag(pm, i)
+        constraint_dc_current_mag_binary(pm, i)
+        constraint_dc_current_abs(pm, i)
     end
 
     for i in _PM.ids(pm, :dcline)

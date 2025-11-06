@@ -23,6 +23,40 @@ end
 constraint_dc_current_mag_line(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_line(pm, nw, k)
 
 
+function constraint_dc_current_mag_line_binary(pm::_PM.AbstractPowerModel, n::Int, k)
+
+    idc = _PM.var(pm, n, :i_dc)
+    JuMP.@constraint(pm.model,
+        idc[k]
+        ==
+        0.0
+    )
+
+    ieff_z = _PM.var(pm, n, :i_dc_mag_z)
+    JuMP.@constraint(pm.model,
+        ieff_z[k]
+        ==
+        0.0
+    )
+
+    ieff_m = _PM.var(pm, n, :i_dc_mag_m)
+    JuMP.@constraint(pm.model,
+        ieff_m[k]
+        ==
+        0.0
+    )
+
+    ieff = _PM.var(pm, n, :i_dc_mag)
+    JuMP.@constraint(pm.model,
+        ieff[k]
+        ==
+        0.0
+    )
+   
+end
+constraint_dc_current_mag_line_binary(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_line_binary(pm, nw, k)
+
+
 "CONSTRAINT: dc current on grounded transformers"
 function constraint_dc_current_mag_ungrounded_xf(pm::_PM.AbstractPowerModel, n::Int, k)
 
@@ -100,7 +134,46 @@ function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
 
 end
 
+
+"CONSTRAINT: computing the dc current magnitude"
+function constraint_dc_current_mag_binary(pm::_PM.AbstractPowerModel, n::Int, k)
+
+    branch = _PM.ref(pm, n, :branch, k)
+
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
+        constraint_dc_current_mag_line_binary(pm, k, nw=n)
+
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
+        constraint_dc_current_mag_ungrounded_xf_binary(pm, k, nw=n)
+
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
+        constraint_dc_current_mag_gwye_delta_xf_binary(pm, k, nw=n)
+
+    elseif branch["config"] == "gwye-gwye"
+        constraint_dc_current_mag_gwye_gwye_xf_binary(pm, k, nw=n)
+
+    elseif branch["config"] == "gwye-gwye-auto"
+        constraint_dc_current_mag_gwye_gwye_auto_xf_binary(pm, k, nw=n)
+
+    elseif branch["config"] == "three-winding"
+        # TODO: need to support 3W transformers in optimization problems
+
+        ieff = _PM.var(pm, n, :i_dc_mag)
+        JuMP.@constraint(pm.model,
+            ieff[k]
+            ==
+            0.0
+        )
+
+    end
+
+end
+
+
 constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag(pm, nw, k)
+
+constraint_dc_current_mag_binary(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_binary(pm, nw, k)
 
 
 # ===   POWER BALANCE CONSTRAINTS   === #
@@ -360,26 +433,37 @@ end
 
 
 "CONSTRAINT: qloss calculcated from ac voltage and constant ieff"
-function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i, j, baseMVA, K, ieff)
+function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, ieff, branch)
 
     qloss = _PM.var(pm, n, :qloss)
     vm    = _PM.var(pm, n, :vm)[i]
+    
+    # if branch["type"] == "xfmr"
+        JuMP.@constraint(pm.model,
+            qloss[(k,i,j)] == K * ieff * vm
+        )
+    # else
+    #     JuMP.@constraint(pm.model,
+    #         qloss[(k,i,j)] == 0.0
+    #     )
+    # end
 
-    JuMP.@constraint(pm.model,
-        qloss[(k,i,j)]
-        ==
-        # Use this if we implement piecewise K
-        # (pm.data["baseMVA"]) / branchMVA ) * (K * vm * ieff) / (3.0 * branchMVA)
-        (K * vm * ieff) / (3.0 * baseMVA) # need to change based on response 
-            # K is per phase
-    )
+    # JuMP.@constraint(pm.model,
+    #     qloss[(k,i,j)]
+    #     ==
+    #     # Use this if we implement piecewise K
+    #     # (pm.data["baseMVA"]) / branchMVA ) * (K * vm * ieff) / (3.0 * branchMVA)
+    #     # (K * vm * ieff) / (3.0 * baseMVA) # need to change based on response 
+    #         # K is per phase
+    #     K * vm * ieff
+    # )
 
 
-    JuMP.@constraint(pm.model,
-        qloss[(k,j,i)]
-        ==
-        0.0
-    )
+    # JuMP.@constraint(pm.model,
+    #     qloss[(k,j,i)]
+    #     ==
+    #     0.0
+    # )
 
 end
 
@@ -392,7 +476,7 @@ function constraint_load_served(pm::_PM.AbstractPowerModel, n::Int, pds, min_loa
     JuMP.@constraint(pm.model,
         sum(pd*z_demand[i] for (i,pd) in pds)
         >=
-        min_load_served
+        min_load_served 
     )
 
 end
@@ -548,4 +632,22 @@ function constraint_thermal_protection(pm::_PM.AbstractPowerModel, n::Int, i, co
     JuMP.@constraint(pm.model, 
         i_ac_mag <= coeff[1] + coeff[2] * ieff/ibase + coeff[3] * ieff^2/ibase^2
     )
+end
+
+
+function constraint_qloss_gmd_pu(pm::_PM.AbstractACPModel, n::Int, k, i, j, K, vm)
+    branch    = _PM.ref(pm, n, :branch, k)
+
+    qloss = _PM.var(pm, n, :qloss)
+    ieff = _PM.var(pm, n, :i_dc_mag, k)
+
+    if branch["type"] == "xfmr"
+        JuMP.@constraint(pm.model,
+            qloss[(k,i,j)] == K * ieff * vm
+        )
+    else
+        JuMP.@constraint(pm.model,
+            qloss[(k,i,j)] == 0.0
+        )
+    end
 end

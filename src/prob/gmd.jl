@@ -38,7 +38,7 @@ function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     for i in _PM.ids(pm, :branch)
-        constraint_qloss_gmd(pm, i)
+        constraint_qloss_gmd_pu(pm, i)
         constraint_dc_current_mag(pm, i)
     end
 

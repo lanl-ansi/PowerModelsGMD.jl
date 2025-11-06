@@ -66,6 +66,27 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, k; 
 end
 
 
+"CONSTRAINT: dc current on ungrounded gwye-delta transformers"
+function constraint_dc_current_mag_gwye_delta_xf_binary(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+    
+    branch = _PM.ref(pm, nw, :branch, k)
+    kh = branch["gmd_br_hi"]
+    # TODO switch to variable bounds
+    ieff_max = get(branch, "ieff_max", nothing)
+
+    if kh == -1 || kh == "-1" || !(kh in keys(_PM.ref(pm, nw, :gmd_branch)))
+        Memento.warn(_LOGGER, "Branch [$k] is missing br_hi, skipping")
+    else
+        br_hi = _PM.ref(pm, nw, :gmd_branch, kh)
+
+        ih = br_hi["f_bus"]
+        jh = br_hi["t_bus"]
+
+        constraint_dc_current_mag_gwye_delta_xf_binary(pm, nw, k, kh, ih, jh, ieff_max)
+    end
+end
+
+
 "CONSTRAINT: bound dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf_bound(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
 
@@ -114,6 +135,50 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractPowerModel, k; n
     ieff_max = get(branch, "ieff_max", nothing)
 
     constraint_dc_current_mag_gwye_gwye_xf(pm, nw, k, kh, ih, jh, kl, il, jl, a, ieff_max)
+    else
+        i = branch["f_bus"]
+        j = branch["t_bus"]
+
+        br_hi = _PM.ref(pm, nw, :gmd_branch, kh)
+        ih = br_hi["f_bus"]
+        jh = br_hi["t_bus"]
+
+        vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+    
+        constraint_dc_current_mag_gwye_gwye_xf_3w(pm, nw, k, kh, ih, jh)
+    end
+
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
+function constraint_dc_current_mag_gwye_gwye_xf_binary(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch = _PM.ref(pm, nw, :branch, k)
+    kh = branch["gmd_br_hi"]
+    kl = branch["gmd_br_lo"]
+
+    if kl != -1
+        i = branch["f_bus"]
+        j = branch["t_bus"]
+
+        br_hi = _PM.ref(pm, nw, :gmd_branch, kh)
+        ih = br_hi["f_bus"]
+        jh = br_hi["t_bus"]
+
+        br_lo = _PM.ref(pm, nw, :gmd_branch, kl)
+        il = br_lo["f_bus"]
+        jl = br_lo["t_bus"]
+
+        vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        a = vhi / vlo
+
+    # TODO: rely on variable bounds
+    ieff_max = get(branch, "ieff_max", nothing)
+
+    constraint_dc_current_mag_gwye_gwye_xf_binary(pm, nw, k, kh, ih, jh, kl, il, jl, a, ieff_max)
     else
         i = branch["f_bus"]
         j = branch["t_bus"]
@@ -226,6 +291,61 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel,
     ieff_max = get(branch, "ieff_max", nothing)
 
     constraint_dc_current_mag_gwye_gwye_auto_xf(pm, nw, k, ks, is, js, kc, ic, jc, a, ieff_max)
+    end
+end
+
+
+"CONSTRAINT: dc current on ungrounded gwye-gwye auto transformers"
+function constraint_dc_current_mag_gwye_gwye_auto_xf_binary(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+
+    branch = _PM.ref(pm, nw, :branch, k)
+    if haskey(branch, "hi_3w_branch")
+        if "$(branch["index"])" == branch["hi_3w_branch"]
+            lo_3w_branch = _PM.ref(pm, nw, :branch, parse(Int,branch["lo_3w_branch"]))
+
+            ks = branch["gmd_br_series"]
+            kc = lo_3w_branch["gmd_br_common"]
+            i = branch["f_bus"]
+            j = lo_3w_branch["f_bus"]
+
+            br_ser = _PM.ref(pm, nw, :gmd_branch, ks)
+            is = br_ser["f_bus"]
+            js = br_ser["t_bus"]
+
+            br_com = _PM.ref(pm, nw, :gmd_branch, kc)
+            ic = br_com["f_bus"]
+            jc = br_com["t_bus"]
+
+            vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+            vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+            a = (vhi / vlo) - 1.0
+            constraint_dc_current_mag_gwye_gwye_auto_xf_binary(pm, nw, k, ks, is, js, kc, ic, jc, a)
+        else
+            ieff = _PM.var(pm, nw, :i_dc_mag)[k]
+            JuMP.@constraint(pm.model, ieff == 0.0)
+        end
+    else
+        ks = branch["gmd_br_series"]
+        kc = branch["gmd_br_common"]
+        i = branch["f_bus"]
+        j = branch["t_bus"]
+
+        br_ser = _PM.ref(pm, nw, :gmd_branch, ks)
+        is = br_ser["f_bus"]
+        js = br_ser["t_bus"]
+
+        br_com = _PM.ref(pm, nw, :gmd_branch, kc)
+        ic = br_com["f_bus"]
+        jc = br_com["t_bus"]
+
+        vhi = max(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        vlo = min(_PM.ref(pm, nw, :bus, j, "base_kv"),_PM.ref(pm, nw, :bus, i, "base_kv"))
+        a = (vhi / vlo) - 1.0
+
+    # TODO: use variable bounds for this
+    ieff_max = get(branch, "ieff_max", nothing)
+
+    constraint_dc_current_mag_gwye_gwye_auto_xf_binary(pm, nw, k, ks, is, js, kc, ic, jc, a, ieff_max)
     end
 end
 
@@ -432,20 +552,33 @@ function constraint_qloss_pu(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_defaul
 end
 
 
-"CONSTRAINT: Calculation of qloss on a per edge basis where ieff is a constant"
-function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+function constraint_qloss_gmd_pu(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
     branch    = _PM.ref(pm, nw, :branch, k)
-    baseMVA   = _PM.ref(pm, :baseMVA)
-    ieff      = branch["ieff"]
+
     i         = branch["hi_bus"]
     j         = branch["lo_bus"]
 
     bus       = _PM.ref(pm, nw, :bus, i)
-    busKV     = bus["base_kv"]
+    vm        = bus["vm"]
 
-    K         = calc_branch_K(pm,k;nw=nw)
+    K         = calc_branch_K_pu(pm,k;nw=nw)
 
-    constraint_qloss_constant_ieff(pm, nw, k, i, j, baseMVA, K, ieff)
+    constraint_qloss_gmd_pu(pm, nw, k, i, j, K, vm)
+end
+
+
+"CONSTRAINT: Calculation of qloss on a per edge basis where ieff is a constant"
+function constraint_qloss_constant_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default)
+    branch    = _PM.ref(pm, nw, :branch, k)
+    ieff      = branch["ieff"] * 3
+    i         = branch["hi_bus"]
+    j         = branch["lo_bus"]
+
+    bus       = _PM.ref(pm, nw, :bus, i)
+
+    K         = calc_branch_K_pu(pm,k;nw=nw)
+
+    constraint_qloss_constant_ieff(pm, nw, k, i, j, K, ieff, branch)
 end
 
 "CONSTRAINT: more than a specified percentage of load is served"
@@ -654,4 +787,46 @@ function constraint_absolute_hotspot_temperature_state(pm::_PM.AbstractPowerMode
 
         constraint_absolute_hotspot_temperature(pm, nw, i, f_idx, temp_ambient)
     end
+end
+
+
+function constraint_dc_current_abs(pm::_PM.AbstractPowerModel, k::Int; n::Int=nw_id_default)
+
+    branch = _PM.ref(pm, n, :branch, k)
+
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
+        nothing
+
+    elseif branch["config"] == "three-winding"
+        # TODO: need to support 3W transformers in optimization problems
+        ieff_z = _PM.var(pm, n, :i_dc_mag_z)
+        ieff_m = _PM.var(pm, n, :i_dc_mag_m)
+        ieff = _PM.var(pm, n, :i_dc_mag)
+        idc = _PM.var(pm, n, :i_dc)
+        JuMP.@constraint(pm.model,
+            ieff_z[k]
+            ==
+            0.0
+        )
+        JuMP.@constraint(pm.model,
+            ieff_m[k]
+            ==
+            0.0
+        )
+        JuMP.@constraint(pm.model,
+            ieff[k]
+            ==
+            0.0
+        )
+        JuMP.@constraint(pm.model,
+            idc[k]
+            ==
+            0.0
+        )
+
+    else
+        constraint_dc_current_abs_xfrm(pm, k, nw=n)
+
+    end
+
 end
