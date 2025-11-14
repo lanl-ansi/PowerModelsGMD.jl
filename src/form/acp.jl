@@ -36,6 +36,24 @@ function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractACPModel, n::In
 end
 
 
+"CONSTRAINT: ieff on ungrounded gwye-delta transformers"
+function constraint_ieff_gwye_delta_xf(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh, ieff_max)
+    branch = _PM.ref(pm, n, :branch, k)
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+    if haskey(branch,"hi_3w_branch")
+        JuMP.@constraint(pm.model, ieff == 0.0)
+    else
+        JuMP.@NLconstraint(pm.model, ieff == ihi)
+    end
+    
+    # TODO: use variable bounds for this
+    if !isnothing(ieff_max)
+        JuMP.@constraint(pm.model, ieff <= ieff_max)
+    end
+end
+
+
 "CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
 function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh, kl, il, jl, a, ieff_max)
     Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
@@ -49,6 +67,17 @@ function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractACPModel, n::Int
 end
 
 
+"CONSTRAINT: ieff on ungrounded gwye-gwye transformers"
+function constraint_ieff_gwye_gwye_xf(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh, kl, il, jl, a, ieff_max)
+    Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], lo_branch[$kl]")
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+    ilo = _PM.var(pm, n, :dc)[(kl,il,jl)]
+
+    JuMP.@NLconstraint(pm.model, ieff == (a*ihi + ilo)/a)
+end
+
+
 "CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
 function constraint_dc_current_mag_gwye_gwye_xf_3w(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh)
 
@@ -59,6 +88,22 @@ function constraint_dc_current_mag_gwye_gwye_xf_3w(pm::_PM.AbstractACPModel, n::
     # JuMP.@NLconstraint(pm.model, ieff == abs(ihi))
     # JuMP.@NLconstraint(pm.model, ieff == log(cosh(ihi)))
     JuMP.@NLconstraint(pm.model, ieff == sqrt(ihi^2 + 0.1))
+    
+    # TODO: use variable bounds for this
+    if !isnothing(ieff_max)
+        JuMP.@constraint(pm.model, ieff <= ieff_max)
+    end    
+end
+
+
+"CONSTRAINT: ieff on ungrounded gwye-gwye transformers"
+function constraint_ieff_gwye_gwye_xf_3w(pm::_PM.AbstractACPModel, n::Int, k, kh, ih, jh)
+
+    Memento.debug(_LOGGER, "branch[$k]: hi_branch[$kh], 0.0")
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    ihi = _PM.var(pm, n, :dc)[(kh,ih,jh)]
+
+    JuMP.@NLconstraint(pm.model, ieff == ihi)
     
     # TODO: use variable bounds for this
     if !isnothing(ieff_max)
@@ -82,6 +127,21 @@ function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractACPModel, n
     end
 end
 
+
+"CONSTRAINT: ieff on ungrounded gwye-gwye auto transformers"
+function constraint_ieff_gwye_gwye_auto_xf(pm::_PM.AbstractACPModel, n::Int, k, ks, is, js, kc, ic, jc, a, ieff_max)
+    ieff = _PM.var(pm, n, :i_dc_mag)[k]
+    is = _PM.var(pm, n, :dc)[(ks,is,js)]
+    ic = _PM.var(pm, n, :dc)[(kc,ic,jc)]
+    # JuMP.@NLconstraint(pm.model, ieff == abs(a*is + ic)/(a + 1.0))
+    # JuMP.@NLconstraint(pm.model, ieff == log(cosh(a*is + ic))/(a + 1.0))
+    JuMP.@NLconstraint(pm.model, ieff == sqrt((a*is + ic)^2 + 0.1)/(a + 1.0))    
+
+    # TODO: use variable bounds for this
+    if !isnothing(ieff_max)
+        JuMP.@constraint(pm.model, ieff <= ieff_max)
+    end
+end
 
 # ===   POWER BALANCE CONSTRAINTS   === #
 

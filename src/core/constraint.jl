@@ -23,51 +23,47 @@ end
 constraint_dc_current_mag_line(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_line(pm, nw, k)
 
 
+"CONSTRAINT: ieff on normal lines"
+function constraint_ieff_line(pm::_PM.AbstractPowerModel, n::Int, k)
+    ieff = _PM.var(pm, n, :i_dc_mag)
+    JuMP.@constraint(pm.model, ieff[k] == 0.0)
+end
+
+constraint_ieff_line(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_ieff_line(pm, nw, k)
+
+
 "CONSTRAINT: dc current on grounded transformers"
 function constraint_dc_current_mag_ungrounded_xf(pm::_PM.AbstractPowerModel, n::Int, k)
-
     ieff = _PM.var(pm, n, :i_dc_mag)
-
-    JuMP.@constraint(pm.model,
-        ieff[k]
-        ==
-        0.0
-    )
-
+    JuMP.@constraint(pm.model, ieff[k] == 0.0)
 end
+
 constraint_dc_current_mag_ungrounded_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_ungrounded_xf(pm, nw, k)
 
 
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, n::Int, k, kh, ih, jh)
-
     type = typeof(pm)
     Memento.error(_LOGGER, "Error: Function constraint_dc_current_mag_gwye_delta_xf needs to be implemented for PowerModel of type $type")
-
 end
 
 
 "CONSTRAINT: dc current on ungrounded gwye-gwye transformers"
 function constraint_dc_current_mag_gwye_gwye_xf(pm::_PM.AbstractPowerModel, n::Int, k, kh, ih, jh, kl, il, jl, a)
-
     type = typeof(pm)
     Memento.error(_LOGGER, "Error: Function constraint_dc_current_mag_gwye_gwye_xf needs to be implemented for PowerModel of type $type")
-
 end
 
 
 "CONSTRAINT: dc current on ungrounded gwye-gwye auto transformers"
 function constraint_dc_current_mag_gwye_gwye_auto_xf(pm::_PM.AbstractPowerModel, n::Int, k, ks, is, js, kc, ic, jc, a)
-
     type = typeof(pm)
     Memento.error(_LOGGER, "Error: Function constraint_dc_current_mag_gwye_gwye_auto_xf needs to be implemented for PowerModel of type $type")
-
 end
 
 
 "CONSTRAINT: computing the dc current magnitude"
 function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
-
     branch = _PM.ref(pm, n, :branch, k)
 
     if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
@@ -90,17 +86,42 @@ function constraint_dc_current_mag(pm::_PM.AbstractPowerModel, n::Int, k)
         # TODO: need to support 3W transformers in optimization problems
 
         ieff = _PM.var(pm, n, :i_dc_mag)
-        JuMP.@constraint(pm.model,
-            ieff[k]
-            ==
-            0.0
-        )
-
+        JuMP.@constraint(pm.model, ieff[k] == 0.0)
     end
-
 end
 
+
+function constraint_ieff(pm::_PM.AbstractPowerModel, n::Int, k)
+    branch = _PM.ref(pm, n, :branch, k)
+
+    if !(branch["type"] == "xfmr" || branch["type"] == "xf" || branch["type"] == "transformer")
+        constraint_ieff_line(pm, k, nw=n)
+
+    elseif branch["config"] in ["delta-delta", "delta-wye", "wye-delta", "wye-wye"]
+        Memento.debug(_LOGGER, "UNGROUNDED CONFIGURATION. Ieff is constrained to ZERO.")
+        constraint_ieff_ungrounded_xf(pm, k, nw=n)
+
+    elseif branch["config"] in ["delta-gwye", "gwye-delta"]
+        constraint_ieff_gwye_delta_xf(pm, k, nw=n)
+
+    elseif branch["config"] == "gwye-gwye"
+        constraint_ieff_gwye_gwye_xf(pm, k, nw=n)
+
+    elseif branch["config"] == "gwye-gwye-auto"
+        constraint_ieff_gwye_gwye_auto_xf(pm, k, nw=n)
+
+    elseif branch["config"] == "three-winding"
+        # TODO: need to support 3W transformers in optimization problems
+
+        ieff = _PM.var(pm, n, :i_dc_mag)
+        JuMP.@constraint(pm.model, ieff[k] == 0.0)
+    end
+end
+
+
 constraint_dc_current_mag(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag(pm, nw, k)
+
+constraint_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_ieff(pm, nw, k)  
 
 
 # ===   POWER BALANCE CONSTRAINTS   === #
