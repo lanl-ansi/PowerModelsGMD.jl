@@ -128,8 +128,8 @@ function solve_gmd_mld_uncoupled(file, model_type::Type, optimizer; kwargs...)
             ref_add_gmd!
         ],
         solution_processors = [
-            solution_gmd_qloss!,
-            solution_gmd!,
+            # solution_gmd_qloss!,
+            solution_gmd_uncoupled!,
         ],
         kwargs...,
     )
@@ -179,6 +179,6 @@ function build_gmd_mld_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_dcline_power_losses(pm, i)
     end
 
-    _PM.objective_max_loadability(pm)
+    objective_max_loadability(pm)
 end
 
