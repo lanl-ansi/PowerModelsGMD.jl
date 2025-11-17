@@ -1,7 +1,7 @@
 # Tests for data conversion from PSS(R)E to PowerModels data structure
 # TODO: add tests to compare extended MatPower & RAW/GIC results
 
-TESTLOG = Memento.getlogger(PowerModels)
+const _LOGGER = Memento.getlogger(PowerModels)
 
 # TODO: Rename this to PSSE? Or leave psse.jl unit tests for comparison against MatPower cases?
 # Compare coupled voltages for both csv & coupling code
