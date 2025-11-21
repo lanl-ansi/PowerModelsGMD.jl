@@ -88,7 +88,7 @@ function solve_gmd_mld_decoupled(file::String, model_constructor, solver; kwargs
 end
 
 function solve_gmd_mld_decoupled(case::Dict{String,Any}, model_constructor, solver; kwargs...)
-    return solve_gmd_decoupled(case, model_constructor, solver, _PMGMD.solve_gmd, _PMGMD.solve_gmd_mld_uncoupled; kwargs...)
+    return solve_gmd_decoupled(case, model_constructor, solver, nothing, _PMGMD.solve_gmd, _PMGMD.solve_gmd_mld_uncoupled; kwargs...)
 end
 
 
