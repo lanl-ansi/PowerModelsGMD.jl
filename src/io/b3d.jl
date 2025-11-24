@@ -4,16 +4,33 @@ function read_byte(io)
     return read(io, 1)[1]
 end
 
+function write_byte(io, b)
+    return write(i, b)
+end
+
 function read_uint32(io)
     return copy(reinterpret(UInt32, read(io, 4)))[1]
 end
+
+function write_uint32(io, x)
+    write(io, convert(UInt32, x)) 
+end
+
 
 function read_float32(io)
     return copy(reinterpret(Float32, read(io, 4)))[1] 
 end
 
+function write_float32(io, x)
+    write(io, convert(Float32, x)) 
+end
+
 function read_float64(io)
     return copy(reinterpret(Float64, read(io, 8)))[1] 
+end
+
+function write_float64(io, x)
+    write(io, convert(Float64, x)) 
 end
 
 function read_null_terminated_string(io)
@@ -28,6 +45,15 @@ function read_null_terminated_string(io)
 
     return String(buf)
 end
+
+function write_null_terminated_string(io, buf)
+    for b in buf
+        write_byte(io, convert(UInt8, b))
+    end
+
+    write_byte(io, convert(Uint8, 0))
+end
+
 
 function read_b3d_header(io::IO)
     b3d = Dict()
@@ -154,12 +180,6 @@ function read_b3d_header(io::IO)
     return b3d
 end
 
-function read_b3d(b3d_file::String)
-    io = open(b3d_file)
-    b3d = read_b3d(io)
-    close(io)
-    return b3d
-end
 
 function read_b3d(io::IO)
     b3d = Dict{String,Any}()
@@ -182,6 +202,7 @@ function read_b3d(io::IO)
 
     Memento.info(_LOGGER, "Start reading electric field points")
 
+    # TODO: getting rid of this loop will probably increase speed
     for i in 1:n_times
         # Memento.info(_LOGGER, "Reading time $i/$n_times")
         for j in 1:n_points
@@ -193,10 +214,111 @@ function read_b3d(io::IO)
     Memento.info(_LOGGER, "Done reading electric field points")
     b3d["Ex"] = Ex
     b3d["Ey"] = Ey
-    close(io)
 
     return b3d
 end
+
+
+function read_b3d(b3d_file::String)
+    open(b3d_file) do io
+        b3d = read_b3d(io)
+    end
+    return b3d
+end
+
+
+function write_b3d_header(io::IO, b3d)
+    write_uint32(io, B3D_MAGIC_NUMBER)
+    b3d_version = b3d["version"]
+
+    if b3d_version != 4
+        throw(ErrorException("Version $b3d_version is not supported. Only version 4 is supported"))
+    end
+
+    write_uint32(io, b3d_version)
+
+    meta_strings = split(b3d["comment"], "\n")
+    n_meta_strings = length(meta_strings)
+    write_uint32(n_meta_strings)
+
+    for s in meta_strings
+        write_null_terminated_string(io, s)
+    end
+
+    write_uint32(b3d["n_float_channels"])
+    write_uint32(b3d["n_byte_channels"])
+    write_uint32(b3d["loc_format"])
+    write_uint32(b3d["n_points"])
+
+
+    for i in 1:b3d["n_points"]
+        lon[i] = write_float64(io, b3d["lon"][i])
+        lat[i] = write_float64(io, b3d["lat"][i])
+        write_float64(io, b3d["dist_to_measurement_station"][i])   
+    end
+
+    write_uint32(io, b3d["start_time"])
+
+    # const (
+    # 	nsTimeUnits = -2
+    # 	usTimeUnits = -1
+    # 	msTimeUnits = 0
+    # 	sTimeUnits  = 1
+    # )
+
+    time_units = Dict(-2 => 1e-9, -1 => 1e-6, 0 => 1e-3, 1 => 1.0)
+    tu_codes = Dict(v => k for (k, v) in time_units)
+    time_unit = b3d["time_unit"] 
+    Memento.info(_LOGGER, "Time unit in seconds: $time_unit")
+    time_unit_code = tu_codes[time_unit]
+    Memento.debug(_LOGGER, "Time unit: $time_unit_code")
+    write_uint32(io, time_unit_code)
+
+    time_offset = b3d["time_offset"]
+    Memento.info(_LOGGER, "Time offset in seconds: $time_offset")
+    time_offset_raw = round(UInt32, time_offset/time_unit)
+    Memento.debug(_LOGGER, "Time offset in time units: $time_offset_raw")
+    write_uint32(io, time_offset_raw)
+
+    time_step = b3d["time_step"]
+    Memento.info(_LOGGER, "Time step in seconds: $time_step")
+    time_step_raw = round(Uint32, time_step/time_unit)
+    Memento.debug(_LOGGER, "Time step in raw units: $time_step_raw")
+    write_uint32(io, time_step)
+  
+    
+    write_uint32(io, b3d["n_times"])
+end
+
+
+function write_b3d(io::IO, b3d)
+    write_b3d_header(io, b3d)
+
+    n_times = b3d["header"]["n_times"]
+    n_points = b3d["header"]["n_points"]
+    Ex = b3d["Ex"]
+    Ey = b3d["Ey"]
+
+    Memento.info(_LOGGER, "Start writing electric field points")
+
+    for i in 1:n_times
+        # Memento.info(_LOGGER, "Reading time $i/$n_times")
+        for j in 1:n_points
+            write_float32(io, Ex[i,j])
+            write_float32(io, Ey[i,j])
+        end
+    end
+
+    Memento.info(_LOGGER, "Done writing electric field points")
+end
+
+
+function write_b3d(b3d_file::String, b3d)
+    open(b3d_file, "w") do io
+        write_b3d(io, b3d)
+    end
+end
+
 
 function nn_coupling!(net, b3d)
     num_time_steps = b3d["header"]["n_times"]
