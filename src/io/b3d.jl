@@ -207,15 +207,6 @@ function read_b3d(io::IO)
 
     Memento.info(_LOGGER, "Start reading electric field points")
 
-    # TODO: getting rid of this loop will probably increase speed
-    # for i in 1:n_times
-    #     # Memento.info(_LOGGER, "Reading time $i/$n_times")
-    #     for j in 1:n_points
-    #         Ex[i,j] = read_float32(io)
-    #         Ey[i,j] = read_float32(io)
-    #     end
-    # end
-
     # total samples: 2 per (time, point)
     n_samples = 2*n_times*n_points
     n_bytes = 4*n_samples
@@ -236,21 +227,6 @@ function read_b3d(io::IO)
     # Reshape into 2D arrays (note: Julia fills columnwise)
     Ex = reshape(ex_vec, n_points, n_times)'
     Ey = reshape(ey_vec, n_points, n_times)'
-
-    # k = 1
-
-    # for i in 1:n_times
-    #     # Memento.info(_LOGGER, "Reading time $i/$n_times")
-    #     for j in 1:n_points
-    #         # Ex[i,j] = copy(reinterpret(Float32, buf[k:k+3]))[1] 
-    #         # Ey[i,j] = copy(reinterpret(Float32, buf[k:k+3]))[1]
-    #         Ex[i,j] = floats[k]
-    #         k += 1
-    #         Ey[i,j] = floats[k]        
-    #         k += 1
-    #     end
-    # end
-
 
     Memento.info(_LOGGER, "Done reshaping Float32 array")
     b3d["Ex"] = Ex
