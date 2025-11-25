@@ -224,21 +224,35 @@ function read_b3d(io::IO)
     buf = read(io, n_bytes)
     Memento.info(_LOGGER, "Done reading electric field points")
     Memento.info(_LOGGER, "Start converting electric field points to Float32 array")
-
-
-    k = 1
-
-    for i in 1:n_times
-        # Memento.info(_LOGGER, "Reading time $i/$n_times")
-        for j in 1:n_points
-            Ex[i,j] = copy(reinterpret(Float32, buf[k:k+3]))[1] 
-            Ey[i,j] = copy(reinterpret(Float32, buf[k:k+3]))[1]
-            k += 4
-        end
-    end
-
-
+    floats = reinterpret(Float32, buf)
     Memento.info(_LOGGER, "Done converting electric field points to Float32 array")
+    Memento.info(_LOGGER, "Start reshaping Float32 array")
+
+
+    # Split interleaved Ex/Ey samples
+    ex_vec = floats[1:2:end]   # every odd element
+    ey_vec = floats[2:2:end]   # every even element
+
+    # Reshape into 2D arrays (note: Julia fills columnwise)
+    Ex = reshape(ex_vec, n_points, n_times)'
+    Ey = reshape(ey_vec, n_points, n_times)'
+
+    # k = 1
+
+    # for i in 1:n_times
+    #     # Memento.info(_LOGGER, "Reading time $i/$n_times")
+    #     for j in 1:n_points
+    #         # Ex[i,j] = copy(reinterpret(Float32, buf[k:k+3]))[1] 
+    #         # Ey[i,j] = copy(reinterpret(Float32, buf[k:k+3]))[1]
+    #         Ex[i,j] = floats[k]
+    #         k += 1
+    #         Ey[i,j] = floats[k]        
+    #         k += 1
+    #     end
+    # end
+
+
+    Memento.info(_LOGGER, "Done reshaping Float32 array")
     b3d["Ex"] = Ex
     b3d["Ey"] = Ey
 
