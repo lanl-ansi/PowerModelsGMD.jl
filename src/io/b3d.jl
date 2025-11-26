@@ -208,8 +208,8 @@ function read_b3d(io::IO)
     Memento.info(_LOGGER, "Start reading electric field points")
 
     # total samples: 2 per (time, point)
-    n_samples = 2*n_times*n_points
-    n_bytes = 4*n_samples
+    n_elements = 2*n_times*n_points
+    n_bytes = 4*n_elements
 
     # Single IO call: read all Float32s at once
     buf = read(io, n_bytes)
@@ -329,15 +329,39 @@ function write_b3d(io::IO, b3d)
 
     Memento.info(_LOGGER, "Start writing electric field points")
 
+    # for i in 1:n_times
+    #     # Memento.info(_LOGGER, "Reading time $i/$n_times")
+    #     for j in 1:n_points
+    #         write_float32(io, Ex[i,j])
+    #         write_float32(io, Ey[i,j])
+    #     end
+    # end
+    n_elements = n_points*n_times
+    n_samples = 2*n_elements
+
+    # Reshape into 2D arrays (note: Julia fills columnwise)
+    Memento.info(_LOGGER, "Start copying to Float32 vector")
+    # ex_vec = reshape(Ex', :)
+    # ey_vec = reshape(Ey', :)
+    # floats = reshape(hcat(ex_vec, ey_vec), :)
+
+    floats = zeros(Float32, n_samples)
+    k = 1
+
     for i in 1:n_times
         # Memento.info(_LOGGER, "Reading time $i/$n_times")
         for j in 1:n_points
-            write_float32(io, Ex[i,j])
-            write_float32(io, Ey[i,j])
+            floats[k] = Ex[i,j]
+            k += 1
+            floats[k] = Ey[i,j]
+            k += 1
         end
-    end
+    end    
 
-    Memento.info(_LOGGER, "Done writing electric field points")
+    Memento.info(_LOGGER, "Done copying to Float32 vector")
+    Memento.info(_LOGGER, "Start writing electric field points")
+    write(io, floats)
+    Memento.info(_LOGGER, "Done writing electric field points") 
 end
 
 
