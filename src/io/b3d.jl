@@ -341,22 +341,22 @@ function write_b3d(io::IO, b3d)
 
     # Reshape into 2D arrays (note: Julia fills columnwise)
     Memento.info(_LOGGER, "Start copying to Float32 vector")
-    # ex_vec = reshape(Ex', :)
-    # ey_vec = reshape(Ey', :)
-    # floats = reshape(hcat(ex_vec, ey_vec), :)
+    ex_vec = reshape(Ex', :)
+    ey_vec = reshape(Ey', :)
+    floats = reshape(hcat(ex_vec, ey_vec)', :)
 
-    floats = zeros(Float32, n_samples)
-    k = 1
+    # floats = zeros(Float32, n_samples)
+    # k = 1
 
-    for i in 1:n_times
-        # Memento.info(_LOGGER, "Reading time $i/$n_times")
-        for j in 1:n_points
-            floats[k] = Ex[i,j]
-            k += 1
-            floats[k] = Ey[i,j]
-            k += 1
-        end
-    end    
+    # for i in 1:n_times
+    #     # Memento.info(_LOGGER, "Reading time $i/$n_times")
+    #     for j in 1:n_points
+    #         floats[k] = Ex[i,j]
+    #         k += 1
+    #         floats[k] = Ey[i,j]
+    #         k += 1
+    #     end
+    # end    
 
     Memento.info(_LOGGER, "Done copying to Float32 vector")
     Memento.info(_LOGGER, "Start writing electric field points")
@@ -369,6 +369,7 @@ function write_b3d(b3d_file::String, b3d)
     open(b3d_file, "w") do io
         write_b3d(io, b3d)
     end
+    Memento.info(_LOGGER, "Wrote to $b3d_file")
 end
 
 
