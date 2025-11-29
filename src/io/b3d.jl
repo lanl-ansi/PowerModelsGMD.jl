@@ -1,6 +1,6 @@
-const _LOGGER = Memento.getlogger(@__MODULE__)
-__init__() = Memento.register(_LOGGER)
-Memento.setlevel!(_LOGGER, "debug")
+# const _LOGGER = Memento.getlogger(@__MODULE__)
+# __init__() = Memento.register(_LOGGER)
+# Memento.setlevel!(_LOGGER, "debug")
 
 B3D_MAGIC_NUMBER = UInt32(34280)
 
