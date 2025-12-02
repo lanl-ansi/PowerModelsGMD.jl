@@ -484,9 +484,7 @@ function constraint_load_served(pm::_PM.AbstractPowerModel, n::Int, pds, min_loa
     z_demand = _PM.var(pm, n, :z_demand)
 
     JuMP.@constraint(pm.model,
-        sum(pd*z_demand[i] for (i,pd) in pds)
-        >=
-        min_load_served 
+        sum(pd*z_demand[i] for (i,pd) in pds) >= min_load_served 
     )
 
 end
