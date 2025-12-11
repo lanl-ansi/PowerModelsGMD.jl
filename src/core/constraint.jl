@@ -486,7 +486,6 @@ function constraint_load_served(pm::_PM.AbstractPowerModel, n::Int, pds, min_loa
     JuMP.@constraint(pm.model,
         sum(pd*z_demand[i] for (i,pd) in pds) >= min_load_served 
     )
-
 end
 
 
@@ -494,28 +493,28 @@ end
 function constraint_max_blockers(pm::_PM.AbstractPowerModel, max_blockers)
     JuMP.@constraint(pm.model,
         sum(sum(_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
-        for (n, nw_ref) in _PM.nws(pm))
-        <=
-        max_blockers)
+        for (n, nw_ref) in _PM.nws(pm)) <= max_blockers)
+end
 
+"CONSTRAINT: more than a specified percentage of load is served"
+function constraint_blocker_count(pm::_PM.AbstractPowerModel, blocker_count)
+    JuMP.@constraint(pm.model,
+        sum(sum(_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+        for (n, nw_ref) in _PM.nws(pm)) == blocker_count)
 end
 
 "CONSTRAINT: more than a specified percentage of load is served"
 function constraint_obj_max(pm::_PM.AbstractPowerModel)
     JuMP.@constraint(pm.model,
         sum(sum(blocker["multiplier"]*blocker["construction_cost"]*_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
-        for (n, nw_ref) in _PM.nws(pm))
-        <=
-        90.0)
+        for (n, nw_ref) in _PM.nws(pm)) <= 90.0)
 end
 
 "CONSTRAINT: more than a specified percentage of load is served"
 function constraint_obj_min(pm::_PM.AbstractPowerModel)
     JuMP.@constraint(pm.model,
         sum(sum(blocker["multiplier"]*blocker["construction_cost"]*_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
-        for (n, nw_ref) in _PM.nws(pm))
-        >=
-        70.0)
+        for (n, nw_ref) in _PM.nws(pm)) >= 70.0)
 end
 
 "CONSTRAINT: nodal power balance for dc circuits with GIC blockers"
@@ -534,9 +533,7 @@ function constraint_dc_power_balance_ne_blocker(pm::_PM.AbstractPowerModel, n::I
         _IM.relaxation_product(pm.model, z, v_dc, zv_dc)
 
         con = JuMP.@constraint(pm.model,
-            sum(dc_expr[a] for a in gmd_bus_arcs)
-            ==
-            gs * v_dc - gs * zv_dc
+            sum(dc_expr[a] for a in gmd_bus_arcs) == gs * v_dc - gs * zv_dc
 #            gs * v_dc  - gs * v_dc * z
 #             (gs * v_dc)*(1 - z)
         )

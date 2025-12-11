@@ -95,6 +95,7 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
 
     blocker_relax = get(pm.setting,"blocker_relax",false)
     fixed_placements = get(pm.setting,"fixed_placements",false)
+    blocker_count = get(pm.setting,"blocker_count",1)
     variable_ne_blocker_indicator(pm, relax=blocker_relax, fix=fixed_placements)
     variable_bus_voltage(pm)
     _PM.variable_gen_power(pm)
@@ -149,13 +150,14 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_gmd_connections(pm, i)
     end
 
-    constraint_load_served(pm)
+    # constraint_load_served(pm)
+    constraint_blocker_count(pm, blocker_count)
     # constraint_max_blockers(pm)
     # constraint_obj_max(pm)
     # constraint_obj_min(pm)
 
-    objective_blocker_placement_cost(pm)
-    # objective_max_loadability(pm)
+    # objective_blocker_placement_cost(pm)
+    objective_max_loadability(pm)
 end
 
 
