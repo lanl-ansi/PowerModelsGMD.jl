@@ -237,6 +237,8 @@ end
 
 
 function read_b3d(b3d_file::String)
+    Memento.info(_LOGGER, "Reading from $b3d_file")
+
     open(b3d_file) do io
         return read_b3d(io)
     end
@@ -366,10 +368,10 @@ end
 
 
 function write_b3d(b3d_file::String, b3d)
+    Memento.info(_LOGGER, "Writing to $b3d_file")
     open(b3d_file, "w") do io
         write_b3d(io, b3d)
     end
-    Memento.info(_LOGGER, "Wrote to $b3d_file")
 end
 
 
