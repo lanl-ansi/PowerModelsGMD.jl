@@ -151,8 +151,8 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     end
 
     # constraint_load_served(pm)
-    constraint_blocker_count(pm, blocker_count)
-    # constraint_max_blockers(pm)
+    # constraint_blocker_count(pm, blocker_count)
+    constraint_max_blockers(pm, blocker_count)
     # constraint_obj_max(pm)
     # constraint_obj_min(pm)
 

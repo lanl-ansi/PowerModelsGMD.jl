@@ -13,45 +13,36 @@ function constraint_dc_current_mag_line(pm::_PM.AbstractPowerModel, n::Int, k)
 
     ieff = _PM.var(pm, n, :i_dc_mag)
 
-    JuMP.@constraint(pm.model,
-        ieff[k]
-        ==
-        0.0
-    )
+    JuMP.@constraint(pm.model, ieff[k] == 0.0)
 
 end
 constraint_dc_current_mag_line(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_line(pm, nw, k)
 
 
+"CONSTRAINT: dc current on normal lines"
+function constraint_ieff_line(pm::_PM.AbstractPowerModel, n::Int, k)
+
+    ieff = _PM.var(pm, n, :i_dc_mag)
+
+    JuMP.@constraint(pm.model, ieff[k] == 0.0)
+
+end
+constraint_ieff_line(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_line(pm, nw, k)
+
+
 function constraint_dc_current_mag_line_binary(pm::_PM.AbstractPowerModel, n::Int, k)
 
     idc = _PM.var(pm, n, :i_dc)
-    JuMP.@constraint(pm.model,
-        idc[k]
-        ==
-        0.0
-    )
+    JuMP.@constraint(pm.model, idc[k] == 0.0)
 
     ieff_z = _PM.var(pm, n, :i_dc_mag_z)
-    JuMP.@constraint(pm.model,
-        ieff_z[k]
-        ==
-        0.0
-    )
+    JuMP.@constraint(pm.model, ieff_z[k] == 0.0)
 
     ieff_m = _PM.var(pm, n, :i_dc_mag_m)
-    JuMP.@constraint(pm.model,
-        ieff_m[k]
-        ==
-        0.0
-    )
+    JuMP.@constraint(pm.model, ieff_m[k] == 0.0)
 
     ieff = _PM.var(pm, n, :i_dc_mag)
-    JuMP.@constraint(pm.model,
-        ieff[k]
-        ==
-        0.0
-    )
+    JuMP.@constraint(pm.model, ieff[k] == 0.0)
    
 end
 constraint_dc_current_mag_line_binary(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_line_binary(pm, nw, k)
@@ -65,6 +56,13 @@ end
 
 constraint_dc_current_mag_ungrounded_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_ungrounded_xf(pm, nw, k)
 
+"CONSTRAINT: dc current on grounded transformers"
+function constraint_ieff_ungrounded_xf(pm::_PM.AbstractPowerModel, n::Int, k)
+    ieff = _PM.var(pm, n, :i_dc_mag)
+    JuMP.@constraint(pm.model, ieff[k] == 0.0)
+end
+
+constraint_ieff_ungrounded_xf(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_dc_current_mag_ungrounded_xf(pm, nw, k)
 
 "CONSTRAINT: dc current on ungrounded gwye-delta transformers"
 function constraint_dc_current_mag_gwye_delta_xf(pm::_PM.AbstractPowerModel, n::Int, k, kh, ih, jh)
@@ -142,6 +140,9 @@ function constraint_ieff(pm::_PM.AbstractPowerModel, n::Int, k)
         JuMP.@constraint(pm.model, ieff[k] == 0.0)
     end
 end
+
+constraint_ieff(pm::_PM.AbstractPowerModel, k; nw::Int=nw_id_default) = constraint_ieff(pm, nw, k)
+
 
 
 
