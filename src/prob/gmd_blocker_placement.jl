@@ -150,14 +150,14 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_gmd_connections(pm, i)
     end
 
-    # constraint_load_served(pm)
+    constraint_load_served(pm)
     # constraint_blocker_count(pm, blocker_count)
-    constraint_max_blockers(pm, blocker_count)
+    # constraint_max_blockers(pm, blocker_count)
     # constraint_obj_max(pm)
     # constraint_obj_min(pm)
 
-    # objective_blocker_placement_cost(pm)
-    objective_max_loadability(pm)
+    objective_blocker_placement_cost(pm)
+    # objective_max_loadability(pm)
 end
 
 
