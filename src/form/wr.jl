@@ -267,11 +267,34 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWRModel, n::Int, 
     q_dc = get(_PM.var(pm, n), :q_dc, Dict()); _PM._check_var_keys(q_dc, bus_arcs_dc, "reactive power", "dcline")
 
     z_demand = get(_PM.var(pm, n), :z_demand, Dict()); _PM._check_var_keys(z_demand, keys(bus_pd), "power factor", "load")
-    z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor", "shunt")
-    wz_shunt = get(_PM.var(pm, n), :wz_shunt, Dict()); _PM._check_var_keys(wz_shunt, keys(bus_gs), "voltage square power factor scale", "shunt")
+    # z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor", "shunt")
+    # wz_shunt = get(_PM.var(pm, n), :wz_shunt, Dict()); _PM._check_var_keys(wz_shunt, keys(bus_gs), "voltage square power factor scale", "shunt")
 
     # this is required for improved performance in NLP models
-    if length(z_shunt) <= 0
+    # if length(z_shunt) <= 0
+    #     cstr_p = JuMP.@constraint(pm.model,
+    #         sum(p[a] for a in bus_arcs)
+    #         + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
+    #         + sum(psw[a_sw] for a_sw in bus_arcs_sw)
+    #         ==
+    #         sum(pg[g] for g in bus_gens)
+    #         - sum(ps[s] for s in bus_storage)
+    #         - sum(pd * z_demand[i] for (i,pd) in bus_pd)
+    #         # - sum(gs * wz_shunt[i] for (i,gs) in bus_gs)
+    #         - sum(gs for (i,gs) in bus_gs)
+    #     )
+    #     cstr_q = JuMP.@constraint(pm.model,
+    #         sum(q[a] + qloss[a] for a in bus_arcs)
+    #         + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
+    #         + sum(qsw[a_sw] for a_sw in bus_arcs_sw)
+    #         ==
+    #         sum(qg[g] for g in bus_gens)
+    #         - sum(qs[s] for s in bus_storage)
+    #         - sum(qd * z_demand[i] for (i,qd) in bus_qd)
+    #         # + sum(bs * wz_shunt[i] for (i,bs) in bus_bs)
+    #         + sum(bs for (i,bs) in bus_bs)
+    #     )
+    # else
         cstr_p = JuMP.@constraint(pm.model,
             sum(p[a] for a in bus_arcs)
             + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
@@ -280,7 +303,8 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWRModel, n::Int, 
             sum(pg[g] for g in bus_gens)
             - sum(ps[s] for s in bus_storage)
             - sum(pd * z_demand[i] for (i,pd) in bus_pd)
-            - sum(gs * wz_shunt[i] for (i,gs) in bus_gs)
+            # - sum(gs * wz_shunt[i] for (i,gs) in bus_gs) 
+            - sum(gs for (i,gs) in bus_gs) 
         )
         cstr_q = JuMP.@constraint(pm.model,
             sum(q[a] + qloss[a] for a in bus_arcs)
@@ -290,34 +314,14 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractWRModel, n::Int, 
             sum(qg[g] for g in bus_gens)
             - sum(qs[s] for s in bus_storage)
             - sum(qd * z_demand[i] for (i,qd) in bus_qd)
-            + sum(bs * wz_shunt[i] for (i,bs) in bus_bs)
+            # + sum(bs * wz_shunt[i] for (i,bs) in bus_bs)
+             + sum(bs for (i,bs) in bus_bs)
         )
-    else
-        cstr_p = JuMP.@constraint(pm.model,
-            sum(p[a] for a in bus_arcs)
-            + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
-            + sum(psw[a_sw] for a_sw in bus_arcs_sw)
-            ==
-            sum(pg[g] for g in bus_gens)
-            - sum(ps[s] for s in bus_storage)
-            - sum(pd * z_demand[i] for (i,pd) in bus_pd)
-            - sum(gs * wz_shunt[i] for (i,gs) in bus_gs) 
-        )
-        cstr_q = JuMP.@constraint(pm.model,
-            sum(q[a] + qloss[a] for a in bus_arcs)
-            + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
-            + sum(qsw[a_sw] for a_sw in bus_arcs_sw)
-            ==
-            sum(qg[g] for g in bus_gens)
-            - sum(qs[s] for s in bus_storage)
-            - sum(qd * z_demand[i] for (i,qd) in bus_qd)
-            + sum(bs * wz_shunt[i] for (i,bs) in bus_bs)
-        )
-    end
+    # end
 
-    for s in keys(bus_gs)
-        _IM.relaxation_product(pm.model, w, z_shunt[s], wz_shunt[s])
-    end
+    # for s in keys(bus_gs)
+    #     _IM.relaxation_product(pm.model, w, z_shunt[s], wz_shunt[s])
+    # end
 
     if _IM.report_duals(pm)
         _PM.sol(pm, n, :bus, i)[:lam_kcl_r] = cstr_p
@@ -372,6 +376,24 @@ function constraint_qloss_pu(pm::_PM.AbstractWRModel, n::Int, k, i, j, K)
     if branch["type"] == "xfmr"
         # scaled_relaxation_product(pm.model, K/3.0, ieff, vm, qloss[(k,i,j)])
         scaled_relaxation_product(pm.model, K, ieff, vm, qloss[(k,i,j)])
+    else
+        JuMP.@constraint(pm.model,
+            qloss[(k,i,j)] == 0.0
+        )
+    end
+end
+
+
+function constraint_qloss_gmd_pu(pm::_PM.AbstractWRModel, n::Int, k, i, j, K, vm)
+    branch    = _PM.ref(pm, n, :branch, k)
+
+    qloss = _PM.var(pm, n, :qloss)
+    ieff = _PM.var(pm, n, :i_dc_mag, k)
+
+    if branch["type"] == "xfmr"
+        JuMP.@constraint(pm.model,
+            qloss[(k,i,j)] == K * ieff * vm
+        )
     else
         JuMP.@constraint(pm.model,
             qloss[(k,i,j)] == 0.0

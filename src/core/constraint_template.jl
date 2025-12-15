@@ -586,13 +586,11 @@ function constraint_load_served(pm::_PM.AbstractPowerModel; nw::Int=nw_id_defaul
 
     load_ratio = _PM.ref(pm, nw, :load_served_ratio)
 
-    total_load = 0
-    for (i,load) in _PM.ref(pm, nw, :load)
-        total_load += abs(load["pd"])
-    end
+    total_load = sum(load["pd"] for (i,load) in _PM.ref(pm, 0, :load))
+    
     min_load_served = total_load * load_ratio
 
-    pd = Dict(k => abs(_PM.ref(pm, nw, :load, k, "pd")) for (k,load) in _PM.ref(pm, nw, :load))
+    pd = Dict(k => _PM.ref(pm, nw, :load, k, "pd") for (k,load) in _PM.ref(pm, nw, :load))
 
     constraint_load_served(pm, nw, pd, min_load_served)
 

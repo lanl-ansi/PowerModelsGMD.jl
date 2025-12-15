@@ -2,30 +2,67 @@
 # GIC DC #
 ##########
 
+"Run GMD mitigation with nonlinear ac equations"
+function solve_ac_gmd(file::String, optimizer; kwargs...)
+    case = _PM.parse_file(file)
+    return solve_gmd(case, _PM.ACPPowerModel, optimizer; kwargs...)
+end
+
+function solve_ac_gmd(case::Dict{String,Any}, optimizer; kwargs...)
+    return solve_gmd(case, _PM.ACPPowerModel, optimizer; kwargs...)
+end
+
+"Run GMD mitigation with second order cone relaxation"
+function solve_soc_gmd(file::String, optimizer; kwargs...)
+    case = _PM.parse_file(file)
+    return solve_gmd(case, _PM.SOCWRPowerModel, optimizer; kwargs...)
+end
+
+function solve_soc_gmd(case::Dict{String,Any}, optimizer; kwargs...)
+    return solve_gmd(case, _PM.SOCWRPowerModel, optimizer; kwargs...)
+end
 
 # ===   WITH OPTIMIZER   === #
 "Solve GIC current model with an optimizer given input file
 in extended MatPower format"
-function solve_gmd(file, optimizer; kwargs...)
-    return _PM.solve_model(
-        file,
-        _PM.ACPPowerModel,
-        optimizer,
-        build_gmd;
-        ref_extensions = [
-            ref_add_gmd!,
-        ],
-        solution_processors = [
-            solution_gmd!
-        ],
-        kwargs...,
-    )
+function solve_gmd(file, model_type::Type, optimizer; kwargs...)
+    if model_type == _PM.ACPPowerModel
+        return _PM.solve_model(
+            file,
+            model_type,
+            optimizer,
+            build_ac_gmd;
+            ref_extensions = [
+                ref_add_gmd!,
+            ],
+            solution_processors = [
+                solution_gmd!
+            ],
+            kwargs...,
+        )
+    elseif model_type == _PM.SOCWRPowerModel
+        return _PM.solve_model(
+            file,
+            model_type,
+            optimizer,
+            build_soc_gmd;
+            ref_extensions = [
+                ref_add_gmd!,
+            ],
+            solution_processors = [
+                solution_gmd!
+            ],
+            kwargs...,
+        )
+    else
+        popo
+    end
 end
 
 
 "Build the quasi-dc-pf problem
 as a linear constraint satisfaction problem"
-function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
+function build_ac_gmd(pm::_PM.AbstractPowerModel; kwargs...)
 
     variable_dc_voltage(pm)
     variable_gic_current(pm)
@@ -40,6 +77,30 @@ function build_gmd(pm::_PM.AbstractPowerModel; kwargs...)
     for i in _PM.ids(pm, :branch)
         constraint_qloss_gmd_pu(pm, i)
         constraint_dc_current_mag(pm, i)
+    end
+
+    for i in _PM.ids(pm, :gmd_branch)
+        constraint_dc_ohms(pm, i)
+    end
+end
+
+
+function build_soc_gmd(pm::_PM.AbstractPowerModel; kwargs...)
+
+    variable_dc_voltage(pm)
+    variable_gic_current_binary(pm)
+    variable_dc_line_flow(pm)
+    variable_qloss(pm)
+
+    for i in _PM.ids(pm, :gmd_bus)
+        constraint_dc_kcl(pm, i) # constraint_gic_current_balance(
+        
+    end
+
+    for i in _PM.ids(pm, :branch)
+        constraint_qloss_gmd_pu(pm, i)
+        constraint_dc_current_mag_binary(pm, i)
+        constraint_dc_current_abs(pm, i)
     end
 
     for i in _PM.ids(pm, :gmd_branch)

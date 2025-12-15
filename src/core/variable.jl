@@ -455,3 +455,56 @@ function variable_delta_oil(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, b
     report && _PM.sol_component_value(pm, nw, :transformer, :topoil_rise, _PM.ids(pm, nw, :transformer), delta_oil)
 end
 
+
+
+function variable_shunt_admittance_factor(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+    if !relax
+        z_shunt = _PM.var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt",
+            binary = true,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :shunt, i), "z_shunt_start", 1.0)
+        )
+    else
+        z_shunt = _PM.var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt",
+            upper_bound = 0,
+            lower_bound = 1,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :shunt, i), "z_shunt_start", 1.0)
+        )
+    end
+
+    if report
+        _PM.sol_component_value(pm, nw, :shunt, :status, _PM.ids(pm, nw, :shunt), z_shunt)
+        sol_gs = Dict(i => z_shunt[i]*_PM.ref(pm, nw, :shunt, i)["gs"] for i in _PM.ids(pm, nw, :shunt))
+        _PM.sol_component_value(pm, nw, :shunt, :gs, _PM.ids(pm, nw, :shunt), sol_gs)
+        sol_bs = Dict(i => z_shunt[i]*_PM.ref(pm, nw, :shunt, i)["bs"] for i in _PM.ids(pm, nw, :shunt))
+        _PM.sol_component_value(pm, nw, :shunt, :bs, _PM.ids(pm, nw, :shunt), sol_bs)
+    end
+end
+
+
+function variable_shunt_admittance_factor(pm::_PM.AbstractWConvexModels; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+    if !relax
+        z_shunt = _PM.var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt",
+            binary = true,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :shunt, i), "z_shunt_start", 1.0)
+        )
+    else
+        z_shunt = _PM.var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
+            [i in _PM.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt",
+            upper_bound = 0,
+            lower_bound = 1,
+            start = _PM.comp_start_value(_PM.ref(pm, nw, :shunt, i), "z_shunt_start", 1.0)
+        )
+    end
+    wz_shunt = _PM.var(pm, nw)[:wz_shunt] = JuMP.@variable(pm.model,
+        [i in _PM.ids(pm, nw, :shunt)], base_name="$(nw)_wz_shunt",
+        lower_bound = 0,
+        upper_bound = _PM.ref(pm, nw, :bus)[_PM.ref(pm, nw, :shunt, i)["shunt_bus"]]["vmax"]^2,
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :shunt, i), "wz_shunt_start", 1.001)
+    )
+
+    report && _PM.sol_component_value(pm, nw, :shunt, :status, _PM.ids(pm, nw, :shunt), z_shunt)
+    report && _PM.sol_component_value(pm, nw, :shunt, :wz_shunt, _PM.ids(pm, nw, :shunt), wz_shunt)
+end

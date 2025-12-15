@@ -122,7 +122,7 @@ end
 
 "CONSTRAINT: nodal power balance with gmd, shunts, and constant power factor load shedding"
 function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-
+  
     vm = _PM.var(pm, n, :vm, i)
     p = get(_PM.var(pm, n), :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
     q = get(_PM.var(pm, n), :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
@@ -137,10 +137,10 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractACPModel, n::Int,
     q_dc = get(_PM.var(pm, n), :q_dc, Dict()); _PM._check_var_keys(q_dc, bus_arcs_dc, "reactive power", "dcline")
 
     z_demand = get(_PM.var(pm, n), :z_demand, Dict()); _PM._check_var_keys(z_demand, keys(bus_pd), "power factor", "load")
-    z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor", "shunt")
+    # z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor", "shunt")
 
     # this is required for improved performance in NLP models
-    if length(z_shunt) <= 0
+    # if length(z_shunt) <= 0
         cstr_p = JuMP.@constraint(pm.model,
             sum(p[a] for a in bus_arcs)
             + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
@@ -149,7 +149,8 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractACPModel, n::Int,
             sum(pg[g] for g in bus_gens)
             - sum(ps[s] for s in bus_storage)
             - sum(pd * z_demand[i] for (i,pd) in bus_pd)
-            - sum(gs * z_shunt[i] for (i,gs) in bus_gs) * vm^2
+            # - sum(gs * z_shunt[i] for (i,gs) in bus_gs) * vm^2
+            - sum(gs for (i,gs) in bus_gs) * vm^2
         )
         cstr_q = JuMP.@constraint(pm.model,
             sum(q[a] + qloss[a] for a in bus_arcs)
@@ -159,30 +160,33 @@ function constraint_power_balance_gmd_shunt_ls(pm::_PM.AbstractACPModel, n::Int,
             sum(qg[g] for g in bus_gens)
             - sum(qs[s] for s in bus_storage)
             - sum(qd * z_demand[i] for (i,qd) in bus_qd)
-            + sum(bs * z_shunt[i] for (i,bs) in bus_bs) * vm^2
+            # + sum(bs * z_shunt[i] for (i,bs) in bus_bs) * vm^2
+            + sum(bs for (i,bs) in bus_bs) * vm^2
         )
-    else
-        cstr_p = JuMP.@NLconstraint(pm.model,
-            sum(p[a] for a in bus_arcs)
-            + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
-            + sum(psw[a_sw] for a_sw in bus_arcs_sw)
-            ==
-            sum(pg[g] for g in bus_gens)
-            - sum(ps[s] for s in bus_storage)
-            - sum(pd * z_demand[i] for (i,pd) in bus_pd)
-            - sum(gs * z_shunt[i] for (i,gs) in bus_gs) * vm^2
-        )
-        cstr_q = JuMP.@NLconstraint(pm.model,
-            sum(q[a] + qloss[a] for a in bus_arcs)
-            + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
-            + sum(qsw[a_sw] for a_sw in bus_arcs_sw)
-            ==
-            sum(qg[g] for g in bus_gens)
-            - sum(qs[s] for s in bus_storage)
-            - sum(qd * z_demand[i] for (i,qd) in bus_qd)
-            + sum(bs * z_shunt[i] for (i,bs) in bus_bs) * vm^2
-        )
-    end
+    # else
+    #     cstr_p = JuMP.@NLconstraint(pm.model,
+    #         sum(p[a] for a in bus_arcs)
+    #         + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
+    #         + sum(psw[a_sw] for a_sw in bus_arcs_sw)
+    #         ==
+    #         sum(pg[g] for g in bus_gens)
+    #         - sum(ps[s] for s in bus_storage)
+    #         - sum(pd * z_demand[i] for (i,pd) in bus_pd)
+    #         # - sum(gs * z_shunt[i] for (i,gs) in bus_gs) * vm^2
+    #         - sum(gs for (i,gs) in bus_gs) * vm^2
+    #     )
+    #     cstr_q = JuMP.@NLconstraint(pm.model,
+    #         sum(q[a] + qloss[a] for a in bus_arcs)
+    #         + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
+    #         + sum(qsw[a_sw] for a_sw in bus_arcs_sw)
+    #         ==
+    #         sum(qg[g] for g in bus_gens)
+    #         - sum(qs[s] for s in bus_storage)
+    #         - sum(qd * z_demand[i] for (i,qd) in bus_qd)
+    #         # + sum(bs * z_shunt[i] for (i,bs) in bus_bs) * vm^2
+    #         + sum(bs for (i,bs) in bus_bs) * vm^2
+    #     )
+    # end
 
     if _IM.report_duals(pm)
         _PM.sol(pm, n, :bus, i)[:lam_kcl_r] = cstr_p

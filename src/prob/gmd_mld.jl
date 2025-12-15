@@ -24,26 +24,45 @@ function solve_qc_gmd_mld(file, optimizer; kwargs...)
 end
 
 function solve_gmd_mld(file, model_type::Type, optimizer; kwargs...)
-    return _PM.solve_model(
-        file,
-        model_type,
-        optimizer,
-        build_gmd_mld;
-        ref_extensions = [
-            ref_add_gmd!
-        ],
-        solution_processors = [
-            solution_gmd_qloss!,
-            solution_gmd!,
-        ],
-        kwargs...,
-    )
+    if model_type == _PM.ACPPowerModel
+        return _PM.solve_model(
+            file,
+            model_type,
+            optimizer,
+            build_gmd_ac_mld;
+            ref_extensions = [
+                ref_add_gmd!
+            ],
+            solution_processors = [
+                # solution_gmd_qloss!,
+                solution_gmd!,
+            ],
+            kwargs...,
+        )
+    elseif model_type == _PM.SOCWRPowerModel
+        return _PM.solve_model(
+            file,
+            model_type,
+            optimizer,
+            build_gmd_soc_mld;
+            ref_extensions = [
+                ref_add_gmd!
+            ],
+            solution_processors = [
+                # solution_gmd_qloss!,
+                solution_gmd!,
+            ],
+            kwargs...,
+        )
+    else
+        opo
+    end
 end
 
 
 "Build the ac minimum loadshedding coupled with quasi-dc-pf problem
 as a maximum loadability problem with relaxed generator and bus participation"
-function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
+function build_gmd_ac_mld(pm::_PM.AbstractPowerModel; kwargs...)
 
 # Reference:
 #   built problem specification corresponds to the "MLD" specification outlined in PowerModels.jl
@@ -55,7 +74,8 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_dcline_power(pm)
 
     _PM.variable_load_power_factor(pm, relax=true)
-    _PM.variable_shunt_admittance_factor(pm, relax=true)
+    # variable_shunt_admittance_factor(pm, relax=true)
+    # _PM.variable_shunt_admittance_factor(pm, relax=true)
 
     variable_dc_voltage(pm)
     variable_gic_current(pm)
@@ -101,6 +121,65 @@ function build_gmd_mld(pm::_PM.AbstractPowerModel; kwargs...)
     objective_max_loadability(pm)
 end
 
+
+function build_gmd_soc_mld(pm::_PM.AbstractPowerModel; kwargs...)
+
+# Reference:
+#   built problem specification corresponds to the "MLD" specification outlined in PowerModels.jl
+#   (https://github.com/lanl-ansi/PowerModels.jl/blob/master/src/prob/test.jl)
+    variable_bus_voltage(pm)
+    _PM.variable_gen_power(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
+
+    _PM.variable_load_power_factor(pm, relax=true)
+    # variable_shunt_admittance_factor(pm, relax=true)
+    # _PM.variable_shunt_admittance_factor(pm, relax=true)
+
+    variable_dc_voltage(pm)
+    variable_gic_current_binary(pm)
+    variable_dc_line_flow(pm)
+    variable_qloss(pm)
+
+    constraint_model_voltage(pm)
+
+    for i in _PM.ids(pm, :ref_buses)
+        _PM.constraint_theta_ref(pm, i)
+    end
+
+    for i in _PM.ids(pm, :bus)
+        constraint_power_balance_gmd_shunt_ls(pm, i)
+    end
+
+    for i in _PM.ids(pm, :branch)
+        _PM.constraint_ohms_yt_from(pm, i)
+        _PM.constraint_ohms_yt_to(pm, i)
+
+        _PM.constraint_voltage_angle_difference(pm, i)
+
+        _PM.constraint_thermal_limit_from(pm, i)
+        _PM.constraint_thermal_limit_to(pm, i)
+
+        constraint_qloss_pu(pm, i)
+        constraint_dc_current_mag_binary(pm, i)
+        constraint_dc_current_abs(pm, i)
+    end
+
+    for i in _PM.ids(pm, :dcline)
+        _PM.constraint_dcline_power_losses(pm, i)
+    end
+
+    for i in _PM.ids(pm, :gmd_bus)
+        constraint_dc_kcl(pm, i)
+    end
+
+    for i in _PM.ids(pm, :gmd_branch)
+        constraint_dc_ohms(pm, i)
+    end
+
+    # _PM.objective_max_loadability(pm)
+    objective_max_loadability(pm)
+end
 
 
 "Solve GMD MLD mitigation with nonlinear ac equations"
@@ -149,7 +228,8 @@ function build_gmd_mld_uncoupled(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_dcline_power(pm)
 
     _PM.variable_load_power_factor(pm, relax=true)
-    _PM.variable_shunt_admittance_factor(pm, relax=true)
+    variable_shunt_admittance_factor(pm, relax=true)
+    # _PM.variable_shunt_admittance_factor(pm, relax=true)
 
     variable_qloss(pm)
 

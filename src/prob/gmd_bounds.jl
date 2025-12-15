@@ -102,11 +102,11 @@ end
 
 
 function solve_soc_bound_qloss(case, optimizer; kwargs...)
-    return return solve_bound_qloss(case, _PM.SOCWRPowerModel, optimizer; kwargs...)
+    return solve_bound_qloss(case, _PM.SOCWRPowerModel, optimizer; kwargs...)
 end
 
 function solve_ac_bound_qloss(case, optimizer; kwargs...)
-    return return solve_bound_qloss(case, _PM.ACPPowerModel, optimizer; kwargs...)
+    return solve_bound_qloss(case, _PM.ACPPowerModel, optimizer; kwargs...)
 end
 
 "Solve for max q at ac buses"
@@ -158,7 +158,7 @@ function build_bound_qloss(pm)
     _PM.variable_dcline_power(pm)
 
     _PM.variable_load_power_factor(pm, relax=true)
-    _PM.variable_shunt_admittance_factor(pm, relax=true)
+    # variable_shunt_admittance_factor(pm, relax=true)
 
     variable_qloss(pm)
 

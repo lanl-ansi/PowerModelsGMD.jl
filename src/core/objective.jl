@@ -7,9 +7,14 @@
 "Minimize cost of installing GIC blockers"
 function objective_blocker_placement_cost(pm::_PM.AbstractPowerModel)
     # don't need to sum across all scenarios - objective will be somewhat confusing
+    # return JuMP.@objective(pm.model, Min,
+    #     sum(
+    #         sum( get_warn(blocker, "multiplier", 1.0) * get_warn(blocker, "construction_cost", 1.0) *_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+    #     for (n, nw_ref) in _PM.nws(pm))
+    # )
     return JuMP.@objective(pm.model, Min,
         sum(
-            sum( get_warn(blocker, "multiplier", 1.0) * get_warn(blocker, "construction_cost", 1.0) *_PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
+            sum( _PM.var(pm, n, :z_blocker, i) for (i,blocker) in nw_ref[:gmd_ne_blocker] )
         for (n, nw_ref) in _PM.nws(pm))
     )
 end
@@ -87,13 +92,15 @@ function objective_max_loadability(pm::_PM.AbstractPowerModel)
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
     time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
 
-    total_load = sum(abs(load["pd"]) for (i,load) in _PM.ref(pm, 0, :load))
+    # total_load = sum(abs(load["pd"]) for (i,load) in _PM.ref(pm, 0, :load))
+    total_load = sum(load["pd"] for (i,load) in _PM.ref(pm, 0, :load))
 
     return JuMP.@objective(pm.model, Max,
         sum( 
             ( 
             time_elapsed[n]*(
-                sum(z_demand[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load))/total_load
+                # sum(z_demand[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load))/total_load
+                sum(z_demand[n][i]*load["pd"] for (i,load) in _PM.ref(pm, n, :load))/total_load
                 )
             )
             for n in nws)

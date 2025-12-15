@@ -102,7 +102,8 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     _PM.variable_dcline_power(pm)
 
     _PM.variable_load_power_factor(pm, relax=true)
-    _PM.variable_shunt_admittance_factor(pm, relax=true)
+    # _PM.variable_shunt_admittance_factor(pm, relax=true)
+    # variable_shunt_admittance_factor(pm, relax=true)
 
     variable_dc_voltage(pm)
     variable_gic_current_binary(pm)
