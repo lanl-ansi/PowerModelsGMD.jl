@@ -89,6 +89,25 @@ function solution_gmd!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
     end
 end
 
+function solution_gmd_dc_placement!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
+    nws_data = haskey(solution["it"][pm_it_name], "nw") ? solution["it"][pm_it_name]["nw"] : nws_data = Dict("0" => solution["it"][pm_it_name])
+    for (n, nw_data) in nws_data
+        nw_id = parse(Int64, n)
+        
+        nw_data["ieff"] = Dict{String,Any}()
+        nw_data["qloss"] = Dict{String,Any}()
+
+        for (n, branch) in _PM.ref(pm,nw_id,:branch)
+            i = branch["hi_bus"]
+            j = branch["lo_bus"]
+            i_eff = JuMP.value(_PM.var(pm, nw_id, :i_dc_mag, n)) / 3
+            q_loss = JuMP.value(_PM.var(pm, nw_id, :qloss)[(n,i,j)])
+            nw_data["ieff"]["$(n)"] = i_eff < 1e-12 ? 0.0 : i_eff
+            nw_data["qloss"]["$(n)"] = q_loss < 1e-12 ? 0.0 : q_loss * _PM.ref(pm,nw_id,:baseMVA)
+        end
+    end
+end
+
 
 function solution_gmd_uncoupled!(pm::_PM.AbstractPowerModel, solution::Dict{String,Any})
     nws_data = haskey(solution["it"][pm_it_name], "nw") ? solution["it"][pm_it_name]["nw"] : nws_data = Dict("0" => solution["it"][pm_it_name])

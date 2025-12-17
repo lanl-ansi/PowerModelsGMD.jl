@@ -28,7 +28,7 @@ function objective_blocker_placement_cost_multi_scenario(pm::_PM.AbstractPowerMo
 end
 
 
-"Maximize the total qloss in the ac model"
+"Maximize the qloss for branch qloss_branch in the ac model"
 function objective_max_qloss(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default)
     k = get_warn(pm.setting, "qloss_branch", false)
     branch = _PM.ref(pm, nw, :branch)[k]
@@ -37,6 +37,25 @@ function objective_max_qloss(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default)
     return JuMP.@objective(pm.model, Max,
         sum(_PM.var(pm, n, :qloss)[(k,i,j)]
         for (n, nw_ref) in _PM.nws(pm))
+    )
+end
+
+"Minimize the total qloss in the ac model"
+function objective_min_qloss(pm::_PM.AbstractPowerModel, nw::Int=nw_id_default) 
+    nws = _PM.nw_ids(pm)
+    qloss = Dict(n => _PM.var(pm, n, :qloss) for n in nws)
+    time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
+
+    return JuMP.@objective(pm.model, Min,
+        # sum(_PM.var(pm, n, :qloss)[(k,i,j)]
+        # for (n, nw_ref) in _PM.nws(pm))
+        sum( 
+            ( 
+            time_elapsed[n]*(
+                sum(qloss[n][i] for i in _PM.ref(pm, n, :arcs))
+                )
+            )
+            for n in nws)      
     )
 end
 
@@ -83,7 +102,6 @@ end
 
 function objective_max_loadability(pm::_PM.AbstractPowerModel)
     nws = _PM.nw_ids(pm)
-
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
     time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
 

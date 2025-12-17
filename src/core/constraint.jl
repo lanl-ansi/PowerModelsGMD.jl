@@ -641,7 +641,7 @@ function constraint_thermal_protection(pm::_PM.AbstractPowerModel, n::Int, i, co
 end
 
 
-function constraint_qloss_gmd_pu(pm::_PM.AbstractACPModel, n::Int, k, i, j, K, vm)
+function constraint_qloss_gmd_pu(pm::_PM.AbstractPowerModel, n::Int, k, i, j, K, vm)
     branch    = _PM.ref(pm, n, :branch, k)
 
     qloss = _PM.var(pm, n, :qloss)
