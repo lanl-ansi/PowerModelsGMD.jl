@@ -129,9 +129,12 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         _PM.constraint_thermal_limit_from(pm, i)
         _PM.constraint_thermal_limit_to(pm, i)
 
-        constraint_qloss_pu(pm, i)
-        constraint_dc_current_mag_binary(pm, i)
-        constraint_dc_current_abs(pm, i)
+        # constraint_qloss_pu(pm, i)
+        # constraint_dc_current_mag_binary(pm, i)
+        # constraint_dc_current_abs(pm, i)
+
+        constraint_qloss_gmd(pm, i)
+        constraint_dc_current_mag(pm, i)
     end
 
     for i in _PM.ids(pm, :dcline)
@@ -150,14 +153,14 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_gmd_connections(pm, i)
     end
 
-    constraint_load_served(pm)
-    # constraint_blocker_count(pm, blocker_count)
+    # constraint_load_served(pm)
+    constraint_blocker_count(pm, blocker_count)
     # constraint_max_blockers(pm, blocker_count)
     # constraint_obj_max(pm)
     # constraint_obj_min(pm)
 
-    objective_blocker_placement_cost(pm)
-    # objective_max_loadability(pm)
+    # objective_blocker_placement_cost(pm)
+    objective_max_loadability(pm)
 end
 
 
