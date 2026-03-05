@@ -120,19 +120,47 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
     blocker_relax = get(pm.setting,"blocker_relax",false)
     fixed_placements = get(pm.setting,"fixed_placements",false)
     blocker_count = get(pm.setting,"blocker_count",1)
+
     variable_ne_blocker_indicator(pm, relax=blocker_relax, fix=fixed_placements)
+    variable_bus_voltage(pm)
+    _PM.variable_gen_power(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
+
+    _PM.variable_load_power_factor(pm, relax=true)
+    _PM.variable_shunt_admittance_factor(pm, relax=true)
 
     variable_dc_voltage(pm)
     variable_gic_current_binary(pm)
     variable_dc_line_flow(pm)
     variable_qloss(pm)
 
+    constraint_model_voltage(pm)
+
+    for i in _PM.ids(pm, :ref_buses)
+        _PM.constraint_theta_ref(pm, i)
+    end
+
+    for i in _PM.ids(pm, :bus)
+        constraint_power_balance_gmd_shunt_ls(pm, i)
+    end
 
     for i in _PM.ids(pm, :branch)
-        constraint_qloss_gmd_pu(pm, i)
-        # constraint_dc_current_mag_binary(pm, i)
-        constraint_dc_current_mag(pm, i)
-        # constraint_dc_current_abs(pm, i)
+        _PM.constraint_ohms_yt_from(pm, i)
+        _PM.constraint_ohms_yt_to(pm, i)
+
+        _PM.constraint_voltage_angle_difference(pm, i)
+
+        _PM.constraint_thermal_limit_from(pm, i)
+        _PM.constraint_thermal_limit_to(pm, i)
+
+        constraint_qloss_pu(pm, i)
+        constraint_dc_current_mag_binary(pm, i)
+        constraint_dc_current_abs(pm, i)
+    end
+
+    for i in _PM.ids(pm, :dcline)
+        _PM.constraint_dcline_power_losses(pm, i)
     end
 
     for i in _PM.ids(pm, :gmd_bus)
@@ -147,16 +175,16 @@ function build_blocker_placement(pm::_PM.AbstractPowerModel; kwargs...)
         constraint_gmd_connections(pm, i)
     end
 
-    # constraint_load_served(pm)
-    constraint_blocker_count(pm, blocker_count)
-    # constraint_max_blockers(pm, blocker_count)
+    constraint_load_served(pm)
+    # constraint_max_blockers(pm)
+    # constraint_blocker_count(pm, blocker_count)
     # constraint_obj_max(pm)
     # constraint_obj_min(pm)
 
-    # objective_blocker_placement_cost(pm)
-    objective_max_loadability(pm)
-    # objective_min_qloss(pm)
+    objective_blocker_placement_cost(pm)
+    # objective_max_loadability(pm)
 end
+
 
 
 "Run GMD mitigation with nonlinear ac equations"
