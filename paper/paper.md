@@ -1,5 +1,5 @@
 ---
-title: 'PowerModelsGMD.jl: A Julia/JuMP package of analysi of geomagnetic events on bulk electric power systems'
+title: 'PowerModelsGMD.jl: A Julia/JuMP package for analysis and mitigation of geomagnetic events on bulk electric power systems'
 tags:
   - Julia
   - space weather
